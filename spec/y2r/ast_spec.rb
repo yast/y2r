@@ -1,6 +1,22 @@
 require "spec_helper"
 
 module Y2R::AST
+  describe Args do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Args.new(
+          :children => [
+            Const.new(:type => "int", :value => "42"),
+            Const.new(:type => "int", :value => "43"),
+            Const.new(:type => "int", :value => "44")
+          ]
+        )
+
+        node.to_ruby.should == "42, 43, 44"
+      end
+    end
+  end
+
   describe Assign do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -43,6 +59,32 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+    end
+  end
+
+  describe Call do
+    describe "#to_ruby" do
+      it "emits correct code for a call without arguments" do
+        node = Call.new(:ns => "n", :name => "f")
+
+        node.to_ruby.should == "n.f()"
+      end
+
+      it "emits correct code for a call with arguments" do
+        node = Call.new(
+          :ns    => "n",
+          :name  => "f",
+          :child => Args.new(
+            :children => [
+              Const.new(:type => "int", :value => "42"),
+              Const.new(:type => "int", :value => "43"),
+              Const.new(:type => "int", :value => "44")
+            ]
+          )
+        )
+
+        node.to_ruby.should == "n.f(42, 43, 44)"
       end
     end
   end
@@ -93,6 +135,16 @@ module Y2R::AST
         node = Const.new(:type => "path", :value => ".abcd")
 
         node.to_ruby.should == "YCP::Path.new('.abcd')"
+      end
+    end
+  end
+
+  describe Expr do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Expr.new(:child => Call.new(:ns => "n", :name => "f"))
+
+        node.to_ruby.should == "n.f()"
       end
     end
   end

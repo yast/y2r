@@ -4,6 +4,12 @@ module Y2R
   module AST
     # Sorted alphabetically.
 
+    class Args < OpenStruct
+      def to_ruby
+        children.map(&:to_ruby).join(", ")
+      end
+    end
+
     class Assign < OpenStruct
       def to_ruby
         "#{name} = #{child.to_ruby}"
@@ -13,6 +19,13 @@ module Y2R
     class Block < OpenStruct
       def to_ruby
         statements.to_ruby
+      end
+    end
+
+    class Call < OpenStruct
+      def to_ruby
+        # TODO: YCP uses call-by-value.
+        "#{ns}.#{name}(#{child ? child.to_ruby : ""})"
       end
     end
 
@@ -34,6 +47,12 @@ module Y2R
           else
             raise "Unknown const type: #{type}."
         end
+      end
+    end
+
+    class Expr < OpenStruct
+      def to_ruby
+        child.to_ruby
       end
     end
 

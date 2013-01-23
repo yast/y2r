@@ -9,8 +9,10 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
+      :args       => { :type => :collection },
       :assign     => { :type => :wrapper },
       :block      => { :type => :struct },
+      :call       => { :type => :wrapper },
       :const      => { :type => :leaf },
       :element    => {
         :contexts => {
@@ -19,6 +21,7 @@ module Y2R
           :yeterm => { :type => :wrapper }
         }
       },
+      :expr       => { :type => :wrapper },
       :import     => { :type => :leaf },
       :key        => { :type => :wrapper },
       :list       => { :type => :collection, :create_context => :list, :filter => [:size] },
@@ -100,7 +103,8 @@ module Y2R
           # Don't do nothing, we're done.
 
         when :wrapper
-          node.child = element_to_node(element.elements[1], context)
+          child = element.elements[1]
+          node.child = child ? element_to_node(child, context) : nil
 
         when :collection
           node.children = element.elements.map do |element|

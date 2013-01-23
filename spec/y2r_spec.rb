@@ -148,6 +148,23 @@ describe Y2R do
       end
     end
 
+    describe "expressions" do
+      it "compiles function calls" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            UI::OpenDialog(`Label("Hello, world!"));
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          YCP.import('UI')
+          UI.OpenDialog(YCP::Term.new(:Label, 'Hello, world!'))
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+    end
+
     describe "statements" do
       it "compiles imports correctly" do
         ycp_code = cleanup(<<-EOT)
