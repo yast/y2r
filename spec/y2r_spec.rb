@@ -18,6 +18,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles integers correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer i = 42;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          i = 42
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end
