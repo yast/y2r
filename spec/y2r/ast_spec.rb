@@ -97,6 +97,38 @@ module Y2R::AST
     end
   end
 
+  describe Element do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Element.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
+  describe List do
+    describe "#to_ruby" do
+      it "emits correct code for empty lists" do
+        node = List.new(:children => [])
+
+        node.to_ruby.should == "[]"
+      end
+
+      it "emits correct code for non-empty lists" do
+        node = List.new(
+          :children => [
+            Element.new(:child => Const.new(:type => "int", :value => "42")),
+            Element.new(:child => Const.new(:type => "int", :value => "43")),
+            Element.new(:child => Const.new(:type => "int", :value => "44"))
+          ]
+        )
+
+        node.to_ruby.should == "[42, 43, 44]"
+      end
+    end
+  end
+
   describe Statements do
     describe "#to_ruby" do
       it "emits correct code" do

@@ -104,6 +104,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles lists correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            list l = [42, 43, 44];
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          l = [42, 43, 44]
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

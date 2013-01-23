@@ -12,6 +12,8 @@ module Y2R
       :assign     => { :type => :wrapper,    :class => AST::Assign,     :filter => []                                 },
       :block      => { :type => :struct,     :class => AST::Block,      :filter => []                                 },
       :const      => { :type => :leaf,       :class => AST::Const,      :filter => []                                 },
+      :element    => { :type => :wrapper,    :class => AST::Element,    :filter => []                                 },
+      :list       => { :type => :collection, :class => AST::List,       :filter => [:size]                            },
       :statements => { :type => :collection, :class => AST::Statements, :filter => []                                 },
       :stmt       => { :type => :wrapper,    :class => AST::Stmt,       :filter => []                                 },
       :symbol     => { :type => :leaf,       :class => AST::Symbol,     :filter => [:global, :category, :type, :name] },
