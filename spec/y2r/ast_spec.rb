@@ -82,6 +82,12 @@ module Y2R::AST
 
         node.to_ruby.should == ":abcd"
       end
+
+      it "emits correct code for string constants" do
+        node = Const.new(:type => "string", :value => "abcd")
+
+        node.to_ruby.should == "'abcd'"
+      end
     end
   end
 

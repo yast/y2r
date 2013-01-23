@@ -76,6 +76,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles strings correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            string s = "abcd";
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          s = 'abcd'
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end
