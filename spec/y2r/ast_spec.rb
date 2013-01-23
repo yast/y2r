@@ -97,6 +97,16 @@ module Y2R::AST
     end
   end
 
+  describe Import do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Import.new(:name => "M")
+
+        node.to_ruby.should == "YCP.import('M')"
+      end
+    end
+  end
+
   describe Key do
     describe "#to_ruby" do
       it "emits correct code" do

@@ -19,6 +19,7 @@ module Y2R
           :yeterm => { :type => :wrapper }
         }
       },
+      :import     => { :type => :leaf },
       :key        => { :type => :wrapper },
       :list       => { :type => :collection, :create_context => :list, :filter => [:size] },
       :map        => { :type => :collection, :create_context => :map, :filter => [:size] },

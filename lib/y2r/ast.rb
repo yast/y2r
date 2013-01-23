@@ -37,6 +37,12 @@ module Y2R
       end
     end
 
+    class Import < OpenStruct
+      def to_ruby
+        "YCP.import('#{name}')" # TODO: Implement escaping.
+      end
+    end
+
     class Key < OpenStruct
       def to_ruby
         child.to_ruby

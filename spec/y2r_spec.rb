@@ -147,5 +147,21 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
     end
+
+    describe "statements" do
+      it "compiles imports correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            import "String";
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          YCP.import('String')
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+    end
   end
 end
