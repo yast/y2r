@@ -14,14 +14,18 @@ module Y2R
       :const      => { :type => :leaf },
       :element    => {
         :contexts => {
-          :list => { :type => :wrapper }
+          :list => { :type => :wrapper },
+          :map  => { :type => :struct  }
         }
       },
+      :key        => { :type => :wrapper },
       :list       => { :type => :collection, :create_context => :list, :filter => [:size] },
+      :map        => { :type => :collection, :create_context => :map, :filter => [:size] },
       :statements => { :type => :collection },
       :stmt       => { :type => :wrapper },
       :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
       :symbols    => { :type => :collection },
+      :value      => { :type => :wrapper },
       :ycp        => { :type => :wrapper, :filter => [:version] }
     }
 

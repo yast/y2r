@@ -37,6 +37,12 @@ module Y2R
       end
     end
 
+    class Key < OpenStruct
+      def to_ruby
+        child.to_ruby
+      end
+    end
+
     class List < OpenStruct
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
@@ -46,6 +52,22 @@ module Y2R
     class ListElement < OpenStruct
       def to_ruby
         child.to_ruby
+      end
+    end
+
+    class Map < OpenStruct
+      def to_ruby
+        if !children.empty?
+          "{ " + children.map(&:to_ruby).join(", ") + " }"
+        else
+          "{}"
+        end
+      end
+    end
+
+    class MapElement < OpenStruct
+      def to_ruby
+        "#{key.to_ruby} => #{value.to_ruby}"
       end
     end
 
@@ -70,6 +92,12 @@ module Y2R
     class Symbols < OpenStruct
       def to_ruby
         children.map(&:to_ruby).join("")
+      end
+    end
+
+    class Value < OpenStruct
+      def to_ruby
+        child.to_ruby
       end
     end
 

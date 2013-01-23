@@ -118,6 +118,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles maps correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            map m = $[`a: 42, `b: 43, `c: 44];
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          m = { :a => 42, :b => 43, :c => 44 }
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

@@ -97,6 +97,16 @@ module Y2R::AST
     end
   end
 
+  describe Key do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Key.new(:child => Const.new(:type => "symbol", :value => "a"))
+
+        node.to_ruby.should == ":a"
+      end
+    end
+  end
+
   describe List do
     describe "#to_ruby" do
       it "emits correct code for empty lists" do
@@ -127,6 +137,50 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "42"
+      end
+    end
+  end
+
+  describe Map do
+    describe "#to_ruby" do
+      it "emits correct code for empty maps" do
+        node = Map.new(:children => [])
+
+        node.to_ruby.should == "{}"
+      end
+
+      it "emits correct code for non-empty maps" do
+        node = Map.new(
+          :children => [
+            MapElement.new(
+              :key   => Const.new(:type => "symbol", :value => "a"),
+              :value => Const.new(:type => "int",    :value => "42")
+            ),
+            MapElement.new(
+              :key   => Const.new(:type => "symbol", :value => "b"),
+              :value => Const.new(:type => "int",    :value => "43")
+            ),
+            MapElement.new(
+              :key   => Const.new(:type => "symbol", :value => "c"),
+              :value => Const.new(:type => "int",    :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "{ :a => 42, :b => 43, :c => 44 }"
+      end
+    end
+  end
+
+  describe MapElement do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = MapElement.new(
+          :key   => Const.new(:type => "symbol", :value => "a"),
+          :value => Const.new(:type => "int",    :value => "42")
+        )
+
+        node.to_ruby.should == ":a => 42"
       end
     end
   end
@@ -193,6 +247,16 @@ module Y2R::AST
         node = Symbols.new(:children => [Symbol.new, Symbol.new, Symbol.new])
 
         node.to_ruby.should == ""
+      end
+    end
+  end
+
+  describe Value do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Value.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
       end
     end
   end
