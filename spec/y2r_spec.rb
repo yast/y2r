@@ -48,6 +48,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles floats correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            float f = 42.0;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          f = 42.0
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

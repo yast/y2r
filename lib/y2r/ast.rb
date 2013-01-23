@@ -23,6 +23,8 @@ module Y2R
             "nil"
           when "bool", "int"
             value
+          when "float"
+            value.sub(/\.$/, ".0")
           else
             raise "Unknown const type: #{type}."
         end

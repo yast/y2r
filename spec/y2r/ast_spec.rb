@@ -68,6 +68,14 @@ module Y2R::AST
 
         node.to_ruby.should == "42"
       end
+
+      it "emits correct code for float constants" do
+        node_without_decimals = Const.new(:type => "float", :value => "42.")
+        node_with_decimals    = Const.new(:type => "float", :value => "42.1")
+
+        node_without_decimals.to_ruby.should == "42.0"
+        node_with_decimals.to_ruby.should    == "42.1"
+      end
     end
   end
 
