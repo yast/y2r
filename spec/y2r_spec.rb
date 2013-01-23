@@ -5,7 +5,7 @@ describe Y2R do
     # The following tests really are integration tests disguised as unit tests.
 
     describe "values" do
-      it "compiles void correctly" do
+      it "compiles voids correctly" do
         ycp_code = cleanup(<<-EOT)
           {
             void v = nil;
