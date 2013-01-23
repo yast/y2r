@@ -9,16 +9,16 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :assign     => { :type => :wrapper,    :filter => []                                 },
-      :block      => { :type => :struct,     :filter => []                                 },
-      :const      => { :type => :leaf,       :filter => []                                 },
-      :element    => { :type => :wrapper,    :filter => []                                 },
-      :list       => { :type => :collection, :filter => [:size]                            },
-      :statements => { :type => :collection, :filter => []                                 },
-      :stmt       => { :type => :wrapper,    :filter => []                                 },
-      :symbol     => { :type => :leaf,       :filter => [:global, :category, :type, :name] },
-      :symbols    => { :type => :collection, :filter => []                                 },
-      :ycp        => { :type => :wrapper,    :filter => [:version]                         }
+      :assign     => { :type => :wrapper },
+      :block      => { :type => :struct },
+      :const      => { :type => :leaf },
+      :element    => { :type => :wrapper },
+      :list       => { :type => :collection, :filter => [:size] },
+      :statements => { :type => :collection },
+      :stmt       => { :type => :wrapper },
+      :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
+      :symbols    => { :type => :collection },
+      :ycp        => { :type => :wrapper, :filter => [:version] }
     }
 
     def parse(input)
@@ -67,8 +67,10 @@ module Y2R
         sub(/^./) { |ch| ch.upcase }
       node = AST.const_get(class_name).new
 
+      filter = info[:filter] || []
+
       element.attributes.each do |name, value|
-        node.send("#{name}=", value) unless info[:filter].include?(name.to_sym)
+        node.send("#{name}=", value) unless filter.include?(name.to_sym)
       end
 
       case info[:type]
@@ -83,7 +85,7 @@ module Y2R
 
         when :struct
           element.elements.each do |element|
-            unless info[:filter].include?(element.name.to_sym)
+            unless filter.include?(element.name.to_sym)
               node.send("#{element.name}=", element_to_node(element))
             end
           end
