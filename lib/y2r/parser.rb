@@ -71,19 +71,18 @@ module Y2R
       raise "Invalid element: <#{element.name}>." unless info
 
       if info[:contexts]
-        raise "Element <#{element.name}> appeared out of context." if !context
+        raise "Element <#{element.name}> appeared out of context." unless context
         unless info[:contexts][context]
           raise "Element <#{element.name}> appeared in unexpected context \"#{context}\"."
         end
-        class_name_prefix = context.to_s.sub(/^./) { |ch| ch.upcase }
         info = info[:contexts][context]
+        class_name_prefix = classify(context.to_s)
       else
         class_name_prefix = ""
       end
 
-      class_name = class_name_prefix +
-        element.name.sub(/^ycp/, "YCP").sub(/^./) { |ch| ch.upcase }
-      node = AST.const_get(class_name).new
+      class_name_base = classify(element.name)
+      node = AST.const_get(class_name_prefix + class_name_base).new
 
       filter = info[:filter] || []
 
@@ -117,6 +116,10 @@ module Y2R
       end
 
       node
+    end
+
+    def classify(s)
+      s.sub(/^(ycp|.)/) { |s| s.upcase }
     end
   end
 end
