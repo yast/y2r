@@ -90,6 +90,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles paths correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            path p = .abcd;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          p = YCP::Path.new('.abcd')
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

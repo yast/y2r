@@ -29,6 +29,8 @@ module Y2R
             ":#{value}" # TODO: Implement escaping.
           when "string"
             "'#{value}'" # TODO: Implement escaping.
+          when "path"
+            "YCP::Path.new('#{value}')" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
         end

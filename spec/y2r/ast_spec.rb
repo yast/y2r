@@ -88,6 +88,12 @@ module Y2R::AST
 
         node.to_ruby.should == "'abcd'"
       end
+
+      it "emits correct code for path constants" do
+        node = Const.new(:type => "path", :value => ".abcd")
+
+        node.to_ruby.should == "YCP::Path.new('.abcd')"
+      end
     end
   end
 
