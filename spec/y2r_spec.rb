@@ -19,6 +19,22 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles booleans correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            boolean t = true;
+            boolean f = false;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          t = true
+          f = false
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles integers correctly" do
         ycp_code = cleanup(<<-EOT)
           {

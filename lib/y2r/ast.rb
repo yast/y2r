@@ -21,7 +21,7 @@ module Y2R
         case type
           when "void"
             "nil"
-          when "int"
+          when "bool", "int"
             value
           else
             raise "Unknown const type: #{type}."

@@ -55,6 +55,14 @@ module Y2R::AST
         node.to_ruby.should == "nil"
       end
 
+      it "emits correct code for boolean constants" do
+        node_true  = Const.new(:type => "bool", :value => "true")
+        node_false = Const.new(:type => "bool", :value => "false")
+
+        node_true.to_ruby.should  == "true"
+        node_false.to_ruby.should == "false"
+      end
+
       it "emits correct code for integer constants" do
         node = Const.new(:type => "int", :value => "42")
 
