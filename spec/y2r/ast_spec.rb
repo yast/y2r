@@ -49,7 +49,13 @@ module Y2R::AST
 
   describe Const do
     describe "#to_ruby" do
-      it "emits correct code" do
+      it "emits correct code for void constants" do
+        node = Const.new(:type => "void")
+
+        node.to_ruby.should == "nil"
+      end
+
+      it "emits correct code for integer constants" do
         node = Const.new(:type => "int", :value => "42")
 
         node.to_ruby.should == "42"
