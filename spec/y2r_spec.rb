@@ -132,6 +132,20 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles terms correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            term t = `a(42, 43, 44);
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          t = YCP::Term.new(:a, 42, 43, 44)
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

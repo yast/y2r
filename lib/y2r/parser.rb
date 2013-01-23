@@ -14,8 +14,9 @@ module Y2R
       :const      => { :type => :leaf },
       :element    => {
         :contexts => {
-          :list => { :type => :wrapper },
-          :map  => { :type => :struct  }
+          :list   => { :type => :wrapper },
+          :map    => { :type => :struct  },
+          :yeterm => { :type => :wrapper }
         }
       },
       :key        => { :type => :wrapper },
@@ -26,7 +27,8 @@ module Y2R
       :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
       :symbols    => { :type => :collection },
       :value      => { :type => :wrapper },
-      :ycp        => { :type => :wrapper, :filter => [:version] }
+      :ycp        => { :type => :wrapper, :filter => [:version] },
+      :yeterm     => { :type => :collection, :create_context => :yeterm, :filter => [:args] }
     }
 
     def parse(input)
@@ -119,7 +121,7 @@ module Y2R
     end
 
     def classify(s)
-      s.sub(/^(ycp|.)/) { |s| s.upcase }
+      s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }
     end
   end
 end

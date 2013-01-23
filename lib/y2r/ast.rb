@@ -106,5 +106,22 @@ module Y2R
         child.to_ruby
       end
     end
+
+    class YETerm < OpenStruct
+      def to_ruby
+        # TODO: Implement escaping.
+        if !children.empty?
+          "YCP::Term.new(:#{name}, " + children.map(&:to_ruby).join(", ") + ")"
+        else
+          "YCP::Term.new(:#{name})"
+        end
+      end
+    end
+
+    class YETermElement < OpenStruct
+      def to_ruby
+        child.to_ruby
+      end
+    end
   end
 end

@@ -270,4 +270,45 @@ module Y2R::AST
       end
     end
   end
+
+  describe YETerm do
+    describe "#to_ruby" do
+      it "emits correct code for empty terms" do
+        node = YETerm.new(:name => "a", :children => [])
+
+        node.to_ruby.should == "YCP::Term.new(:a)"
+      end
+
+      it "emits correct code for non-empty terms" do
+        node = YETerm.new(
+          :name     => "a",
+          :children => [
+            YETermElement.new(
+              :child => Const.new(:type => "int", :value => "42")
+            ),
+            YETermElement.new(
+              :child => Const.new(:type => "int", :value => "43")
+            ),
+            YETermElement.new(
+              :child => Const.new(:type => "int", :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "YCP::Term.new(:a, 42, 43, 44)"
+      end
+    end
+  end
+
+  describe YETermElement do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YETermElement.new(
+          :child => Const.new(:type => "int", :value => "42")
+        )
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
 end
