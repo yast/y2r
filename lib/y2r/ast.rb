@@ -37,15 +37,15 @@ module Y2R
       end
     end
 
-    class Element < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
-    end
-
     class List < OpenStruct
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
+      end
+    end
+
+    class ListElement < OpenStruct
+      def to_ruby
+        child.to_ruby
       end
     end
 

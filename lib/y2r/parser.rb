@@ -12,8 +12,12 @@ module Y2R
       :assign     => { :type => :wrapper },
       :block      => { :type => :struct },
       :const      => { :type => :leaf },
-      :element    => { :type => :wrapper },
-      :list       => { :type => :collection, :filter => [:size] },
+      :element    => {
+        :contexts => {
+          :list => { :type => :wrapper }
+        }
+      },
+      :list       => { :type => :collection, :create_context => :list, :filter => [:size] },
       :statements => { :type => :collection },
       :stmt       => { :type => :wrapper },
       :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
@@ -58,13 +62,23 @@ module Y2R
       element_to_node(REXML::Document.new(xml).root)
     end
 
-    def element_to_node(element)
+    def element_to_node(element, context = nil)
       info = ELEMENT_INFO[element.name.to_sym]
       raise "Invalid element: <#{element.name}>." unless info
 
-      class_name = element.name.
-        sub(/^ycp/, "YCP").
-        sub(/^./) { |ch| ch.upcase }
+      if info[:contexts]
+        raise "Element <#{element.name}> appeared out of context." if !context
+        unless info[:contexts][context]
+          raise "Element <#{element.name}> appeared in unexpected context \"#{context}\"."
+        end
+        class_name_prefix = context.to_s.sub(/^./) { |ch| ch.upcase }
+        info = info[:contexts][context]
+      else
+        class_name_prefix = ""
+      end
+
+      class_name = class_name_prefix +
+        element.name.sub(/^ycp/, "YCP").sub(/^./) { |ch| ch.upcase }
       node = AST.const_get(class_name).new
 
       filter = info[:filter] || []
@@ -73,20 +87,24 @@ module Y2R
         node.send("#{name}=", value) unless filter.include?(name.to_sym)
       end
 
+      context = info[:create_context] if info[:create_context]
+
       case info[:type]
         when :leaf
           # Don't do nothing, we're done.
 
         when :wrapper
-          node.child = element_to_node(element.elements[1])
+          node.child = element_to_node(element.elements[1], context)
 
         when :collection
-          node.children = element.elements.map { |e| element_to_node(e) }
+          node.children = element.elements.map do |element|
+            element_to_node(element, context)
+          end
 
         when :struct
           element.elements.each do |element|
             unless filter.include?(element.name.to_sym)
-              node.send("#{element.name}=", element_to_node(element))
+              node.send("#{element.name}=", element_to_node(element, context))
             end
           end
 
