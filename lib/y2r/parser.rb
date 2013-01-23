@@ -9,16 +9,16 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :assign     => { :type => :wrapper,    :class => AST::Assign,     :filter => []                                 },
-      :block      => { :type => :struct,     :class => AST::Block,      :filter => []                                 },
-      :const      => { :type => :leaf,       :class => AST::Const,      :filter => []                                 },
-      :element    => { :type => :wrapper,    :class => AST::Element,    :filter => []                                 },
-      :list       => { :type => :collection, :class => AST::List,       :filter => [:size]                            },
-      :statements => { :type => :collection, :class => AST::Statements, :filter => []                                 },
-      :stmt       => { :type => :wrapper,    :class => AST::Stmt,       :filter => []                                 },
-      :symbol     => { :type => :leaf,       :class => AST::Symbol,     :filter => [:global, :category, :type, :name] },
-      :symbols    => { :type => :collection, :class => AST::Symbols,    :filter => []                                 },
-      :ycp        => { :type => :wrapper,    :class => AST::YCP,        :filter => [:version]                         }
+      :assign     => { :type => :wrapper,    :filter => []                                 },
+      :block      => { :type => :struct,     :filter => []                                 },
+      :const      => { :type => :leaf,       :filter => []                                 },
+      :element    => { :type => :wrapper,    :filter => []                                 },
+      :list       => { :type => :collection, :filter => [:size]                            },
+      :statements => { :type => :collection, :filter => []                                 },
+      :stmt       => { :type => :wrapper,    :filter => []                                 },
+      :symbol     => { :type => :leaf,       :filter => [:global, :category, :type, :name] },
+      :symbols    => { :type => :collection, :filter => []                                 },
+      :ycp        => { :type => :wrapper,    :filter => [:version]                         }
     }
 
     def parse(input)
@@ -62,7 +62,10 @@ module Y2R
       info = ELEMENT_INFO[element.name.to_sym]
       raise "Invalid element: <#{element.name}>." unless info
 
-      node = info[:class].new
+      class_name = element.name.
+        sub(/^ycp/, "YCP").
+        sub(/^./) { |ch| ch.upcase }
+      node = AST.const_get(class_name).new
 
       element.attributes.each do |name, value|
         node.send("#{name}=", value) unless info[:filter].include?(name.to_sym)
