@@ -25,6 +25,8 @@ module Y2R
             value
           when "float"
             value.sub(/\.$/, ".0")
+          when "symbol"
+            ":#{value}" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
         end

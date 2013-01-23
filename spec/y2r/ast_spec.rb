@@ -76,6 +76,12 @@ module Y2R::AST
         node_without_decimals.to_ruby.should == "42.0"
         node_with_decimals.to_ruby.should    == "42.1"
       end
+
+      it "emits correct code for symbol constants" do
+        node = Const.new(:type => "symbol", :value => "abcd")
+
+        node.to_ruby.should == ":abcd"
+      end
     end
   end
 
