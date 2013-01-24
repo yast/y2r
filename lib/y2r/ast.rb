@@ -30,7 +30,12 @@ module Y2R
 
     class Block < Node
       def to_ruby
-        statements.to_ruby
+        case kind
+          when "file"
+            statements.to_ruby
+          else
+            raise "Unknown block kind: #{kind}."
+        end
       end
     end
 

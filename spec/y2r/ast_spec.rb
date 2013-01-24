@@ -32,8 +32,9 @@ module Y2R::AST
 
   describe Block do
     describe "#to_ruby" do
-      it "emits correct code" do
+      it "emits correct code for file blocks" do
         node = Block.new(
+          :kind       => "file",
           :statements => Statements.new(
             :children => [
               Stmt.new(
