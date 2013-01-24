@@ -137,7 +137,7 @@ module Y2R
 
     class Import < Node
       def to_ruby
-        "import('#{name}')" # TODO: Implement escaping.
+        "YCP.import('#{name}')" # TODO: Implement escaping.
       end
     end
 

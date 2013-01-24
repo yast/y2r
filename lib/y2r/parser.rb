@@ -53,13 +53,13 @@ module Y2R
       :yeunary    => { :type => :wrapper }
     }
 
-    def parse(input)
-      xml_to_ast(ycp_to_xml(input))
+    def parse(input, options = {})
+      xml_to_ast(ycp_to_xml(input, options))
     end
 
     private
 
-    def ycp_to_xml(ycp)
+    def ycp_to_xml(ycp, options)
       ycp_file = Tempfile.new("y2r")
       begin
         begin
@@ -72,7 +72,12 @@ module Y2R
         xml_file.close
         begin
           begin
-            Cheetah.run("ycpc", "-c", "-x", "-o", xml_file.path, ycp_file.path)
+            cmd = "ycpc", "-c", "-x", "-o", xml_file.path
+            cmd << '--module-path' << options[:module_path] if options[:module_path]
+            cmd << '--include-path' << options[:include_path] if options[:include_path]
+            cmd << ycp_file.path
+
+            Cheetah.run(cmd)
           rescue Cheetah::ExecutionFailed => e
             raise SyntaxError.new(e.stderr)
           end
