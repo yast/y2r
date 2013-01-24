@@ -8,48 +8,54 @@ module Y2R
       end
     end
 
+    class Node < OpenStruct
+      def indent(s)
+        s.gsub(/^/, "  ")
+      end
+    end
+
     # Sorted alphabetically.
 
-    class Args < OpenStruct
+    class Args < Node
       def to_ruby
         children.map(&:to_ruby).join(", ")
       end
     end
 
-    class Assign < OpenStruct
+    class Assign < Node
       def to_ruby
         "#{name} = #{child.to_ruby}"
       end
     end
 
-    class Block < OpenStruct
+    class Block < Node
       def to_ruby
         statements.to_ruby
       end
     end
 
-    class Builtin < OpenStruct
+    class Builtin < Node
       def to_ruby
         "YCP::Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
       end
     end
 
-    class BuiltinElement < OpenStruct
+    class BuiltinElement < Node
       include SimpleWrapper
     end
 
-    class Call < OpenStruct
+    class Call < Node
       def to_ruby
         # TODO: YCP uses call-by-value.
         "#{ns}.#{name}(#{child ? child.to_ruby : ""})"
       end
     end
 
-    class Cond < OpenStruct
+    class Cond < Node
       include SimpleWrapper
     end
 
-    class Const < OpenStruct
+    class Const < Node
       def to_ruby
         case type
           when "void"
@@ -70,19 +76,19 @@ module Y2R
       end
     end
 
-    class Do < OpenStruct
+    class Do < Node
       include SimpleWrapper
     end
 
-    class Else < OpenStruct
+    class Else < Node
       include SimpleWrapper
     end
 
-    class Expr < OpenStruct
+    class Expr < Node
       include SimpleWrapper
     end
 
-    class If < OpenStruct
+    class If < Node
       def to_ruby
         if else_
           [
@@ -108,33 +114,29 @@ module Y2R
       def cond;  children[0]; end
       def then_; children[1]; end
       def else_; children[2]; end
-
-      def indent(s)
-        s.gsub(/^/, "  ")
-      end
     end
 
-    class Import < OpenStruct
+    class Import < Node
       def to_ruby
         "YCP.import('#{name}')" # TODO: Implement escaping.
       end
     end
 
-    class Key < OpenStruct
+    class Key < Node
       include SimpleWrapper
     end
 
-    class List < OpenStruct
+    class List < Node
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
       end
     end
 
-    class ListElement < OpenStruct
+    class ListElement < Node
       include SimpleWrapper
     end
 
-    class Map < OpenStruct
+    class Map < Node
       def to_ruby
         if !children.empty?
           "{ " + children.map(&:to_ruby).join(", ") + " }"
@@ -144,43 +146,43 @@ module Y2R
       end
     end
 
-    class MapElement < OpenStruct
+    class MapElement < Node
       def to_ruby
         "#{key.to_ruby} => #{value.to_ruby}"
       end
     end
 
-    class Statements < OpenStruct
+    class Statements < Node
       def to_ruby
         children.map(&:to_ruby).join("\n")
       end
     end
 
-    class Stmt < OpenStruct
+    class Stmt < Node
       include SimpleWrapper
     end
 
-    class Symbol < OpenStruct
+    class Symbol < Node
       def to_ruby
         return ""
       end
     end
 
-    class Symbols < OpenStruct
+    class Symbols < Node
       def to_ruby
         children.map(&:to_ruby).join("")
       end
     end
 
-    class Then < OpenStruct
+    class Then < Node
       include SimpleWrapper
     end
 
-    class Value < OpenStruct
+    class Value < Node
       include SimpleWrapper
     end
 
-    class While < OpenStruct
+    class While < Node
       def to_ruby
         [
           "while #{cond.to_ruby}",
@@ -188,19 +190,13 @@ module Y2R
           "end"
         ].join("\n")
       end
-
-      private
-
-      def indent(s)
-        s.gsub(/^/, "  ")
-      end
     end
 
-    class YCP < OpenStruct
+    class YCP < Node
       include SimpleWrapper
     end
 
-    class YETerm < OpenStruct
+    class YETerm < Node
       def to_ruby
         # TODO: Implement escaping.
         if !children.empty?
@@ -211,7 +207,7 @@ module Y2R
       end
     end
 
-    class YETermElement < OpenStruct
+    class YETermElement < Node
       include SimpleWrapper
     end
   end
