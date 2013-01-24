@@ -32,6 +32,36 @@ module Y2R::AST
 
   describe Block do
     describe "#to_ruby" do
+      it "emits correct code for def blocks" do
+        node = Block.new(
+          :kind       => "def",
+          :statements => Statements.new(
+            :children => [
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "i",
+                  :child => Const.new(:type => "int", :value => "42")
+                )
+              ),
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "j",
+                  :child => Const.new(:type => "int", :value => "43")
+                )
+              ),
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "k",
+                  :child => Const.new(:type => "int", :value => "44")
+                )
+              )
+            ]
+          )
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+
       it "emits correct code for file blocks" do
         node = Block.new(
           :kind       => "file",
@@ -60,6 +90,21 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+
+      it "emits correct code for unspec blocks" do
+        node = Block.new(
+          :kind    => "unspec",
+          :symbols => Symbols.new(
+            :children => [
+              Symbol.new(:name => "a"),
+              Symbol.new(:name => "b"),
+              Symbol.new(:name => "c")
+            ]
+          )
+        )
+
+        node.to_ruby.should == "a, b, c"
       end
     end
   end
@@ -208,6 +253,27 @@ module Y2R::AST
     end
   end
 
+  describe Declaration do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Declaration.new(
+          :child => Block.new(
+            :kind    => "unspec",
+            :symbols => Symbols.new(
+              :children => [
+                Symbol.new(:name => "a"),
+                Symbol.new(:name => "b"),
+                Symbol.new(:name => "c")
+              ]
+            )
+          )
+        )
+
+        node.to_ruby.should == "a, b, c"
+      end
+    end
+  end
+
   describe Do do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -244,6 +310,62 @@ module Y2R::AST
         node = False.new(:child => Const.new(:type => "int", :value => "42"))
 
         node.to_ruby.should == "42"
+      end
+    end
+  end
+
+  describe FunDef do
+    describe "#to_ruby" do
+      it "emits correct code for fundefs without arguments" do
+        node = FunDef.new(
+          :name        => "f",
+          :block       => Block.new(
+            :kind       => "file",
+            :statements => Statements.new(
+              :children => [
+                Stmt.new(
+                  :child => Return.new(
+                    :child => Const.new(:type => "int", :value => "42")
+                  )
+                )
+              ]
+            )
+          )
+        )
+
+        node.to_ruby.should == "def f()\n  return 42\nend"
+      end
+
+      it "emits correct code for fundefs with arguments" do
+        node = FunDef.new(
+          :name        => "f",
+          :declaration => Declaration.new(
+            :child => Block.new(
+              :kind    => "unspec",
+              :symbols => Symbols.new(
+                :children => [
+                  Symbol.new(:name => "a"),
+                  Symbol.new(:name => "b"),
+                  Symbol.new(:name => "c")
+                ]
+              )
+            )
+          ),
+          :block       => Block.new(
+            :kind       => "file",
+            :statements => Statements.new(
+              :children => [
+                Stmt.new(
+                  :child => Return.new(
+                    :child => Const.new(:type => "int", :value => "42")
+                  )
+                )
+              ]
+            )
+          )
+        )
+
+        node.to_ruby.should == "def f(a, b, c)\n  return 42\nend"
       end
     end
   end
@@ -383,6 +505,24 @@ module Y2R::AST
     end
   end
 
+  describe Return do
+    describe "#to_ruby" do
+      it "emits correct code for a return without a value" do
+        node = Return.new
+
+        node.to_ruby.should == "return"
+      end
+
+      it "emits correct code for a return with a value" do
+        node = Return.new(
+          :child => Const.new(:type => "int", :value => "42")
+        )
+
+        node.to_ruby.should == "return 42"
+      end
+    end
+  end
+
   describe Rhs do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -442,9 +582,9 @@ module Y2R::AST
   describe Symbol do
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Symbol.new
+        node = Symbol.new(:name => "s")
 
-        node.to_ruby.should == ""
+        node.to_ruby.should == "s"
       end
     end
   end
@@ -452,9 +592,15 @@ module Y2R::AST
   describe Symbols do
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Symbols.new(:children => [Symbol.new, Symbol.new, Symbol.new])
+        node = Symbols.new(
+          :children => [
+            Symbol.new(:name => "a"),
+            Symbol.new(:name => "b"),
+            Symbol.new(:name => "c")
+          ]
+        )
 
-        node.to_ruby.should == ""
+        node.to_ruby.should == "a, b, c"
       end
     end
   end

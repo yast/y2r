@@ -31,8 +31,10 @@ module Y2R
     class Block < Node
       def to_ruby
         case kind
-          when "file"
+          when "def","file"
             statements.to_ruby
+          when "unspec"
+            symbols.to_ruby
           else
             raise "Unknown block kind: #{kind}."
         end
@@ -96,6 +98,10 @@ module Y2R
       end
     end
 
+    class Declaration < Node
+      include SimpleWrapper
+    end
+
     class Do < Node
       include SimpleWrapper
     end
@@ -110,6 +116,16 @@ module Y2R
 
     class False < Node
       include SimpleWrapper
+    end
+
+    class FunDef < Node
+      def to_ruby
+        [
+          "def #{name}(#{declaration ? declaration.to_ruby : ""})",
+          indent(block.to_ruby),
+          "end"
+        ].join("\n")
+      end
     end
 
     class If < Node
@@ -180,6 +196,16 @@ module Y2R
       end
     end
 
+    class Return < Node
+      def to_ruby
+        if child
+          "return #{child.to_ruby}"
+        else
+          "return"
+        end
+      end
+    end
+
     class Rhs < Node
       include SimpleWrapper
     end
@@ -196,13 +222,13 @@ module Y2R
 
     class Symbol < Node
       def to_ruby
-        return ""
+        name
       end
     end
 
     class Symbols < Node
       def to_ruby
-        children.map(&:to_ruby).join("")
+        children.map(&:to_ruby).join(", ")
       end
     end
 

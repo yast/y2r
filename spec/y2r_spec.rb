@@ -309,6 +309,24 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles function declarations correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer f(integer a, integer b, integer c) {
+              return 42;
+            }
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          def f(a, b, c)
+            return 42
+          end
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles imports correctly" do
         ycp_code = cleanup(<<-EOT)
           {

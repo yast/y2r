@@ -16,9 +16,9 @@ module Y2R
             :symbols    => AST::Symbols.new(
               :children => [
                 AST::Symbol.new,
-                AST::Symbol.new,
-                AST::Symbol.new,
-                AST::Symbol.new
+                AST::Symbol.new(:name => "i"),
+                AST::Symbol.new(:name => "j"),
+                AST::Symbol.new(:name => "k")
               ]
             ),
             :statements => AST::Statements.new(

@@ -9,16 +9,17 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :args       => { :type => :collection },
-      :assign     => { :type => :wrapper },
-      :block      => { :type => :struct },
-      :builtin    => { :type => :collection, :create_context => :builtin },
-      :call       => { :type => :wrapper },
-      :compare    => { :type => :struct },
-      :cond       => { :type => :wrapper },
-      :const      => { :type => :leaf },
-      :do         => { :type => :wrapper },
-      :element    => {
+      :args        => { :type => :collection },
+      :assign      => { :type => :wrapper },
+      :block       => { :type => :struct },
+      :builtin     => { :type => :collection, :create_context => :builtin },
+      :call        => { :type => :wrapper },
+      :compare     => { :type => :struct },
+      :cond        => { :type => :wrapper },
+      :const       => { :type => :leaf },
+      :declaration => { :type => :wrapper },
+      :do          => { :type => :wrapper },
+      :element     => {
         :contexts => {
           :builtin => { :type => :wrapper },
           :list    => { :type => :wrapper },
@@ -26,31 +27,42 @@ module Y2R
           :yeterm  => { :type => :wrapper }
         }
       },
-      :else       => { :type => :wrapper },
-      :expr       => { :type => :wrapper },
-      :false      => { :type => :wrapper },
-      :if         => { :type => :collection },
-      :import     => { :type => :leaf },
-      :key        => { :type => :wrapper },
-      :lhs        => { :type => :wrapper },
-      :list       => { :type => :collection, :create_context => :list, :filter => [:size] },
-      :map        => { :type => :collection, :create_context => :map, :filter => [:size] },
-      :rhs        => { :type => :wrapper },
-      :statements => { :type => :collection },
-      :stmt       => { :type => :wrapper },
-      :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
-      :symbols    => { :type => :collection },
-      :then       => { :type => :wrapper },
-      :true       => { :type => :wrapper },
-      :value      => { :type => :wrapper },
-      :variable   => { :type => :leaf },
-      :while      => { :type => :struct },
-      :ycp        => { :type => :wrapper, :filter => [:version] },
-      :yebinary   => { :type => :collection },
-      :yebracket  => { :type => :collection },
-      :yeterm     => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
-      :yetriple   => { :type => :struct },
-      :yeunary    => { :type => :wrapper }
+      :else        => { :type => :wrapper },
+      :expr        => { :type => :wrapper },
+      :false       => { :type => :wrapper },
+      :fun_def     => { :type => :struct },
+      :if          => { :type => :collection },
+      :import      => { :type => :leaf },
+      :key         => { :type => :wrapper },
+      :lhs         => { :type => :wrapper },
+      :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
+      :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
+      :return      => { :type => :wrapper },
+      :rhs         => { :type => :wrapper },
+      :statements  => { :type => :collection },
+      :stmt        => { :type => :wrapper },
+      :symbol      => {
+        :type   => :leaf,
+        :filter => proc { |e|
+          if e.attributes["category"] == "filename"
+            [:global, :category, :type, :name]
+          else
+            [:global, :category, :type]
+          end
+        }
+      },
+      :symbols     => { :type => :collection },
+      :then        => { :type => :wrapper },
+      :true        => { :type => :wrapper },
+      :value       => { :type => :wrapper },
+      :variable    => { :type => :leaf },
+      :while       => { :type => :struct },
+      :ycp         => { :type => :wrapper, :filter => [:version] },
+      :yebinary    => { :type => :collection },
+      :yebracket   => { :type => :collection },
+      :yeterm      => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
+      :yetriple    => { :type => :struct },
+      :yeunary     => { :type => :wrapper }
     }
 
     def parse(input, options = {})
@@ -113,7 +125,11 @@ module Y2R
       class_name_base = classify(element.name)
       node = AST.const_get(class_name_prefix + class_name_base).new
 
-      filter = info[:filter] || []
+      filter = if info[:filter]
+        info[:filter].is_a?(Proc) ? info[:filter].call(element) : info[:filter]
+      else
+        []
+      end
 
       element.attributes.each do |name, value|
         node.send("#{name}=", value) unless filter.include?(name.to_sym)
@@ -149,7 +165,7 @@ module Y2R
     end
 
     def classify(s)
-      s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }
+      s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }.gsub(/_./) { |s| s[1].upcase }
     end
   end
 end
