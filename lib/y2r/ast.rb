@@ -205,6 +205,12 @@ module Y2R
       include SimpleWrapper
     end
 
+    class Variable < Node
+      def to_ruby
+        name
+      end
+    end
+
     class While < Node
       def to_ruby
         [

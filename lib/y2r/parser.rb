@@ -41,6 +41,7 @@ module Y2R
       :symbols    => { :type => :collection },
       :then       => { :type => :wrapper },
       :value      => { :type => :wrapper },
+      :variable   => { :type => :leaf },
       :while      => { :type => :struct },
       :ycp        => { :type => :wrapper, :filter => [:version] },
       :yebinary   => { :type => :collection },

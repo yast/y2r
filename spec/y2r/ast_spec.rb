@@ -468,6 +468,16 @@ module Y2R::AST
     end
   end
 
+  describe Variable do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Variable.new(:name => "v")
+
+        node.to_ruby.should == "v"
+      end
+    end
+  end
+
   describe While do
     describe "#to_ruby" do
       it "emits correct code" do

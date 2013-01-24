@@ -149,6 +149,22 @@ describe Y2R do
     end
 
     describe "expressions" do
+      it "compiles variables" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer i = 42;
+            integer j = i;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          i = 42
+          j = i
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles comparison operators" do
         ycp_code = cleanup(<<-EOT)
           {
