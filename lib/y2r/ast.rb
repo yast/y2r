@@ -31,7 +31,7 @@ module Y2R
     class Block < Node
       def to_ruby
         case kind
-          when "def","file"
+          when "def","file", "stmt"
             statements.to_ruby
           when "unspec"
             symbols.to_ruby

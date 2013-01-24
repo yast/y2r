@@ -92,6 +92,36 @@ module Y2R::AST
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
       end
 
+      it "emits correct code for stmt blocks" do
+        node = Block.new(
+          :kind       => "stmt",
+          :statements => Statements.new(
+            :children => [
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "i",
+                  :child => Const.new(:type => "int", :value => "42")
+                )
+              ),
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "j",
+                  :child => Const.new(:type => "int", :value => "43")
+                )
+              ),
+              Stmt.new(
+                :child => Assign.new(
+                  :name  => "k",
+                  :child => Const.new(:type => "int", :value => "44")
+                )
+              )
+            ]
+          )
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+
       it "emits correct code for unspec blocks" do
         node = Block.new(
           :kind    => "unspec",
