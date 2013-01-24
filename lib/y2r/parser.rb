@@ -43,6 +43,7 @@ module Y2R
       :value      => { :type => :wrapper },
       :while      => { :type => :struct },
       :ycp        => { :type => :wrapper, :filter => [:version] },
+      :yebinary   => { :type => :collection },
       :yeterm     => { :type => :collection, :create_context => :yeterm, :filter => [:args] }
     }
 

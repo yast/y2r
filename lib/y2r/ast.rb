@@ -219,6 +219,35 @@ module Y2R
       include SimpleWrapper
     end
 
+    class YEBinary < Node
+      OPS_TO_METHODS = {
+        "+"  => "add",
+        "-"  => "subtract",
+        "*"  => "multiply",
+        "/"  => "divide",
+        "%"  => "modulo",
+        "&"  => "bitwise_and",
+        "|"  => "bitwise_or",
+        "^"  => "bitwise_xor",
+        "<<" => "shift_left",
+        ">>" => "shift_right",
+        "&&" => "logical_and",
+        "||" => "logical_or"
+      }
+
+      def to_ruby
+        "Ops.#{OPS_TO_METHODS[name]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
+      end
+
+      private
+
+      # The YEBinary class is built as a collection because the XML it is
+      # constructed from is structured that way. Let's define helpers to hide
+      # that a bit.
+      def lhs; children[0]; end
+      def rhs; children[1]; end
+    end
+
     class YETerm < Node
       def to_ruby
         # TODO: Implement escaping.

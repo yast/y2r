@@ -493,6 +493,41 @@ module Y2R::AST
     end
   end
 
+  describe YEBinary do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        lhs = Const.new(:type => "int", :value => "42")
+        rhs = Const.new(:type => "int", :value => "43")
+
+        node_add         = YEBinary.new(:name => "+",  :lhs => lhs, :rhs => rhs)
+        node_subtract    = YEBinary.new(:name => "-",  :lhs => lhs, :rhs => rhs)
+        node_multiply    = YEBinary.new(:name => "*",  :lhs => lhs, :rhs => rhs)
+        node_divide      = YEBinary.new(:name => "/",  :lhs => lhs, :rhs => rhs)
+        node_modulo      = YEBinary.new(:name => "%",  :lhs => lhs, :rhs => rhs)
+        node_bitwise_and = YEBinary.new(:name => "&",  :lhs => lhs, :rhs => rhs)
+        node_bitwise_or  = YEBinary.new(:name => "|" , :lhs => lhs, :rhs => rhs)
+        node_bitwise_xor = YEBinary.new(:name => "^" , :lhs => lhs, :rhs => rhs)
+        node_shift_left  = YEBinary.new(:name => "<<", :lhs => lhs, :rhs => rhs)
+        node_shift_right = YEBinary.new(:name => ">>", :lhs => lhs, :rhs => rhs)
+        node_logical_and = YEBinary.new(:name => "&&", :lhs => lhs, :rhs => rhs)
+        node_logical_or  = YEBinary.new(:name => "||", :lhs => lhs, :rhs => rhs)
+
+        node_add.to_ruby.should         == "Ops.add(42, 43)"
+        node_subtract.to_ruby.should    == "Ops.subtract(42, 43)"
+        node_multiply.to_ruby.should    == "Ops.multiply(42, 43)"
+        node_divide.to_ruby.should      == "Ops.divide(42, 43)"
+        node_modulo.to_ruby.should      == "Ops.modulo(42, 43)"
+        node_bitwise_and.to_ruby.should == "Ops.bitwise_and(42, 43)"
+        node_bitwise_or.to_ruby.should  == "Ops.bitwise_or(42, 43)"
+        node_bitwise_xor.to_ruby.should == "Ops.bitwise_xor(42, 43)"
+        node_shift_left.to_ruby.should  == "Ops.shift_left(42, 43)"
+        node_shift_right.to_ruby.should == "Ops.shift_right(42, 43)"
+        node_logical_and.to_ruby.should == "Ops.logical_and(42, 43)"
+        node_logical_or.to_ruby.should  == "Ops.logical_or(42, 43)"
+      end
+    end
+  end
+
   describe YETerm do
     describe "#to_ruby" do
       it "emits correct code for empty terms" do
