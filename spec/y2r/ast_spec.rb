@@ -558,6 +558,32 @@ module Y2R::AST
     end
   end
 
+  describe YEBracket do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YEBracket.new(
+          :children => [
+            List.new(
+              :children => [
+                ListElement.new(:child => Const.new(:type => "int", :value => "42")),
+                ListElement.new(:child => Const.new(:type => "int", :value => "43")),
+                ListElement.new(:child => Const.new(:type => "int", :value => "44"))
+              ]
+            ),
+            List.new(
+              :children => [
+                ListElement.new(:child => Const.new(:type => "int", :value => "1")),
+              ]
+            ),
+            Const.new(:type => "int", :value => "0")
+          ]
+        )
+
+        node.to_ruby.should == "Ops.index([42, 43, 44], [1], 0)"
+      end
+    end
+  end
+
   describe YETerm do
     describe "#to_ruby" do
       it "emits correct code for empty terms" do

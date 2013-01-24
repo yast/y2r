@@ -262,6 +262,19 @@ module Y2R
       def rhs; children[1]; end
     end
 
+    class YEBracket < Node
+      def to_ruby
+        "Ops.index(#{value.to_ruby}, #{index.to_ruby}, #{default.to_ruby})"
+      end
+
+      # The YEBracket class is built as a collection because the XML it is
+      # constructed from is structured that way. Let's define helpers to hide
+      # that a bit.
+      def value;   children[0]; end
+      def index;   children[1]; end
+      def default; children[2]; end
+    end
+
     class YETerm < Node
       def to_ruby
         # TODO: Implement escaping.

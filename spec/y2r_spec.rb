@@ -226,6 +226,20 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles the index operator" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer i = [42, 43, 44][1]:0;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          i = Ops.index([42, 43, 44], [1], 0)
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles builtin calls" do
         ycp_code = cleanup(<<-EOT)
           {
