@@ -262,5 +262,17 @@ module Y2R
     class YETermElement < Node
       include SimpleWrapper
     end
+
+    class YEUnary < Node
+      OPS_TO_METHODS = {
+        "-"  => "unary_minus",
+        "~"  => "bitwise_not",
+        "!"  => "logical_not"
+      }
+
+      def to_ruby
+        "Ops.#{OPS_TO_METHODS[name]}(#{child.to_ruby})"
+      end
+    end
   end
 end

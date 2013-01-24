@@ -163,6 +163,20 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles unary operators" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer i = ~42;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          i = Ops.bitwise_not(42)
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles binary operators" do
         ycp_code = cleanup(<<-EOT)
           {

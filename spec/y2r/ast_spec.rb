@@ -568,4 +568,20 @@ module Y2R::AST
       end
     end
   end
+
+  describe YEUnary do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        child = Const.new(:type => "int", :value => "42")
+
+        node_unary_minus = YEUnary.new(:name => "-", :child => child)
+        node_bitwise_not = YEUnary.new(:name => "~", :child => child)
+        node_logical_not = YEUnary.new(:name => "!", :child => child)
+
+        node_unary_minus.to_ruby.should == "Ops.unary_minus(42)"
+        node_bitwise_not.to_ruby.should == "Ops.bitwise_not(42)"
+        node_logical_not.to_ruby.should == "Ops.logical_not(42)"
+      end
+    end
+  end
 end
