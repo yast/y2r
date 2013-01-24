@@ -182,12 +182,15 @@ describe Y2R do
       it "compiles unary operators" do
         ycp_code = cleanup(<<-EOT)
           {
-            integer i = ~42;
+            # Using a variable defeats constant propagation.
+            integer i = 42;
+            integer j = -i;
           }
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          i = Ops.bitwise_not(42)
+          i = 42
+          j = Ops.unary_minus(i)
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
