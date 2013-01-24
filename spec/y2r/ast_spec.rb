@@ -124,6 +124,16 @@ module Y2R::AST
     end
   end
 
+  describe Cond do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Cond.new(:child => Const.new(:type => "bool", :value => "true"))
+
+        node.to_ruby.should == "true"
+      end
+    end
+  end
+
   describe Const do
     describe "#to_ruby" do
       it "emits correct code for void constants" do
@@ -170,6 +180,16 @@ module Y2R::AST
         node = Const.new(:type => "path", :value => ".abcd")
 
         node.to_ruby.should == "YCP::Path.new('.abcd')"
+      end
+    end
+  end
+
+  describe Do do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Do.new(:child => Call.new(:ns => "n", :name => "f"))
+
+        node.to_ruby.should == "n.f()"
       end
     end
   end
@@ -401,6 +421,21 @@ module Y2R::AST
         node = Value.new(:child => Const.new(:type => "int", :value => "42"))
 
         node.to_ruby.should == "42"
+      end
+    end
+  end
+
+  describe While do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = While.new(
+          :cond => Cond.new(
+            :child => Const.new(:type => "bool", :value => "true")
+          ),
+          :do   => Do.new(:child => Call.new(:ns => "n", :name => "f"))
+        )
+
+        node.to_ruby.should == "while true\n  n.f()\nend"
       end
     end
   end

@@ -41,6 +41,12 @@ module Y2R
       end
     end
 
+    class Cond < OpenStruct
+      def to_ruby
+        child.to_ruby
+      end
+    end
+
     class Const < OpenStruct
       def to_ruby
         case type
@@ -59,6 +65,12 @@ module Y2R
           else
             raise "Unknown const type: #{type}."
         end
+      end
+    end
+
+    class Do < OpenStruct
+      def to_ruby
+        child.to_ruby
       end
     end
 
@@ -179,6 +191,22 @@ module Y2R
     class Value < OpenStruct
       def to_ruby
         child.to_ruby
+      end
+    end
+
+    class While < OpenStruct
+      def to_ruby
+        [
+          "while #{cond.to_ruby}",
+          indent(self.do.to_ruby),
+          "end"
+        ].join("\n")
+      end
+
+      private
+
+      def indent(s)
+        s.gsub(/^/, "  ")
       end
     end
 

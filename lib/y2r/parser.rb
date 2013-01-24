@@ -14,7 +14,9 @@ module Y2R
       :block      => { :type => :struct },
       :builtin    => { :type => :collection, :create_context => :builtin },
       :call       => { :type => :wrapper },
+      :cond       => { :type => :wrapper },
       :const      => { :type => :leaf },
+      :do         => { :type => :wrapper },
       :element    => {
         :contexts => {
           :builtin => { :type => :wrapper },
@@ -36,6 +38,7 @@ module Y2R
       :symbols    => { :type => :collection },
       :then       => { :type => :wrapper },
       :value      => { :type => :wrapper },
+      :while      => { :type => :struct },
       :ycp        => { :type => :wrapper, :filter => [:version] },
       :yeterm     => { :type => :collection, :create_context => :yeterm, :filter => [:args] }
     }

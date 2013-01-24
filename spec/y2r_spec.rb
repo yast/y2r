@@ -201,6 +201,23 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles while statements correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            while (true)
+              y2milestone("abcd");
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          while true
+            YCP::Builtins.y2milestone('abcd')
+          end
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles imports correctly" do
         ycp_code = cleanup(<<-EOT)
           {
