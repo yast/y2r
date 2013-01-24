@@ -99,7 +99,7 @@ describe Y2R do
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          p = YCP::Path.new('.abcd')
+          p = Path.new('.abcd')
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
@@ -141,7 +141,7 @@ describe Y2R do
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          t = YCP::Term.new(:a, 42, 43, 44)
+          t = Term.new(:a, 42, 43, 44)
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
@@ -157,7 +157,7 @@ describe Y2R do
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          YCP::Builtins.y2milestone('abcd')
+          Builtins.y2milestone('abcd')
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
@@ -171,8 +171,8 @@ describe Y2R do
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          YCP.import('UI')
-          UI.OpenDialog(YCP::Term.new(:Label, 'Hello, world!'))
+          import('UI')
+          UI.OpenDialog(Term.new(:Label, 'Hello, world!'))
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
@@ -192,9 +192,9 @@ describe Y2R do
 
         ruby_code = cleanup(<<-EOT)
           if true
-            YCP::Builtins.y2milestone('abcd')
+            Builtins.y2milestone('abcd')
           else
-            YCP::Builtins.y2milestone('efgh')
+            Builtins.y2milestone('efgh')
           end
         EOT
 
@@ -211,7 +211,7 @@ describe Y2R do
 
         ruby_code = cleanup(<<-EOT)
           while true
-            YCP::Builtins.y2milestone('abcd')
+            Builtins.y2milestone('abcd')
           end
         EOT
 
@@ -226,7 +226,7 @@ describe Y2R do
         EOT
 
         ruby_code = cleanup(<<-EOT)
-          YCP.import('String')
+          import('String')
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code

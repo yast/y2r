@@ -68,7 +68,7 @@ module Y2R::AST
       it "emits correct code for builtins with no arguments" do
         node = Builtin.new(:name => "b", :children => [])
 
-        node.to_ruby.should == "YCP::Builtins.b()"
+        node.to_ruby.should == "Builtins.b()"
       end
 
       it "emits correct code for builtins with arguments" do
@@ -81,7 +81,7 @@ module Y2R::AST
           ]
         )
 
-        node.to_ruby.should == "YCP::Builtins.b(42, 43, 44)"
+        node.to_ruby.should == "Builtins.b(42, 43, 44)"
       end
     end
   end
@@ -179,7 +179,7 @@ module Y2R::AST
       it "emits correct code for path constants" do
         node = Const.new(:type => "path", :value => ".abcd")
 
-        node.to_ruby.should == "YCP::Path.new('.abcd')"
+        node.to_ruby.should == "Path.new('.abcd')"
       end
     end
   end
@@ -246,7 +246,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Import.new(:name => "M")
 
-        node.to_ruby.should == "YCP.import('M')"
+        node.to_ruby.should == "import('M')"
       end
     end
   end
@@ -455,7 +455,7 @@ module Y2R::AST
       it "emits correct code for empty terms" do
         node = YETerm.new(:name => "a", :children => [])
 
-        node.to_ruby.should == "YCP::Term.new(:a)"
+        node.to_ruby.should == "Term.new(:a)"
       end
 
       it "emits correct code for non-empty terms" do
@@ -474,7 +474,7 @@ module Y2R::AST
           ]
         )
 
-        node.to_ruby.should == "YCP::Term.new(:a, 42, 43, 44)"
+        node.to_ruby.should == "Term.new(:a, 42, 43, 44)"
       end
     end
   end

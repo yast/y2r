@@ -36,7 +36,7 @@ module Y2R
 
     class Builtin < Node
       def to_ruby
-        "YCP::Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
+        "Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
       end
     end
 
@@ -69,7 +69,7 @@ module Y2R
           when "string"
             "'#{value}'" # TODO: Implement escaping.
           when "path"
-            "YCP::Path.new('#{value}')" # TODO: Implement escaping.
+            "Path.new('#{value}')" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
         end
@@ -118,7 +118,7 @@ module Y2R
 
     class Import < Node
       def to_ruby
-        "YCP.import('#{name}')" # TODO: Implement escaping.
+        "import('#{name}')" # TODO: Implement escaping.
       end
     end
 
@@ -200,9 +200,9 @@ module Y2R
       def to_ruby
         # TODO: Implement escaping.
         if !children.empty?
-          "YCP::Term.new(:#{name}, " + children.map(&:to_ruby).join(", ") + ")"
+          "Term.new(:#{name}, " + children.map(&:to_ruby).join(", ") + ")"
         else
-          "YCP::Term.new(:#{name})"
+          "Term.new(:#{name})"
         end
       end
     end
