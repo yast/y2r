@@ -279,7 +279,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Import.new(:name => "M")
 
-        node.to_ruby.should == "import('M')"
+        node.to_ruby.should == "YCP.import('M')"
       end
     end
   end
