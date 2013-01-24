@@ -180,6 +180,27 @@ describe Y2R do
     end
 
     describe "statements" do
+      it "compiles if statements correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            if (true)
+              y2milestone("abcd");
+            else
+              y2milestone("efgh");
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          if true
+            YCP::Builtins.y2milestone('abcd')
+          else
+            YCP::Builtins.y2milestone('efgh')
+          end
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles imports correctly" do
         ycp_code = cleanup(<<-EOT)
           {

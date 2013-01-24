@@ -174,12 +174,49 @@ module Y2R::AST
     end
   end
 
+  describe Else do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Else.new(:child => Call.new(:ns => "n", :name => "f"))
+
+        node.to_ruby.should == "n.f()"
+      end
+    end
+  end
+
   describe Expr do
     describe "#to_ruby" do
       it "emits correct code" do
         node = Expr.new(:child => Call.new(:ns => "n", :name => "f"))
 
         node.to_ruby.should == "n.f()"
+      end
+    end
+  end
+
+  describe If do
+    describe "#to_ruby" do
+      it "emits correct code for ifs without else" do
+        node = If.new(
+          :children => [
+            Const.new(:type => "bool", :value => "true"),
+            Then.new(:child => Call.new(:ns => "n", :name => "f"))
+          ]
+        )
+
+        node.to_ruby.should == "if true\n  n.f()\nend"
+      end
+
+      it "emits correct code for ifs with else" do
+        node = If.new(
+          :children => [
+            Const.new(:type => "bool", :value => "true"),
+            Then.new(:child => Call.new(:ns => "n", :name => "f")),
+            Else.new(:child => Call.new(:ns => "n", :name => "f"))
+          ]
+        )
+
+        node.to_ruby.should == "if true\n  n.f()\nelse\n  n.f()\nend"
       end
     end
   end
@@ -344,6 +381,16 @@ module Y2R::AST
         node = Symbols.new(:children => [Symbol.new, Symbol.new, Symbol.new])
 
         node.to_ruby.should == ""
+      end
+    end
+  end
+
+  describe Then do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Then.new(:child => Call.new(:ns => "n", :name => "f"))
+
+        node.to_ruby.should == "n.f()"
       end
     end
   end

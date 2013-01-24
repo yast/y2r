@@ -62,9 +62,47 @@ module Y2R
       end
     end
 
+    class Else < OpenStruct
+      def to_ruby
+        child.to_ruby
+      end
+    end
+
     class Expr < OpenStruct
       def to_ruby
         child.to_ruby
+      end
+    end
+
+    class If < OpenStruct
+      def to_ruby
+        if else_
+          [
+            "if #{cond.to_ruby}",
+            indent(then_.to_ruby),
+            "else",
+            indent(else_.to_ruby),
+            "end"
+          ].join("\n")
+        else
+          [
+            "if #{cond.to_ruby}",
+            indent(then_.to_ruby),
+            "end"
+          ].join("\n")
+        end
+      end
+
+      private
+
+      # The If class is built as a collection because the XML it is constructed
+      # from is structured that way. Let's define helpers to hide that a bit.
+      def cond;  children[0]; end
+      def then_; children[1]; end
+      def else_; children[2]; end
+
+      def indent(s)
+        s.gsub(/^/, "  ")
       end
     end
 
@@ -129,6 +167,12 @@ module Y2R
     class Symbols < OpenStruct
       def to_ruby
         children.map(&:to_ruby).join("")
+      end
+    end
+
+    class Then < OpenStruct
+      def to_ruby
+        child.to_ruby
       end
     end
 
