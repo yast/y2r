@@ -22,6 +22,18 @@ module Y2R
       end
     end
 
+    class Builtin < OpenStruct
+      def to_ruby
+        "YCP::Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
+      end
+    end
+
+    class BuiltinElement < OpenStruct
+      def to_ruby
+        child.to_ruby
+      end
+    end
+
     class Call < OpenStruct
       def to_ruby
         # TODO: YCP uses call-by-value.

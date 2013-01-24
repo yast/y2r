@@ -63,6 +63,41 @@ module Y2R::AST
     end
   end
 
+  describe Builtin do
+    describe "#to_ruby" do
+      it "emits correct code for builtins with no arguments" do
+        node = Builtin.new(:name => "b", :children => [])
+
+        node.to_ruby.should == "YCP::Builtins.b()"
+      end
+
+      it "emits correct code for builtins with arguments" do
+        node = Builtin.new(
+          :name     => "b",
+          :children => [
+            BuiltinElement.new(:child => Const.new(:type => "int", :value => "42")),
+            BuiltinElement.new(:child => Const.new(:type => "int", :value => "43")),
+            BuiltinElement.new(:child => Const.new(:type => "int", :value => "44"))
+          ]
+        )
+
+        node.to_ruby.should == "YCP::Builtins.b(42, 43, 44)"
+      end
+    end
+  end
+
+  describe BuiltinElement do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = BuiltinElement.new(
+          :child => Const.new(:type => "int", :value => "42")
+        )
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
   describe Call do
     describe "#to_ruby" do
       it "emits correct code for a call without arguments" do

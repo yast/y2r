@@ -149,6 +149,20 @@ describe Y2R do
     end
 
     describe "expressions" do
+      it "compiles builtin calls" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            y2milestone("abcd");
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          YCP::Builtins.y2milestone('abcd')
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles function calls" do
         ycp_code = cleanup(<<-EOT)
           {

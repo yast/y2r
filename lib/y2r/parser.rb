@@ -12,13 +12,15 @@ module Y2R
       :args       => { :type => :collection },
       :assign     => { :type => :wrapper },
       :block      => { :type => :struct },
+      :builtin    => { :type => :collection, :create_context => :builtin },
       :call       => { :type => :wrapper },
       :const      => { :type => :leaf },
       :element    => {
         :contexts => {
-          :list   => { :type => :wrapper },
-          :map    => { :type => :struct  },
-          :yeterm => { :type => :wrapper }
+          :builtin => { :type => :wrapper },
+          :list    => { :type => :wrapper },
+          :map     => { :type => :struct  },
+          :yeterm  => { :type => :wrapper }
         }
       },
       :expr       => { :type => :wrapper },
