@@ -124,6 +124,29 @@ module Y2R::AST
     end
   end
 
+  describe Compare do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        lhs = Const.new(:type => "int", :value => "42")
+        rhs = Const.new(:type => "int", :value => "43")
+
+        node_equal            = Compare.new(:op => "==", :lhs => lhs, :rhs => rhs)
+        node_not_equal        = Compare.new(:op => "!=", :lhs => lhs, :rhs => rhs)
+        node_less_than        = Compare.new(:op => "<",  :lhs => lhs, :rhs => rhs)
+        node_greater_than     = Compare.new(:op => ">",  :lhs => lhs, :rhs => rhs)
+        node_less_or_equal    = Compare.new(:op => "<=", :lhs => lhs, :rhs => rhs)
+        node_greater_or_equal = Compare.new(:op => ">=", :lhs => lhs, :rhs => rhs)
+
+        node_equal.to_ruby.should            == "Ops.equal(42, 43)"
+        node_not_equal.to_ruby.should        == "Ops.not_equal(42, 43)"
+        node_less_than.to_ruby.should        == "Ops.less_than(42, 43)"
+        node_greater_than.to_ruby.should     == "Ops.greater_than(42, 43)"
+        node_less_or_equal.to_ruby.should    == "Ops.less_or_equal(42, 43)"
+        node_greater_or_equal.to_ruby.should == "Ops.greater_or_equal(42, 43)"
+      end
+    end
+  end
+
   describe Cond do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -261,6 +284,16 @@ module Y2R::AST
     end
   end
 
+  describe Lhs do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Lhs.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
   describe List do
     describe "#to_ruby" do
       it "emits correct code for empty lists" do
@@ -335,6 +368,16 @@ module Y2R::AST
         )
 
         node.to_ruby.should == ":a => 42"
+      end
+    end
+  end
+
+  describe Rhs do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Rhs.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
       end
     end
   end

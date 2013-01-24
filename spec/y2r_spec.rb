@@ -149,6 +149,20 @@ describe Y2R do
     end
 
     describe "expressions" do
+      it "compiles comparison operators" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            boolean b = 42 == 43;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          b = Ops.equal(42, 43)
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles builtin calls" do
         ycp_code = cleanup(<<-EOT)
           {

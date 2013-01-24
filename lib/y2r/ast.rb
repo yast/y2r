@@ -51,6 +51,21 @@ module Y2R
       end
     end
 
+    class Compare < Node
+      OPS_TO_METHODS = {
+        "==" => "equal",
+        "!=" => "not_equal",
+        "<"  => "less_than",
+        ">"  => "greater_than",
+        "<=" => "less_or_equal",
+        ">=" => "greater_or_equal"
+      }
+
+      def to_ruby
+        "Ops.#{OPS_TO_METHODS[op]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
+      end
+    end
+
     class Cond < Node
       include SimpleWrapper
     end
@@ -126,6 +141,10 @@ module Y2R
       include SimpleWrapper
     end
 
+    class Lhs < Node
+      include SimpleWrapper
+    end
+
     class List < Node
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
@@ -150,6 +169,10 @@ module Y2R
       def to_ruby
         "#{key.to_ruby} => #{value.to_ruby}"
       end
+    end
+
+    class Rhs < Node
+      include SimpleWrapper
     end
 
     class Statements < Node
