@@ -2,6 +2,12 @@ require "ostruct"
 
 module Y2R
   module AST
+    module SimpleWrapper
+      def to_ruby
+        child.to_ruby
+      end
+    end
+
     # Sorted alphabetically.
 
     class Args < OpenStruct
@@ -29,9 +35,7 @@ module Y2R
     end
 
     class BuiltinElement < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Call < OpenStruct
@@ -42,9 +46,7 @@ module Y2R
     end
 
     class Cond < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Const < OpenStruct
@@ -69,21 +71,15 @@ module Y2R
     end
 
     class Do < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Else < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Expr < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class If < OpenStruct
@@ -125,9 +121,7 @@ module Y2R
     end
 
     class Key < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class List < OpenStruct
@@ -137,9 +131,7 @@ module Y2R
     end
 
     class ListElement < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Map < OpenStruct
@@ -165,9 +157,7 @@ module Y2R
     end
 
     class Stmt < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Symbol < OpenStruct
@@ -183,15 +173,11 @@ module Y2R
     end
 
     class Then < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class Value < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class While < OpenStruct
@@ -211,9 +197,7 @@ module Y2R
     end
 
     class YCP < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
 
     class YETerm < OpenStruct
@@ -228,9 +212,7 @@ module Y2R
     end
 
     class YETermElement < OpenStruct
-      def to_ruby
-        child.to_ruby
-      end
+      include SimpleWrapper
     end
   end
 end
