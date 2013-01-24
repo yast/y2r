@@ -210,6 +210,22 @@ describe Y2R do
         Y2R.compile(ycp_code).should == ruby_code
       end
 
+      it "compiles a ternary operator" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            boolean b = true;
+            integer i = b ? 42 : 43;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          b = true
+          i = b ? 42 : 43
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
+
       it "compiles builtin calls" do
         ycp_code = cleanup(<<-EOT)
           {

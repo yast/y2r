@@ -28,6 +28,7 @@ module Y2R
       },
       :else       => { :type => :wrapper },
       :expr       => { :type => :wrapper },
+      :false      => { :type => :wrapper },
       :if         => { :type => :collection },
       :import     => { :type => :leaf },
       :key        => { :type => :wrapper },
@@ -40,12 +41,14 @@ module Y2R
       :symbol     => { :type => :leaf, :filter => [:global, :category, :type, :name] },
       :symbols    => { :type => :collection },
       :then       => { :type => :wrapper },
+      :true       => { :type => :wrapper },
       :value      => { :type => :wrapper },
       :variable   => { :type => :leaf },
       :while      => { :type => :struct },
       :ycp        => { :type => :wrapper, :filter => [:version] },
       :yebinary   => { :type => :collection },
       :yeterm     => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
+      :yetriple   => { :type => :struct },
       :yeunary    => { :type => :wrapper }
     }
 

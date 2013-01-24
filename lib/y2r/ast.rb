@@ -103,6 +103,10 @@ module Y2R
       include SimpleWrapper
     end
 
+    class False < Node
+      include SimpleWrapper
+    end
+
     class If < Node
       def to_ruby
         if else_
@@ -201,6 +205,10 @@ module Y2R
       include SimpleWrapper
     end
 
+    class True < Node
+      include SimpleWrapper
+    end
+
     class Value < Node
       include SimpleWrapper
     end
@@ -267,6 +275,12 @@ module Y2R
 
     class YETermElement < Node
       include SimpleWrapper
+    end
+
+    class YETriple < Node
+      def to_ruby
+        "#{cond.to_ruby} ? #{self.true.to_ruby} : #{self.false.to_ruby}"
+      end
     end
 
     class YEUnary < Node

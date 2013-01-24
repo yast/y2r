@@ -237,6 +237,16 @@ module Y2R::AST
     end
   end
 
+  describe False do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = False.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
   describe If do
     describe "#to_ruby" do
       it "emits correct code for ifs without else" do
@@ -458,6 +468,16 @@ module Y2R::AST
     end
   end
 
+  describe True do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = True.new(:child => Const.new(:type => "int", :value => "42"))
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
   describe Value do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -575,6 +595,26 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "42"
+      end
+    end
+  end
+
+  describe YETriple do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YETriple.new(
+          :cond  => Cond.new(
+            :child => Const.new(:type => "bool", :value => "true")
+          ),
+          :true  => True.new(
+            :child => Const.new(:type => "int", :value => "42")
+          ),
+          :false => False.new(
+            :child => Const.new(:type => "int", :value => "43")
+          )
+        )
+
+        node.to_ruby.should == "true ? 42 : 43"
       end
     end
   end
