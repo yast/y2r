@@ -236,6 +236,15 @@ module Y2R
       end
     end
 
+    class Textdomain < Node
+      def to_ruby
+        [
+          "FastGettext.text_domain = '#{name}'", # TODO: Implement escaping.
+          ""
+        ].join("\n")
+      end
+    end
+
     class Then < Node
       include SimpleWrapper
     end

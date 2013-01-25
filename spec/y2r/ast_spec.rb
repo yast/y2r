@@ -635,6 +635,16 @@ module Y2R::AST
     end
   end
 
+  describe Textdomain do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Textdomain.new(:name => "d")
+
+        node.to_ruby.should == "FastGettext.text_domain = 'd'\n"
+      end
+    end
+  end
+
   describe Then do
     describe "#to_ruby" do
       it "emits correct code" do

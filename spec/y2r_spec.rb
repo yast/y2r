@@ -343,6 +343,21 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles textdomains correctly" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            textdomain "users";
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          FastGettext.text_domain = 'users'
+
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
   end
 end

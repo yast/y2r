@@ -52,6 +52,7 @@ module Y2R
         }
       },
       :symbols     => { :type => :collection },
+      :textdomain  => { :type => :leaf },
       :then        => { :type => :wrapper },
       :true        => { :type => :wrapper },
       :value       => { :type => :wrapper },
