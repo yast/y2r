@@ -123,7 +123,8 @@ module Y2R
         [
           "def #{name}(#{declaration ? declaration.to_ruby : ""})",
           indent(block.to_ruby),
-          "end"
+          "end",
+          ""
         ].join("\n")
       end
     end
@@ -158,7 +159,10 @@ module Y2R
 
     class Import < Node
       def to_ruby
-        "YCP.import('#{name}')" # TODO: Implement escaping.
+        [
+          "YCP.import('#{name}')", # TODO: Implement escaping.
+          ""
+        ].join("\n")
       end
     end
 

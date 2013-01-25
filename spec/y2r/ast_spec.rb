@@ -363,7 +363,7 @@ module Y2R::AST
           )
         )
 
-        node.to_ruby.should == "def f()\n  return 42\nend"
+        node.to_ruby.should == "def f()\n  return 42\nend\n"
       end
 
       it "emits correct code for fundefs with arguments" do
@@ -395,7 +395,7 @@ module Y2R::AST
           )
         )
 
-        node.to_ruby.should == "def f(a, b, c)\n  return 42\nend"
+        node.to_ruby.should == "def f(a, b, c)\n  return 42\nend\n"
       end
     end
   end
@@ -432,7 +432,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Import.new(:name => "M")
 
-        node.to_ruby.should == "YCP.import('M')"
+        node.to_ruby.should == "YCP.import('M')\n"
       end
     end
   end

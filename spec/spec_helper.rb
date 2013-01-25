@@ -6,7 +6,5 @@ end
 
 def cleanup(s)
   s =~ /^(\s*)/
-  prefix = $1
-
-  s.split("\n").map { |line| line.sub(prefix, "") }.join("\n").strip
+  s.gsub(Regexp.new("^#{$1}"), "")[0..-2]
 end

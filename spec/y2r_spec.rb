@@ -263,6 +263,7 @@ describe Y2R do
 
         ruby_code = cleanup(<<-EOT)
           YCP.import('UI')
+
           UI.OpenDialog(Term.new(:Label, 'Hello, world!'))
         EOT
 
@@ -322,6 +323,7 @@ describe Y2R do
           def f(a, b, c)
             return 42
           end
+
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
@@ -336,6 +338,7 @@ describe Y2R do
 
         ruby_code = cleanup(<<-EOT)
           YCP.import('String')
+
         EOT
 
         Y2R.compile(ycp_code).should == ruby_code
