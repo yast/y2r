@@ -62,6 +62,7 @@ module Y2R
       :ycp         => { :type => :wrapper, :filter => [:version] },
       :yebinary    => { :type => :collection },
       :yebracket   => { :type => :collection },
+      :yepropagate => { :type => :wrapper },
       :yeterm      => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
       :yetriple    => { :type => :struct },
       :yeunary     => { :type => :wrapper }

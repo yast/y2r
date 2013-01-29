@@ -286,6 +286,26 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compile convert calls" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            integer i = 15;
+            list<any> m = [1];
+            float f = (float) i;
+            integer j = m[0]:-1;
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+            i = 15
+            m = [1]
+            f = Convert.convert(i, :from => 'integer', :to => 'float')
+            j = Convert.convert(Ops.index(m, [0], -1), :from => 'any', :to => 'integer')
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
 
     describe "statements" do

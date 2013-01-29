@@ -325,6 +325,18 @@ module Y2R
       def default; children[2]; end
     end
 
+    class YEPropagate < Node
+      def to_ruby
+        from_reduced = from.gsub(/const /,"") #we ignore const control
+        to_reduced = to.gsub(/const /,"") #we ignore const control
+        if from_reduced == to_reduced
+          child.to_ruby
+        else
+          "Convert.convert(#{child.to_ruby}, :from => '#{from_reduced}', :to => '#{to_reduced}')"
+        end
+      end
+    end
+
     class YETerm < Node
       def to_ruby
         # TODO: Implement escaping.
