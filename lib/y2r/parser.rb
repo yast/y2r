@@ -36,6 +36,7 @@ module Y2R
       :key         => { :type => :wrapper },
       :lhs         => { :type => :wrapper },
       :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
+      :locale      => { :type => :leaf },
       :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
       :rhs         => { :type => :wrapper },
