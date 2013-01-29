@@ -184,6 +184,12 @@ module Y2R
       include SimpleWrapper
     end
 
+    class Locale < Node
+      def to_ruby
+        "_('" + text + "')"
+      end
+    end
+
     class Map < Node
       def to_ruby
         if !children.empty?

@@ -269,6 +269,23 @@ describe Y2R do
 
         Y2R.compile(ycp_code).should == ruby_code
       end
+
+      it "compiles locale calls" do
+        ycp_code = cleanup(<<-EOT)
+          {
+            textdomain "helloworld";
+            string s = _("Hello, world!");
+          }
+        EOT
+
+        ruby_code = cleanup(<<-EOT)
+          FastGettext.text_domain = 'helloworld'
+
+          s = _('Hello, world!')
+        EOT
+
+        Y2R.compile(ycp_code).should == ruby_code
+      end
     end
 
     describe "statements" do
