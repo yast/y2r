@@ -491,6 +491,18 @@ module Y2R::AST
     end
   end
 
+  describe Locale do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Locale.new(
+          :text => "Translated text."
+        )
+
+        node.to_ruby.should == "_('Translated text.')"
+      end
+    end
+  end
+
   describe Map do
     describe "#to_ruby" do
       it "emits correct code for empty maps" do
