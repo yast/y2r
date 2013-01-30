@@ -4,7 +4,7 @@ module Y2R
   describe Parser do
     describe "#parse" do
       it "parses a simple program" do
-        ast = AST::Const.new(:type => "void")
+        ast = AST::Const.new(:type => "void", :value => nil)
 
         Parser.new.parse("{}").should == ast
       end

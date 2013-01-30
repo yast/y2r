@@ -12,7 +12,6 @@ module Y2R
       :assign      => { :type => :wrapper },
       :builtin     => { :type => :collection, :create_context => :builtin },
       :compare     => { :type => :struct },
-      :const       => { :type => :leaf },
       :element     => {
         :contexts => {
           :builtin => { :type => :wrapper },
@@ -23,9 +22,7 @@ module Y2R
       },
       :fun_def     => { :type => :struct },
       :if          => { :type => :collection },
-      :import      => { :type => :leaf },
       :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
-      :locale      => { :type => :leaf },
       :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
       :symbol      => {
@@ -38,8 +35,6 @@ module Y2R
           end
         }
       },
-      :textdomain  => { :type => :leaf },
-      :variable    => { :type => :leaf },
       :while       => { :type => :struct },
       :yebinary    => { :type => :collection },
       :yebracket   => { :type => :collection },
@@ -107,6 +102,19 @@ module Y2R
             :name => element.attributes["name"],
             :args => extract_collection(element, "args", context)
           )
+        when "const"
+          return AST::Const.new(
+            :type  => element.attributes["type"],
+            :value => element.attributes["value"]
+          )
+        when "import"
+          return AST::Import.new(:name => element.attributes["name"])
+        when "locale"
+          return AST::Locale.new(:text => element.attributes["text"])
+        when "textdomain"
+          return AST::Textdomain.new(:name => element.attributes["name"])
+        when "variable"
+          return AST::Variable.new(:name => element.attributes["name"])
       end
 
       info = ELEMENT_INFO[element.name.to_sym]
