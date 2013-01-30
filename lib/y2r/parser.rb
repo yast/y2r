@@ -28,7 +28,6 @@ module Y2R
       :locale      => { :type => :leaf },
       :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
-      :statements  => { :type => :collection },
       :symbol      => {
         :type   => :leaf,
         :filter => proc { |e|
@@ -39,7 +38,6 @@ module Y2R
           end
         }
       },
-      :symbols     => { :type => :collection },
       :textdomain  => { :type => :leaf },
       :variable    => { :type => :leaf },
       :while       => { :type => :struct },
@@ -100,30 +98,14 @@ module Y2R
         when "block"
           return AST::Block.new(
             :kind       => element.attributes["kind"],
-            :symbols    => if element.elements["symbols"]
-              element_to_node(element.elements["symbols"], context)
-            else
-              nil
-            end,
-            :statements => if element.elements["statements"]
-              element_to_node(element.elements["statements"], context)
-            else
-              nil
-            end
+            :symbols    => extract_collection(element, "symbols", context),
+            :statements => extract_collection(element, "statements", context)
           )
         when "call"
-          args = if element.elements["args"]
-            element.elements["args"].elements.map do |element|
-              element_to_node(element, context)
-            end
-          else
-            []
-          end
-
           return AST::Call.new(
             :ns   => element.attributes["ns"],
             :name => element.attributes["name"],
-            :args => args
+            :args => extract_collection(element, "args", context)
           )
       end
 
@@ -185,6 +167,16 @@ module Y2R
 
     def classify(s)
       s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }.gsub(/_./) { |s| s[1].upcase }
+    end
+
+    def extract_collection(element, name, context)
+      if element.elements[name]
+        element.elements[name].elements.map do |element|
+          element_to_node(element, context)
+        end
+      else
+        []
+      end
     end
   end
 end

@@ -12,30 +12,26 @@ module Y2R
       it "parses a more complex program" do
         ast = AST::Block.new(
           :kind       => "file",
-          :symbols    => AST::Symbols.new(
-            :children => [
-              AST::Symbol.new,
-              AST::Symbol.new(:name => "i"),
-              AST::Symbol.new(:name => "j"),
-              AST::Symbol.new(:name => "k")
-            ]
-          ),
-          :statements => AST::Statements.new(
-            :children => [
-              AST::Assign.new(
-                :name  => "i",
-                :child => AST::Const.new(:type => "int", :value => "42")
-              ),
-              AST::Assign.new(
-                :name  => "j",
-                :child => AST::Const.new(:type => "int", :value => "43")
-              ),
-              AST::Assign.new(
-                :name  => "k",
-                :child => AST::Const.new(:type => "int", :value => "44")
-              )
-            ]
-          )
+          :symbols    => [
+            AST::Symbol.new,
+            AST::Symbol.new(:name => "i"),
+            AST::Symbol.new(:name => "j"),
+            AST::Symbol.new(:name => "k")
+          ],
+          :statements => [
+            AST::Assign.new(
+              :name  => "i",
+              :child => AST::Const.new(:type => "int", :value => "42")
+            ),
+            AST::Assign.new(
+              :name  => "j",
+              :child => AST::Const.new(:type => "int", :value => "43")
+            ),
+            AST::Assign.new(
+              :name  => "k",
+              :child => AST::Const.new(:type => "int", :value => "44")
+            )
+          ]
         )
 
         Parser.new.parse(cleanup(<<-EOT)).should == ast

@@ -26,9 +26,9 @@ module Y2R
       def to_ruby
         case kind
           when "def","file", "stmt"
-            statements.to_ruby
+            statements.map(&:to_ruby).join("\n")
           when "unspec"
-            symbols.to_ruby
+            symbols.map(&:to_ruby).join(", ")
           else
             raise "Unknown block kind: #{kind}."
         end
@@ -178,21 +178,9 @@ module Y2R
       end
     end
 
-    class Statements < Node
-      def to_ruby
-        children.map(&:to_ruby).join("\n")
-      end
-    end
-
     class Symbol < Node
       def to_ruby
         name
-      end
-    end
-
-    class Symbols < Node
-      def to_ruby
-        children.map(&:to_ruby).join(", ")
       end
     end
 

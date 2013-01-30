@@ -19,22 +19,20 @@ module Y2R::AST
       it "emits correct code for def blocks" do
         node = Block.new(
           :kind       => "def",
-          :statements => Statements.new(
-            :children => [
-              Assign.new(
-                :name  => "i",
-                :child => Const.new(:type => "int", :value => "42")
-              ),
-              Assign.new(
-                :name  => "j",
-                :child => Const.new(:type => "int", :value => "43")
-              ),
-              Assign.new(
-                :name  => "k",
-                :child => Const.new(:type => "int", :value => "44")
-              )
-            ]
-          )
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => "int", :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => "int", :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => "int", :value => "44")
+            )
+          ]
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
@@ -43,22 +41,20 @@ module Y2R::AST
       it "emits correct code for file blocks" do
         node = Block.new(
           :kind       => "file",
-          :statements => Statements.new(
-            :children => [
-              Assign.new(
-                :name  => "i",
-                :child => Const.new(:type => "int", :value => "42")
-              ),
-              Assign.new(
-                :name  => "j",
-                :child => Const.new(:type => "int", :value => "43")
-              ),
-              Assign.new(
-                :name  => "k",
-                :child => Const.new(:type => "int", :value => "44")
-              )
-            ]
-          )
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => "int", :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => "int", :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => "int", :value => "44")
+            )
+          ]
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
@@ -67,22 +63,20 @@ module Y2R::AST
       it "emits correct code for stmt blocks" do
         node = Block.new(
           :kind       => "stmt",
-          :statements => Statements.new(
-            :children => [
-              Assign.new(
-                :name  => "i",
-                :child => Const.new(:type => "int", :value => "42")
-              ),
-              Assign.new(
-                :name  => "j",
-                :child => Const.new(:type => "int", :value => "43")
-              ),
-              Assign.new(
-                :name  => "k",
-                :child => Const.new(:type => "int", :value => "44")
-              )
-            ]
-          )
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => "int", :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => "int", :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => "int", :value => "44")
+            )
+          ]
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
@@ -91,13 +85,11 @@ module Y2R::AST
       it "emits correct code for unspec blocks" do
         node = Block.new(
           :kind    => "unspec",
-          :symbols => Symbols.new(
-            :children => [
-              Symbol.new(:name => "a"),
-              Symbol.new(:name => "b"),
-              Symbol.new(:name => "c")
-            ]
-          )
+          :symbols => [
+            Symbol.new(:name => "a"),
+            Symbol.new(:name => "b"),
+            Symbol.new(:name => "c")
+          ]
         )
 
         node.to_ruby.should == "a, b, c"
@@ -244,11 +236,9 @@ module Y2R::AST
           :name        => "f",
           :block       => Block.new(
             :kind       => "file",
-            :statements => Statements.new(
-              :children => [
-                Return.new(:child => Const.new(:type => "int", :value => "42"))
-              ]
-            )
+            :statements => [
+              Return.new(:child => Const.new(:type => "int", :value => "42"))
+            ]
           )
         )
 
@@ -260,21 +250,17 @@ module Y2R::AST
           :name        => "f",
           :declaration => Block.new(
             :kind    => "unspec",
-            :symbols => Symbols.new(
-              :children => [
-                Symbol.new(:name => "a"),
-                Symbol.new(:name => "b"),
-                Symbol.new(:name => "c")
-              ]
-            )
+            :symbols => [
+              Symbol.new(:name => "a"),
+              Symbol.new(:name => "b"),
+              Symbol.new(:name => "c")
+            ]
           ),
           :block       => Block.new(
             :kind       => "file",
-            :statements => Statements.new(
-              :children => [
-                Return.new(:child => Const.new(:type => "int", :value => "42"))
-              ]
-            )
+            :statements => [
+              Return.new(:child => Const.new(:type => "int", :value => "42"))
+            ]
           )
         )
 
@@ -428,53 +414,12 @@ module Y2R::AST
     end
   end
 
-  describe Statements do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Statements.new(
-          :children => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => "int", :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => "int", :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => "int", :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-    end
-  end
-
   describe Symbol do
     describe "#to_ruby" do
       it "emits correct code" do
         node = Symbol.new(:name => "s")
 
         node.to_ruby.should == "s"
-      end
-    end
-  end
-
-  describe Symbols do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Symbols.new(
-          :children => [
-            Symbol.new(:name => "a"),
-            Symbol.new(:name => "b"),
-            Symbol.new(:name => "c")
-          ]
-        )
-
-        node.to_ruby.should == "a, b, c"
       end
     end
   end
