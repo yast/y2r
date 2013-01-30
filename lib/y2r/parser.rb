@@ -12,14 +12,6 @@ module Y2R
       :assign      => { :type => :wrapper },
       :builtin     => { :type => :collection, :create_context => :builtin },
       :compare     => { :type => :struct },
-      :element     => {
-        :contexts => {
-          :builtin => { :type => :wrapper },
-          :list    => { :type => :wrapper },
-          :map     => { :type => :struct  },
-          :yeterm  => { :type => :wrapper }
-        }
-      },
       :fun_def     => { :type => :struct },
       :if          => { :type => :collection },
       :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
@@ -107,6 +99,15 @@ module Y2R
             :type  => element.attributes["type"],
             :value => element.attributes["value"]
           )
+        when "element"
+          if context != :map
+            return element_to_node(element.elements[1], context)
+          else
+            return AST::MapElement.new(
+              :key   => element_to_node(element.elements["key"], context),
+              :value => element_to_node(element.elements["value"], context)
+            )
+          end
         when "import"
           return AST::Import.new(:name => element.attributes["name"])
         when "locale"

@@ -2,12 +2,6 @@ require "ostruct"
 
 module Y2R
   module AST
-    module SimpleWrapper
-      def to_ruby
-        child.to_ruby
-      end
-    end
-
     class Node < OpenStruct
       def indent(s)
         s.gsub(/^/, "  ")
@@ -39,10 +33,6 @@ module Y2R
       def to_ruby
         "Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
       end
-    end
-
-    class BuiltinElement < Node
-      include SimpleWrapper
     end
 
     class Call < Node
@@ -140,10 +130,6 @@ module Y2R
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
       end
-    end
-
-    class ListElement < Node
-      include SimpleWrapper
     end
 
     class Locale < Node
@@ -260,10 +246,6 @@ module Y2R
           "Term.new(:#{name})"
         end
       end
-    end
-
-    class YETermElement < Node
-      include SimpleWrapper
     end
 
     class YETriple < Node

@@ -109,25 +109,13 @@ module Y2R::AST
         node = Builtin.new(
           :name     => "b",
           :children => [
-            BuiltinElement.new(:child => Const.new(:type => "int", :value => "42")),
-            BuiltinElement.new(:child => Const.new(:type => "int", :value => "43")),
-            BuiltinElement.new(:child => Const.new(:type => "int", :value => "44"))
+            Const.new(:type => "int", :value => "42"),
+            Const.new(:type => "int", :value => "43"),
+            Const.new(:type => "int", :value => "44")
           ]
         )
 
         node.to_ruby.should == "Builtins.b(42, 43, 44)"
-      end
-    end
-  end
-
-  describe BuiltinElement do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = BuiltinElement.new(
-          :child => Const.new(:type => "int", :value => "42")
-        )
-
-        node.to_ruby.should == "42"
       end
     end
   end
@@ -317,25 +305,13 @@ module Y2R::AST
       it "emits correct code for non-empty lists" do
         node = List.new(
           :children => [
-            ListElement.new(:child => Const.new(:type => "int", :value => "42")),
-            ListElement.new(:child => Const.new(:type => "int", :value => "43")),
-            ListElement.new(:child => Const.new(:type => "int", :value => "44"))
+            Const.new(:type => "int", :value => "42"),
+            Const.new(:type => "int", :value => "43"),
+            Const.new(:type => "int", :value => "44")
           ]
         )
 
         node.to_ruby.should == "[42, 43, 44]"
-      end
-    end
-  end
-
-  describe ListElement do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = ListElement.new(
-          :child => Const.new(:type => "int", :value => "42")
-        )
-
-        node.to_ruby.should == "42"
       end
     end
   end
@@ -499,16 +475,12 @@ module Y2R::AST
           :children => [
             List.new(
               :children => [
-                ListElement.new(:child => Const.new(:type => "int", :value => "42")),
-                ListElement.new(:child => Const.new(:type => "int", :value => "43")),
-                ListElement.new(:child => Const.new(:type => "int", :value => "44"))
+                Const.new(:type => "int", :value => "42"),
+                Const.new(:type => "int", :value => "43"),
+                Const.new(:type => "int", :value => "44")
               ]
             ),
-            List.new(
-              :children => [
-                ListElement.new(:child => Const.new(:type => "int", :value => "1")),
-              ]
-            ),
+            List.new(:children => [Const.new(:type => "int", :value => "1")]),
             Const.new(:type => "int", :value => "0")
           ]
         )
@@ -530,31 +502,13 @@ module Y2R::AST
         node = YETerm.new(
           :name     => "a",
           :children => [
-            YETermElement.new(
-              :child => Const.new(:type => "int", :value => "42")
-            ),
-            YETermElement.new(
-              :child => Const.new(:type => "int", :value => "43")
-            ),
-            YETermElement.new(
-              :child => Const.new(:type => "int", :value => "44")
-            )
+            Const.new(:type => "int", :value => "42"),
+            Const.new(:type => "int", :value => "43"),
+            Const.new(:type => "int", :value => "44")
           ]
         )
 
         node.to_ruby.should == "Term.new(:a, 42, 43, 44)"
-      end
-    end
-  end
-
-  describe YETermElement do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YETermElement.new(
-          :child => Const.new(:type => "int", :value => "42")
-        )
-
-        node.to_ruby.should == "42"
       end
     end
   end
