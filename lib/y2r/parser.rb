@@ -15,10 +15,7 @@ module Y2R
       :builtin     => { :type => :collection, :create_context => :builtin },
       :call        => { :type => :wrapper },
       :compare     => { :type => :struct },
-      :cond        => { :type => :wrapper },
       :const       => { :type => :leaf },
-      :declaration => { :type => :wrapper },
-      :do          => { :type => :wrapper },
       :element     => {
         :contexts => {
           :builtin => { :type => :wrapper },
@@ -27,21 +24,14 @@ module Y2R
           :yeterm  => { :type => :wrapper }
         }
       },
-      :else        => { :type => :wrapper },
-      :expr        => { :type => :wrapper },
-      :false       => { :type => :wrapper },
       :fun_def     => { :type => :struct },
       :if          => { :type => :collection },
       :import      => { :type => :leaf },
-      :key         => { :type => :wrapper },
-      :lhs         => { :type => :wrapper },
       :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
       :locale      => { :type => :leaf },
       :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
-      :rhs         => { :type => :wrapper },
       :statements  => { :type => :collection },
-      :stmt        => { :type => :wrapper },
       :symbol      => {
         :type   => :leaf,
         :filter => proc { |e|
@@ -54,12 +44,8 @@ module Y2R
       },
       :symbols     => { :type => :collection },
       :textdomain  => { :type => :leaf },
-      :then        => { :type => :wrapper },
-      :true        => { :type => :wrapper },
-      :value       => { :type => :wrapper },
       :variable    => { :type => :leaf },
       :while       => { :type => :struct },
-      :ycp         => { :type => :wrapper, :filter => [:version] },
       :yebinary    => { :type => :collection },
       :yebracket   => { :type => :collection },
       :yeterm      => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
@@ -110,6 +96,12 @@ module Y2R
     end
 
     def element_to_node(element, context = nil)
+      case element.name
+        when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
+             "rhs", "stmt", "then", "true", "value", "ycp"
+          return element_to_node(element.elements[1], context)
+      end
+
       info = ELEMENT_INFO[element.name.to_sym]
       raise "Invalid element: <#{element.name}>." unless info
 

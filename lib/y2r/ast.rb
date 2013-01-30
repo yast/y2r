@@ -73,10 +73,6 @@ module Y2R
       end
     end
 
-    class Cond < Node
-      include SimpleWrapper
-    end
-
     class Const < Node
       def to_ruby
         case type
@@ -96,26 +92,6 @@ module Y2R
             raise "Unknown const type: #{type}."
         end
       end
-    end
-
-    class Declaration < Node
-      include SimpleWrapper
-    end
-
-    class Do < Node
-      include SimpleWrapper
-    end
-
-    class Else < Node
-      include SimpleWrapper
-    end
-
-    class Expr < Node
-      include SimpleWrapper
-    end
-
-    class False < Node
-      include SimpleWrapper
     end
 
     class FunDef < Node
@@ -166,14 +142,6 @@ module Y2R
       end
     end
 
-    class Key < Node
-      include SimpleWrapper
-    end
-
-    class Lhs < Node
-      include SimpleWrapper
-    end
-
     class List < Node
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
@@ -216,18 +184,10 @@ module Y2R
       end
     end
 
-    class Rhs < Node
-      include SimpleWrapper
-    end
-
     class Statements < Node
       def to_ruby
         children.map(&:to_ruby).join("\n")
       end
-    end
-
-    class Stmt < Node
-      include SimpleWrapper
     end
 
     class Symbol < Node
@@ -251,18 +211,6 @@ module Y2R
       end
     end
 
-    class Then < Node
-      include SimpleWrapper
-    end
-
-    class True < Node
-      include SimpleWrapper
-    end
-
-    class Value < Node
-      include SimpleWrapper
-    end
-
     class Variable < Node
       def to_ruby
         name
@@ -277,10 +225,6 @@ module Y2R
           "end"
         ].join("\n")
       end
-    end
-
-    class YCP < Node
-      include SimpleWrapper
     end
 
     class YEBinary < Node
