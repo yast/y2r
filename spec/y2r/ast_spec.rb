@@ -1,22 +1,6 @@
 require "spec_helper"
 
 module Y2R::AST
-  describe Args do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Args.new(
-          :children => [
-            Const.new(:type => "int", :value => "42"),
-            Const.new(:type => "int", :value => "43"),
-            Const.new(:type => "int", :value => "44")
-          ]
-        )
-
-        node.to_ruby.should == "42, 43, 44"
-      end
-    end
-  end
-
   describe Assign do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -159,22 +143,20 @@ module Y2R::AST
   describe Call do
     describe "#to_ruby" do
       it "emits correct code for a call without arguments" do
-        node = Call.new(:ns => "n", :name => "f")
+        node = Call.new(:ns => "n", :name => "f", :args => [])
 
         node.to_ruby.should == "n.f()"
       end
 
       it "emits correct code for a call with arguments" do
         node = Call.new(
-          :ns    => "n",
-          :name  => "f",
-          :child => Args.new(
-            :children => [
-              Const.new(:type => "int", :value => "42"),
-              Const.new(:type => "int", :value => "43"),
-              Const.new(:type => "int", :value => "44")
-            ]
-          )
+          :ns   => "n",
+          :name => "f",
+          :args => [
+            Const.new(:type => "int", :value => "42"),
+            Const.new(:type => "int", :value => "43"),
+            Const.new(:type => "int", :value => "44")
+          ]
         )
 
         node.to_ruby.should == "n.f(42, 43, 44)"
@@ -307,7 +289,7 @@ module Y2R::AST
         node = If.new(
           :children => [
             Const.new(:type => "bool", :value => "true"),
-            Call.new(:ns => "n", :name => "f")
+            Call.new(:ns => "n", :name => "f", :args => [])
           ]
         )
 
@@ -318,8 +300,8 @@ module Y2R::AST
         node = If.new(
           :children => [
             Const.new(:type => "bool", :value => "true"),
-            Call.new(:ns => "n", :name => "f"),
-            Call.new(:ns => "n", :name => "f")
+            Call.new(:ns => "n", :name => "f", :args => []),
+            Call.new(:ns => "n", :name => "f", :args => [])
           ]
         )
 
@@ -522,7 +504,7 @@ module Y2R::AST
       it "emits correct code" do
         node = While.new(
           :cond => Const.new(:type => "bool", :value => "true"),
-          :do   => Call.new(:ns => "n", :name => "f")
+          :do   => Call.new(:ns => "n", :name => "f", :args => [])
         )
 
         node.to_ruby.should == "while true\n  n.f()\nend"

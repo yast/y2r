@@ -16,12 +16,6 @@ module Y2R
 
     # Sorted alphabetically.
 
-    class Args < Node
-      def to_ruby
-        children.map(&:to_ruby).join(", ")
-      end
-    end
-
     class Assign < Node
       def to_ruby
         "#{name} = #{child.to_ruby}"
@@ -54,7 +48,7 @@ module Y2R
     class Call < Node
       def to_ruby
         # TODO: YCP uses call-by-value.
-        "#{ns}.#{name}(#{child ? child.to_ruby : ""})"
+        "#{ns}.#{name}(#{args.map(&:to_ruby).join(", ")})"
       end
     end
 

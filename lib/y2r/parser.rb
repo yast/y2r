@@ -9,7 +9,6 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :args        => { :type => :collection },
       :assign      => { :type => :wrapper },
       :block       => { :type => :struct },
       :builtin     => { :type => :collection, :create_context => :builtin },
@@ -100,10 +99,18 @@ module Y2R
              "rhs", "stmt", "then", "true", "value", "ycp"
           return element_to_node(element.elements[1], context)
         when "call"
+          args = if element.elements["args"]
+            element.elements["args"].elements.map do |element|
+              element_to_node(element, context)
+            end
+          else
+            []
+          end
+
           return AST::Call.new(
-            :ns    => element.attributes["ns"],
-            :name  => element.attributes["name"],
-            :child => element_to_node(element.elements["args"], context)
+            :ns   => element.attributes["ns"],
+            :name => element.attributes["name"],
+            :args => args
           )
       end
 
