@@ -13,7 +13,6 @@ module Y2R
       :assign      => { :type => :wrapper },
       :block       => { :type => :struct },
       :builtin     => { :type => :collection, :create_context => :builtin },
-      :call        => { :type => :wrapper },
       :compare     => { :type => :struct },
       :const       => { :type => :leaf },
       :element     => {
@@ -100,6 +99,12 @@ module Y2R
         when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
              "rhs", "stmt", "then", "true", "value", "ycp"
           return element_to_node(element.elements[1], context)
+        when "call"
+          return AST::Call.new(
+            :ns    => element.attributes["ns"],
+            :name  => element.attributes["name"],
+            :child => element_to_node(element.elements["args"], context)
+          )
       end
 
       info = ELEMENT_INFO[element.name.to_sym]
