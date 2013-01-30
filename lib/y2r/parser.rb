@@ -10,7 +10,6 @@ module Y2R
     # Sorted alphabetically.
     ELEMENT_INFO = {
       :assign      => { :type => :wrapper },
-      :block       => { :type => :struct },
       :builtin     => { :type => :collection, :create_context => :builtin },
       :compare     => { :type => :struct },
       :const       => { :type => :leaf },
@@ -98,6 +97,20 @@ module Y2R
         when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
              "rhs", "stmt", "then", "true", "value", "ycp"
           return element_to_node(element.elements[1], context)
+        when "block"
+          return AST::Block.new(
+            :kind       => element.attributes["kind"],
+            :symbols    => if element.elements["symbols"]
+              element_to_node(element.elements["symbols"], context)
+            else
+              nil
+            end,
+            :statements => if element.elements["statements"]
+              element_to_node(element.elements["statements"], context)
+            else
+              nil
+            end
+          )
         when "call"
           args = if element.elements["args"]
             element.elements["args"].elements.map do |element|
