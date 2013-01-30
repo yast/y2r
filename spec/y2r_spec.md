@@ -80,14 +80,16 @@ level so the conversion is lossless.
 
 ```ycp
 {
-  float f = 42.0;
+  float f1 = 42.;
+  float f2 = 42.1;
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-f = 42.0
+f1 = 42.0
+f2 = 42.1
 ```
 
 ### Symbols
@@ -157,14 +159,16 @@ Y2R translates YCP lists as Ruby arrays.
 
 ```ycp
 {
-  list l = [42, 43, 44];
+  list l1 = [];
+  list l2 = [42, 43, 44];
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-l = [42, 43, 44]
+l1 = []
+l2 = [42, 43, 44]
 ```
 
 ### Maps
@@ -175,14 +179,16 @@ Y2R translates YCP maps as Ruby hashes.
 
 ```ycp
 {
-  map m = $[`a: 42, `b: 43, `c: 44];
+  map m1 = $[];
+  map m2 = $[`a: 42, `b: 43, `c: 44];
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-m = { :a => 42, :b => 43, :c => 44 }
+m1 = {}
+m2 = { :a => 42, :b => 43, :c => 44 }
 ```
 
 ### Terms
@@ -193,14 +199,16 @@ Y2R translates YCP terms as instances of the `YCP::Term` class
 
 ```ycp
 {
-  term t = `a(42, 43, 44);
+  term t1 = `a();
+  term t2 = `a(42, 43, 44);
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-t = Term.new(:a, 42, 43, 44)
+t1 = Term.new(:a)
+t2 = Term.new(:a, 42, 43, 44)
 ```
 
 Expressions
@@ -237,14 +245,16 @@ module. These reimplement the behavior of all YCP builtins in Ruby.
 
 ```ycp
 {
-  y2milestone("M1");
+  time();
+  random(100);
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-Builtins.y2milestone('M1')
+Builtins.time()
+Builtins.random(100)
 ```
 
 ### `_` Calls
@@ -289,19 +299,55 @@ YCP.import('UI')
 UI.OpenDialog(Term.new(:Label, 'Hello, world!'))
 ```
 
-### Unary Operators
+### Comparison Operators
 
-Y2R translates YCP unary operators as calls of methods in the `YCP::Ops` module
-that implement their behavior. Equivalent Ruby operators can't be used because
-their behavior differs from the behavior of YCP operators in some cases.
+Y2R translates YCP comparison operators as calls of methods in the `YCP::Ops`
+module that implement their behavior. Equivalent Ruby operators can't be used
+because their behavior differs from the behavior of YCP operators in some cases.
+
+#### YCP Code
+
+```ycp
+{
+  boolean b1 = 42 == 43;
+  boolean b2 = 42 != 43;
+  boolean b3 = 42 < 43;
+  boolean b4 = 42 > 43;
+  boolean b5 = 42 <= 43;
+  boolean b6 = 42 >= 43;
+}
+```
+
+#### Ruby Code
+
+```ruby
+b1 = Ops.equal(42, 43)
+b2 = Ops.not_equal(42, 43)
+b3 = Ops.less_than(42, 43)
+b4 = Ops.greater_than(42, 43)
+b5 = Ops.less_or_equal(42, 43)
+b6 = Ops.greater_or_equal(42, 43)
+```
+
+### Arithmetic Operators
+
+Y2R translates YCP arithmetic operators as calls of methods in the `YCP::Ops`
+module that implement their behavior. Equivalent Ruby operators can't be used
+because their behavior differs from the behavior of YCP operators in some cases.
 
 #### YCP Code
 
 ```ycp
 {
   # Using a variable defeats constant propagation.
-  integer i = 42;
-  integer j = -i;
+  integer i  = 42;
+
+  integer i1 = -i;
+  integer i2 = 42 + 43;
+  integer i3 = 42 - 43;
+  integer i4 = 42 * 43;
+  integer i5 = 42 / 43;
+  integer i6 = 42 % 43;
 }
 ```
 
@@ -309,27 +355,70 @@ their behavior differs from the behavior of YCP operators in some cases.
 
 ```ruby
 i = 42
-j = Ops.unary_minus(i)
+i1 = Ops.unary_minus(i)
+i2 = Ops.add(42, 43)
+i3 = Ops.subtract(42, 43)
+i4 = Ops.multiply(42, 43)
+i5 = Ops.divide(42, 43)
+i6 = Ops.modulo(42, 43)
 ```
 
-### Binary Operators
+### Bitwise Operators
 
-Y2R translates YCP binary operators as calls of methods in the `YCP::Ops` module
-that implement their behavior. Equivalent Ruby operators can't be used because
-their behavior differs from the behavior of YCP operators in some cases.
+Y2R translates YCP bitwise operators as calls of methods in the `YCP::Ops`
+module that implement their behavior. Equivalent Ruby operators can't be used
+because their behavior differs from the behavior of YCP operators in some cases.
 
 #### YCP Code
 
 ```ycp
 {
-  integer i = 42 + 43;
+  integer i1 = ~42;
+  integer i2 = 42 & 43;
+  integer i3 = 42 | 43;
+  integer i4 = 42 ^ 43;
+  integer i5 = 42 << 43;
+  integer i6 = 42 >> 43;
 }
 ```
 
 #### Ruby Code
 
 ```ruby
-i = Ops.add(42, 43)
+i1 = Ops.bitwise_not(42)
+i2 = Ops.bitwise_and(42, 43)
+i3 = Ops.bitwise_or(42, 43)
+i4 = Ops.bitwise_xor(42, 43)
+i5 = Ops.shift_left(42, 43)
+i6 = Ops.shift_right(42, 43)
+```
+
+### Logical Operators
+
+Y2R translates YCP logical operators as calls of methods in the `YCP::Ops`
+module that implement their behavior. Equivalent Ruby operators can't be used
+because their behavior differs from the behavior of YCP operators in some cases.
+
+#### YCP Code
+
+```ycp
+{
+  # Using a variable defeats constant propagation.
+  boolean b = true;
+
+  boolean b1 = !b;
+  boolean b2 = true && false;
+  boolean b3 = true || false;
+}
+```
+
+#### Ruby Code
+
+```ruby
+b = true
+b1 = Ops.logical_not(b)
+b2 = Ops.logical_and(true, false)
+b3 = Ops.logical_or(true, false)
 ```
 
 ### Ternary Operator
@@ -424,7 +513,11 @@ Y2R translates YCP function definitions as Ruby method definitions.
 
 ```ycp
 {
-  integer f(integer a, integer b, integer c) {
+  integer f1() {
+    return 42;
+  }
+
+  integer f2(integer a, integer b, integer c) {
     return 42;
   }
 }
@@ -433,7 +526,11 @@ Y2R translates YCP function definitions as Ruby method definitions.
 #### Ruby Code
 
 ```ruby
-def f(a, b, c)
+def f1()
+  return 42
+end
+
+def f2(a, b, c)
   return 42
 end
 
@@ -448,9 +545,12 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 ```ycp
 {
   if (true)
-    y2milestone("abcd");
+    y2milestone("M1");
+
+  if (true)
+    y2milestone("M2");
   else
-    y2milestone("efgh");
+    y2milestone("M3");
 }
 ```
 
@@ -458,9 +558,12 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 
 ```ruby
 if true
-  Builtins.y2milestone('abcd')
+  Builtins.y2milestone('M1')
+end
+if true
+  Builtins.y2milestone('M2')
 else
-  Builtins.y2milestone('efgh')
+  Builtins.y2milestone('M3')
 end
 ```
 
@@ -473,7 +576,7 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 ```ycp
 {
   while (true)
-    y2milestone("abcd");
+    y2milestone("M1");
 }
 ```
 
@@ -481,6 +584,6 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 
 ```ruby
 while true
-  Builtins.y2milestone('abcd')
+  Builtins.y2milestone('M1')
 end
 ```
