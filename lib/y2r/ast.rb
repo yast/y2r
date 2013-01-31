@@ -18,14 +18,7 @@ module Y2R
 
     class Block < Node
       def to_ruby
-        case kind
-          when :def, :file, :stmt
-            statements.map(&:to_ruby).join("\n")
-          when :unspec
-            symbols.map(&:to_ruby).join(", ")
-          else
-            raise "Unknown block kind: #{kind}."
-        end
+        statements.map(&:to_ruby).join("\n")
       end
     end
 

@@ -16,29 +16,7 @@ module Y2R::AST
 
   describe Block do
     describe "#to_ruby" do
-      it "emits correct code for def blocks" do
-        node = Block.new(
-          :kind       => :def,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for file blocks" do
+      it "emits correct code" do
         node = Block.new(
           :kind       => :file,
           :statements => [
@@ -58,41 +36,6 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for stmt blocks" do
-        node = Block.new(
-          :kind       => :stmt,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for unspec blocks" do
-        node = Block.new(
-          :kind    => :unspec,
-          :symbols => [
-            Symbol.new(:name => "a"),
-            Symbol.new(:name => "b"),
-            Symbol.new(:name => "c")
-          ]
-        )
-
-        node.to_ruby.should == "a, b, c"
       end
     end
   end
