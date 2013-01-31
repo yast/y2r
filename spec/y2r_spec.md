@@ -236,6 +236,32 @@ i = 42
 j = i
 ```
 
+### Conversion
+
+Y2R translates YCP conversion calls to ruby Convert utility. It handles both,
+explicit and implicit calls.
+
+#### YCP Code
+
+```ycp
+{
+  integer i = 42;
+  float   j = (float) i;
+  list<any> m = [1];
+  integer l = m[0]:-1;
+}
+```
+
+#### Ruby Code
+
+```ruby
+i = 42
+j = Convert.convert(i, :from => 'integer', :to => 'float')
+m = [1]
+l = Convert.convert(Ops.index(m, [0], -1), :from => 'any', :to => 'integer')
+```
+
+
 ### Builtin Calls
 
 Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`

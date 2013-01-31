@@ -159,6 +159,12 @@ module Y2R
             :index   => element_to_node(element.elements[2], context),
             :default => element_to_node(element.elements[3], context)
           )
+        when "yepropagate"
+          AST::YEPropagate.new(
+            :child => element_to_node(element.elements[1], context),
+            :from  => element.attributes["from"],
+            :to    => element.attributes["to"]
+          )
         when "yeterm"
           AST::YETerm.new(
             :name     => element.attributes["name"],

@@ -428,6 +428,44 @@ module Y2R::AST
     end
   end
 
+  describe YEPropagate do
+    describe "#to_ruby" do
+      it "emits correct code for same types" do
+        child = Const.new(:type => :int, :value => "42")
+        node = YEPropagate.new(:from => "integer", :to => "integer",
+          :child => child
+        )
+
+        node.to_ruby.should == child.to_ruby
+      end
+
+      it "emits correct code for same types and different constantness" do
+        child = Const.new(:type => :int, :value => "42")
+        node = YEPropagate.new(:from => "const integer", :to => "integer",
+          :child => child
+        )
+        node.to_ruby.should == child.to_ruby
+      end
+
+      it "emits correct code for different types" do
+        child = Const.new(:type => :int, :value => "42")
+        node = YEPropagate.new(:from => "float", :to => "integer",
+          :child => child
+        )
+        node.to_ruby.should == "Convert.convert(#{child.to_ruby}, :from => 'float', :to => 'integer')"
+      end
+
+      it "emits correct code for different types and various constantness" do
+        child = Const.new(:type => :int, :value => "42")
+        node = YEPropagate.new(:from => "const float", :to => "integer",
+          :child => child
+        )
+        node.to_ruby.should == "Convert.convert(#{child.to_ruby}, :from => 'float', :to => 'integer')"
+      end
+
+    end
+  end
+
   describe YETerm do
     describe "#to_ruby" do
       it "emits correct code for empty terms" do
