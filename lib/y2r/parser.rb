@@ -177,19 +177,12 @@ module Y2R
     end
 
     def extract_children(element, context)
-      element.elements.map do |element|
-        element_to_node(element, context)
-      end
+      element.elements.map { |e| element_to_node(e, context) }
     end
 
     def extract_collection(element, name, context)
-      if element.elements[name]
-        element.elements[name].elements.map do |element|
-          element_to_node(element, context)
-        end
-      else
-        []
-      end
+      child = element.elements[name]
+      child ? extract_children(child, context) : []
     end
   end
 end
