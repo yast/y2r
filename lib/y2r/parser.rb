@@ -9,16 +9,6 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :symbol      => {
-        :type   => :leaf,
-        :filter => proc { |e|
-          if e.attributes["category"] == "filename"
-            [:global, :category, :type, :name]
-          else
-            [:global, :category, :type]
-          end
-        }
-      },
     }
 
     def parse(input, options = {})
@@ -142,6 +132,12 @@ module Y2R
           return AST::Return.new(
             :child => element_to_node(element.elements[1], context)
           )
+        when "symbol"
+          if element.attributes["category"] == "filename"
+            return AST::Symbol.new
+          else
+            return AST::Symbol.new(:name  => element.attributes["name"])
+          end
         when "textdomain"
           return AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
