@@ -30,6 +30,10 @@ module Y2R
 
     class Block < Node
       def to_ruby(context = Context.new)
+        if kind == :stmt
+          raise NotImplementedError, "Statement blocks are not supported."
+        end
+
         statements_context = context.dup
         statements_context.blocks = statements_context.blocks + [kind]
 

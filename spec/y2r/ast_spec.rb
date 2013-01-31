@@ -37,6 +37,30 @@ module Y2R::AST
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
       end
+
+      it "raises an exception for stmt blocks" do
+        node = Block.new(
+          :kind       => :stmt,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        lambda {
+          node.to_ruby
+        }.should raise_error NotImplementedError, "Statement blocks are not supported."
+      end
     end
   end
 
