@@ -18,7 +18,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code for def blocks" do
         node = Block.new(
-          :kind       => "def",
+          :kind       => :def,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -40,7 +40,7 @@ module Y2R::AST
 
       it "emits correct code for file blocks" do
         node = Block.new(
-          :kind       => "file",
+          :kind       => :file,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -62,7 +62,7 @@ module Y2R::AST
 
       it "emits correct code for stmt blocks" do
         node = Block.new(
-          :kind       => "stmt",
+          :kind       => :stmt,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -84,7 +84,7 @@ module Y2R::AST
 
       it "emits correct code for unspec blocks" do
         node = Block.new(
-          :kind    => "unspec",
+          :kind    => :unspec,
           :symbols => [
             Symbol.new(:name => "a"),
             Symbol.new(:name => "b"),
@@ -224,7 +224,7 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => Block.new(
-            :kind       => "file",
+            :kind       => :file,
             :statements => [
               Return.new(:child => Const.new(:type => "int", :value => "42"))
             ]
@@ -243,7 +243,7 @@ module Y2R::AST
             Symbol.new(:name => "c")
           ],
           :block => Block.new(
-            :kind       => "file",
+            :kind       => :file,
             :statements => [
               Return.new(:child => Const.new(:type => "int", :value => "42"))
             ]

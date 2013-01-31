@@ -61,7 +61,7 @@ module Y2R
           )
         when "block"
           AST::Block.new(
-            :kind       => element.attributes["kind"],
+            :kind       => element.attributes["kind"].to_sym,
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
