@@ -8,30 +8,37 @@ module Y2R
       end
     end
 
+    class Context
+    end
+
     # Sorted alphabetically.
 
     class Assign < Node
-      def to_ruby
-        "#{name} = #{child.to_ruby}"
+      def to_ruby(context = Context.new)
+        "#{name} = #{child.to_ruby(context)}"
       end
     end
 
     class Block < Node
-      def to_ruby
-        statements.map(&:to_ruby).join("\n")
+      def to_ruby(context = Context.new)
+        statements.map { |s| s.to_ruby(context) }.join("\n")
       end
     end
 
     class Builtin < Node
-      def to_ruby
-        "Builtins.#{name}(" + children.map(&:to_ruby).join(", ") + ")"
+      def to_ruby(context = Context.new)
+        "Builtins.#{name}(" +
+          children.map { |ch| ch.to_ruby(context) }.join(", ") +
+        ")"
       end
     end
 
     class Call < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         # TODO: YCP uses call-by-value.
-        "#{ns}.#{name}(#{args.map(&:to_ruby).join(", ")})"
+        "#{ns}.#{name}(" +
+          args.map { |a| a.to_ruby(context) }.join(", ") +
+        ")"
       end
     end
 
@@ -45,13 +52,17 @@ module Y2R
         ">=" => "greater_or_equal"
       }
 
-      def to_ruby
-        "Ops.#{OPS_TO_METHODS[op]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
+      def to_ruby(context = Context.new)
+        "Ops.#{OPS_TO_METHODS[op]}(" +
+          lhs.to_ruby(context) +
+          ", " +
+          rhs.to_ruby(context) +
+        ")"
       end
     end
 
     class Const < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         case type
           when :void
             "nil"
@@ -72,10 +83,12 @@ module Y2R
     end
 
     class FunDef < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         [
-          "def #{name}(#{args.map(&:to_ruby).join(", ")})",
-          indent(block.to_ruby),
+          "def #{name}(" +
+            args.map { |a| a.to_ruby(context) }.join(", ") +
+          ")",
+          indent(block.to_ruby(context)),
           "end",
           ""
         ].join("\n")
@@ -83,19 +96,19 @@ module Y2R
     end
 
     class If < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         if self.else
           [
-            "if #{cond.to_ruby}",
-            indent(self.then.to_ruby),
+            "if #{cond.to_ruby(context)}",
+            indent(self.then.to_ruby(context)),
             "else",
-            indent(self.else.to_ruby),
+            indent(self.else.to_ruby(context)),
             "end"
           ].join("\n")
         else
           [
-            "if #{cond.to_ruby}",
-            indent(self.then.to_ruby),
+            "if #{cond.to_ruby(context)}",
+            indent(self.then.to_ruby(context)),
             "end"
           ].join("\n")
         end
@@ -103,7 +116,7 @@ module Y2R
     end
 
     class Import < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         [
           "YCP.import('#{name}')", # TODO: Implement escaping.
           ""
@@ -112,21 +125,21 @@ module Y2R
     end
 
     class List < Node
-      def to_ruby
-        "[" + children.map(&:to_ruby).join(", ") + "]"
+      def to_ruby(context = Context.new)
+        "[" + children.map { |ch| ch.to_ruby(context) }.join(", ") + "]"
       end
     end
 
     class Locale < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         "_('" + text + "')"
       end
     end
 
     class Map < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         if !children.empty?
-          "{ " + children.map(&:to_ruby).join(", ") + " }"
+          "{ " + children.map { |ch| ch.to_ruby(context) }.join(", ") + " }"
         else
           "{}"
         end
@@ -134,15 +147,15 @@ module Y2R
     end
 
     class MapElement < Node
-      def to_ruby
-        "#{key.to_ruby} => #{value.to_ruby}"
+      def to_ruby(context = Context.new)
+        "#{key.to_ruby(context)} => #{value.to_ruby(context)}"
       end
     end
 
     class Return < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         if child
-          "return #{child.to_ruby}"
+          "return #{child.to_ruby(context)}"
         else
           "return"
         end
@@ -150,13 +163,13 @@ module Y2R
     end
 
     class Symbol < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         name
       end
     end
 
     class Textdomain < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         [
           "FastGettext.text_domain = '#{name}'", # TODO: Implement escaping.
           ""
@@ -165,16 +178,16 @@ module Y2R
     end
 
     class Variable < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         name
       end
     end
 
     class While < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         [
-          "while #{cond.to_ruby}",
-          indent(self.do.to_ruby),
+          "while #{cond.to_ruby(context)}",
+          indent(self.do.to_ruby(context)),
           "end"
         ].join("\n")
       end
@@ -196,22 +209,34 @@ module Y2R
         "||" => "logical_or"
       }
 
-      def to_ruby
-        "Ops.#{OPS_TO_METHODS[name]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
+      def to_ruby(context = Context.new)
+        "Ops.#{OPS_TO_METHODS[name]}(" +
+          lhs.to_ruby(context) +
+          ", " +
+          rhs.to_ruby(context) +
+        ")"
       end
     end
 
     class YEBracket < Node
-      def to_ruby
-        "Ops.index(#{value.to_ruby}, #{index.to_ruby}, #{default.to_ruby})"
+      def to_ruby(context = Context.new)
+        "Ops.index(" +
+          value.to_ruby(context) +
+          ", " +
+          index.to_ruby(context) +
+          ", " +
+          default.to_ruby(context) +
+        ")"
       end
     end
 
     class YETerm < Node
-      def to_ruby
+      def to_ruby(context = Context.new)
         # TODO: Implement escaping.
         if !children.empty?
-          "Term.new(:#{name}, " + children.map(&:to_ruby).join(", ") + ")"
+          "Term.new(:#{name}, " +
+            children.map { |ch| ch.to_ruby(context) }.join(", ") +
+          ")"
         else
           "Term.new(:#{name})"
         end
@@ -219,8 +244,12 @@ module Y2R
     end
 
     class YETriple < Node
-      def to_ruby
-        "#{cond.to_ruby} ? #{self.true.to_ruby} : #{self.false.to_ruby}"
+      def to_ruby(context = Context.new)
+        cond.to_ruby(context) +
+        " ? " +
+        self.true.to_ruby(context) +
+        " : " +
+        self.false.to_ruby(context)
       end
     end
 
@@ -231,8 +260,8 @@ module Y2R
         "!"  => "logical_not"
       }
 
-      def to_ruby
-        "Ops.#{OPS_TO_METHODS[name]}(#{child.to_ruby})"
+      def to_ruby(context = Context.new)
+        "Ops.#{OPS_TO_METHODS[name]}(#{child.to_ruby(context)})"
       end
     end
   end
