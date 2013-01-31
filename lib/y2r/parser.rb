@@ -9,10 +9,8 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :assign      => { :type => :wrapper },
       :compare     => { :type => :struct },
       :fun_def     => { :type => :struct },
-      :return      => { :type => :wrapper },
       :symbol      => {
         :type   => :leaf,
         :filter => proc { |e|
@@ -25,7 +23,6 @@ module Y2R
       },
       :while       => { :type => :struct },
       :yetriple    => { :type => :struct },
-      :yeunary     => { :type => :wrapper }
     }
 
     def parse(input, options = {})
@@ -75,6 +72,11 @@ module Y2R
         when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
              "rhs", "stmt", "then", "true", "value", "ycp"
           return element_to_node(element.elements[1], context)
+        when "assign"
+          return AST::Assign.new(
+            :name  => element.attributes["name"],
+            :child => element_to_node(element.elements[1], context)
+          )
         when "block"
           return AST::Block.new(
             :kind       => element.attributes["kind"],
@@ -124,6 +126,10 @@ module Y2R
           return AST::Locale.new(:text => element.attributes["text"])
         when "map"
           return AST::Map.new(:children => extract_children(element, :map))
+        when "return"
+          return AST::Return.new(
+            :child => element_to_node(element.elements[1], context)
+          )
         when "textdomain"
           return AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
@@ -144,6 +150,11 @@ module Y2R
           return AST::YETerm.new(
             :name     => element.attributes["name"],
             :children => extract_children(element, :yeterm)
+          )
+        when "yeunary"
+          return AST::YEUnary.new(
+            :name  => element.attributes["name"],
+            :child => element_to_node(element.elements[1], context)
           )
       end
 

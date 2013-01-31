@@ -372,7 +372,7 @@ module Y2R::AST
   describe Return do
     describe "#to_ruby" do
       it "emits correct code for a return without a value" do
-        node = Return.new
+        node = Return.new(:child => nil)
 
         node.to_ruby.should == "return"
       end
