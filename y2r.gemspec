@@ -30,5 +30,6 @@ Gem::Specification.new do |s|
   s.add_dependency "cheetah", "0.3.0"
   s.add_dependency "docopt",  "0.5.0"
 
+  s.add_development_dependency "redcarpet"
   s.add_development_dependency "rspec"
 end

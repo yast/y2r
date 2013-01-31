@@ -2,12 +2,6 @@ require "ostruct"
 
 module Y2R
   module AST
-    module SimpleWrapper
-      def to_ruby
-        child.to_ruby
-      end
-    end
-
     class Node < OpenStruct
       def indent(s)
         s.gsub(/^/, "  ")
@@ -15,12 +9,6 @@ module Y2R
     end
 
     # Sorted alphabetically.
-
-    class Args < Node
-      def to_ruby
-        children.map(&:to_ruby).join(", ")
-      end
-    end
 
     class Assign < Node
       def to_ruby
@@ -30,14 +18,7 @@ module Y2R
 
     class Block < Node
       def to_ruby
-        case kind
-          when "def","file", "stmt"
-            statements.to_ruby
-          when "unspec"
-            symbols.to_ruby
-          else
-            raise "Unknown block kind: #{kind}."
-        end
+        statements.map(&:to_ruby).join("\n")
       end
     end
 
@@ -47,14 +28,10 @@ module Y2R
       end
     end
 
-    class BuiltinElement < Node
-      include SimpleWrapper
-    end
-
     class Call < Node
       def to_ruby
         # TODO: YCP uses call-by-value.
-        "#{ns}.#{name}(#{child ? child.to_ruby : ""})"
+        "#{ns}.#{name}(#{args.map(&:to_ruby).join(", ")})"
       end
     end
 
@@ -73,24 +50,20 @@ module Y2R
       end
     end
 
-    class Cond < Node
-      include SimpleWrapper
-    end
-
     class Const < Node
       def to_ruby
         case type
-          when "void"
+          when :void
             "nil"
-          when "bool", "int"
+          when :bool, :int
             value
-          when "float"
+          when :float
             value.sub(/\.$/, ".0")
-          when "symbol"
+          when :symbol
             ":#{value}" # TODO: Implement escaping.
-          when "string"
+          when :string
             "'#{value}'" # TODO: Implement escaping.
-          when "path"
+          when :path
             "Path.new('#{value}')" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
@@ -98,30 +71,10 @@ module Y2R
       end
     end
 
-    class Declaration < Node
-      include SimpleWrapper
-    end
-
-    class Do < Node
-      include SimpleWrapper
-    end
-
-    class Else < Node
-      include SimpleWrapper
-    end
-
-    class Expr < Node
-      include SimpleWrapper
-    end
-
-    class False < Node
-      include SimpleWrapper
-    end
-
     class FunDef < Node
       def to_ruby
         [
-          "def #{name}(#{declaration ? declaration.to_ruby : ""})",
+          "def #{name}(#{args.map(&:to_ruby).join(", ")})",
           indent(block.to_ruby),
           "end",
           ""
@@ -131,30 +84,22 @@ module Y2R
 
     class If < Node
       def to_ruby
-        if else_
+        if self.else
           [
             "if #{cond.to_ruby}",
-            indent(then_.to_ruby),
+            indent(self.then.to_ruby),
             "else",
-            indent(else_.to_ruby),
+            indent(self.else.to_ruby),
             "end"
           ].join("\n")
         else
           [
             "if #{cond.to_ruby}",
-            indent(then_.to_ruby),
+            indent(self.then.to_ruby),
             "end"
           ].join("\n")
         end
       end
-
-      private
-
-      # The If class is built as a collection because the XML it is constructed
-      # from is structured that way. Let's define helpers to hide that a bit.
-      def cond;  children[0]; end
-      def then_; children[1]; end
-      def else_; children[2]; end
     end
 
     class Import < Node
@@ -166,22 +111,10 @@ module Y2R
       end
     end
 
-    class Key < Node
-      include SimpleWrapper
-    end
-
-    class Lhs < Node
-      include SimpleWrapper
-    end
-
     class List < Node
       def to_ruby
         "[" + children.map(&:to_ruby).join(", ") + "]"
       end
-    end
-
-    class ListElement < Node
-      include SimpleWrapper
     end
 
     class Locale < Node
@@ -216,29 +149,9 @@ module Y2R
       end
     end
 
-    class Rhs < Node
-      include SimpleWrapper
-    end
-
-    class Statements < Node
-      def to_ruby
-        children.map(&:to_ruby).join("\n")
-      end
-    end
-
-    class Stmt < Node
-      include SimpleWrapper
-    end
-
     class Symbol < Node
       def to_ruby
         name
-      end
-    end
-
-    class Symbols < Node
-      def to_ruby
-        children.map(&:to_ruby).join(", ")
       end
     end
 
@@ -249,18 +162,6 @@ module Y2R
           ""
         ].join("\n")
       end
-    end
-
-    class Then < Node
-      include SimpleWrapper
-    end
-
-    class True < Node
-      include SimpleWrapper
-    end
-
-    class Value < Node
-      include SimpleWrapper
     end
 
     class Variable < Node
@@ -277,10 +178,6 @@ module Y2R
           "end"
         ].join("\n")
       end
-    end
-
-    class YCP < Node
-      include SimpleWrapper
     end
 
     class YEBinary < Node
@@ -302,27 +199,12 @@ module Y2R
       def to_ruby
         "Ops.#{OPS_TO_METHODS[name]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
       end
-
-      private
-
-      # The YEBinary class is built as a collection because the XML it is
-      # constructed from is structured that way. Let's define helpers to hide
-      # that a bit.
-      def lhs; children[0]; end
-      def rhs; children[1]; end
     end
 
     class YEBracket < Node
       def to_ruby
         "Ops.index(#{value.to_ruby}, #{index.to_ruby}, #{default.to_ruby})"
       end
-
-      # The YEBracket class is built as a collection because the XML it is
-      # constructed from is structured that way. Let's define helpers to hide
-      # that a bit.
-      def value;   children[0]; end
-      def index;   children[1]; end
-      def default; children[2]; end
     end
 
     class YEPropagate < Node
@@ -346,10 +228,6 @@ module Y2R
           "Term.new(:#{name})"
         end
       end
-    end
-
-    class YETermElement < Node
-      include SimpleWrapper
     end
 
     class YETriple < Node
