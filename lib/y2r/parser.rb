@@ -10,11 +10,8 @@ module Y2R
     # Sorted alphabetically.
     ELEMENT_INFO = {
       :assign      => { :type => :wrapper },
-      :builtin     => { :type => :collection, :create_context => :builtin },
       :compare     => { :type => :struct },
       :fun_def     => { :type => :struct },
-      :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
-      :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
       :symbol      => {
         :type   => :leaf,
@@ -27,7 +24,6 @@ module Y2R
         }
       },
       :while       => { :type => :struct },
-      :yeterm      => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
       :yetriple    => { :type => :struct },
       :yeunary     => { :type => :wrapper }
     }
@@ -85,6 +81,11 @@ module Y2R
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
+        when "builtin"
+          return AST::Builtin.new(
+            :name     => element.attributes["name"],
+            :children => extract_children(element, :builtin)
+          )
         when "call"
           return AST::Call.new(
             :ns   => element.attributes["ns"],
@@ -117,8 +118,12 @@ module Y2R
           )
         when "import"
           return AST::Import.new(:name => element.attributes["name"])
+        when "list"
+          return AST::List.new(:children => extract_children(element, :list))
         when "locale"
           return AST::Locale.new(:text => element.attributes["text"])
+        when "map"
+          return AST::Map.new(:children => extract_children(element, :map))
         when "textdomain"
           return AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
@@ -134,6 +139,11 @@ module Y2R
             :value   => element_to_node(element.elements[1], context),
             :index   => element_to_node(element.elements[2], context),
             :default => element_to_node(element.elements[3], context)
+          )
+        when "yeterm"
+          return AST::YETerm.new(
+            :name     => element.attributes["name"],
+            :children => extract_children(element, :yeterm)
           )
       end
 
@@ -195,6 +205,12 @@ module Y2R
 
     def classify(s)
       s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }.gsub(/_./) { |s| s[1].upcase }
+    end
+
+    def extract_children(element, context)
+      element.elements.map do |element|
+        element_to_node(element, context)
+      end
     end
 
     def extract_collection(element, name, context)
