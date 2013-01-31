@@ -9,6 +9,15 @@ module Y2R
     end
 
     class Context
+      attr_accessor :blocks
+
+      def initialize(attrs = {})
+        @blocks = attrs[:blocks] || []
+      end
+
+      def in_function?
+        @blocks.include?(:def)
+      end
     end
 
     # Sorted alphabetically.
@@ -21,7 +30,10 @@ module Y2R
 
     class Block < Node
       def to_ruby(context = Context.new)
-        statements.map { |s| s.to_ruby(context) }.join("\n")
+        statements_context = context.dup
+        statements_context.blocks = statements_context.blocks + [kind]
+
+        statements.map { |s| s.to_ruby(statements_context) }.join("\n")
       end
     end
 
@@ -84,6 +96,10 @@ module Y2R
 
     class FunDef < Node
       def to_ruby(context = Context.new)
+        if context.in_function?
+          raise NotImplementedError, "Nested functions are not supported."
+        end
+
         [
           "def #{name}(" +
             args.map { |a| a.to_ruby(context) }.join(", ") +

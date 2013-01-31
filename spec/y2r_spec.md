@@ -536,6 +536,30 @@ end
 
 ```
 
+Y2R does not support nested functions. This is mostly because Ruby doesn't have
+any suitable equivalent construct.
+
+#### YCP Code
+
+```ycp
+{
+  integer outer() {
+    integer inner() {
+      return 42;
+    }
+
+    return inner();
+  }
+
+}
+```
+
+#### Error Message
+
+```error
+Nested functions are not supported.
+```
+
 ### `if` Statement
 
 Y2R translates YCP `if` statement as Ruby `if` statement.

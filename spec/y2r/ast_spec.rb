@@ -195,6 +195,23 @@ module Y2R::AST
 
         node.to_ruby.should == "def f(a, b, c)\n  return 42\nend\n"
       end
+
+      it "raises an exception for nested functions" do
+        node = FunDef.new(
+          :name  => "f",
+          :args  => [],
+          :block => Block.new(
+            :kind       => :file,
+            :statements => [
+              Return.new(:child => Const.new(:type => :int, :value => "42"))
+            ]
+          )
+        )
+
+        lambda {
+          node.to_ruby(Context.new(:blocks => [:file, :def]))
+        }.should raise_error NotImplementedError, "Nested functions are not supported."
+      end
     end
   end
 

@@ -44,11 +44,14 @@ class RSpecRenderer < Redcarpet::Render::Base
       when "ruby"
         raise "Unexpected Ruby code: #{code}." if !@ycp_code
         @ruby_code = code[0..-2]
+      when "error"
+        raise "Unexpected error message: #{code}." if !@ycp_code
+        @error_code = code[0..-2]
       else
         raise "Invalid language: #{language}."
     end
 
-    if @ycp_code && @ruby_code
+    if @ycp_code && (@ruby_code || @error_code)
       lines = []
 
       lines << "" if @separate
@@ -57,16 +60,23 @@ class RSpecRenderer < Redcarpet::Render::Base
       lines << indent(@ycp_code, 2)
       lines << "  EOT"
       lines << ""
-      lines << "  ruby_code = cleanup(<<-EOT)"
-      lines << indent(@ruby_code, 2)
-      lines << "  EOT"
-      lines << ""
-      lines << "  Y2R.compile(ycp_code).should == ruby_code"
+      if @ruby_code
+        lines << "  ruby_code = cleanup(<<-EOT)"
+        lines << indent(@ruby_code, 2)
+        lines << "  EOT"
+        lines << ""
+        lines << "  Y2R.compile(ycp_code).should == ruby_code"
+      elsif @error_code
+        lines << "  lambda {"
+        lines << "    Y2R.compile(ycp_code)"
+        lines << "  }.should raise_error NotImplementedError, \"#{@error_code}\""
+      end
       lines << "end"
 
-      @ycp_code  = nil
-      @ruby_code = nil
-      @separate  = true
+      @ycp_code   = nil
+      @ruby_code  = nil
+      @error_code = nil
+      @separate   = true
 
       auto_indent(join(lines))
     else
