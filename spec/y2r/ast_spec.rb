@@ -221,9 +221,9 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code for fundefs without arguments" do
         node = FunDef.new(
-          :name        => "f",
-          :declaration => nil,
-          :block       => Block.new(
+          :name  => "f",
+          :args  => [],
+          :block => Block.new(
             :kind       => "file",
             :statements => [
               Return.new(:child => Const.new(:type => "int", :value => "42"))
@@ -236,16 +236,13 @@ module Y2R::AST
 
       it "emits correct code for fundefs with arguments" do
         node = FunDef.new(
-          :name        => "f",
-          :declaration => Block.new(
-            :kind    => "unspec",
-            :symbols => [
-              Symbol.new(:name => "a"),
-              Symbol.new(:name => "b"),
-              Symbol.new(:name => "c")
-            ]
-          ),
-          :block       => Block.new(
+          :name  => "f",
+          :args  => [
+            Symbol.new(:name => "a"),
+            Symbol.new(:name => "b"),
+            Symbol.new(:name => "c")
+          ],
+          :block => Block.new(
             :kind       => "file",
             :statements => [
               Return.new(:child => Const.new(:type => "int", :value => "42"))

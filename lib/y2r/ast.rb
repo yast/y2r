@@ -81,7 +81,7 @@ module Y2R
     class FunDef < Node
       def to_ruby
         [
-          "def #{name}(#{declaration ? declaration.to_ruby : ""})",
+          "def #{name}(#{args.map(&:to_ruby).join(", ")})",
           indent(block.to_ruby),
           "end",
           ""

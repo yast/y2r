@@ -51,8 +51,8 @@ module Y2R
 
     def element_to_node(element, context = nil)
       case element.name
-        when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
-             "rhs", "stmt", "then", "true", "value", "ycp"
+        when "cond", "do", "else", "expr", "false", "key", "lhs", "rhs", "stmt",
+             "then", "true", "value", "ycp"
           element_to_node(element.elements[1], context)
         when "assign"
           AST::Assign.new(
@@ -98,13 +98,17 @@ module Y2R
           end
         when "fun_def"
           AST::FunDef.new(
-            :name        => element.attributes["name"],
-            :declaration => if element.elements["declaration"]
-              element_to_node(element.elements["declaration"], context)
+            :name  => element.attributes["name"],
+            :args  => if element.elements["declaration"]
+              extract_collection(
+                element.elements["declaration"].elements["block"],
+                "symbols",
+                context
+              )
             else
-              nil
+              []
             end,
-            :block       => element_to_node(element.elements["block"], context),
+            :block => element_to_node(element.elements["block"], context),
           )
         when "if"
           AST::If.new(
