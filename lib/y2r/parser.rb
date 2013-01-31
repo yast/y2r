@@ -7,10 +7,6 @@ module Y2R
     class SyntaxError < StandardError
     end
 
-    # Sorted alphabetically.
-    ELEMENT_INFO = {
-    }
-
     def parse(input, options = {})
       xml_to_ast(ycp_to_xml(input, options))
     end
@@ -57,51 +53,51 @@ module Y2R
       case element.name
         when "cond", "declaration", "do", "else", "expr", "false", "key", "lhs",
              "rhs", "stmt", "then", "true", "value", "ycp"
-          return element_to_node(element.elements[1], context)
+          element_to_node(element.elements[1], context)
         when "assign"
-          return AST::Assign.new(
+          AST::Assign.new(
             :name  => element.attributes["name"],
             :child => element_to_node(element.elements[1], context)
           )
         when "block"
-          return AST::Block.new(
+          AST::Block.new(
             :kind       => element.attributes["kind"],
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
         when "builtin"
-          return AST::Builtin.new(
+          AST::Builtin.new(
             :name     => element.attributes["name"],
             :children => extract_children(element, :builtin)
           )
         when "call"
-          return AST::Call.new(
+          AST::Call.new(
             :ns   => element.attributes["ns"],
             :name => element.attributes["name"],
             :args => extract_collection(element, "args", context)
           )
         when "compare"
-          return AST::Compare.new(
+          AST::Compare.new(
             :op  => element.attributes["op"],
             :lhs => element_to_node(element.elements["lhs"], context),
             :rhs => element_to_node(element.elements["rhs"], context)
           )
         when "const"
-          return AST::Const.new(
+          AST::Const.new(
             :type  => element.attributes["type"],
             :value => element.attributes["value"]
           )
         when "element"
           if context != :map
-            return element_to_node(element.elements[1], context)
+            element_to_node(element.elements[1], context)
           else
-            return AST::MapElement.new(
+            AST::MapElement.new(
               :key   => element_to_node(element.elements["key"], context),
               :value => element_to_node(element.elements["value"], context)
             )
           end
         when "fun_def"
-          return AST::FunDef.new(
+          AST::FunDef.new(
             :name        => element.attributes["name"],
             :declaration => if element.elements["declaration"]
               element_to_node(element.elements["declaration"], context)
@@ -111,7 +107,7 @@ module Y2R
             :block       => element_to_node(element.elements["block"], context),
           )
         when "if"
-          return AST::If.new(
+          AST::If.new(
             :cond => element_to_node(element.elements[1], context),
             :then => element_to_node(element.elements[2], context),
             :else => if element.elements.size > 2
@@ -121,120 +117,63 @@ module Y2R
             end
           )
         when "import"
-          return AST::Import.new(:name => element.attributes["name"])
+          AST::Import.new(:name => element.attributes["name"])
         when "list"
-          return AST::List.new(:children => extract_children(element, :list))
+          AST::List.new(:children => extract_children(element, :list))
         when "locale"
-          return AST::Locale.new(:text => element.attributes["text"])
+          AST::Locale.new(:text => element.attributes["text"])
         when "map"
-          return AST::Map.new(:children => extract_children(element, :map))
+          AST::Map.new(:children => extract_children(element, :map))
         when "return"
-          return AST::Return.new(
+          AST::Return.new(
             :child => element_to_node(element.elements[1], context)
           )
         when "symbol"
           if element.attributes["category"] == "filename"
-            return AST::Symbol.new
+            AST::Symbol.new
           else
-            return AST::Symbol.new(:name  => element.attributes["name"])
+            AST::Symbol.new(:name  => element.attributes["name"])
           end
         when "textdomain"
-          return AST::Textdomain.new(:name => element.attributes["name"])
+          AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
-          return AST::Variable.new(:name => element.attributes["name"])
+          AST::Variable.new(:name => element.attributes["name"])
         when "while"
-          return AST::While.new(
+          AST::While.new(
             :cond => element_to_node(element.elements["cond"], context),
             :do   => element_to_node(element.elements["do"], context)
           )
         when "yebinary"
-          return AST::YEBinary.new(
+          AST::YEBinary.new(
             :name => element.attributes["name"],
             :lhs  => element_to_node(element.elements[1], context),
             :rhs  => element_to_node(element.elements[2], context)
           )
         when "yebracket"
-          return AST::YEBracket.new(
+          AST::YEBracket.new(
             :value   => element_to_node(element.elements[1], context),
             :index   => element_to_node(element.elements[2], context),
             :default => element_to_node(element.elements[3], context)
           )
         when "yeterm"
-          return AST::YETerm.new(
+          AST::YETerm.new(
             :name     => element.attributes["name"],
             :children => extract_children(element, :yeterm)
           )
         when "yetriple"
-          return AST::YETriple.new(
+          AST::YETriple.new(
             :cond  => element_to_node(element.elements["cond"], context),
             :true  => element_to_node(element.elements["true"], context),
             :false => element_to_node(element.elements["false"], context)
           )
         when "yeunary"
-          return AST::YEUnary.new(
+          AST::YEUnary.new(
             :name  => element.attributes["name"],
             :child => element_to_node(element.elements[1], context)
           )
-      end
-
-      info = ELEMENT_INFO[element.name.to_sym]
-      raise "Invalid element: <#{element.name}>." unless info
-
-      if info[:contexts]
-        raise "Element <#{element.name}> appeared out of context." unless context
-        unless info[:contexts][context]
-          raise "Element <#{element.name}> appeared in unexpected context \"#{context}\"."
-        end
-        info = info[:contexts][context]
-        class_name_prefix = classify(context.to_s)
-      else
-        class_name_prefix = ""
-      end
-
-      class_name_base = classify(element.name)
-      node = AST.const_get(class_name_prefix + class_name_base).new
-
-      filter = if info[:filter]
-        info[:filter].is_a?(Proc) ? info[:filter].call(element) : info[:filter]
-      else
-        []
-      end
-
-      element.attributes.each do |name, value|
-        node.send("#{name}=", value) unless filter.include?(name.to_sym)
-      end
-
-      context = info[:create_context] if info[:create_context]
-
-      case info[:type]
-        when :leaf
-          # Don't do nothing, we're done.
-
-        when :wrapper
-          child = element.elements[1]
-          node.child = child ? element_to_node(child, context) : nil
-
-        when :collection
-          node.children = element.elements.map do |element|
-            element_to_node(element, context)
-          end
-
-        when :struct
-          element.elements.each do |element|
-            unless filter.include?(element.name.to_sym)
-              node.send("#{element.name}=", element_to_node(element, context))
-            end
-          end
-
         else
-          raise "Invalid node type: #{info[:type]}."
+          raise "Invalid element: <#{element.name}>."
       end
-
-      node
-    end
-
-    def classify(s)
-      s.sub(/^(ycp|ye.|.)/) { |s| s.upcase }.gsub(/_./) { |s| s[1].upcase }
     end
 
     def extract_children(element, context)
