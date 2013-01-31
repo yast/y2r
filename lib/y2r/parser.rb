@@ -9,8 +9,6 @@ module Y2R
 
     # Sorted alphabetically.
     ELEMENT_INFO = {
-      :compare     => { :type => :struct },
-      :fun_def     => { :type => :struct },
       :symbol      => {
         :type   => :leaf,
         :filter => proc { |e|
@@ -21,8 +19,6 @@ module Y2R
           end
         }
       },
-      :while       => { :type => :struct },
-      :yetriple    => { :type => :struct },
     }
 
     def parse(input, options = {})
@@ -94,6 +90,12 @@ module Y2R
             :name => element.attributes["name"],
             :args => extract_collection(element, "args", context)
           )
+        when "compare"
+          return AST::Compare.new(
+            :op  => element.attributes["op"],
+            :lhs => element_to_node(element.elements["lhs"], context),
+            :rhs => element_to_node(element.elements["rhs"], context)
+          )
         when "const"
           return AST::Const.new(
             :type  => element.attributes["type"],
@@ -108,6 +110,16 @@ module Y2R
               :value => element_to_node(element.elements["value"], context)
             )
           end
+        when "fun_def"
+          return AST::FunDef.new(
+            :name        => element.attributes["name"],
+            :declaration => if element.elements["declaration"]
+              element_to_node(element.elements["declaration"], context)
+            else
+              nil
+            end,
+            :block       => element_to_node(element.elements["block"], context),
+          )
         when "if"
           return AST::If.new(
             :cond => element_to_node(element.elements[1], context),
@@ -134,6 +146,11 @@ module Y2R
           return AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
           return AST::Variable.new(:name => element.attributes["name"])
+        when "while"
+          return AST::While.new(
+            :cond => element_to_node(element.elements["cond"], context),
+            :do   => element_to_node(element.elements["do"], context)
+          )
         when "yebinary"
           return AST::YEBinary.new(
             :name => element.attributes["name"],
@@ -150,6 +167,12 @@ module Y2R
           return AST::YETerm.new(
             :name     => element.attributes["name"],
             :children => extract_children(element, :yeterm)
+          )
+        when "yetriple"
+          return AST::YETriple.new(
+            :cond  => element_to_node(element.elements["cond"], context),
+            :true  => element_to_node(element.elements["true"], context),
+            :false => element_to_node(element.elements["false"], context)
           )
         when "yeunary"
           return AST::YEUnary.new(

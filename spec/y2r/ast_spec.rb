@@ -222,6 +222,7 @@ module Y2R::AST
       it "emits correct code for fundefs without arguments" do
         node = FunDef.new(
           :name        => "f",
+          :declaration => nil,
           :block       => Block.new(
             :kind       => "file",
             :statements => [
