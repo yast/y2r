@@ -84,7 +84,7 @@ module Y2R
           )
         when "const"
           AST::Const.new(
-            :type  => element.attributes["type"],
+            :type  => element.attributes["type"].to_sym,
             :value => element.attributes["value"]
           )
         when "element"

@@ -6,7 +6,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Assign.new(
           :name  => "i",
-          :child => Const.new(:type => "int", :value => "42")
+          :child => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby.should == "i = 42"
@@ -22,15 +22,15 @@ module Y2R::AST
           :statements => [
             Assign.new(
               :name  => "i",
-              :child => Const.new(:type => "int", :value => "42")
+              :child => Const.new(:type => :int, :value => "42")
             ),
             Assign.new(
               :name  => "j",
-              :child => Const.new(:type => "int", :value => "43")
+              :child => Const.new(:type => :int, :value => "43")
             ),
             Assign.new(
               :name  => "k",
-              :child => Const.new(:type => "int", :value => "44")
+              :child => Const.new(:type => :int, :value => "44")
             )
           ]
         )
@@ -44,15 +44,15 @@ module Y2R::AST
           :statements => [
             Assign.new(
               :name  => "i",
-              :child => Const.new(:type => "int", :value => "42")
+              :child => Const.new(:type => :int, :value => "42")
             ),
             Assign.new(
               :name  => "j",
-              :child => Const.new(:type => "int", :value => "43")
+              :child => Const.new(:type => :int, :value => "43")
             ),
             Assign.new(
               :name  => "k",
-              :child => Const.new(:type => "int", :value => "44")
+              :child => Const.new(:type => :int, :value => "44")
             )
           ]
         )
@@ -66,15 +66,15 @@ module Y2R::AST
           :statements => [
             Assign.new(
               :name  => "i",
-              :child => Const.new(:type => "int", :value => "42")
+              :child => Const.new(:type => :int, :value => "42")
             ),
             Assign.new(
               :name  => "j",
-              :child => Const.new(:type => "int", :value => "43")
+              :child => Const.new(:type => :int, :value => "43")
             ),
             Assign.new(
               :name  => "k",
-              :child => Const.new(:type => "int", :value => "44")
+              :child => Const.new(:type => :int, :value => "44")
             )
           ]
         )
@@ -109,9 +109,9 @@ module Y2R::AST
         node = Builtin.new(
           :name     => "b",
           :children => [
-            Const.new(:type => "int", :value => "42"),
-            Const.new(:type => "int", :value => "43"),
-            Const.new(:type => "int", :value => "44")
+            Const.new(:type => :int, :value => "42"),
+            Const.new(:type => :int, :value => "43"),
+            Const.new(:type => :int, :value => "44")
           ]
         )
 
@@ -133,9 +133,9 @@ module Y2R::AST
           :ns   => "n",
           :name => "f",
           :args => [
-            Const.new(:type => "int", :value => "42"),
-            Const.new(:type => "int", :value => "43"),
-            Const.new(:type => "int", :value => "44")
+            Const.new(:type => :int, :value => "42"),
+            Const.new(:type => :int, :value => "43"),
+            Const.new(:type => :int, :value => "44")
           ]
         )
 
@@ -147,8 +147,8 @@ module Y2R::AST
   describe Compare do
     describe "#to_ruby" do
       it "emits correct code" do
-        lhs = Const.new(:type => "int", :value => "42")
-        rhs = Const.new(:type => "int", :value => "43")
+        lhs = Const.new(:type => :int, :value => "42")
+        rhs = Const.new(:type => :int, :value => "43")
 
         node_equal            = Compare.new(:op => "==", :lhs => lhs, :rhs => rhs)
         node_not_equal        = Compare.new(:op => "!=", :lhs => lhs, :rhs => rhs)
@@ -170,47 +170,47 @@ module Y2R::AST
   describe Const do
     describe "#to_ruby" do
       it "emits correct code for void constants" do
-        node = Const.new(:type => "void")
+        node = Const.new(:type => :void)
 
         node.to_ruby.should == "nil"
       end
 
       it "emits correct code for boolean constants" do
-        node_true  = Const.new(:type => "bool", :value => "true")
-        node_false = Const.new(:type => "bool", :value => "false")
+        node_true  = Const.new(:type => :bool, :value => "true")
+        node_false = Const.new(:type => :bool, :value => "false")
 
         node_true.to_ruby.should  == "true"
         node_false.to_ruby.should == "false"
       end
 
       it "emits correct code for integer constants" do
-        node = Const.new(:type => "int", :value => "42")
+        node = Const.new(:type => :int, :value => "42")
 
         node.to_ruby.should == "42"
       end
 
       it "emits correct code for float constants" do
-        node_without_decimals = Const.new(:type => "float", :value => "42.")
-        node_with_decimals    = Const.new(:type => "float", :value => "42.1")
+        node_without_decimals = Const.new(:type => :float, :value => "42.")
+        node_with_decimals    = Const.new(:type => :float, :value => "42.1")
 
         node_without_decimals.to_ruby.should == "42.0"
         node_with_decimals.to_ruby.should    == "42.1"
       end
 
       it "emits correct code for symbol constants" do
-        node = Const.new(:type => "symbol", :value => "abcd")
+        node = Const.new(:type => :symbol, :value => "abcd")
 
         node.to_ruby.should == ":abcd"
       end
 
       it "emits correct code for string constants" do
-        node = Const.new(:type => "string", :value => "abcd")
+        node = Const.new(:type => :string, :value => "abcd")
 
         node.to_ruby.should == "'abcd'"
       end
 
       it "emits correct code for path constants" do
-        node = Const.new(:type => "path", :value => ".abcd")
+        node = Const.new(:type => :path, :value => ".abcd")
 
         node.to_ruby.should == "Path.new('.abcd')"
       end
@@ -226,7 +226,7 @@ module Y2R::AST
           :block => Block.new(
             :kind       => :file,
             :statements => [
-              Return.new(:child => Const.new(:type => "int", :value => "42"))
+              Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
           )
         )
@@ -245,7 +245,7 @@ module Y2R::AST
           :block => Block.new(
             :kind       => :file,
             :statements => [
-              Return.new(:child => Const.new(:type => "int", :value => "42"))
+              Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
           )
         )
@@ -259,7 +259,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code for ifs without else" do
         node = If.new(
-          :cond => Const.new(:type => "bool", :value => "true"),
+          :cond => Const.new(:type => :bool, :value => "true"),
           :then => Call.new(:ns => "n", :name => "f", :args => []),
           :else => nil
         )
@@ -269,7 +269,7 @@ module Y2R::AST
 
       it "emits correct code for ifs with else" do
         node = If.new(
-          :cond => Const.new(:type => "bool", :value => "true"),
+          :cond => Const.new(:type => :bool, :value => "true"),
           :then => Call.new(:ns => "n", :name => "f", :args => []),
           :else => Call.new(:ns => "n", :name => "f", :args => [])
         )
@@ -300,9 +300,9 @@ module Y2R::AST
       it "emits correct code for non-empty lists" do
         node = List.new(
           :children => [
-            Const.new(:type => "int", :value => "42"),
-            Const.new(:type => "int", :value => "43"),
-            Const.new(:type => "int", :value => "44")
+            Const.new(:type => :int, :value => "42"),
+            Const.new(:type => :int, :value => "43"),
+            Const.new(:type => :int, :value => "44")
           ]
         )
 
@@ -335,16 +335,16 @@ module Y2R::AST
         node = Map.new(
           :children => [
             MapElement.new(
-              :key   => Const.new(:type => "symbol", :value => "a"),
-              :value => Const.new(:type => "int",    :value => "42")
+              :key   => Const.new(:type => :symbol, :value => "a"),
+              :value => Const.new(:type => :int,    :value => "42")
             ),
             MapElement.new(
-              :key   => Const.new(:type => "symbol", :value => "b"),
-              :value => Const.new(:type => "int",    :value => "43")
+              :key   => Const.new(:type => :symbol, :value => "b"),
+              :value => Const.new(:type => :int,    :value => "43")
             ),
             MapElement.new(
-              :key   => Const.new(:type => "symbol", :value => "c"),
-              :value => Const.new(:type => "int",    :value => "44")
+              :key   => Const.new(:type => :symbol, :value => "c"),
+              :value => Const.new(:type => :int,    :value => "44")
             )
           ]
         )
@@ -358,8 +358,8 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = MapElement.new(
-          :key   => Const.new(:type => "symbol", :value => "a"),
-          :value => Const.new(:type => "int",    :value => "42")
+          :key   => Const.new(:type => :symbol, :value => "a"),
+          :value => Const.new(:type => :int,    :value => "42")
         )
 
         node.to_ruby.should == ":a => 42"
@@ -377,7 +377,7 @@ module Y2R::AST
 
       it "emits correct code for a return with a value" do
         node = Return.new(
-          :child => Const.new(:type => "int", :value => "42")
+          :child => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby.should == "return 42"
@@ -419,7 +419,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = While.new(
-          :cond => Const.new(:type => "bool", :value => "true"),
+          :cond => Const.new(:type => :bool, :value => "true"),
           :do   => Call.new(:ns => "n", :name => "f", :args => [])
         )
 
@@ -431,8 +431,8 @@ module Y2R::AST
   describe YEBinary do
     describe "#to_ruby" do
       it "emits correct code" do
-        lhs = Const.new(:type => "int", :value => "42")
-        rhs = Const.new(:type => "int", :value => "43")
+        lhs = Const.new(:type => :int, :value => "42")
+        rhs = Const.new(:type => :int, :value => "43")
 
         node_add         = YEBinary.new(:name => "+",  :lhs => lhs, :rhs => rhs)
         node_subtract    = YEBinary.new(:name => "-",  :lhs => lhs, :rhs => rhs)
@@ -469,15 +469,15 @@ module Y2R::AST
         node = YEBracket.new(
           :value => List.new(
             :children => [
-              Const.new(:type => "int", :value => "42"),
-              Const.new(:type => "int", :value => "43"),
-              Const.new(:type => "int", :value => "44")
+              Const.new(:type => :int, :value => "42"),
+              Const.new(:type => :int, :value => "43"),
+              Const.new(:type => :int, :value => "44")
             ]
           ),
           :index => List.new(
-            :children => [Const.new(:type => "int", :value => "1")]
+            :children => [Const.new(:type => :int, :value => "1")]
           ),
-          :default => Const.new(:type => "int", :value => "0")
+          :default => Const.new(:type => :int, :value => "0")
         )
 
         node.to_ruby.should == "Ops.index([42, 43, 44], [1], 0)"
@@ -497,9 +497,9 @@ module Y2R::AST
         node = YETerm.new(
           :name     => "a",
           :children => [
-            Const.new(:type => "int", :value => "42"),
-            Const.new(:type => "int", :value => "43"),
-            Const.new(:type => "int", :value => "44")
+            Const.new(:type => :int, :value => "42"),
+            Const.new(:type => :int, :value => "43"),
+            Const.new(:type => :int, :value => "44")
           ]
         )
 
@@ -512,9 +512,9 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = YETriple.new(
-          :cond  => Const.new(:type => "bool", :value => "true"),
-          :true  => Const.new(:type => "int", :value => "42"),
-          :false => Const.new(:type => "int", :value => "43")
+          :cond  => Const.new(:type => :bool, :value => "true"),
+          :true  => Const.new(:type => :int, :value => "42"),
+          :false => Const.new(:type => :int, :value => "43")
         )
 
         node.to_ruby.should == "true ? 42 : 43"
@@ -525,7 +525,7 @@ module Y2R::AST
   describe YEUnary do
     describe "#to_ruby" do
       it "emits correct code" do
-        child = Const.new(:type => "int", :value => "42")
+        child = Const.new(:type => :int, :value => "42")
 
         node_unary_minus = YEUnary.new(:name => "-", :child => child)
         node_bitwise_not = YEUnary.new(:name => "~", :child => child)

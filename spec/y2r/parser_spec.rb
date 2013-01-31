@@ -4,7 +4,7 @@ module Y2R
   describe Parser do
     describe "#parse" do
       it "parses a simple program" do
-        ast = AST::Const.new(:type => "void", :value => nil)
+        ast = AST::Const.new(:type => :void, :value => nil)
 
         Parser.new.parse("{}").should == ast
       end
@@ -21,15 +21,15 @@ module Y2R
           :statements => [
             AST::Assign.new(
               :name  => "i",
-              :child => AST::Const.new(:type => "int", :value => "42")
+              :child => AST::Const.new(:type => :int, :value => "42")
             ),
             AST::Assign.new(
               :name  => "j",
-              :child => AST::Const.new(:type => "int", :value => "43")
+              :child => AST::Const.new(:type => :int, :value => "43")
             ),
             AST::Assign.new(
               :name  => "k",
-              :child => AST::Const.new(:type => "int", :value => "44")
+              :child => AST::Const.new(:type => :int, :value => "44")
             )
           ]
         )

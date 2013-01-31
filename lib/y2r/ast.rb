@@ -60,17 +60,17 @@ module Y2R
     class Const < Node
       def to_ruby
         case type
-          when "void"
+          when :void
             "nil"
-          when "bool", "int"
+          when :bool, :int
             value
-          when "float"
+          when :float
             value.sub(/\.$/, ".0")
-          when "symbol"
+          when :symbol
             ":#{value}" # TODO: Implement escaping.
-          when "string"
+          when :string
             "'#{value}'" # TODO: Implement escaping.
-          when "path"
+          when :path
             "Path.new('#{value}')" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
