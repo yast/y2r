@@ -91,30 +91,22 @@ module Y2R
 
     class If < Node
       def to_ruby
-        if else_
+        if self.else
           [
             "if #{cond.to_ruby}",
-            indent(then_.to_ruby),
+            indent(self.then.to_ruby),
             "else",
-            indent(else_.to_ruby),
+            indent(self.else.to_ruby),
             "end"
           ].join("\n")
         else
           [
             "if #{cond.to_ruby}",
-            indent(then_.to_ruby),
+            indent(self.then.to_ruby),
             "end"
           ].join("\n")
         end
       end
-
-      private
-
-      # The If class is built as a collection because the XML it is constructed
-      # from is structured that way. Let's define helpers to hide that a bit.
-      def cond;  children[0]; end
-      def then_; children[1]; end
-      def else_; children[2]; end
     end
 
     class Import < Node
@@ -214,27 +206,12 @@ module Y2R
       def to_ruby
         "Ops.#{OPS_TO_METHODS[name]}(#{lhs.to_ruby}, #{rhs.to_ruby})"
       end
-
-      private
-
-      # The YEBinary class is built as a collection because the XML it is
-      # constructed from is structured that way. Let's define helpers to hide
-      # that a bit.
-      def lhs; children[0]; end
-      def rhs; children[1]; end
     end
 
     class YEBracket < Node
       def to_ruby
         "Ops.index(#{value.to_ruby}, #{index.to_ruby}, #{default.to_ruby})"
       end
-
-      # The YEBracket class is built as a collection because the XML it is
-      # constructed from is structured that way. Let's define helpers to hide
-      # that a bit.
-      def value;   children[0]; end
-      def index;   children[1]; end
-      def default; children[2]; end
     end
 
     class YETerm < Node

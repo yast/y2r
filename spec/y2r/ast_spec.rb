@@ -261,10 +261,9 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code for ifs without else" do
         node = If.new(
-          :children => [
-            Const.new(:type => "bool", :value => "true"),
-            Call.new(:ns => "n", :name => "f", :args => [])
-          ]
+          :cond => Const.new(:type => "bool", :value => "true"),
+          :then => Call.new(:ns => "n", :name => "f", :args => []),
+          :else => nil
         )
 
         node.to_ruby.should == "if true\n  n.f()\nend"
@@ -272,11 +271,9 @@ module Y2R::AST
 
       it "emits correct code for ifs with else" do
         node = If.new(
-          :children => [
-            Const.new(:type => "bool", :value => "true"),
-            Call.new(:ns => "n", :name => "f", :args => []),
-            Call.new(:ns => "n", :name => "f", :args => [])
-          ]
+          :cond => Const.new(:type => "bool", :value => "true"),
+          :then => Call.new(:ns => "n", :name => "f", :args => []),
+          :else => Call.new(:ns => "n", :name => "f", :args => [])
         )
 
         node.to_ruby.should == "if true\n  n.f()\nelse\n  n.f()\nend"
@@ -472,17 +469,17 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = YEBracket.new(
-          :children => [
-            List.new(
-              :children => [
-                Const.new(:type => "int", :value => "42"),
-                Const.new(:type => "int", :value => "43"),
-                Const.new(:type => "int", :value => "44")
-              ]
-            ),
-            List.new(:children => [Const.new(:type => "int", :value => "1")]),
-            Const.new(:type => "int", :value => "0")
-          ]
+          :value => List.new(
+            :children => [
+              Const.new(:type => "int", :value => "42"),
+              Const.new(:type => "int", :value => "43"),
+              Const.new(:type => "int", :value => "44")
+            ]
+          ),
+          :index => List.new(
+            :children => [Const.new(:type => "int", :value => "1")]
+          ),
+          :default => Const.new(:type => "int", :value => "0")
         )
 
         node.to_ruby.should == "Ops.index([42, 43, 44], [1], 0)"

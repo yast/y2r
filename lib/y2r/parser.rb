@@ -13,7 +13,6 @@ module Y2R
       :builtin     => { :type => :collection, :create_context => :builtin },
       :compare     => { :type => :struct },
       :fun_def     => { :type => :struct },
-      :if          => { :type => :collection },
       :list        => { :type => :collection, :create_context => :list, :filter => [:size] },
       :map         => { :type => :collection, :create_context => :map, :filter => [:size] },
       :return      => { :type => :wrapper },
@@ -28,8 +27,6 @@ module Y2R
         }
       },
       :while       => { :type => :struct },
-      :yebinary    => { :type => :collection },
-      :yebracket   => { :type => :collection },
       :yeterm      => { :type => :collection, :create_context => :yeterm, :filter => [:args] },
       :yetriple    => { :type => :struct },
       :yeunary     => { :type => :wrapper }
@@ -108,6 +105,16 @@ module Y2R
               :value => element_to_node(element.elements["value"], context)
             )
           end
+        when "if"
+          return AST::If.new(
+            :cond => element_to_node(element.elements[1], context),
+            :then => element_to_node(element.elements[2], context),
+            :else => if element.elements.size > 2
+              element_to_node(element.elements[3], context)
+            else
+              nil
+            end
+          )
         when "import"
           return AST::Import.new(:name => element.attributes["name"])
         when "locale"
@@ -116,6 +123,18 @@ module Y2R
           return AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
           return AST::Variable.new(:name => element.attributes["name"])
+        when "yebinary"
+          return AST::YEBinary.new(
+            :name => element.attributes["name"],
+            :lhs  => element_to_node(element.elements[1], context),
+            :rhs  => element_to_node(element.elements[2], context)
+          )
+        when "yebracket"
+          return AST::YEBracket.new(
+            :value   => element_to_node(element.elements[1], context),
+            :index   => element_to_node(element.elements[2], context),
+            :default => element_to_node(element.elements[3], context)
+          )
       end
 
       info = ELEMENT_INFO[element.name.to_sym]
