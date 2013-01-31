@@ -16,7 +16,29 @@ module Y2R::AST
 
   describe Block do
     describe "#to_ruby" do
-      it "emits correct code" do
+      it "emits correct code for def blocks" do
+        node = Block.new(
+          :kind       => :def,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+
+      it "emits correct code for file blocks" do
         node = Block.new(
           :kind       => :file,
           :statements => [

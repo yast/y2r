@@ -30,14 +30,17 @@ module Y2R
 
     class Block < Node
       def to_ruby(context = Context.new)
-        if kind == :stmt
-          raise NotImplementedError, "Statement blocks are not supported."
+        case kind
+          when :def, :file
+            statements_context = context.dup
+            statements_context.blocks = statements_context.blocks + [kind]
+
+            statements.map { |s| s.to_ruby(statements_context) }.join("\n")
+          when :stmt
+            raise NotImplementedError, "Statement blocks are not supported."
+          else
+            raise "Unknown block kind: #{kind}."
         end
-
-        statements_context = context.dup
-        statements_context.blocks = statements_context.blocks + [kind]
-
-        statements.map { |s| s.to_ruby(statements_context) }.join("\n")
       end
     end
 
