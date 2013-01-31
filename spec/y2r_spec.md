@@ -211,6 +211,26 @@ t1 = Term.new(:a)
 t2 = Term.new(:a, 42, 43, 44)
 ```
 
+### Blocks
+
+Y2R translates YCP blocks as Ruby lambdas.
+
+#### YCP Code
+
+```ycp
+{
+  block<void> b = { y2milestone("M1"); };
+}
+```
+
+#### Ruby Code
+
+```ruby
+b = lambda {
+  Builtins.y2milestone('M1')
+}
+```
+
 Expressions
 -----------
 
