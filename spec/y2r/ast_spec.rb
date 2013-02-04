@@ -622,6 +622,18 @@ module Y2R::AST
     end
   end
 
+  describe YEReturn do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YEReturn.new(
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby.should == "lambda { 42 }"
+      end
+    end
+  end
+
   describe YETerm do
     describe "#to_ruby" do
       it "emits correct code for empty terms" do

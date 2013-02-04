@@ -161,6 +161,10 @@ module Y2R
             :index   => element_to_node(element.elements[2], context),
             :default => element_to_node(element.elements[3], context)
           )
+        when "yereturn"
+          AST::YEReturn.new(
+            :child => element_to_node(element.elements[1], context)
+          )
         when "yeterm"
           AST::YETerm.new(
             :name     => element.attributes["name"],

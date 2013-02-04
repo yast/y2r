@@ -500,6 +500,24 @@ that implements its behavior. There is no equivalent operator in Ruby.
 i = Ops.index([42, 43, 44], [1], 0)
 ```
 
+### Double Quote Operator
+
+Y2R translates YCP double quote operator as a Ruby lambda.
+
+#### YCP Code
+
+```ycp
+{
+  block<integer> b = ``(42);
+}
+```
+
+#### Ruby Code
+
+```ruby
+b = lambda { 42 }
+```
+
 Statements
 ----------
 

@@ -280,6 +280,12 @@ module Y2R
       end
     end
 
+    class YEReturn < Node
+      def to_ruby(context = Context.new)
+        "lambda { #{child.to_ruby(context)} }"
+      end
+    end
+
     class YETerm < Node
       def to_ruby(context = Context.new)
         # TODO: Implement escaping.
