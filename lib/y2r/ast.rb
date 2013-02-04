@@ -48,13 +48,34 @@ module Y2R
             raise "Unknown block kind: #{kind}."
         end
       end
+
+      def to_ruby_block(args, context = Context.new)
+        [
+          "{ |" + args.join(", ") + "|",
+          indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+          "}"
+        ].join("\n")
+      end
     end
 
     class Builtin < Node
       def to_ruby(context = Context.new)
+        if symbols.empty?
+          args  = children
+          block = nil
+        else
+          args  = children[0..-2]
+          block = children.last
+        end
+
         "Builtins.#{name}(" +
-          children.map { |ch| ch.to_ruby(context) }.join(", ") +
-        ")"
+          args.map { |ch| ch.to_ruby(context) }.join(", ") +
+        ")" + if block
+          block_args = symbols.map { |s| s.split(" ").last }
+          " " + block.to_ruby_block(block_args, context)
+        else
+          ""
+        end
       end
     end
 

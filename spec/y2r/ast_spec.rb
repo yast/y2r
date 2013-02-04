@@ -106,19 +106,67 @@ module Y2R::AST
         }.should raise_error NotImplementedError, "Statement blocks are not supported."
       end
     end
+
+    describe "#to_ruby_block" do
+      it "emits correct code without arguments" do
+        node = Block.new(
+          :kind       => :unspec,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby_block([]).should == "{ ||\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+
+      it "emits correct code with arguments" do
+        node = Block.new(
+          :kind       => :unspec,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby_block(["a", "b", "c"]).should ==
+          "{ |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+    end
   end
 
   describe Builtin do
     describe "#to_ruby" do
-      it "emits correct code for builtins with no arguments" do
-        node = Builtin.new(:name => "b", :children => [])
+      it "emits correct code for builtins with no arguments and no block" do
+        node = Builtin.new(:name => "b", :symbols => [], :children => [])
 
         node.to_ruby.should == "Builtins.b()"
       end
 
-      it "emits correct code for builtins with arguments" do
+      it "emits correct code for builtins with arguments and no block" do
         node = Builtin.new(
           :name     => "b",
+          :symbols  => [],
           :children => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
@@ -127,6 +175,67 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "Builtins.b(42, 43, 44)"
+      end
+
+      it "emits correct code for builtins with no arguments and a block" do
+        node = Builtin.new(
+          :name     => "b",
+          :symbols  => ["integer a", "integer b", "integer c"],
+          :children => [
+            Block.new(
+              :kind       => :unspec,
+              :statements => [
+                Assign.new(
+                  :name  => "i",
+                  :child => Const.new(:type => :int, :value => "42")
+                ),
+                Assign.new(
+                  :name  => "j",
+                  :child => Const.new(:type => :int, :value => "43")
+                ),
+                Assign.new(
+                  :name  => "k",
+                  :child => Const.new(:type => :int, :value => "44")
+                )
+              ]
+            )
+          ]
+        )
+
+        node.to_ruby.should ==
+          "Builtins.b() { |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+
+      it "emits correct code for builtins with arguments and a block" do
+        node = Builtin.new(
+          :name     => "b",
+          :symbols  => ["integer a", "integer b", "integer c"],
+          :children => [
+            Const.new(:type => :int, :value => "42"),
+            Const.new(:type => :int, :value => "43"),
+            Const.new(:type => :int, :value => "44"),
+            Block.new(
+              :kind       => :unspec,
+              :statements => [
+                Assign.new(
+                  :name  => "i",
+                  :child => Const.new(:type => :int, :value => "42")
+                ),
+                Assign.new(
+                  :name  => "j",
+                  :child => Const.new(:type => :int, :value => "43")
+                ),
+                Assign.new(
+                  :name  => "k",
+                  :child => Const.new(:type => :int, :value => "44")
+                )
+              ]
+            )
+          ]
+        )
+
+        node.to_ruby.should ==
+          "Builtins.b(42, 43, 44) { |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
       end
     end
   end

@@ -277,6 +277,25 @@ Builtins.time()
 Builtins.random(100)
 ```
 
+Y2R handles YCP builtin calls with a block as the last argument specially. It
+converts the block into a Ruby block.
+
+#### YCP Code
+
+```ycp
+{
+  foreach(integer i, [42, 43, 44], { y2milestone("M1"); });
+}
+```
+
+#### Ruby Code
+
+```ruby
+Builtins.foreach([42, 43, 44]) { |i|
+  Builtins.y2milestone('M1')
+}
+```
+
 ### `_` Calls
 
 Y2R translates YCP `_` calls as calls of FastGettext's `_` method.

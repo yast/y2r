@@ -66,8 +66,10 @@ module Y2R
             :statements => extract_collection(element, "statements", context)
           )
         when "builtin"
+          symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
           AST::Builtin.new(
             :name     => element.attributes["name"],
+            :symbols  => symbol_attrs.values.map(&:value),
             :children => extract_children(element, :builtin)
           )
         when "call"
