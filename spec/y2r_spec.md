@@ -296,6 +296,23 @@ Builtins.foreach([42, 43, 44]) { |i|
 }
 ```
 
+Y2R handles YCP builtin calls with a double quote expression as the last
+argument specially. It converts the expression into a Ruby block.
+
+#### YCP Code
+
+```ycp
+{
+  maplist(integer i, [42, 43, 44], ``(i * i));
+}
+```
+
+#### Ruby Code
+
+```ruby
+Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
+```
+
 ### `_` Calls
 
 Y2R translates YCP `_` calls as calls of FastGettext's `_` method.

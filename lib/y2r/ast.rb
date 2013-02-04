@@ -284,6 +284,10 @@ module Y2R
       def to_ruby(context = Context.new)
         "lambda { #{child.to_ruby(context)} }"
       end
+
+      def to_ruby_block(args, context = Context.new)
+        "{ |#{args.join(", ")}| #{child.to_ruby(context)} }"
+      end
     end
 
     class YETerm < Node

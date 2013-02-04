@@ -632,6 +632,24 @@ module Y2R::AST
         node.to_ruby.should == "lambda { 42 }"
       end
     end
+
+    describe "#to_ruby_block" do
+      it "emits correct code without arguments" do
+        node = YEReturn.new(
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby_block([]).should == "{ || 42 }"
+      end
+
+      it "emits correct code with arguments" do
+        node = YEReturn.new(
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby_block(["a", "b", "c"]).should == "{ |a, b, c| 42 }"
+      end
+    end
   end
 
   describe YETerm do
