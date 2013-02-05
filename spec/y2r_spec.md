@@ -706,8 +706,7 @@ Nested functions are not supported.
 
 ### Statement Blocks
 
-Y2R does not support statement blocks. This is mostly because Ruby doesn't have
-any suitable equivalent construct.
+Y2R translates YCP statement blocks as Ruby statements.
 
 #### YCP Code
 
@@ -715,14 +714,18 @@ any suitable equivalent construct.
 {
   {
     y2milestone("M1");
+    y2milestone("M2");
+    y2milestone("M3");
   }
 }
 ```
 
 #### Error Message
 
-```error
-Statement blocks are not supported.
+```ruby
+Builtins.y2milestone('M1')
+Builtins.y2milestone('M2')
+Builtins.y2milestone('M3')
 ```
 
 ### `if` Statement

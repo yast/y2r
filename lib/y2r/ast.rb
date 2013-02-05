@@ -38,10 +38,8 @@ module Y2R
         statements_context.blocks = statements_context.blocks + [kind]
 
         case kind
-          when :def, :file
+          when :def, :file, :stmt
             statements.map { |s| s.to_ruby(statements_context) }.join("\n")
-          when :stmt
-            raise NotImplementedError, "Statement blocks are not supported."
           when :unspec
             [
               "lambda {",
