@@ -545,11 +545,6 @@ module Y2R::AST
   describe Return do
     describe "#to_ruby" do
       before :each do
-        @file_context       = Context.new(:blocks => [:file])
-        @def_unspec_context = Context.new(:blocks => [:file, :def, :unspec])
-        @unspec_context     = Context.new(:blocks => [:file, :unspec])
-        @unspec_def_context = Context.new(:blocks => [:file, :unspec, :def])
-
         @node_without_value = Return.new(:child => nil)
         @node_with_value    = Return.new(
           :child => Const.new(:type => :int, :value => "42")
