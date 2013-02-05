@@ -15,13 +15,12 @@ module Y2R
         @blocks = attrs[:blocks] || []
       end
 
-      def in_function?
-        @blocks.include?(:def)
+      def in?(kind)
+        @blocks.include?(kind)
       end
 
-      def in_unspec_block?
-        index = @blocks.rindex { |b| b == :def || b == :unspec }
-        index && @blocks[index] != :def
+      def innermost(*kinds)
+        @blocks.reverse.find { |b| kinds.include?(b) }
       end
     end
 
@@ -138,7 +137,7 @@ module Y2R
 
     class FunDef < Node
       def to_ruby(context = Context.new)
-        if context.in_function?
+        if context.in?(:def)
           raise NotImplementedError, "Nested functions are not supported."
         end
 
@@ -212,11 +211,14 @@ module Y2R
 
     class Return < Node
       def to_ruby(context = Context.new)
-        unless context.in_function? || context.in_unspec_block?
+        unless context.in?(:def) || context.in?(:unspec)
           raise NotImplementedError, "The \"return\" statement at client toplevel is not supported."
         end
 
-        stmt = context.in_unspec_block? ? "next" : "return"
+        stmt = {
+          :def    => "return",
+          :unspec => "next"
+        }[context.innermost(:def, :unspec)]
 
         if child
           "#{stmt} #{child.to_ruby(context)}"
