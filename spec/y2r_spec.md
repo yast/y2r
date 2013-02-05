@@ -666,7 +666,7 @@ statement.
 
 ```ruby
 while true
-  next
+  break
 end
 ```
 

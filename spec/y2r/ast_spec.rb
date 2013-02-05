@@ -163,7 +163,7 @@ module Y2R::AST
         it "emits correct code" do
           context = Context.new(:blocks => [:file, :loop])
 
-          @node.to_ruby(context).should == "next"
+          @node.to_ruby(context).should == "break"
         end
       end
 
@@ -171,7 +171,7 @@ module Y2R::AST
         it "emits correct code" do
           context = Context.new(:blocks => [:file, :unspec, :loop])
 
-          @node.to_ruby(context).should == "next"
+          @node.to_ruby(context).should == "break"
         end
       end
 

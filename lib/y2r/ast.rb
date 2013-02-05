@@ -66,7 +66,7 @@ module Y2R
     class Break < Node
       def to_ruby(context = Context.new)
         {
-          :loop   => "next",
+          :loop   => "break",
           :unspec => "raise Break"
         }[context.innermost(:loop, :unspec)]
       end
