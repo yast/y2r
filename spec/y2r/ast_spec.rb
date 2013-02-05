@@ -344,7 +344,7 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => Block.new(
-            :kind       => :file,
+            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -363,7 +363,7 @@ module Y2R::AST
             Symbol.new(:name => "c")
           ],
           :block => Block.new(
-            :kind       => :file,
+            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -378,7 +378,7 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => Block.new(
-            :kind       => :file,
+            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
