@@ -737,6 +737,78 @@ module Y2R::AST
     end
   end
 
+  describe YEPropagate do
+    describe "#to_ruby" do
+      it "emits correct code when the types are the same" do
+        node_no_const = YEPropagate.new(
+          :from  => "integer",
+          :to    => "integer",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        node_both_const = YEPropagate.new(
+          :from  => "const integer",
+          :to    => "const integer",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node_no_const.to_ruby.should   == "42"
+        node_both_const.to_ruby.should == "42"
+      end
+
+      it "emits correct code when the types are the same but their constness is different" do
+        node_from_const = YEPropagate.new(
+          :from  => "const integer",
+          :to    => "integer",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        node_to_const = YEPropagate.new(
+          :from  => "integer",
+          :to    => "const integer",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node_from_const.to_ruby.should == "42"
+        node_to_const.to_ruby.should   == "42"
+      end
+
+      it "emits correct code when the types are different" do
+        node_no_const = YEPropagate.new(
+          :from  => "integer",
+          :to    => "float",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        node_both_const = YEPropagate.new(
+          :from  => "const integer",
+          :to    => "const float",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node_no_const.to_ruby.should ==
+          "Convert.convert(42, :from => 'integer', :to => 'float')"
+        node_both_const.to_ruby.should ==
+          "Convert.convert(42, :from => 'integer', :to => 'float')"
+      end
+
+      it "emits correct code when both the types and their constness are different" do
+        node_from_const = YEPropagate.new(
+          :from  => "const integer",
+          :to    => "float",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        node_to_const = YEPropagate.new(
+          :from  => "integer",
+          :to    => "const float",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node_from_const.to_ruby.should ==
+          "Convert.convert(42, :from => 'integer', :to => 'float')"
+        node_to_const.to_ruby.should ==
+          "Convert.convert(42, :from => 'integer', :to => 'float')"
+      end
+    end
+  end
+
   describe YEReturn do
     describe "#to_ruby" do
       it "emits correct code" do

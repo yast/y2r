@@ -312,6 +312,22 @@ module Y2R
       end
     end
 
+    class YEPropagate < Node
+      def to_ruby(context = Context.new)
+        from_no_const = from.sub(/^const /, "")
+        to_no_const   = to.sub(/^const /, "")
+
+        if from_no_const != to_no_const
+          "Convert.convert(" +
+            child.to_ruby(context) +
+            ", :from => '#{from_no_const}', :to => '#{to_no_const}'" +
+          ")"
+        else
+          child.to_ruby(context)
+        end
+      end
+    end
+
     class YEReturn < Node
       def to_ruby(context = Context.new)
         "lambda { #{child.to_ruby(context)} }"

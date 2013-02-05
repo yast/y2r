@@ -256,6 +256,26 @@ i = 42
 j = i
 ```
 
+### Type Conversions
+
+Y2R translates YCP type conversions as calls of the `YCP::Convert.convert`
+method.
+
+
+#### YCP Code
+
+```ycp
+{
+  float f = (float) 42;
+}
+```
+
+#### Ruby Code
+
+```ruby
+f = Convert.convert(42, :from => 'integer', :to => 'float')
+```
+
 ### Builtin Calls
 
 Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`
