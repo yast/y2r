@@ -375,6 +375,16 @@ module Y2R::AST
     end
   end
 
+  describe Continue do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Continue.new
+
+        node.to_ruby.should == "next"
+      end
+    end
+  end
+
   describe FunDef do
     describe "#to_ruby" do
       it "emits correct code for fundefs without arguments" do

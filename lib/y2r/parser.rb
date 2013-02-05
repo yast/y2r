@@ -91,6 +91,8 @@ module Y2R
             :type  => element.attributes["type"].to_sym,
             :value => element.attributes["value"]
           )
+        when "continue"
+          AST::Continue.new
         when "element"
           if context != :map
             element_to_node(element.elements[1], context)

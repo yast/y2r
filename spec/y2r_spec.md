@@ -687,6 +687,42 @@ Builtins.foreach([42, 43, 44]) { |i|
 }
 ```
 
+### `continue` Statement
+
+Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
+
+```ycp
+{
+  while (true) {
+    continue;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+while true
+  next
+end
+```
+
+Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
+
+```ycp
+{
+  foreach(integer i, [42, 43, 44], { continue; });
+}
+```
+
+#### Ruby Code
+
+```ruby
+Builtins.foreach([42, 43, 44]) { |i|
+  next
+}
+```
+
 ### Function Definitions
 
 Y2R translates YCP function definitions as Ruby method definitions.

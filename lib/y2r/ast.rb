@@ -142,6 +142,12 @@ module Y2R
       end
     end
 
+    class Continue < Node
+      def to_ruby(context = Context.new)
+        "next"
+      end
+    end
+
     class FunDef < Node
       def to_ruby(context = Context.new)
         if context.in?(:def)
