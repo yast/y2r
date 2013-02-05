@@ -18,6 +18,11 @@ module Y2R
       def in_function?
         @blocks.include?(:def)
       end
+
+      def in_unspec_block?
+        index = @blocks.rindex { |b| b == :def || b == :unspec }
+        index && @blocks[index] != :def
+      end
     end
 
     # Sorted alphabetically.
@@ -207,10 +212,16 @@ module Y2R
 
     class Return < Node
       def to_ruby(context = Context.new)
+        unless context.in_function? || context.in_unspec_block?
+          raise NotImplementedError, "The \"return\" statement at client toplevel is not supported."
+        end
+
+        stmt = context.in_unspec_block? ? "next" : "return"
+
         if child
-          "return #{child.to_ruby(context)}"
+          "#{stmt} #{child.to_ruby(context)}"
         else
-          "return"
+          stmt
         end
       end
     end

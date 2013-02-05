@@ -132,7 +132,11 @@ module Y2R
           AST::Map.new(:children => extract_children(element, :map))
         when "return"
           AST::Return.new(
-            :child => element_to_node(element.elements[1], context)
+            :child => if element.elements[1]
+              element_to_node(element.elements[1], context)
+            else
+              nil
+            end
           )
         when "symbol"
           if element.attributes["category"] == "filename"

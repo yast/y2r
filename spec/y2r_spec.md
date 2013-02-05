@@ -579,6 +579,76 @@ FastGettext.text_domain = 'users'
 
 ```
 
+### `return` Statement
+
+Y2R translates YCP `return` statement inside functions as Ruby `return`
+statement.
+
+```ycp
+{
+  void f1() {
+    return;
+  }
+
+  integer f2() {
+    return 42;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+def f1()
+  return
+end
+
+def f2()
+  return 42
+end
+
+```
+
+Y2R translates YCP `return` statement inside block as Ruby `next` statement.
+
+```ycp
+{
+  # A variable prevents translating the block as YEReturn.
+  maplist(integer i, [42, 43, 44], { integer j = 42; return j; });
+  foreach(integer i, [42, 43, 44], { integer j = 42; return; });
+}
+```
+
+#### Ruby Code
+
+```ruby
+Builtins.maplist([42, 43, 44]) { |i|
+  j = 42
+  next j
+}
+Builtins.foreach([42, 43, 44]) { |i|
+  j = 42
+  next
+}
+```
+
+Y2R does not support `return` statement at client toplevel. We didn't decide how
+to compile it yet.
+
+#### YCP Code
+
+```ycp
+{
+  return;
+}
+```
+
+#### Error Message
+
+```error
+The "return" statement at client toplevel is not supported.
+```
+
 ### Function Definitions
 
 Y2R translates YCP function definitions as Ruby method definitions.

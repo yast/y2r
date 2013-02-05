@@ -506,18 +506,90 @@ module Y2R::AST
 
   describe Return do
     describe "#to_ruby" do
-      it "emits correct code for a return without a value" do
-        node = Return.new(:child => nil)
+      before :each do
+        @file_context       = Context.new(:blocks => [:file])
+        @def_unspec_context = Context.new(:blocks => [:file, :def, :unspec])
+        @unspec_context     = Context.new(:blocks => [:file, :unspec])
+        @unspec_def_context = Context.new(:blocks => [:file, :unspec, :def])
 
-        node.to_ruby.should == "return"
-      end
-
-      it "emits correct code for a return with a value" do
-        node = Return.new(
+        @node_without_value = Return.new(:child => nil)
+        @node_with_value    = Return.new(
           :child => Const.new(:type => :int, :value => "42")
         )
+      end
 
-        node.to_ruby.should == "return 42"
+      describe "at client toplevel" do
+        before :each do
+          @context = Context.new(:blocks => [:file])
+        end
+
+        it "raises an exception for a return without a value" do
+          lambda {
+            @node_without_value.to_ruby(@context)
+          }.should raise_error NotImplementedError, "The \"return\" statement at client toplevel is not supported."
+        end
+
+        it "raises an exception for a return with a value" do
+          lambda {
+            @node_with_value.to_ruby(@context)
+          }.should raise_error NotImplementedError, "The \"return\" statement at client toplevel is not supported."
+        end
+      end
+
+      describe "inside a function" do
+        before :each do
+          @context = Context.new(:blocks => [:file, :def])
+        end
+
+        it "emits correct code for a return without a value" do
+          @node_without_value.to_ruby(@context).should == "return"
+        end
+
+        it "emits correct code for a return with a value" do
+          @node_with_value.to_ruby(@context).should == "return 42"
+        end
+      end
+
+      describe "inside a function which is inside a block expression" do
+        before :each do
+          @context = Context.new(:blocks => [:file, :unspec, :def])
+        end
+
+        it "emits correct code for a return without a value" do
+          @node_without_value.to_ruby(@context).should == "return"
+        end
+
+        it "emits correct code for a return with a value" do
+          @node_with_value.to_ruby(@context).should == "return 42"
+        end
+      end
+
+      describe "inside a block expression" do
+        before :each do
+          @context = Context.new(:blocks => [:file, :unspec])
+        end
+
+        it "emits correct code for a return without a value" do
+          @node_without_value.to_ruby(@context).should == "next"
+        end
+
+        it "emits correct code for a return with a value" do
+          @node_with_value.to_ruby(@context).should == "next 42"
+        end
+      end
+
+      describe "inside a block expression which is inside a function" do
+        before :each do
+          @context = Context.new(:blocks => [:file, :def, :unspec])
+        end
+
+        it "emits correct code for a return without a value" do
+          @node_without_value.to_ruby(@context).should == "next"
+        end
+
+        it "emits correct code for a return with a value" do
+          @node_with_value.to_ruby(@context).should == "next 42"
+        end
       end
     end
   end

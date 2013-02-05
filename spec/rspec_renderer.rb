@@ -69,7 +69,7 @@ class RSpecRenderer < Redcarpet::Render::Base
       elsif @error_code
         lines << "  lambda {"
         lines << "    Y2R.compile(ycp_code)"
-        lines << "  }.should raise_error NotImplementedError, \"#{@error_code}\""
+        lines << "  }.should raise_error NotImplementedError, #{@error_code.inspect}"
       end
       lines << "end"
 
