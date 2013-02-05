@@ -153,6 +153,46 @@ module Y2R::AST
     end
   end
 
+  describe Break do
+    describe "#to_ruby" do
+      before :each do
+        @node = Break.new
+      end
+
+      describe "inside a loop" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :loop])
+
+          @node.to_ruby(context).should == "next"
+        end
+      end
+
+      describe "inside a loop which is inside a block expression" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :unspec, :loop])
+
+          @node.to_ruby(context).should == "next"
+        end
+      end
+
+      describe "inside a block expression" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :unspec])
+
+          @node.to_ruby(context).should == "raise Break"
+        end
+      end
+
+      describe "inside a block expression which is inside a loop" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :loop, :unspec])
+
+          @node.to_ruby(context).should == "raise Break"
+        end
+      end
+    end
+  end
+
   describe Builtin do
     describe "#to_ruby" do
       it "emits correct code for builtins with no arguments and no block" do

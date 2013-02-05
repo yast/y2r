@@ -65,6 +65,8 @@ module Y2R
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
+        when "break"
+          AST::Break.new
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
           AST::Builtin.new(

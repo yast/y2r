@@ -649,6 +649,44 @@ to compile it yet.
 The "return" statement at client toplevel is not supported.
 ```
 
+### `break` Statement
+
+Y2R translates YCP `break` statement inside loops as Ruby `next`
+statement.
+
+```ycp
+{
+  while (true) {
+    break;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+while true
+  next
+end
+```
+
+Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
+raises `YCP::Break`.
+
+```ycp
+{
+  foreach(integer i, [42, 43, 44], { break; });
+}
+```
+
+#### Ruby Code
+
+```ruby
+Builtins.foreach([42, 43, 44]) { |i|
+  raise Break
+}
+```
+
 ### Function Definitions
 
 Y2R translates YCP function definitions as Ruby method definitions.

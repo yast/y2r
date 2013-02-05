@@ -63,6 +63,15 @@ module Y2R
       end
     end
 
+    class Break < Node
+      def to_ruby(context = Context.new)
+        {
+          :loop   => "next",
+          :unspec => "raise Break"
+        }[context.innermost(:loop, :unspec)]
+      end
+    end
+
     class Builtin < Node
       def to_ruby(context = Context.new)
         if symbols.empty?
@@ -249,9 +258,12 @@ module Y2R
 
     class While < Node
       def to_ruby(context = Context.new)
+        do_context = context.dup
+        do_context.blocks = do_context.blocks + [:loop]
+
         [
           "while #{cond.to_ruby(context)}",
-          indent(self.do.to_ruby(context)),
+          indent(self.do.to_ruby(do_context)),
           "end"
         ].join("\n")
       end
