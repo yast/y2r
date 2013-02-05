@@ -50,6 +50,9 @@ module Y2R
       end
 
       def to_ruby_block(args, context = Context.new)
+        statements_context = context.dup
+        statements_context.blocks = statements_context.blocks + [kind]
+
         [
           "{ |" + args.join(", ") + "|",
           indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
