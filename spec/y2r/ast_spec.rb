@@ -217,6 +217,68 @@ module Y2R::AST
           "YCP::M = MClass.new"
         ].join("\n")
       end
+
+      it "emits correct code for module blocks with function declarations" do
+        node = Block.new(
+          :kind       => :module,
+          :name       => "M",
+          :statements => [
+            FunDef.new(
+              :name  => "f",
+              :args  => [],
+              :block => Block.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "42"))
+                ]
+              )
+            ),
+            FunDef.new(
+              :name  => "g",
+              :args  => [],
+              :block => Block.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "43"))
+                ]
+              )
+            ),
+            FunDef.new(
+              :name  => "h",
+              :args  => [],
+              :block => Block.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "44"))
+                ]
+              )
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require 'ycp'",
+          "",
+          "class YCP::MClass",
+          "  extend YCP::Exportable",
+          "",
+          "  def f()",
+          "    return 42",
+          "  end",
+          "",
+          "  def g()",
+          "    return 43",
+          "  end",
+          "",
+          "  def h()",
+          "    return 44",
+          "  end",
+          "",
+          "end",
+          "",
+          "YCP::M = MClass.new"
+        ].join("\n")
+      end
     end
 
     describe "#to_ruby_block" do

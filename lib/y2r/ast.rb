@@ -44,7 +44,8 @@ module Y2R
             statements.map { |s| s.to_ruby(statements_context) }.join("\n")
           when :module
             assigns = statements.select { |s| s.is_a?(Assign) }
-            other_statements = statements - assigns
+            fundefs = statements.select { |s| s.is_a?(FunDef) }
+            other_statements = statements - assigns - fundefs
 
             parts = [
               "require 'ycp'",
@@ -66,6 +67,13 @@ module Y2R
                 "  def initialize",
                 indent(indent(assigns.map { |s| s.to_ruby(statements_context) }.join("\n"))),
                 "  end"
+              ]
+            end
+
+            unless fundefs.empty?
+              parts += [
+                "",
+                indent(fundefs.map { |s| s.to_ruby(statements_context) }.join("\n")),
               ]
             end
 

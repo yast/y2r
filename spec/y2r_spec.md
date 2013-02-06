@@ -929,6 +929,10 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
   import "String";
 
   integer i = 42;
+
+  integer f() {
+    return 42;
+  }
 }
 ```
 
@@ -946,6 +950,11 @@ class YCP::MClass
   def initialize
     @i = 42
   end
+
+  def f()
+    return 42
+  end
+
 end
 
 YCP::M = MClass.new
