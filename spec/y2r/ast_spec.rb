@@ -3,13 +3,43 @@ require "spec_helper"
 module Y2R::AST
   describe Assign do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Assign.new(
+      before :each do
+        @node = Assign.new(
           :name  => "i",
           :child => Const.new(:type => :int, :value => "42")
         )
+      end
 
-        node.to_ruby.should == "i = 42"
+      describe "at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file])
+
+          @node.to_ruby(context).should == "i = 42"
+        end
+      end
+
+      describe "at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:module])
+
+          @node.to_ruby(context).should == "@i = 42"
+        end
+      end
+
+      describe "inside a function at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :def])
+
+          @node.to_ruby(context).should == "i = 42"
+        end
+      end
+
+      describe "inside a function at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:module, :def])
+
+          @node.to_ruby(context).should == "i = 42"
+        end
       end
     end
   end
@@ -104,7 +134,54 @@ module Y2R::AST
         node.to_ruby.should == "lambda {\n  i = 42\n  j = 43\n  k = 44\n}"
       end
 
-      it "emits correct code for module blocks" do
+      it "emits correct code for empty module blocks" do
+        node = Block.new(
+          :kind       => :module,
+          :name       => "M",
+          :statements => []
+        )
+
+        node.to_ruby.should == [
+          "require 'ycp'",
+          "",
+          "class YCP::MClass",
+          "  extend YCP::Exportable",
+          "end",
+          "",
+          "YCP::M = MClass.new"
+        ].join("\n")
+      end
+
+      it "emits correct code for module blocks with statements" do
+        node = Block.new(
+          :kind       => :module,
+          :name       => "M",
+          :statements => [
+            Textdomain.new(:name => "d"),
+            Textdomain.new(:name => "e"),
+            Textdomain.new(:name => "f")
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require 'ycp'",
+          "",
+          "class YCP::MClass",
+          "  extend YCP::Exportable",
+          "",
+          "  FastGettext.text_domain = 'd'",
+          "",
+          "  FastGettext.text_domain = 'e'",
+          "",
+          "  FastGettext.text_domain = 'f'",
+          "",
+          "end",
+          "",
+          "YCP::M = MClass.new"
+        ].join("\n")
+      end
+
+      it "emits correct code for module blocks with variable declarations" do
         node = Block.new(
           :kind       => :module,
           :name       => "M",
@@ -130,9 +207,11 @@ module Y2R::AST
           "class YCP::MClass",
           "  extend YCP::Exportable",
           "",
-          "  i = 42",
-          "  j = 43",
-          "  k = 44",
+          "  def initialize",
+          "    @i = 42",
+          "    @j = 43",
+          "    @k = 44",
+          "  end",
           "end",
           "",
           "YCP::M = MClass.new"

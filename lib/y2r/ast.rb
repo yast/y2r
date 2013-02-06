@@ -28,7 +28,9 @@ module Y2R
 
     class Assign < Node
       def to_ruby(context = Context.new)
-        "#{name} = #{child.to_ruby(context)}"
+        prefix = context.innermost(:file, :module, :def) == :module ? "@" : ""
+
+        "#{prefix}#{name} = #{child.to_ruby(context)}"
       end
     end
 
@@ -41,17 +43,39 @@ module Y2R
           when :def, :file, :stmt
             statements.map { |s| s.to_ruby(statements_context) }.join("\n")
           when :module
-            [
+            assigns = statements.select { |s| s.is_a?(Assign) }
+            other_statements = statements - assigns
+
+            parts = [
               "require 'ycp'",
               "",
               "class YCP::#{name}Class",
-              "  extend YCP::Exportable",
-              "",
-              indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+              "  extend YCP::Exportable"
+            ]
+
+            unless other_statements.empty?
+              parts += [
+                "",
+                indent(other_statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+              ]
+            end
+
+            unless assigns.empty?
+              parts += [
+                "",
+                "  def initialize",
+                indent(indent(assigns.map { |s| s.to_ruby(statements_context) }.join("\n"))),
+                "  end"
+              ]
+            end
+
+            parts += [
               "end",
               "",
               "YCP::#{name} = #{name}Class.new"
-            ].join("\n")
+            ]
+
+            parts.join("\n")
           when :unspec
             [
               "lambda {",
