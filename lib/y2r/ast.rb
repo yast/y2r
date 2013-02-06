@@ -40,6 +40,18 @@ module Y2R
         case kind
           when :def, :file, :stmt
             statements.map { |s| s.to_ruby(statements_context) }.join("\n")
+          when :module
+            [
+              "require 'ycp'",
+              "",
+              "class YCP::#{name}Class",
+              "  extend YCP::Exportable",
+              "",
+              indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+              "end",
+              "",
+              "YCP::#{name} = #{name}Class.new"
+            ].join("\n")
           when :unspec
             [
               "lambda {",

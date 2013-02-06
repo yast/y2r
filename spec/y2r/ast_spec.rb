@@ -103,6 +103,41 @@ module Y2R::AST
 
         node.to_ruby.should == "lambda {\n  i = 42\n  j = 43\n  k = 44\n}"
       end
+
+      it "emits correct code for module blocks" do
+        node = Block.new(
+          :kind       => :module,
+          :name       => "M",
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require 'ycp'",
+          "",
+          "class YCP::MClass",
+          "  extend YCP::Exportable",
+          "",
+          "  i = 42",
+          "  j = 43",
+          "  k = 44",
+          "end",
+          "",
+          "YCP::M = MClass.new"
+        ].join("\n")
+      end
     end
 
     describe "#to_ruby_block" do

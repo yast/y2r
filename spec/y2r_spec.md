@@ -915,3 +915,32 @@ while true
   Builtins.y2milestone('M1')
 end
 ```
+
+### Modules
+
+Y2R translates YCP modules as Ruby classes that are instantiated.
+
+#### YCP Code
+
+```ycp
+{
+  module "M";
+
+  import "String";
+}
+```
+
+#### Ruby Code
+
+```ruby
+require 'ycp'
+
+class YCP::MClass
+  extend YCP::Exportable
+
+  YCP.import('String')
+
+end
+
+YCP::M = MClass.new
+```

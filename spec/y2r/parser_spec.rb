@@ -12,6 +12,7 @@ module Y2R
       it "parses a more complex program" do
         ast = AST::Block.new(
           :kind       => :file,
+          :name       => nil,
           :symbols    => [
             AST::Symbol.new,
             AST::Symbol.new(:name => "i"),
