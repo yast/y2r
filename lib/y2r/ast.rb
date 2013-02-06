@@ -63,6 +63,18 @@ module Y2R
       end
     end
 
+    class Bracket < Node
+      def to_ruby(context = Context.new)
+        "Ops.assign(" +
+          entry.to_ruby(context) +
+          ", " +
+          arg.to_ruby(context) +
+          ", " +
+          rhs.to_ruby(context) +
+        ")"
+      end
+    end
+
     class Break < Node
       def to_ruby(context = Context.new)
         {
@@ -145,6 +157,12 @@ module Y2R
     class Continue < Node
       def to_ruby(context = Context.new)
         "next"
+      end
+    end
+
+    class Entry < Node
+      def to_ruby(context = Context.new)
+        name
       end
     end
 

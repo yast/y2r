@@ -51,8 +51,8 @@ module Y2R
 
     def element_to_node(element, context = nil)
       case element.name
-        when "cond", "do", "else", "expr", "false", "key", "lhs", "rhs", "stmt",
-             "then", "true", "value", "ycp"
+        when "arg", "cond", "do", "else", "expr", "false", "key", "lhs", "rhs",
+             "stmt","then", "true", "value", "ycp"
           element_to_node(element.elements[1], context)
         when "assign"
           AST::Assign.new(
@@ -64,6 +64,13 @@ module Y2R
             :kind       => element.attributes["kind"].to_sym,
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
+          )
+        when "bracket"
+          lhs = element.elements["lhs"]
+          AST::Bracket.new(
+            :entry => element_to_node(lhs.elements["entry"], context),
+            :arg   => element_to_node(lhs.elements["arg"], context),
+            :rhs   => element_to_node(element.elements["rhs"], context)
           )
         when "break"
           AST::Break.new
@@ -102,6 +109,8 @@ module Y2R
               :value => element_to_node(element.elements["value"], context)
             )
           end
+        when "entry"
+          AST::Entry.new(:name => element.attributes["name"])
         when "fun_def"
           AST::FunDef.new(
             :name  => element.attributes["name"],

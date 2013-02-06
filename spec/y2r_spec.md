@@ -620,6 +620,27 @@ i = 42
 i = 43
 ```
 
+Y2R translates YCP assignments with brackets as a call of a method in the
+`YCP::Ops` module that implements its behavior. There is no equivalent operator
+in Ruby.
+
+#### YCP Code
+
+```ycp
+{
+  list l = [42, 43, 44];
+
+  l[0] = 45;
+}
+```
+
+#### Ruby Code
+
+```ruby
+l = [42, 43, 44]
+Ops.assign(l, [0], 45)
+```
+
 ### `return` Statement
 
 Y2R translates YCP `return` statement inside functions as Ruby `return`

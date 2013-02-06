@@ -153,6 +153,22 @@ module Y2R::AST
     end
   end
 
+  describe Bracket do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Bracket.new(
+          :entry => Variable.new(:name => "l"),
+          :arg => List.new(
+            :children => [Const.new(:type => :int, :value => "1")]
+          ),
+          :rhs => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby.should == "Ops.assign(l, [1], 42)"
+      end
+    end
+  end
+
   describe Break do
     describe "#to_ruby" do
       before :each do
@@ -381,6 +397,16 @@ module Y2R::AST
         node = Continue.new
 
         node.to_ruby.should == "next"
+      end
+    end
+  end
+
+  describe Entry do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Entry.new(:name => "e")
+
+        node.to_ruby.should == "e"
       end
     end
   end
