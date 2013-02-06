@@ -599,6 +599,27 @@ FastGettext.text_domain = 'users'
 
 ```
 
+### Assignments
+
+Y2R translates simple YCP assignments as Ruby assignments.
+
+#### YCP Code
+
+```ycp
+{
+  integer i = 42;
+
+  i = 43;
+}
+```
+
+#### Ruby Code
+
+```ruby
+i = 42
+i = 43
+```
+
 ### `return` Statement
 
 Y2R translates YCP `return` statement inside functions as Ruby `return`
