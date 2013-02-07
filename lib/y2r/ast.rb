@@ -87,6 +87,18 @@ module Y2R
               ]
             end
 
+            symbols.each do |symbol|
+              next unless symbol.global
+              next unless symbol.category == :variable || symbol.category == :function
+
+              parts << indent(
+                "publish " +
+                  ":category => :#{symbol.category}, " +
+                  ":name => :#{symbol.name}, " +
+                  ":type => \"#{symbol.type}\""
+              )
+            end
+
             parts += [
               "end",
               "",

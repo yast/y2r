@@ -965,6 +965,8 @@ class YCP::MClass
     return 43
   end
 
+  publish :category => :variable, :name => :j, :type => "integer"
+  publish :category => :function, :name => :g, :type => "integer ()"
 end
 
 YCP::M = MClass.new

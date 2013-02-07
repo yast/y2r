@@ -154,6 +154,7 @@ module Y2R::AST
         node = Block.new(
           :kind       => :module,
           :name       => "M",
+          :symbols    => [],
           :statements => []
         )
 
@@ -168,10 +169,52 @@ module Y2R::AST
         ].join("\n")
       end
 
+      it "emits correct code for empty module blocks with symbols" do
+        node = Block.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
+          ],
+          :statements => []
+        )
+
+        node.to_ruby.should == [
+          "require 'ycp'",
+          "",
+          "class YCP::MClass",
+          "  extend YCP::Exportable",
+          "  publish :category => :variable, :name => :a, :type => \"integer\"",
+          "  publish :category => :variable, :name => :b, :type => \"integer\"",
+          "  publish :category => :variable, :name => :c, :type => \"integer\"",
+          "end",
+          "",
+          "YCP::M = MClass.new"
+        ].join("\n")
+      end
+
       it "emits correct code for module blocks with statements" do
         node = Block.new(
           :kind       => :module,
           :name       => "M",
+          :symbols    => [],
           :statements => [
             Textdomain.new(:name => "d"),
             Textdomain.new(:name => "e"),
@@ -201,6 +244,7 @@ module Y2R::AST
         node = Block.new(
           :kind       => :module,
           :name       => "M",
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -238,6 +282,7 @@ module Y2R::AST
         node = Block.new(
           :kind       => :module,
           :name       => "M",
+          :symbols    => [],
           :statements => [
             FunDef.new(
               :name  => "f",
@@ -624,9 +669,24 @@ module Y2R::AST
         node = FunDef.new(
           :name  => "f",
           :args  => [
-            Symbol.new(:name => "a"),
-            Symbol.new(:name => "b"),
-            Symbol.new(:name => "c")
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
           ],
           :block => Block.new(
             :kind       => :def,
@@ -858,7 +918,12 @@ module Y2R::AST
   describe Symbol do
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Symbol.new(:name => "s")
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
 
         node.to_ruby.should == "s"
       end

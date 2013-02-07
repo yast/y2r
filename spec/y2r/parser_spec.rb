@@ -14,10 +14,30 @@ module Y2R
           :kind       => :file,
           :name       => nil,
           :symbols    => [
-            AST::Symbol.new,
-            AST::Symbol.new(:name => "i"),
-            AST::Symbol.new(:name => "j"),
-            AST::Symbol.new(:name => "k")
+            AST::Symbol.new(
+              :global   => true,
+              :category => :filename,
+              :type     => "<unspec>",
+              :name     => nil
+            ),
+            AST::Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "i"
+            ),
+            AST::Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "j"
+            ),
+            AST::Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "k"
+            )
           ],
           :statements => [
             AST::Assign.new(

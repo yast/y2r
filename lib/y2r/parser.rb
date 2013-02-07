@@ -153,11 +153,19 @@ module Y2R
             end
           )
         when "symbol"
-          if element.attributes["category"] == "filename"
-            AST::Symbol.new
-          else
-            AST::Symbol.new(:name  => element.attributes["name"])
-          end
+          AST::Symbol.new(
+            :global   => element.attributes["global"] == "1",
+            :category => element.attributes["category"].to_sym,
+            :type     => element.attributes["type"],
+            # We don't save names for files mainly because of the specs. They
+            # use temporary files with unpredictable names and node equality
+            # tests would fail because of that.
+            :name     => if element.attributes["category"] != "filename"
+              element.attributes["name"]
+            else
+              nil
+            end
+          )
         when "textdomain"
           AST::Textdomain.new(:name => element.attributes["name"])
         when "variable"
