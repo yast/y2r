@@ -1,0 +1,6 @@
+{
+  module "String";
+
+  /* Modules can't be empty. */
+  integer dummy = 42;
+}

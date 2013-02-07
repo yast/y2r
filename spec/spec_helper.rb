@@ -12,7 +12,7 @@ end
 def compile_options
   {
     :ycpc         => ENV["Y2R_YCPC"],
-    :module_path  => ENV["Y2R_MODULE_PATH"],
+    :module_path  => ENV["Y2R_MODULE_PATH"] || File.dirname(__FILE__) + "/modules",
     :include_path => ENV["Y2R_INCLUDE_PATH"]
   }
 end

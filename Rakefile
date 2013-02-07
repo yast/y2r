@@ -10,7 +10,13 @@ file "spec/y2r_spec.rb" => "spec/y2r_spec.md" do |t|
   end
 end
 
+rule ".ybc" => ".ycp" do |t|
+  ycpc = ENV["Y2R_YCPC"] || "ycpc"
+
+  sh "#{ycpc} -c #{t.source}"
+end
+
 RSpec::Core::RakeTask.new
-task :spec => "spec/y2r_spec.rb"
+task :spec => ["spec/y2r_spec.rb", "spec/modules/String.ybc", "spec/modules/UI.ybc"]
 
 task :default => :spec

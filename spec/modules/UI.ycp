@@ -1,0 +1,7 @@
+{
+  module "UI";
+
+  global boolean OpenDialog(term widget) {
+    return true;
+  }
+}
