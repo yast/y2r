@@ -10,6 +10,7 @@ Y2R -- transpiler translating YCP code into Ruby
 Usage: y2r [options] [<ycp_file>] [<ruby_file>]
 
 Options:
+  -y, --ycpc <file>          Location of the ycpc interpreter to use.
   -I, --include-path <path>  Path where to find included files.
   -M, --module-path <path>   Path where to find modules.
   -v, --version              Print version information and exit.
@@ -32,6 +33,7 @@ begin
   end
 
   compile_options = {
+    :ycpc         => options["--ycpc"],
     :module_path  => options["--module-path"],
     :include_path => options["--include-path"]
   }

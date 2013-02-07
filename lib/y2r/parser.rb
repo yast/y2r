@@ -26,7 +26,7 @@ module Y2R
         xml_file.close
         begin
           begin
-            cmd = "ycpc", "-c", "-x", "-o", xml_file.path
+            cmd = options[:ycpc] || "ycpc", "-c", "-x", "-o", xml_file.path
             cmd << '--module-path' << options[:module_path] if options[:module_path]
             cmd << '--include-path' << options[:include_path] if options[:include_path]
             cmd << ycp_file.path
