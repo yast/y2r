@@ -33,9 +33,9 @@ begin
   end
 
   compile_options = {
-    :ycpc         => options["--ycpc"],
-    :module_path  => options["--module-path"],
-    :include_path => options["--include-path"]
+    :ycpc         => options["--ycpc"]         || ENV["Y2R_YCPC"],
+    :module_path  => options["--module-path"]  || ENV["Y2R_MODULE_PATH"],
+    :include_path => options["--include-path"] || ENV["Y2R_INCLUDE_PATH"]
   }
 
   output_stream.write(Y2R.compile(input_stream.read, compile_options))
