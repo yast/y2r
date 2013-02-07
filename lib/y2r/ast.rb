@@ -4,7 +4,7 @@ module Y2R
   module AST
     class Node < OpenStruct
       def indent(s)
-        s.gsub(/^/, "  ")
+        s.gsub(/^(?=.)/, "  ")
       end
     end
 
