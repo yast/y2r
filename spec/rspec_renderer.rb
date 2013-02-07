@@ -65,10 +65,10 @@ class RSpecRenderer < Redcarpet::Render::Base
         lines << indent(@ruby_code, 2)
         lines << "  EOT"
         lines << ""
-        lines << "  Y2R.compile(ycp_code).should == ruby_code"
+        lines << "  Y2R.compile(ycp_code, compile_options).should == ruby_code"
       elsif @error_code
         lines << "  lambda {"
-        lines << "    Y2R.compile(ycp_code)"
+        lines << "    Y2R.compile(ycp_code, compile_options)"
         lines << "  }.should raise_error NotImplementedError, #{@error_code.inspect}"
       end
       lines << "end"

@@ -8,3 +8,11 @@ def cleanup(s)
   s =~ /^(\s*)/
   s.gsub(Regexp.new("^#{$1}"), "")[0..-2]
 end
+
+def compile_options
+  {
+    :ycpc         => ENV["Y2R_YCPC"],
+    :module_path  => ENV["Y2R_MODULE_PATH"],
+    :include_path => ENV["Y2R_INCLUDE_PATH"]
+  }
+end

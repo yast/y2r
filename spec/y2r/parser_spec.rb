@@ -6,7 +6,7 @@ module Y2R
       it "parses a simple program" do
         ast = AST::Const.new(:type => :void, :value => nil)
 
-        Parser.new.parse("{}").should == ast
+        Parser.new.parse("{}", compile_options).should == ast
       end
 
       it "parses a more complex program" do
@@ -34,7 +34,7 @@ module Y2R
           ]
         )
 
-        Parser.new.parse(cleanup(<<-EOT)).should == ast
+        Parser.new.parse(cleanup(<<-EOT), compile_options).should == ast
           {
             integer i = 42;
             integer j = 43;
@@ -45,7 +45,7 @@ module Y2R
 
       it "raises an exception on syntax error" do
         lambda {
-          Parser.new.parse("invalid").should == ast
+          Parser.new.parse("invalid", compile_options).should == ast
         }.should raise_error Parser::SyntaxError
       end
     end
