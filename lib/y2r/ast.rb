@@ -9,10 +9,14 @@ module Y2R
     end
 
     class Context
-      attr_accessor :blocks
+      # TODO: Convert |blocks| from a list of symbols to the list of actual
+      #       blocks. |module_name| will be just the name of the outermost
+      #       block, if it is a module.
+      attr_accessor :blocks, :module_name
 
       def initialize(attrs = {})
-        @blocks = attrs[:blocks] || []
+        @blocks      = attrs[:blocks] || []
+        @module_name = attrs[:module_name]
       end
 
       def in?(kind)
@@ -28,9 +32,13 @@ module Y2R
 
     class Assign < Node
       def to_ruby(context = Context.new)
-        prefix = context.innermost(:file, :module, :def) == :module ? "@" : ""
+        var_name = if name =~ /^([^:]+)::(.*)$/
+          $1 == context.module_name ? "@#$2" : name
+        else
+          context.innermost(:file, :module, :def) == :module ? "@#{name}" : name
+        end
 
-        "#{prefix}#{name} = #{child.to_ruby(context)}"
+        "#{var_name} = #{child.to_ruby(context)}"
       end
     end
 
@@ -43,6 +51,8 @@ module Y2R
           when :def, :file, :stmt
             statements.map { |s| s.to_ruby(statements_context) }.join("\n")
           when :module
+            statements_context.module_name = name
+
             assigns = statements.select { |s| s.is_a?(Assign) }
             fundefs = statements.select { |s| s.is_a?(FunDef) }
             other_statements = statements - assigns - fundefs

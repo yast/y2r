@@ -4,8 +4,16 @@ module Y2R::AST
   describe Assign do
     describe "#to_ruby" do
       before :each do
-        @node = Assign.new(
+        @node_unprefixed = Assign.new(
           :name  => "i",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        @node_prefixed_m = Assign.new(
+          :name  => "M::i",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        @node_prefixed_n = Assign.new(
+          :name  => "N::i",
           :child => Const.new(:type => :int, :value => "42")
         )
       end
@@ -14,15 +22,19 @@ module Y2R::AST
         it "emits correct code" do
           context = Context.new(:blocks => [:file])
 
-          @node.to_ruby(context).should == "i = 42"
+          @node_unprefixed.to_ruby(context).should == "i = 42"
+          @node_prefixed_m.to_ruby(context).should == "M::i = 42"
+          @node_prefixed_n.to_ruby(context).should == "N::i = 42"
         end
       end
 
       describe "at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module])
+          context = Context.new(:blocks => [:module], :module_name => "M")
 
-          @node.to_ruby(context).should == "@i = 42"
+          @node_unprefixed.to_ruby(context).should == "@i = 42"
+          @node_prefixed_m.to_ruby(context).should == "@i = 42"
+          @node_prefixed_n.to_ruby(context).should == "N::i = 42"
         end
       end
 
@@ -30,15 +42,19 @@ module Y2R::AST
         it "emits correct code" do
           context = Context.new(:blocks => [:file, :def])
 
-          @node.to_ruby(context).should == "i = 42"
+          @node_unprefixed.to_ruby(context).should == "i = 42"
+          @node_prefixed_m.to_ruby(context).should == "M::i = 42"
+          @node_prefixed_n.to_ruby(context).should == "N::i = 42"
         end
       end
 
       describe "inside a function at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module, :def])
+          context = Context.new(:blocks => [:module, :def], :module_name => "M")
 
-          @node.to_ruby(context).should == "i = 42"
+          @node_unprefixed.to_ruby(context).should == "i = 42"
+          @node_prefixed_m.to_ruby(context).should == "@i = 42"
+          @node_prefixed_n.to_ruby(context).should == "N::i = 42"
         end
       end
     end
