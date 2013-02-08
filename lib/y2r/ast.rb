@@ -58,7 +58,7 @@ module Y2R
             other_statements = statements - assigns - fundefs
 
             parts = [
-              "require 'ycp'",
+              "require \"ycp\"",
               "",
               "class YCP::#{name}Class",
               "  extend YCP::Exportable"
@@ -211,9 +211,9 @@ module Y2R
           when :symbol
             ":#{value}" # TODO: Implement escaping.
           when :string
-            "'#{value}'" # TODO: Implement escaping.
+            "\"#{value}\"" # TODO: Implement escaping.
           when :path
-            "Path.new('#{value}')" # TODO: Implement escaping.
+            "Path.new(\"#{value}\")" # TODO: Implement escaping.
           else
             raise "Unknown const type: #{type}."
         end
@@ -272,7 +272,7 @@ module Y2R
     class Import < Node
       def to_ruby(context = Context.new)
         [
-          "YCP.import('#{name}')", # TODO: Implement escaping.
+          "YCP.import(\"#{name}\")", # TODO: Implement escaping.
           ""
         ].join("\n")
       end
@@ -286,7 +286,7 @@ module Y2R
 
     class Locale < Node
       def to_ruby(context = Context.new)
-        "_('" + text + "')"
+        "_(\"" + text + "\")"
       end
     end
 
@@ -334,7 +334,7 @@ module Y2R
     class Textdomain < Node
       def to_ruby(context = Context.new)
         [
-          "FastGettext.text_domain = '#{name}'", # TODO: Implement escaping.
+          "FastGettext.text_domain = \"#{name}\"", # TODO: Implement escaping.
           ""
         ].join("\n")
       end
@@ -404,7 +404,7 @@ module Y2R
         if from_no_const != to_no_const
           "Convert.convert(" +
             child.to_ruby(context) +
-            ", :from => '#{from_no_const}', :to => '#{to_no_const}'" +
+            ", :from => \"#{from_no_const}\", :to => \"#{to_no_const}\"" +
           ")"
         else
           child.to_ruby(context)

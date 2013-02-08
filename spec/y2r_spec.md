@@ -129,7 +129,7 @@ explain a bit more.
 #### Ruby Code
 
 ```ruby
-s = 'abcd'
+s = "abcd"
 ```
 
 ### Paths
@@ -148,7 +148,7 @@ encoding?
 #### Ruby Code
 
 ```ruby
-p = Path.new('.abcd')
+p = Path.new(".abcd")
 ```
 
 ### Lists
@@ -227,7 +227,7 @@ Y2R translates YCP blocks as Ruby lambdas.
 
 ```ruby
 b = lambda {
-  Builtins.y2milestone('M1')
+  Builtins.y2milestone("M1")
 }
 ```
 
@@ -273,7 +273,7 @@ method.
 #### Ruby Code
 
 ```ruby
-f = Convert.convert(42, :from => 'integer', :to => 'float')
+f = Convert.convert(42, :from => "integer", :to => "float")
 ```
 
 ### Builtin Calls
@@ -312,7 +312,7 @@ converts the block into a Ruby block.
 
 ```ruby
 Builtins.foreach([42, 43, 44]) { |i|
-  Builtins.y2milestone('M1')
+  Builtins.y2milestone("M1")
 }
 ```
 
@@ -350,9 +350,9 @@ Y2R translates YCP `_` calls as calls of FastGettext's `_` method.
 #### Ruby Code
 
 ```ruby
-FastGettext.text_domain = 'helloworld'
+FastGettext.text_domain = "helloworld"
 
-s = _('Hello, world!')
+s = _("Hello, world!")
 ```
 
 ### Function Calls
@@ -370,9 +370,9 @@ Y2R translates YCP function calls as Ruby method calls.
 #### Ruby Code
 
 ```ruby
-YCP.import('UI')
+YCP.import("UI")
 
-UI.OpenDialog(Term.new(:Label, 'Hello, world!'))
+UI.OpenDialog(Term.new(:Label, "Hello, world!"))
 ```
 
 ### Comparison Operators
@@ -575,7 +575,7 @@ Y2R translates YCP `import` statement as a `YCP.import` call.
 #### Ruby Code
 
 ```ruby
-YCP.import('String')
+YCP.import("String")
 
 ```
 
@@ -595,7 +595,7 @@ Y2R translates YCP `textdomain` statement as an assignment to
 #### Ruby Code
 
 ```ruby
-FastGettext.text_domain = 'users'
+FastGettext.text_domain = "users"
 
 ```
 
@@ -859,9 +859,9 @@ Y2R translates YCP statement blocks as Ruby statements.
 #### Error Message
 
 ```ruby
-Builtins.y2milestone('M1')
-Builtins.y2milestone('M2')
-Builtins.y2milestone('M3')
+Builtins.y2milestone("M1")
+Builtins.y2milestone("M2")
+Builtins.y2milestone("M3")
 ```
 
 ### `if` Statement
@@ -886,12 +886,12 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 
 ```ruby
 if true
-  Builtins.y2milestone('M1')
+  Builtins.y2milestone("M1")
 end
 if true
-  Builtins.y2milestone('M2')
+  Builtins.y2milestone("M2")
 else
-  Builtins.y2milestone('M3')
+  Builtins.y2milestone("M3")
 end
 ```
 
@@ -912,7 +912,7 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 
 ```ruby
 while true
-  Builtins.y2milestone('M1')
+  Builtins.y2milestone("M1")
 end
 ```
 
@@ -944,12 +944,12 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 #### Ruby Code
 
 ```ruby
-require 'ycp'
+require "ycp"
 
 class YCP::MClass
   extend YCP::Exportable
 
-  YCP.import('String')
+  YCP.import("String")
 
 
   def initialize

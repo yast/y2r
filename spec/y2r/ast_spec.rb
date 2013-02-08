@@ -159,7 +159,7 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "require 'ycp'",
+          "require \"ycp\"",
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
@@ -197,7 +197,7 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "require 'ycp'",
+          "require \"ycp\"",
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
@@ -223,16 +223,16 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "require 'ycp'",
+          "require \"ycp\"",
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
           "",
-          "  FastGettext.text_domain = 'd'",
+          "  FastGettext.text_domain = \"d\"",
           "",
-          "  FastGettext.text_domain = 'e'",
+          "  FastGettext.text_domain = \"e\"",
           "",
-          "  FastGettext.text_domain = 'f'",
+          "  FastGettext.text_domain = \"f\"",
           "",
           "end",
           "",
@@ -262,7 +262,7 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "require 'ycp'",
+          "require \"ycp\"",
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
@@ -318,7 +318,7 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "require 'ycp'",
+          "require \"ycp\"",
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
@@ -617,13 +617,13 @@ module Y2R::AST
       it "emits correct code for string constants" do
         node = Const.new(:type => :string, :value => "abcd")
 
-        node.to_ruby.should == "'abcd'"
+        node.to_ruby.should == "\"abcd\""
       end
 
       it "emits correct code for path constants" do
         node = Const.new(:type => :path, :value => ".abcd")
 
-        node.to_ruby.should == "Path.new('.abcd')"
+        node.to_ruby.should == "Path.new(\".abcd\")"
       end
     end
   end
@@ -747,7 +747,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Import.new(:name => "M")
 
-        node.to_ruby.should == "YCP.import('M')\n"
+        node.to_ruby.should == "YCP.import(\"M\")\n"
       end
     end
   end
@@ -781,7 +781,7 @@ module Y2R::AST
           :text => "Translated text."
         )
 
-        node.to_ruby.should == "_('Translated text.')"
+        node.to_ruby.should == "_(\"Translated text.\")"
       end
     end
   end
@@ -935,7 +935,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Textdomain.new(:name => "d")
 
-        node.to_ruby.should == "FastGettext.text_domain = 'd'\n"
+        node.to_ruby.should == "FastGettext.text_domain = \"d\"\n"
       end
     end
   end
@@ -1067,9 +1067,9 @@ module Y2R::AST
         )
 
         node_no_const.to_ruby.should ==
-          "Convert.convert(42, :from => 'integer', :to => 'float')"
+          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
         node_both_const.to_ruby.should ==
-          "Convert.convert(42, :from => 'integer', :to => 'float')"
+          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
       end
 
       it "emits correct code when both the types and their constness are different" do
@@ -1085,9 +1085,9 @@ module Y2R::AST
         )
 
         node_from_const.to_ruby.should ==
-          "Convert.convert(42, :from => 'integer', :to => 'float')"
+          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
         node_to_const.to_ruby.should ==
-          "Convert.convert(42, :from => 'integer', :to => 'float')"
+          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
       end
     end
   end
