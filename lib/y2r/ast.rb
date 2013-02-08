@@ -209,7 +209,7 @@ module Y2R
           when :float
             value.sub(/\.$/, ".0")
           when :symbol
-            ":#{value}" # TODO: Implement escaping.
+            ":#{value}"
           when :string
             value.inspect
           when :path
@@ -425,7 +425,6 @@ module Y2R
 
     class YETerm < Node
       def to_ruby(context = Context.new)
-        # TODO: Implement escaping.
         if !children.empty?
           "Term.new(:#{name}, " +
             children.map { |ch| ch.to_ruby(context) }.join(", ") +
