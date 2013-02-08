@@ -211,9 +211,9 @@ module Y2R
           when :symbol
             ":#{value}" # TODO: Implement escaping.
           when :string
-            "\"#{value}\"" # TODO: Implement escaping.
+            value.inspect
           when :path
-            "Path.new(\"#{value}\")" # TODO: Implement escaping.
+            "Path.new(#{value.inspect})"
           else
             raise "Unknown const type: #{type}."
         end
@@ -272,7 +272,7 @@ module Y2R
     class Import < Node
       def to_ruby(context = Context.new)
         [
-          "YCP.import(\"#{name}\")", # TODO: Implement escaping.
+          "YCP.import(#{name.inspect})",
           ""
         ].join("\n")
       end
@@ -286,7 +286,7 @@ module Y2R
 
     class Locale < Node
       def to_ruby(context = Context.new)
-        "_(\"" + text + "\")"
+        "_(#{text.inspect})"
       end
     end
 
@@ -334,7 +334,7 @@ module Y2R
     class Textdomain < Node
       def to_ruby(context = Context.new)
         [
-          "FastGettext.text_domain = \"#{name}\"", # TODO: Implement escaping.
+          "FastGettext.text_domain = #{name.inspect}",
           ""
         ].join("\n")
       end
@@ -403,8 +403,9 @@ module Y2R
 
         if from_no_const != to_no_const
           "Convert.convert(" +
-            child.to_ruby(context) +
-            ", :from => \"#{from_no_const}\", :to => \"#{to_no_const}\"" +
+            child.to_ruby(context) + ", " +
+            ":from => #{from_no_const.inspect}, " +
+            ":to => #{to_no_const.inspect}" +
           ")"
         else
           child.to_ruby(context)
