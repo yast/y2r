@@ -16,6 +16,14 @@ module Y2R::AST
           :name  => "N::i",
           :child => Const.new(:type => :int, :value => "42")
         )
+        @node_capital    = Assign.new(
+          :name  => "I",
+          :child => Const.new(:type => :int, :value => "42")
+        )
+        @node_underscore = Assign.new(
+          :name  => "_i",
+          :child => Const.new(:type => :int, :value => "42")
+        )
       end
 
       describe "at client toplevel" do
@@ -25,6 +33,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "M::i = 42"
           @node_prefixed_n.to_ruby(context).should == "N::i = 42"
+          @node_capital.to_ruby(context).should    == "_I = 42"
+          @node_underscore.to_ruby(context).should == "__i = 42"
         end
       end
 
@@ -35,6 +45,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "@i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
           @node_prefixed_n.to_ruby(context).should == "N::i = 42"
+          @node_capital.to_ruby(context).should    == "@I = 42"
+          @node_underscore.to_ruby(context).should == "@_i = 42"
         end
       end
 
@@ -45,6 +57,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "M::i = 42"
           @node_prefixed_n.to_ruby(context).should == "N::i = 42"
+          @node_capital.to_ruby(context).should    == "_I = 42"
+          @node_underscore.to_ruby(context).should == "__i = 42"
         end
       end
 
@@ -55,6 +69,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
           @node_prefixed_n.to_ruby(context).should == "N::i = 42"
+          @node_capital.to_ruby(context).should    == "_I = 42"
+          @node_underscore.to_ruby(context).should == "__i = 42"
         end
       end
     end
@@ -956,6 +972,8 @@ module Y2R::AST
         @node_unprefixed = Variable.new(:name => "i")
         @node_prefixed_m = Variable.new(:name => "M::i")
         @node_prefixed_n = Variable.new(:name => "N::i")
+        @node_capital    = Variable.new(:name => "I")
+        @node_underscore = Variable.new(:name => "_i")
       end
 
       describe "at client toplevel" do
@@ -965,6 +983,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "M::i"
           @node_prefixed_n.to_ruby(context).should == "N::i"
+          @node_capital.to_ruby(context).should    == "_I"
+          @node_underscore.to_ruby(context).should == "__i"
         end
       end
 
@@ -975,6 +995,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "@i"
           @node_prefixed_m.to_ruby(context).should == "@i"
           @node_prefixed_n.to_ruby(context).should == "N::i"
+          @node_capital.to_ruby(context).should    == "@I"
+          @node_underscore.to_ruby(context).should == "@_i"
         end
       end
 
@@ -985,6 +1007,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "M::i"
           @node_prefixed_n.to_ruby(context).should == "N::i"
+          @node_capital.to_ruby(context).should    == "_I"
+          @node_underscore.to_ruby(context).should == "__i"
         end
       end
 
@@ -995,6 +1019,8 @@ module Y2R::AST
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "@i"
           @node_prefixed_n.to_ruby(context).should == "N::i"
+          @node_capital.to_ruby(context).should    == "_I"
+          @node_underscore.to_ruby(context).should == "__i"
         end
       end
     end

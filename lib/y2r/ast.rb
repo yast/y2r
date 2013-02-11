@@ -7,6 +7,12 @@ module Y2R
         s.gsub(/^(?=.)/, "  ")
       end
 
+      # Escapes valid YCP variable names that are not valid Ruby local variable
+      # names
+      def escape_ruby_local_var_name(name)
+        name.gsub(/^[A-Z_]/) { |ch| "_#{ch}" }
+      end
+
       # This method translates a variable name from ycpc's XML into its Ruby
       # counterpart.
       #
@@ -22,7 +28,11 @@ module Y2R
         if name =~ /^([^:]+)::([^:]+)$/
           $1 == context.module_name ? "@#$2" : name
         else
-          context.innermost(:file, :module, :def) == :module ? "@#{name}" : name
+          if context.innermost(:file, :module, :def) == :module
+            "@#{name}"
+          else
+            escape_ruby_local_var_name(name)
+          end
         end
       end
     end
