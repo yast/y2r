@@ -93,8 +93,7 @@ module Y2R
 
               parts << indent(
                 "publish " +
-                  ":category => :#{symbol.category}, " +
-                  ":name => :#{symbol.name}, " +
+                  ":#{symbol.category} => :#{symbol.name}, " +
                   ":type => \"#{symbol.type}\""
               )
             end

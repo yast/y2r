@@ -201,9 +201,9 @@ module Y2R::AST
           "",
           "class YCP::MClass",
           "  extend YCP::Exportable",
-          "  publish :category => :variable, :name => :a, :type => \"integer\"",
-          "  publish :category => :variable, :name => :b, :type => \"integer\"",
-          "  publish :category => :variable, :name => :c, :type => \"integer\"",
+          "  publish :variable => :a, :type => \"integer\"",
+          "  publish :variable => :b, :type => \"integer\"",
+          "  publish :variable => :c, :type => \"integer\"",
           "end",
           "",
           "YCP::M = MClass.new"
