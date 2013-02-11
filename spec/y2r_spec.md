@@ -969,5 +969,5 @@ class YCP::MClass
   publish :function => :g, :type => "integer ()"
 end
 
-YCP::M = MClass.new
+YCP::M = YCP::MClass.new
 ```

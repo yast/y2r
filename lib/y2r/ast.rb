@@ -101,7 +101,7 @@ module Y2R
             parts += [
               "end",
               "",
-              "YCP::#{name} = #{name}Class.new"
+              "YCP::#{name} = YCP::#{name}Class.new"
             ]
 
             parts.join("\n")

@@ -165,7 +165,7 @@ module Y2R::AST
           "  extend YCP::Exportable",
           "end",
           "",
-          "YCP::M = MClass.new"
+          "YCP::M = YCP::MClass.new"
         ].join("\n")
       end
 
@@ -206,7 +206,7 @@ module Y2R::AST
           "  publish :variable => :c, :type => \"integer\"",
           "end",
           "",
-          "YCP::M = MClass.new"
+          "YCP::M = YCP::MClass.new"
         ].join("\n")
       end
 
@@ -236,7 +236,7 @@ module Y2R::AST
           "",
           "end",
           "",
-          "YCP::M = MClass.new"
+          "YCP::M = YCP::MClass.new"
         ].join("\n")
       end
 
@@ -274,7 +274,7 @@ module Y2R::AST
           "  end",
           "end",
           "",
-          "YCP::M = MClass.new"
+          "YCP::M = YCP::MClass.new"
         ].join("\n")
       end
 
@@ -337,7 +337,7 @@ module Y2R::AST
           "",
           "end",
           "",
-          "YCP::M = MClass.new"
+          "YCP::M = YCP::MClass.new"
         ].join("\n")
       end
     end
