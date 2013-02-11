@@ -6,6 +6,25 @@ module Y2R
       def indent(s)
         s.gsub(/^(?=.)/, "  ")
       end
+
+      # This method translates a variable name from ycpc's XML into its Ruby
+      # counterpart.
+      #
+      # The biggest issue is that in the XML, all global module variable
+      # references are qualified (e.g. "M::i"). This includes references to
+      # variables defined in this module. All other variable references are
+      # unqualified (e.g "i").
+      #
+      # Note that Y2R currently supports only local variables (translated as
+      # Ruby local variables) and module-level variables (translated as Ruby
+      # instance variables).
+      def ruby_var_name(name, context)
+        if name =~ /^([^:]+)::([^:]+)$/
+          $1 == context.module_name ? "@#$2" : name
+        else
+          context.innermost(:file, :module, :def) == :module ? "@#{name}" : name
+        end
+      end
     end
 
     class Context
@@ -32,13 +51,7 @@ module Y2R
 
     class Assign < Node
       def to_ruby(context = Context.new)
-        var_name = if name =~ /^([^:]+)::(.*)$/
-          $1 == context.module_name ? "@#$2" : name
-        else
-          context.innermost(:file, :module, :def) == :module ? "@#{name}" : name
-        end
-
-        "#{var_name} = #{child.to_ruby(context)}"
+        "#{ruby_var_name(name, context)} = #{child.to_ruby(context)}"
       end
     end
 
