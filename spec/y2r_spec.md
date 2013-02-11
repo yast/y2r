@@ -946,28 +946,30 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 ```ruby
 require "ycp"
 
-class YCP::MClass
-  extend YCP::Exportable
+module YCP
+  class MClass
+    extend Exportable
 
-  YCP.import("String")
+    YCP.import("String")
 
 
-  def initialize
-    @i = 42
-    @j = 43
+    def initialize
+      @i = 42
+      @j = 43
+    end
+
+    def f()
+      return 42
+    end
+
+    def g()
+      return 43
+    end
+
+    publish :variable => :j, :type => "integer"
+    publish :function => :g, :type => "integer ()"
   end
 
-  def f()
-    return 42
-  end
-  
-  def g()
-    return 43
-  end
-
-  publish :variable => :j, :type => "integer"
-  publish :function => :g, :type => "integer ()"
+  M = MClass.new
 end
-
-YCP::M = YCP::MClass.new
 ```

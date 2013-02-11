@@ -161,11 +161,13 @@ module Y2R::AST
         node.to_ruby.should == [
           "require \"ycp\"",
           "",
-          "class YCP::MClass",
-          "  extend YCP::Exportable",
-          "end",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "  end",
           "",
-          "YCP::M = YCP::MClass.new"
+          "  M = MClass.new",
+          "end"
         ].join("\n")
       end
 
@@ -199,14 +201,16 @@ module Y2R::AST
         node.to_ruby.should == [
           "require \"ycp\"",
           "",
-          "class YCP::MClass",
-          "  extend YCP::Exportable",
-          "  publish :variable => :a, :type => \"integer\"",
-          "  publish :variable => :b, :type => \"integer\"",
-          "  publish :variable => :c, :type => \"integer\"",
-          "end",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "    publish :variable => :a, :type => \"integer\"",
+          "    publish :variable => :b, :type => \"integer\"",
+          "    publish :variable => :c, :type => \"integer\"",
+          "  end",
           "",
-          "YCP::M = YCP::MClass.new"
+          "  M = MClass.new",
+          "end"
         ].join("\n")
       end
 
@@ -225,18 +229,20 @@ module Y2R::AST
         node.to_ruby.should == [
           "require \"ycp\"",
           "",
-          "class YCP::MClass",
-          "  extend YCP::Exportable",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
           "",
-          "  FastGettext.text_domain = \"d\"",
+          "    FastGettext.text_domain = \"d\"",
           "",
-          "  FastGettext.text_domain = \"e\"",
+          "    FastGettext.text_domain = \"e\"",
           "",
-          "  FastGettext.text_domain = \"f\"",
+          "    FastGettext.text_domain = \"f\"",
           "",
-          "end",
+          "  end",
           "",
-          "YCP::M = YCP::MClass.new"
+          "  M = MClass.new",
+          "end"
         ].join("\n")
       end
 
@@ -264,17 +270,19 @@ module Y2R::AST
         node.to_ruby.should == [
           "require \"ycp\"",
           "",
-          "class YCP::MClass",
-          "  extend YCP::Exportable",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
           "",
-          "  def initialize",
-          "    @i = 42",
-          "    @j = 43",
-          "    @k = 44",
+          "    def initialize",
+          "      @i = 42",
+          "      @j = 43",
+          "      @k = 44",
+          "    end",
           "  end",
-          "end",
           "",
-          "YCP::M = YCP::MClass.new"
+          "  M = MClass.new",
+          "end"
         ].join("\n")
       end
 
@@ -320,24 +328,26 @@ module Y2R::AST
         node.to_ruby.should == [
           "require \"ycp\"",
           "",
-          "class YCP::MClass",
-          "  extend YCP::Exportable",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
           "",
-          "  def f()",
-          "    return 42",
+          "    def f()",
+          "      return 42",
+          "    end",
+          "",
+          "    def g()",
+          "      return 43",
+          "    end",
+          "",
+          "    def h()",
+          "      return 44",
+          "    end",
+          "",
           "  end",
           "",
-          "  def g()",
-          "    return 43",
-          "  end",
-          "",
-          "  def h()",
-          "    return 44",
-          "  end",
-          "",
-          "end",
-          "",
-          "YCP::M = YCP::MClass.new"
+          "  M = MClass.new",
+          "end"
         ].join("\n")
       end
     end

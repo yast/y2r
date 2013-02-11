@@ -60,30 +60,31 @@ module Y2R
             parts = [
               "require \"ycp\"",
               "",
-              "class YCP::#{name}Class",
-              "  extend YCP::Exportable"
+              "module YCP",
+              "  class #{name}Class",
+              "    extend Exportable"
             ]
 
             unless other_statements.empty?
               parts += [
                 "",
-                indent(other_statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+                indent(indent(other_statements.map { |s| s.to_ruby(statements_context) }.join("\n"))),
               ]
             end
 
             unless assigns.empty?
               parts += [
                 "",
-                "  def initialize",
-                indent(indent(assigns.map { |s| s.to_ruby(statements_context) }.join("\n"))),
-                "  end"
+                "    def initialize",
+                indent(indent(indent(assigns.map { |s| s.to_ruby(statements_context) }.join("\n")))),
+                "    end"
               ]
             end
 
             unless fundefs.empty?
               parts += [
                 "",
-                indent(fundefs.map { |s| s.to_ruby(statements_context) }.join("\n")),
+                indent(indent(fundefs.map { |s| s.to_ruby(statements_context) }.join("\n"))),
               ]
             end
 
@@ -91,17 +92,18 @@ module Y2R
               next unless symbol.global
               next unless symbol.category == :variable || symbol.category == :function
 
-              parts << indent(
+              parts << indent(indent(
                 "publish " +
                   ":#{symbol.category} => :#{symbol.name}, " +
                   ":type => \"#{symbol.type}\""
-              )
+              ))
             end
 
             parts += [
-              "end",
+              "  end",
               "",
-              "YCP::#{name} = YCP::#{name}Class.new"
+              "  #{name} = #{name}Class.new",
+              "end"
             ]
 
             parts.join("\n")
