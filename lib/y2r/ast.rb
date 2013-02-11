@@ -356,7 +356,7 @@ module Y2R
 
     class Variable < Node
       def to_ruby(context = Context.new)
-        name
+        ruby_var_name(name, context)
       end
     end
 

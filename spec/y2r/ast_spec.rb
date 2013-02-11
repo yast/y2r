@@ -952,10 +952,50 @@ module Y2R::AST
 
   describe Variable do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Variable.new(:name => "v")
+      before :each do
+        @node_unprefixed = Variable.new(:name => "i")
+        @node_prefixed_m = Variable.new(:name => "M::i")
+        @node_prefixed_n = Variable.new(:name => "N::i")
+      end
 
-        node.to_ruby.should == "v"
+      describe "at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file])
+
+          @node_unprefixed.to_ruby(context).should == "i"
+          @node_prefixed_m.to_ruby(context).should == "M::i"
+          @node_prefixed_n.to_ruby(context).should == "N::i"
+        end
+      end
+
+      describe "at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:module], :module_name => "M")
+
+          @node_unprefixed.to_ruby(context).should == "@i"
+          @node_prefixed_m.to_ruby(context).should == "@i"
+          @node_prefixed_n.to_ruby(context).should == "N::i"
+        end
+      end
+
+      describe "inside a function at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:file, :def])
+
+          @node_unprefixed.to_ruby(context).should == "i"
+          @node_prefixed_m.to_ruby(context).should == "M::i"
+          @node_prefixed_n.to_ruby(context).should == "N::i"
+        end
+      end
+
+      describe "inside a function at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [:module, :def], :module_name => "M")
+
+          @node_unprefixed.to_ruby(context).should == "i"
+          @node_prefixed_m.to_ruby(context).should == "@i"
+          @node_prefixed_n.to_ruby(context).should == "N::i"
+        end
       end
     end
   end
