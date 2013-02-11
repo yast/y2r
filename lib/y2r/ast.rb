@@ -267,6 +267,8 @@ module Y2R
             args.map { |a| a.to_ruby(context) }.join(", ") +
           ")",
           indent(block.to_ruby(context)),
+          "",
+          "  nil",
           "end",
           ""
         ].join("\n")

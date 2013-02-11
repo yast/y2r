@@ -257,6 +257,8 @@ Y2R translates YCP local variables as Ruby local variables.
 def f()
   i = 42
   j = i
+
+  nil
 end
 
 ```
@@ -725,10 +727,14 @@ statement.
 ```ruby
 def f1()
   return
+
+  nil
 end
 
 def f2()
   return 42
+
+  nil
 end
 
 ```
@@ -870,10 +876,14 @@ Y2R translates YCP function definitions as Ruby method definitions.
 ```ruby
 def f1()
   return 42
+
+  nil
 end
 
 def f2(a, b, c)
   return 42
+
+  nil
 end
 
 ```
@@ -1022,10 +1032,14 @@ module YCP
 
     def f()
       return 42
+
+      nil
     end
 
     def g()
       return 43
+
+      nil
     end
 
     publish :variable => :j, :type => "integer"

@@ -350,14 +350,20 @@ module Y2R::AST
           "",
           "    def f()",
           "      return 42",
+          "",
+          "      nil",
           "    end",
           "",
           "    def g()",
           "      return 43",
+          "",
+          "      nil",
           "    end",
           "",
           "    def h()",
           "      return 44",
+          "",
+          "      nil",
           "    end",
           "",
           "  end",
@@ -688,7 +694,7 @@ module Y2R::AST
           )
         )
 
-        node.to_ruby.should == "def f()\n  return 42\nend\n"
+        node.to_ruby.should == "def f()\n  return 42\n\n  nil\nend\n"
       end
 
       it "emits correct code for fundefs with arguments" do
@@ -722,7 +728,7 @@ module Y2R::AST
           )
         )
 
-        node.to_ruby.should == "def f(a, b, c)\n  return 42\nend\n"
+        node.to_ruby.should == "def f(a, b, c)\n  return 42\n\n  nil\nend\n"
       end
 
       it "raises an exception for nested functions" do
