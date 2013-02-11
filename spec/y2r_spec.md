@@ -238,7 +238,30 @@ Y2R translates YCP expressions into Ruby expressions.
 
 ### Variables
 
-Y2R translates YCP variables as Ruby local variables.
+Y2R translates YCP local variables as Ruby local variables.
+
+#### YCP Code
+
+```ycp
+{
+  void f() {
+    integer i = 42;
+    integer j = i;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+def f()
+  i = 42
+  j = i
+end
+
+```
+
+Y2R translates YCP variables at client toplevel as Ruby local variables.
 
 #### YCP Code
 
@@ -254,6 +277,45 @@ Y2R translates YCP variables as Ruby local variables.
 ```ruby
 i = 42
 j = i
+```
+
+Y2R translates YCP variables at module toplevel as Ruby instance variables.
+
+#### YCP Code
+
+```ycp
+{
+  module "M";
+
+  integer i = 42;
+  integer j = i;
+
+  global integer k = 42;
+  global integer l = i;
+}
+```
+
+#### Ruby Code
+
+```ruby
+require "ycp"
+
+module YCP
+  class MClass
+    extend Exportable
+
+    def initialize
+      @i = 42
+      @j = @i
+      @k = 42
+      @l = @i
+    end
+    publish :variable => :k, :type => "integer"
+    publish :variable => :l, :type => "integer"
+  end
+
+  M = MClass.new
+end
 ```
 
 ### Type Conversions
