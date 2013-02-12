@@ -184,7 +184,22 @@ module Y2R
           block = children.last
         end
 
-        "Builtins.#{name}(" +
+        module_name = case name
+          when /^SCR::/
+            "SCR"
+          when /^WFM::/
+            "WFM"
+          when /^float::/
+            "Builtins::Float"
+          when /^list::/
+            "Builtins::List"
+          else
+            "Builtins"
+        end
+
+        method_name = name.split("::").last
+
+        "#{module_name}.#{method_name}(" +
           args.map { |ch| ch.to_ruby(context) }.join(", ") +
         ")" + if block
           block_args = symbols.map { |s| s.split(" ").last }

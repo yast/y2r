@@ -560,6 +560,20 @@ module Y2R::AST
         node.to_ruby.should ==
           "Builtins.b(42, 43, 44) { |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
       end
+
+      it "emits correct code for namespaced builtins" do
+        node_scr   = Builtin.new(:name => "SCR::b",   :symbols => [], :children => [])
+        node_wfm   = Builtin.new(:name => "WFM::b",   :symbols => [], :children => [])
+        node_float = Builtin.new(:name => "float::b", :symbols => [], :children => [])
+        node_list  = Builtin.new(:name => "list::b",  :symbols => [], :children => [])
+        node_none  = Builtin.new(:name => "b",        :symbols => [], :children => [])
+
+        node_scr.to_ruby.should   == "SCR.b()"
+        node_wfm.to_ruby.should   == "WFM.b()"
+        node_float.to_ruby.should == "Builtins::Float.b()"
+        node_list.to_ruby.should  == "Builtins::List.b()"
+        node_none.to_ruby.should  == "Builtins.b()"
+      end
     end
   end
 

@@ -342,8 +342,9 @@ f = Convert.convert(42, :from => "integer", :to => "float")
 
 ### Builtin Calls
 
-Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`
-module. These reimplement the behavior of all YCP builtins in Ruby.
+Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`,
+`YCP::SCR` and `YCP::WFM` modules. These reimplement the behavior of all YCP
+builtins in Ruby.
 
 #### YCP Code
 
@@ -351,14 +352,28 @@ module. These reimplement the behavior of all YCP builtins in Ruby.
 {
   time();
   random(100);
+
+  SCR::Dir(.syseditor.section);
+  WFM::Args();
+
+  float f = float::abs(-42.0);
+  list  l = list::reverse([42, 43, 44]);
 }
 ```
 
 #### Ruby Code
 
 ```ruby
+YCP.import("WFM")
+
+YCP.import("SCR")
+
 Builtins.time()
 Builtins.random(100)
+SCR.Dir(Path.new(".syseditor.section"))
+WFM.Args()
+f = Builtins::Float.abs(-42.0)
+l = Builtins::List.reverse([42, 43, 44])
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
