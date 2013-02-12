@@ -166,13 +166,11 @@ module Y2R
 
     class Bracket < Node
       def to_ruby(context = Context.new)
-        "Ops.assign(" +
-          entry.to_ruby(context) +
-          ", " +
-          arg.to_ruby(context) +
-          ", " +
-          rhs.to_ruby(context) +
-        ")"
+        entry_code = entry.to_ruby(context)
+        arg_code   = arg.to_ruby(context)
+        rhs_code   = rhs.to_ruby(context)
+
+        "Ops.assign(#{entry_code}, #{arg_code}, #{rhs_code})"
       end
     end
 
@@ -210,13 +208,13 @@ module Y2R
 
         method_name = name.split("::").last
 
-        "#{module_name}.#{method_name}#{ruby_args(args, context)}" +
-        if block
-          block_args = symbols.map { |s| s.split(" ").last }
-          " " + block.to_ruby_block(block_args, context)
+        block_code = if block
+          " #{block.to_ruby_block(symbols.map { |s| s.split(" ").last }, context)}"
         else
           ""
         end
+
+        "#{module_name}.#{method_name}#{ruby_args(args, context)}#{block_code}"
       end
     end
 
@@ -237,11 +235,10 @@ module Y2R
       }
 
       def to_ruby(context = Context.new)
-        "Ops.#{OPS_TO_METHODS[op]}(" +
-          lhs.to_ruby(context) +
-          ", " +
-          rhs.to_ruby(context) +
-        ")"
+        lhs_code = lhs.to_ruby(context)
+        rhs_code = rhs.to_ruby(context)
+
+        "Ops.#{OPS_TO_METHODS[op]}(#{lhs_code}, #{rhs_code})"
       end
     end
 
@@ -439,23 +436,20 @@ module Y2R
       }
 
       def to_ruby(context = Context.new)
-        "Ops.#{OPS_TO_METHODS[name]}(" +
-          lhs.to_ruby(context) +
-          ", " +
-          rhs.to_ruby(context) +
-        ")"
+        lhs_code = lhs.to_ruby(context)
+        rhs_code = rhs.to_ruby(context)
+
+        "Ops.#{OPS_TO_METHODS[name]}(#{lhs_code}, #{rhs_code})"
       end
     end
 
     class YEBracket < Node
       def to_ruby(context = Context.new)
-        "Ops.index(" +
-          value.to_ruby(context) +
-          ", " +
-          index.to_ruby(context) +
-          ", " +
-          default.to_ruby(context) +
-        ")"
+        value_code   = value.to_ruby(context)
+        index_code   = index.to_ruby(context)
+        default_code = default.to_ruby(context)
+
+        "Ops.index(#{value_code}, #{index_code}, #{default_code})"
       end
     end
 
@@ -465,11 +459,11 @@ module Y2R
         to_no_const   = to.sub(/^const /, "")
 
         if from_no_const != to_no_const
-          "Convert.convert(" +
-            child.to_ruby(context) + ", " +
-            ":from => #{from_no_const.inspect}, " +
-            ":to => #{to_no_const.inspect}" +
-          ")"
+          child_code = child.to_ruby(context)
+          from_code  = from_no_const.inspect
+          to_code    = to_no_const.inspect
+
+          "Convert.convert(#{child_code}, :from => #{from_code}, :to => #{to_code})"
         else
           child.to_ruby(context)
         end
@@ -498,11 +492,11 @@ module Y2R
 
     class YETriple < Node
       def to_ruby(context = Context.new)
-        cond.to_ruby(context) +
-        " ? " +
-        self.true.to_ruby(context) +
-        " : " +
-        self.false.to_ruby(context)
+        cond_code  = cond.to_ruby(context)
+        true_code  = self.true.to_ruby(context)
+        false_code = self.false.to_ruby(context)
+
+        "#{cond_code} ? #{true_code} : #{false_code}"
       end
     end
 
