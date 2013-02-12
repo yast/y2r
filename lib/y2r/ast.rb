@@ -13,6 +13,10 @@ module Y2R
         parts.join("\n")
       end
 
+      def strip_const(type)
+        type.sub(/^const /, "")
+      end
+
       # Escapes valid YCP variable names that are not valid Ruby local variable
       # names.
       def escape_ruby_local_var_name(name)
@@ -278,7 +282,7 @@ module Y2R
         end
 
         args_to_copy = args.reject do |arg|
-          ["boolean", "integer", "symbol"].include?(arg.type.sub(/^const /, ""))
+          ["boolean", "integer", "symbol"].include?(strip_const(arg.type))
         end
 
         combine do |parts|
@@ -445,8 +449,8 @@ module Y2R
 
     class YEPropagate < Node
       def to_ruby(context = Context.new)
-        from_no_const = from.sub(/^const /, "")
-        to_no_const   = to.sub(/^const /, "")
+        from_no_const = strip_const(from)
+        to_no_const   = strip_const(to)
 
         if from_no_const != to_no_const
           child_code = child.to_ruby(context)
