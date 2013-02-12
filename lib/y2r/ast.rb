@@ -43,6 +43,10 @@ module Y2R
       def ruby_args(args, context)
         !args.empty? ? "(#{ruby_list(args, context)})" : ""
       end
+
+      def ruby_stmts(stmts, context)
+        stmts.map { |s| s.to_ruby(context) }.join("\n")
+      end
     end
 
     class Context
@@ -80,7 +84,7 @@ module Y2R
 
         case kind
           when :def, :file, :stmt
-            statements.map { |s| s.to_ruby(statements_context) }.join("\n")
+            ruby_stmts(statements, statements_context)
           when :module
             statements_context.module_name = name
 
@@ -99,7 +103,7 @@ module Y2R
             unless other_statements.empty?
               parts += [
                 "",
-                indent(indent(other_statements.map { |s| s.to_ruby(statements_context) }.join("\n"))),
+                indent(indent(ruby_stmts(other_statements, statements_context)))
               ]
             end
 
@@ -107,7 +111,7 @@ module Y2R
               parts += [
                 "",
                 "    def initialize",
-                indent(indent(indent(assigns.map { |s| s.to_ruby(statements_context) }.join("\n")))),
+                indent(indent(indent(ruby_stmts(assigns, statements_context)))),
                 "    end"
               ]
             end
@@ -115,7 +119,7 @@ module Y2R
             unless fundefs.empty?
               parts += [
                 "",
-                indent(indent(fundefs.map { |s| s.to_ruby(statements_context) }.join("\n"))),
+                indent(indent(ruby_stmts(fundefs, statements_context)))
               ]
             end
 
@@ -141,7 +145,7 @@ module Y2R
           when :unspec
             [
               "lambda {",
-              indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+              indent(ruby_stmts(statements, statements_context)),
               "}"
             ].join("\n")
           else
@@ -155,7 +159,7 @@ module Y2R
 
         [
           "{ |" + args.join(", ") + "|",
-          indent(statements.map { |s| s.to_ruby(statements_context) }.join("\n")),
+          indent(ruby_stmts(statements, statements_context)),
           "}"
         ].join("\n")
       end
