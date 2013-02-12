@@ -312,6 +312,10 @@ module Y2R
 
     class Import < Node
       def to_ruby(context = Context.new)
+        # Using any SCR or WFM function results in an auto-import. We ignore
+        # these auto-imports becasue neither SCR nor WFM are real modules.
+        return "" if name == "SCR" || name == "WFM"
+
         [
           "YCP.import(#{name.inspect})",
           ""

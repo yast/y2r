@@ -791,9 +791,13 @@ module Y2R::AST
   describe Import do
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Import.new(:name => "M")
+        node_regular = Import.new(:name => "M")
+        node_scr     = Import.new(:name => "SCR")
+        node_wfm     = Import.new(:name => "WFM")
 
-        node.to_ruby.should == "YCP.import(\"M\")\n"
+        node_regular.to_ruby.should == "YCP.import(\"M\")\n"
+        node_scr.to_ruby.should     == ""
+        node_wfm.to_ruby.should     == ""
       end
     end
   end

@@ -364,9 +364,7 @@ builtins in Ruby.
 #### Ruby Code
 
 ```ruby
-YCP.import("WFM")
 
-YCP.import("SCR")
 
 Builtins.time()
 Builtins.random(100)

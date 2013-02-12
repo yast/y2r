@@ -5,7 +5,7 @@ RSpec.configure do |c|
 end
 
 def cleanup(s)
-  s =~ /^(\s*)/
+  s.split("\n").reject { |l| l =~ /^\s*$/ }.first =~ /^(\s*)/
   s.gsub(Regexp.new("^#{$1}"), "")[0..-2]
 end
 
