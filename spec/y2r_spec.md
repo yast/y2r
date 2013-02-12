@@ -254,7 +254,7 @@ Y2R translates YCP local variables as Ruby local variables.
 #### Ruby Code
 
 ```ruby
-def f()
+def f
   i = 42
   j = i
 
@@ -366,10 +366,10 @@ builtins in Ruby.
 ```ruby
 
 
-Builtins.time()
+Builtins.time
 Builtins.random(100)
 SCR.Dir(Path.new(".syseditor.section"))
-WFM.Args()
+WFM.Args
 f = Builtins::Float.abs(-42.0)
 l = Builtins::List.reverse([42, 43, 44])
 ```
@@ -738,13 +738,13 @@ statement.
 #### Ruby Code
 
 ```ruby
-def f1()
+def f1
   return
 
   nil
 end
 
-def f2()
+def f2
   return 42
 
   nil
@@ -901,7 +901,7 @@ which are all immutable.
 #### Ruby Code
 
 ```ruby
-def f1()
+def f1
   return 42
 
   nil
@@ -1078,13 +1078,13 @@ module YCP
       @j = 43
     end
 
-    def f()
+    def f
       return 42
 
       nil
     end
 
-    def g()
+    def g
       return 43
 
       nil

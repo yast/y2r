@@ -35,6 +35,14 @@ module Y2R
           end
         end
       end
+
+      def ruby_args(args, context)
+        if !args.empty?
+          "(" + args.map { |a| a.to_ruby(context) }.join(", ") + ")"
+        else
+          ""
+        end
+      end
     end
 
     class Context
@@ -199,9 +207,8 @@ module Y2R
 
         method_name = name.split("::").last
 
-        "#{module_name}.#{method_name}(" +
-          args.map { |ch| ch.to_ruby(context) }.join(", ") +
-        ")" + if block
+        "#{module_name}.#{method_name}#{ruby_args(args, context)}" +
+        if block
           block_args = symbols.map { |s| s.split(" ").last }
           " " + block.to_ruby_block(block_args, context)
         else
@@ -212,9 +219,7 @@ module Y2R
 
     class Call < Node
       def to_ruby(context = Context.new)
-        "#{ns}.#{name}(" +
-          args.map { |a| a.to_ruby(context) }.join(", ") +
-        ")"
+        "#{ns}.#{name}#{ruby_args(args, context)}"
       end
     end
 
@@ -281,9 +286,7 @@ module Y2R
         end
 
         parts = [
-          "def #{name}(" +
-            args.map { |a| a.to_ruby(context) }.join(", ") +
-          ")"
+          "def #{name}#{ruby_args(args, context)}"
         ]
 
         args_to_copy.each do |arg|

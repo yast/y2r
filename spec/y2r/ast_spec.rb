@@ -348,19 +348,19 @@ module Y2R::AST
           "  class MClass",
           "    extend Exportable",
           "",
-          "    def f()",
+          "    def f",
           "      return 42",
           "",
           "      nil",
           "    end",
           "",
-          "    def g()",
+          "    def g",
           "      return 43",
           "",
           "      nil",
           "    end",
           "",
-          "    def h()",
+          "    def h",
           "      return 44",
           "",
           "      nil",
@@ -483,7 +483,7 @@ module Y2R::AST
       it "emits correct code for builtins with no arguments and no block" do
         node = Builtin.new(:name => "b", :symbols => [], :children => [])
 
-        node.to_ruby.should == "Builtins.b()"
+        node.to_ruby.should == "Builtins.b"
       end
 
       it "emits correct code for builtins with arguments and no block" do
@@ -526,7 +526,7 @@ module Y2R::AST
         )
 
         node.to_ruby.should ==
-          "Builtins.b() { |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
+          "Builtins.b { |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
       end
 
       it "emits correct code for builtins with arguments and a block" do
@@ -568,11 +568,11 @@ module Y2R::AST
         node_list  = Builtin.new(:name => "list::b",  :symbols => [], :children => [])
         node_none  = Builtin.new(:name => "b",        :symbols => [], :children => [])
 
-        node_scr.to_ruby.should   == "SCR.b()"
-        node_wfm.to_ruby.should   == "WFM.b()"
-        node_float.to_ruby.should == "Builtins::Float.b()"
-        node_list.to_ruby.should  == "Builtins::List.b()"
-        node_none.to_ruby.should  == "Builtins.b()"
+        node_scr.to_ruby.should   == "SCR.b"
+        node_wfm.to_ruby.should   == "WFM.b"
+        node_float.to_ruby.should == "Builtins::Float.b"
+        node_list.to_ruby.should  == "Builtins::List.b"
+        node_none.to_ruby.should  == "Builtins.b"
       end
     end
   end
@@ -582,7 +582,7 @@ module Y2R::AST
       it "emits correct code for a call without arguments" do
         node = Call.new(:ns => "n", :name => "f", :args => [])
 
-        node.to_ruby.should == "n.f()"
+        node.to_ruby.should == "n.f"
       end
 
       it "emits correct code for a call with arguments" do
@@ -740,7 +740,7 @@ module Y2R::AST
           )
         )
 
-        node.to_ruby.should == "def f()\n  return 42\n\n  nil\nend\n"
+        node.to_ruby.should == "def f\n  return 42\n\n  nil\nend\n"
       end
 
       it "emits correct code for fundefs with arguments" do
@@ -812,7 +812,7 @@ module Y2R::AST
           :else => nil
         )
 
-        node.to_ruby.should == "if true\n  n.f()\nend"
+        node.to_ruby.should == "if true\n  n.f\nend"
       end
 
       it "emits correct code for ifs with else" do
@@ -822,7 +822,7 @@ module Y2R::AST
           :else => Call.new(:ns => "n", :name => "f", :args => [])
         )
 
-        node.to_ruby.should == "if true\n  n.f()\nelse\n  n.f()\nend"
+        node.to_ruby.should == "if true\n  n.f\nelse\n  n.f\nend"
       end
     end
   end
@@ -1110,7 +1110,7 @@ module Y2R::AST
           :do   => Call.new(:ns => "n", :name => "f", :args => [])
         )
 
-        node.to_ruby.should == "while true\n  n.f()\nend"
+        node.to_ruby.should == "while true\n  n.f\nend"
       end
     end
   end
