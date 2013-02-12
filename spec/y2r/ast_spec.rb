@@ -1005,6 +1005,52 @@ module Y2R::AST
   end
 
   describe Symbol do
+    describe "#needs_copy?" do
+      it "returns false for a boolean" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "boolean",
+          :name     => "s"
+        )
+
+        node.needs_copy?.should be_false
+      end
+
+      it "returns false for an integer" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        node.needs_copy?.should be_false
+      end
+
+      it "returns false for a symbol" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "symbol",
+          :name     => "s"
+        )
+
+        node.needs_copy?.should be_false
+      end
+
+      it "returns true for a any" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "any",
+          :name     => "s"
+        )
+
+        node.needs_copy?.should be_true
+      end
+    end
+
     describe "#published?" do
       it "returns true for a global variable" do
         node = Symbol.new(

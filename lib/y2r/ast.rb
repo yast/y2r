@@ -276,15 +276,11 @@ module Y2R
           raise NotImplementedError, "Nested functions are not supported."
         end
 
-        args_to_copy = args.reject do |arg|
-          ["boolean", "integer", "symbol"].include?(strip_const(arg.type))
-        end
-
         combine do |parts|
           parts << "def #{name}#{ruby_args(args, context)}"
 
-          args_to_copy.each do |arg|
-            parts << indent(arg.to_ruby_copy_call)
+          args.each do |arg|
+            parts << indent(arg.to_ruby_copy_call) if arg.needs_copy?
           end
 
           parts << indent(block.to_ruby(context))
@@ -371,6 +367,10 @@ module Y2R
     end
 
     class Symbol < Node
+      def needs_copy?
+        !["boolean", "integer", "symbol"].include?(strip_const(type))
+      end
+
       def published?
         global && (category == :variable || category == :function)
       end
