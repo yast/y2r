@@ -36,12 +36,12 @@ module Y2R
         end
       end
 
+      def ruby_list(items, context)
+        items.map { |i| i.to_ruby(context) }.join(", ")
+      end
+
       def ruby_args(args, context)
-        if !args.empty?
-          "(" + args.map { |a| a.to_ruby(context) }.join(", ") + ")"
-        else
-          ""
-        end
+        !args.empty? ? "(#{ruby_list(args, context)})" : ""
       end
     end
 
@@ -340,7 +340,7 @@ module Y2R
 
     class List < Node
       def to_ruby(context = Context.new)
-        "[" + children.map { |ch| ch.to_ruby(context) }.join(", ") + "]"
+        "[#{ruby_list(children, context)}]"
       end
     end
 
@@ -352,11 +352,7 @@ module Y2R
 
     class Map < Node
       def to_ruby(context = Context.new)
-        if !children.empty?
-          "{ " + children.map { |ch| ch.to_ruby(context) }.join(", ") + " }"
-        else
-          "{}"
-        end
+        !children.empty? ? "{ #{ruby_list(children, context)} }" : "{}"
       end
     end
 
@@ -490,9 +486,7 @@ module Y2R
     class YETerm < Node
       def to_ruby(context = Context.new)
         if !children.empty?
-          "Term.new(:#{name}, " +
-            children.map { |ch| ch.to_ruby(context) }.join(", ") +
-          ")"
+          "Term.new(:#{name}, #{ruby_list(children, context)})"
         else
           "Term.new(:#{name})"
         end
