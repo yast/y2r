@@ -152,7 +152,7 @@ module Y2R
         statements_context.blocks = statements_context.blocks + [kind]
 
         combine do |parts|
-          parts << "{ |" + args.join(", ") + "|"
+          parts << "{ |#{args.join(", ")}|"
           parts << indent(ruby_stmts(statements, statements_context))
           parts << "}"
         end
