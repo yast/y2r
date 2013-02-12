@@ -8,13 +8,12 @@ module Y2R
       end
 
       # Escapes valid YCP variable names that are not valid Ruby local variable
-      # names
+      # names.
       def escape_ruby_local_var_name(name)
         name.gsub(/^[A-Z_]/) { |ch| "_#{ch}" }
       end
 
-      # This method translates a variable name from ycpc's XML into its Ruby
-      # counterpart.
+      # Translates a variable name from ycpc's XML into its Ruby counterpart.
       #
       # The biggest issue is that in the XML, all global module variable
       # references are qualified (e.g. "M::i"). This includes references to
