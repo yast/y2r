@@ -212,7 +212,6 @@ module Y2R
 
     class Call < Node
       def to_ruby(context = Context.new)
-        # TODO: YCP uses call-by-value.
         "#{ns}.#{name}(" +
           args.map { |a| a.to_ruby(context) }.join(", ") +
         ")"
@@ -277,16 +276,29 @@ module Y2R
           raise NotImplementedError, "Nested functions are not supported."
         end
 
-        [
+        args_to_copy = args.reject do |arg|
+          ["boolean", "integer", "symbol"].include?(arg.type.sub(/^const /, ""))
+        end
+
+        parts = [
           "def #{name}(" +
             args.map { |a| a.to_ruby(context) }.join(", ") +
-          ")",
+          ")"
+        ]
+
+        args_to_copy.each do |arg|
+          parts << indent(arg.to_ruby_copy_call)
+        end
+
+        parts += [
           indent(block.to_ruby(context)),
           "",
           "  nil",
           "end",
           ""
-        ].join("\n")
+        ]
+
+        parts.join("\n")
       end
     end
 
@@ -373,6 +385,10 @@ module Y2R
     class Symbol < Node
       def to_ruby(context = Context.new)
         name
+      end
+
+      def to_ruby_copy_call
+        "#{name} = YCP.copy(#{name})"
       end
     end
 

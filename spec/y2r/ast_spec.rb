@@ -696,6 +696,38 @@ module Y2R::AST
 
   describe FunDef do
     describe "#to_ruby" do
+      def fundef_with_args(type)
+        FunDef.new(
+          :name  => "f",
+          :args  => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => type,
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => type,
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => type,
+              :name     => "c"
+            )
+          ],
+          :block => Block.new(
+            :kind       => :def,
+            :statements => [
+              Return.new(:child => Const.new(:type => :int, :value => "42"))
+            ]
+          )
+        )
+      end
+
       it "emits correct code for fundefs without arguments" do
         node = FunDef.new(
           :name  => "f",
@@ -712,37 +744,44 @@ module Y2R::AST
       end
 
       it "emits correct code for fundefs with arguments" do
-        node = FunDef.new(
-          :name  => "f",
-          :args  => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
-            )
-          ],
-          :block => Block.new(
-            :kind       => :def,
-            :statements => [
-              Return.new(:child => Const.new(:type => :int, :value => "42"))
-            ]
-          )
-        )
+        node_boolean       = fundef_with_args("boolean")
+        node_integer       = fundef_with_args("integer")
+        node_symbol        = fundef_with_args("symbol")
+        node_any           = fundef_with_args("any")
+        node_const_boolean = fundef_with_args("const boolean")
+        node_const_integer = fundef_with_args("const integer")
+        node_const_symbol  = fundef_with_args("const symbol")
+        node_const_any     = fundef_with_args("const any")
 
-        node.to_ruby.should == "def f(a, b, c)\n  return 42\n\n  nil\nend\n"
+        code_without_copy = [
+          "def f(a, b, c)",
+          "  return 42",
+          "",
+          "  nil",
+          "end",
+          ""
+        ].join("\n")
+
+        code_with_copy = [
+          "def f(a, b, c)",
+          "  a = YCP.copy(a)",
+          "  b = YCP.copy(b)",
+          "  c = YCP.copy(c)",
+          "  return 42",
+          "",
+          "  nil",
+          "end",
+          ""
+        ].join("\n")
+
+        node_boolean.to_ruby.should       == code_without_copy
+        node_integer.to_ruby.should       == code_without_copy
+        node_symbol.to_ruby.should        == code_without_copy
+        node_any.to_ruby.should           == code_with_copy
+        node_const_boolean.to_ruby.should == code_without_copy
+        node_const_integer.to_ruby.should == code_without_copy
+        node_const_symbol.to_ruby.should  == code_without_copy
+        node_const_any.to_ruby.should     == code_with_copy
       end
 
       it "raises an exception for nested functions" do
@@ -976,6 +1015,19 @@ module Y2R::AST
         )
 
         node.to_ruby.should == "s"
+      end
+    end
+
+    describe "#to_ruby_copy_call" do
+      it "emits correct code" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        node.to_ruby_copy_call.should == "s = YCP.copy(s)"
       end
     end
   end

@@ -868,7 +868,9 @@ Builtins.foreach([42, 43, 44]) { |i|
 
 ### Function Definitions
 
-Y2R translates YCP function definitions as Ruby method definitions.
+Y2R translates YCP function definitions as Ruby method definitions. It maintains
+pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
+which are all immutable.
 
 #### YCP Code
 
@@ -878,7 +880,19 @@ Y2R translates YCP function definitions as Ruby method definitions.
     return 42;
   }
 
-  integer f2(integer a, integer b, integer c) {
+  integer f2(boolean a, boolean b, boolean c) {
+    return 42;
+  }
+
+  integer f3(integer a, integer b, integer c) {
+    return 42;
+  }
+
+  integer f4(symbol a, symbol b, symbol c) {
+    return 42;
+  }
+
+  integer f5(any a, any b, any c) {
     return 42;
   }
 }
@@ -894,6 +908,27 @@ def f1()
 end
 
 def f2(a, b, c)
+  return 42
+
+  nil
+end
+
+def f3(a, b, c)
+  return 42
+
+  nil
+end
+
+def f4(a, b, c)
+  return 42
+
+  nil
+end
+
+def f5(a, b, c)
+  a = YCP.copy(a)
+  b = YCP.copy(b)
+  c = YCP.copy(c)
   return 42
 
   nil
