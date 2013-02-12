@@ -1005,6 +1005,63 @@ module Y2R::AST
   end
 
   describe Symbol do
+    describe "#published?" do
+      it "returns true for a global variable" do
+        node = Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        node.should be_published
+      end
+
+      it "returns true for a global function" do
+        node = Symbol.new(
+          :global   => true,
+          :category => :function,
+          :type     => "integer ()",
+          :name     => "s"
+        )
+
+        node.should be_published
+      end
+
+      it "returns false for a global filename" do
+        node = Symbol.new(
+          :global   => true,
+          :category => :filename,
+          :type     => nil,
+          :name     => "s"
+        )
+
+        node.should_not be_published
+      end
+
+      it "returns false for a non-global variable" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        node.should_not be_published
+      end
+
+      it "returns false-true for a global function" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :function,
+          :type     => "integer ()",
+          :name     => "s"
+        )
+
+        node.should_not be_published
+      end
+    end
+
     describe "#to_ruby" do
       it "emits correct code" do
         node = Symbol.new(
@@ -1028,6 +1085,20 @@ module Y2R::AST
         )
 
         node.to_ruby_copy_call.should == "s = YCP.copy(s)"
+      end
+    end
+
+    describe "#to_ruby_publish_call" do
+      it "emits correct code" do
+        node = Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        node.to_ruby_publish_call.should ==
+          "publish :variable => :s, :type => \"integer\""
       end
     end
   end

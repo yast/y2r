@@ -126,14 +126,9 @@ module Y2R
               end
 
               symbols.each do |symbol|
-                next unless symbol.global
-                next unless symbol.category == :variable || symbol.category == :function
-
-                parts << indent(indent(
-                  "publish " +
-                    ":#{symbol.category} => :#{symbol.name}, " +
-                    ":type => \"#{symbol.type}\""
-                ))
+                if symbol.published?
+                  parts << indent(indent(symbol.to_ruby_publish_call))
+                end
               end
 
               parts << "  end"
@@ -376,12 +371,20 @@ module Y2R
     end
 
     class Symbol < Node
+      def published?
+        global && (category == :variable || category == :function)
+      end
+
       def to_ruby(context = Context.new)
         name
       end
 
       def to_ruby_copy_call
         "#{name} = YCP.copy(#{name})"
+      end
+
+      def to_ruby_publish_call
+        "publish :#{category} => :#{name}, :type => \"#{type}\""
       end
     end
 
