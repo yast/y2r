@@ -7,6 +7,12 @@ module Y2R
         s.gsub(/^(?=.)/, "  ")
       end
 
+      def combine
+        parts = []
+        yield parts
+        parts.join("\n")
+      end
+
       # Escapes valid YCP variable names that are not valid Ruby local variable
       # names.
       def escape_ruby_local_var_name(name)
@@ -91,62 +97,52 @@ module Y2R
             fundefs = statements.select { |s| s.is_a?(FunDef) }
             other_statements = statements - assigns - fundefs
 
-            parts = [
-              "require \"ycp\"",
-              "",
-              "module YCP",
-              "  class #{name}Class",
-              "    extend Exportable"
-            ]
+            combine do |parts|
+              parts << "require \"ycp\""
+              parts << ""
+              parts << "module YCP"
+              parts << "  class #{name}Class"
+              parts << "    extend Exportable"
 
-            unless other_statements.empty?
-              parts += [
-                "",
-                indent(indent(ruby_stmts(other_statements, statements_context)))
-              ]
+              unless other_statements.empty?
+                parts << ""
+                parts << indent(indent(ruby_stmts(other_statements, statements_context)))
+              end
+
+              unless assigns.empty?
+                parts << ""
+                parts << "    def initialize"
+                parts << indent(indent(indent(ruby_stmts(assigns, statements_context))))
+                parts << "    end"
+              end
+
+              unless fundefs.empty?
+                parts << ""
+                parts << indent(indent(ruby_stmts(fundefs, statements_context)))
+              end
+
+              symbols.each do |symbol|
+                next unless symbol.global
+                next unless symbol.category == :variable || symbol.category == :function
+
+                parts << indent(indent(
+                  "publish " +
+                    ":#{symbol.category} => :#{symbol.name}, " +
+                    ":type => \"#{symbol.type}\""
+                ))
+              end
+
+              parts << "  end"
+              parts << ""
+              parts << "  #{name} = #{name}Class.new"
+              parts << "end"
             end
-
-            unless assigns.empty?
-              parts += [
-                "",
-                "    def initialize",
-                indent(indent(indent(ruby_stmts(assigns, statements_context)))),
-                "    end"
-              ]
-            end
-
-            unless fundefs.empty?
-              parts += [
-                "",
-                indent(indent(ruby_stmts(fundefs, statements_context)))
-              ]
-            end
-
-            symbols.each do |symbol|
-              next unless symbol.global
-              next unless symbol.category == :variable || symbol.category == :function
-
-              parts << indent(indent(
-                "publish " +
-                  ":#{symbol.category} => :#{symbol.name}, " +
-                  ":type => \"#{symbol.type}\""
-              ))
-            end
-
-            parts += [
-              "  end",
-              "",
-              "  #{name} = #{name}Class.new",
-              "end"
-            ]
-
-            parts.join("\n")
           when :unspec
-            [
-              "lambda {",
-              indent(ruby_stmts(statements, statements_context)),
-              "}"
-            ].join("\n")
+            combine do |parts|
+              parts << "lambda {"
+              parts << indent(ruby_stmts(statements, statements_context))
+              parts << "}"
+            end
           else
             raise "Unknown block kind: #{kind}."
         end
@@ -156,11 +152,11 @@ module Y2R
         statements_context = context.dup
         statements_context.blocks = statements_context.blocks + [kind]
 
-        [
-          "{ |" + args.join(", ") + "|",
-          indent(ruby_stmts(statements, statements_context)),
-          "}"
-        ].join("\n")
+        combine do |parts|
+          parts << "{ |" + args.join(", ") + "|"
+          parts << indent(ruby_stmts(statements, statements_context))
+          parts << "}"
+        end
       end
     end
 
@@ -285,42 +281,36 @@ module Y2R
           ["boolean", "integer", "symbol"].include?(arg.type.sub(/^const /, ""))
         end
 
-        parts = [
-          "def #{name}#{ruby_args(args, context)}"
-        ]
+        combine do |parts|
+          parts << "def #{name}#{ruby_args(args, context)}"
 
-        args_to_copy.each do |arg|
-          parts << indent(arg.to_ruby_copy_call)
+          args_to_copy.each do |arg|
+            parts << indent(arg.to_ruby_copy_call)
+          end
+
+          parts << indent(block.to_ruby(context))
+          parts << ""
+          parts << "  nil"
+          parts << "end"
+          parts << ""
         end
-
-        parts += [
-          indent(block.to_ruby(context)),
-          "",
-          "  nil",
-          "end",
-          ""
-        ]
-
-        parts.join("\n")
       end
     end
 
     class If < Node
       def to_ruby(context = Context.new)
-        if self.else
-          [
-            "if #{cond.to_ruby(context)}",
-            indent(self.then.to_ruby(context)),
-            "else",
-            indent(self.else.to_ruby(context)),
-            "end"
-          ].join("\n")
-        else
-          [
-            "if #{cond.to_ruby(context)}",
-            indent(self.then.to_ruby(context)),
-            "end"
-          ].join("\n")
+        combine do |parts|
+          if self.else
+            parts << "if #{cond.to_ruby(context)}"
+            parts << indent(self.then.to_ruby(context))
+            parts << "else"
+            parts << indent(self.else.to_ruby(context))
+            parts << "end"
+          else
+            parts << "if #{cond.to_ruby(context)}"
+            parts << indent(self.then.to_ruby(context))
+            parts << "end"
+          end
         end
       end
     end
@@ -331,10 +321,10 @@ module Y2R
         # these auto-imports becasue neither SCR nor WFM are real modules.
         return "" if name == "SCR" || name == "WFM"
 
-        [
-          "YCP.import(#{name.inspect})",
-          ""
-        ].join("\n")
+        combine do |parts|
+          parts << "YCP.import(#{name.inspect})"
+          parts << ""
+        end
       end
     end
 
@@ -393,10 +383,10 @@ module Y2R
 
     class Textdomain < Node
       def to_ruby(context = Context.new)
-        [
-          "FastGettext.text_domain = #{name.inspect}",
-          ""
-        ].join("\n")
+        combine do |parts|
+          parts << "FastGettext.text_domain = #{name.inspect}"
+          parts << ""
+        end
       end
     end
 
@@ -411,11 +401,11 @@ module Y2R
         do_context = context.dup
         do_context.blocks = do_context.blocks + [:loop]
 
-        [
-          "while #{cond.to_ruby(context)}",
-          indent(self.do.to_ruby(do_context)),
-          "end"
-        ].join("\n")
+        combine do |parts|
+          parts << "while #{cond.to_ruby(context)}"
+          parts << indent(self.do.to_ruby(do_context))
+          parts << "end"
+        end
       end
     end
 
