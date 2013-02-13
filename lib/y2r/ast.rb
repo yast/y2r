@@ -3,8 +3,8 @@ require "ostruct"
 module Y2R
   module AST
     class Node < OpenStruct
-      def indent(s)
-        s.gsub(/^(?=.)/, "  ")
+      def indent(n, s)
+        s.gsub(/^(?=.)/, " " * n)
       end
 
       def combine
@@ -110,24 +110,24 @@ module Y2R
 
               unless other_statements.empty?
                 parts << ""
-                parts << indent(indent(ruby_stmts(other_statements, statements_context)))
+                parts << indent(4, ruby_stmts(other_statements, statements_context))
               end
 
               unless assigns.empty?
                 parts << ""
                 parts << "    def initialize"
-                parts << indent(indent(indent(ruby_stmts(assigns, statements_context))))
+                parts << indent(6, ruby_stmts(assigns, statements_context))
                 parts << "    end"
               end
 
               unless fundefs.empty?
                 parts << ""
-                parts << indent(indent(ruby_stmts(fundefs, statements_context)))
+                parts << indent(4, ruby_stmts(fundefs, statements_context))
               end
 
               symbols.each do |symbol|
                 if symbol.published?
-                  parts << indent(indent(symbol.to_ruby_publish_call))
+                  parts << indent(4, symbol.to_ruby_publish_call)
                 end
               end
 
@@ -139,7 +139,7 @@ module Y2R
           when :unspec
             combine do |parts|
               parts << "lambda {"
-              parts << indent(ruby_stmts(statements, statements_context))
+              parts << indent(2, ruby_stmts(statements, statements_context))
               parts << "}"
             end
           else
@@ -153,7 +153,7 @@ module Y2R
 
         combine do |parts|
           parts << "{ |#{args.join(", ")}|"
-          parts << indent(ruby_stmts(statements, statements_context))
+          parts << indent(2, ruby_stmts(statements, statements_context))
           parts << "}"
         end
       end
@@ -280,10 +280,10 @@ module Y2R
           parts << "def #{name}#{ruby_args(args, context)}"
 
           args.each do |arg|
-            parts << indent(arg.to_ruby_copy_call) if arg.needs_copy?
+            parts << indent(2, arg.to_ruby_copy_call) if arg.needs_copy?
           end
 
-          parts << indent(block.to_ruby(context))
+          parts << indent(2, block.to_ruby(context))
           parts << ""
           parts << "  nil"
           parts << "end"
@@ -297,13 +297,13 @@ module Y2R
         combine do |parts|
           if self.else
             parts << "if #{cond.to_ruby(context)}"
-            parts << indent(self.then.to_ruby(context))
+            parts << indent(2, self.then.to_ruby(context))
             parts << "else"
-            parts << indent(self.else.to_ruby(context))
+            parts << indent(2, self.else.to_ruby(context))
             parts << "end"
           else
             parts << "if #{cond.to_ruby(context)}"
-            parts << indent(self.then.to_ruby(context))
+            parts << indent(2, self.then.to_ruby(context))
             parts << "end"
           end
         end
@@ -410,7 +410,7 @@ module Y2R
 
         combine do |parts|
           parts << "while #{cond.to_ruby(context)}"
-          parts << indent(self.do.to_ruby(do_context))
+          parts << indent(2, self.do.to_ruby(do_context))
           parts << "end"
         end
       end
