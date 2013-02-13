@@ -88,20 +88,30 @@ module Y2R
 
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
-          symbols = symbol_attrs.values.map(&:value)
+          symbol_values = symbol_attrs.values.map(&:value)
           children = extract_children(element, :builtin)
 
-          if symbols.empty?
+          if symbol_values.empty?
             args  = children
             block = nil
           else
             args  = children[0..-2]
             block = children.last
+
+            block.args = symbol_values.map do |value|
+              value =~ /^((\S+\s+)*)(\S+)/
+
+              AST::Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => $1,
+                :name     => $3
+              )
+            end
           end
 
           AST::Builtin.new(
             :name    => element.attributes["name"],
-            :symbols => symbols,
             :args    => args,
             :block   => block
           )
@@ -246,6 +256,7 @@ module Y2R
 
         when "yereturn"
           AST::YEReturn.new(
+            :args  => [],
             :child => element_to_node(element.elements[1], context)
           )
 

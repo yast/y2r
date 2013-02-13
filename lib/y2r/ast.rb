@@ -151,7 +151,7 @@ module Y2R
         method_name = name.split("::").last
 
         block_code = if block
-          " #{block.to_ruby_block(symbols.map { |s| s.split(" ").last }, context)}"
+          " #{block.to_ruby_block(context)}"
         else
           ""
         end
@@ -429,11 +429,11 @@ module Y2R
         end
       end
 
-      def to_ruby_block(args, context = Context.new)
+      def to_ruby_block(context = Context.new)
         report_var_aliases(context)
 
         combine do |parts|
-          parts << "{ |#{args.join(", ")}|"
+          parts << "{ |#{ruby_list(args, context)}|"
           inside_block context do |inner_context|
             parts << indent(2, ruby_stmts(statements, inner_context))
           end
@@ -520,8 +520,8 @@ module Y2R
         "lambda { #{child.to_ruby(context)} }"
       end
 
-      def to_ruby_block(args, context = Context.new)
-        "{ |#{args.join(", ")}| #{child.to_ruby(context)} }"
+      def to_ruby_block(context = Context.new)
+        "{ |#{ruby_list(args, context)}| #{child.to_ruby(context)} }"
       end
     end
 

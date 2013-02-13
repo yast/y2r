@@ -137,7 +137,6 @@ module Y2R::AST
       it "emits correct code for builtins with no arguments and no block" do
         node = Builtin.new(
           :name    => "b",
-          :symbols => [],
           :args    => [],
           :block   => nil
         )
@@ -148,7 +147,6 @@ module Y2R::AST
       it "emits correct code for builtins with arguments and no block" do
         node = Builtin.new(
           :name    => "b",
-          :symbols => [],
           :args    => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
@@ -163,9 +161,28 @@ module Y2R::AST
       it "emits correct code for builtins with no arguments and a block" do
         node = Builtin.new(
           :name    => "b",
-          :symbols => ["integer a", "integer b", "integer c"],
           :args    => [],
           :block   => UnspecBlock.new(
+            :args       => [
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "a"
+              ),
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "b"
+              ),
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "c"
+              )
+            ],
             :symbols    => [],
             :statements => [
               Assign.new(
@@ -191,13 +208,32 @@ module Y2R::AST
       it "emits correct code for builtins with arguments and a block" do
         node = Builtin.new(
           :name    => "b",
-          :symbols => ["integer a", "integer b", "integer c"],
           :args    => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44")
           ],
           :block => UnspecBlock.new(
+            :args       => [
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "a"
+              ),
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "b"
+              ),
+              Symbol.new(
+                :global   => false,
+                :category => :variable,
+                :type     => "integer",
+                :name     => "c"
+              )
+            ],
             :symbols    => [],
             :statements => [
               Assign.new(
@@ -221,11 +257,11 @@ module Y2R::AST
       end
 
       it "emits correct code for namespaced builtins" do
-        node_scr   = Builtin.new(:name => "SCR::b",   :symbols => [], :args => [], :block => nil)
-        node_wfm   = Builtin.new(:name => "WFM::b",   :symbols => [], :args => [], :block => nil)
-        node_float = Builtin.new(:name => "float::b", :symbols => [], :args => [], :block => nil)
-        node_list  = Builtin.new(:name => "list::b",  :symbols => [], :args => [], :block => nil)
-        node_none  = Builtin.new(:name => "b",        :symbols => [], :args => [], :block => nil)
+        node_scr   = Builtin.new(:name => "SCR::b",   :args => [], :block => nil)
+        node_wfm   = Builtin.new(:name => "WFM::b",   :args => [], :block => nil)
+        node_float = Builtin.new(:name => "float::b", :args => [], :block => nil)
+        node_list  = Builtin.new(:name => "list::b",  :args => [], :block => nil)
+        node_none  = Builtin.new(:name => "b",        :args => [], :block => nil)
 
         node_scr.to_ruby.should   == "SCR.b"
         node_wfm.to_ruby.should   == "WFM.b"
@@ -1133,6 +1169,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = UnspecBlock.new(
+          :args       => [],
           :symbols    => [],
           :statements => [
             Assign.new(
@@ -1162,6 +1199,7 @@ module Y2R::AST
         )
 
         node = UnspecBlock.new(
+          :args       => [],
           :symbols    => [symbol],
           :statements => []
         )
@@ -1184,6 +1222,7 @@ module Y2R::AST
     describe "#to_ruby_block" do
       it "emits correct code without arguments" do
         node = UnspecBlock.new(
+          :args       => [],
           :symbols    => [],
           :statements => [
             Assign.new(
@@ -1201,11 +1240,31 @@ module Y2R::AST
           ]
         )
 
-        node.to_ruby_block([]).should == "{ ||\n  i = 42\n  j = 43\n  k = 44\n}"
+        node.to_ruby_block.should == "{ ||\n  i = 42\n  j = 43\n  k = 44\n}"
       end
 
       it "emits correct code with arguments" do
         node = UnspecBlock.new(
+          :args       => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
+          ],
           :symbols    => [],
           :statements => [
             Assign.new(
@@ -1223,7 +1282,7 @@ module Y2R::AST
           ]
         )
 
-        node.to_ruby_block(["a", "b", "c"]).should ==
+        node.to_ruby_block.should ==
           "{ |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
       end
 
@@ -1236,6 +1295,7 @@ module Y2R::AST
         )
 
         node = UnspecBlock.new(
+          :args       => [],
           :symbols    => [symbol],
           :statements => []
         )
@@ -1250,7 +1310,7 @@ module Y2R::AST
         )
 
         lambda {
-          node.to_ruby_block([], context)
+          node.to_ruby_block(context)
         }.should raise_error NotImplementedError, "Variable aliases are not supported."
       end
     end
@@ -1462,6 +1522,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = YEReturn.new(
+          :args  => [],
           :child => Const.new(:type => :int, :value => "42")
         )
 
@@ -1472,18 +1533,39 @@ module Y2R::AST
     describe "#to_ruby_block" do
       it "emits correct code without arguments" do
         node = YEReturn.new(
+          :args  => [],
           :child => Const.new(:type => :int, :value => "42")
         )
 
-        node.to_ruby_block([]).should == "{ || 42 }"
+        node.to_ruby_block.should == "{ || 42 }"
       end
 
       it "emits correct code with arguments" do
         node = YEReturn.new(
+          :args  => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
+          ],
           :child => Const.new(:type => :int, :value => "42")
         )
 
-        node.to_ruby_block(["a", "b", "c"]).should == "{ |a, b, c| 42 }"
+        node.to_ruby_block.should == "{ |a, b, c| 42 }"
       end
     end
   end
