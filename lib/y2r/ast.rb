@@ -66,13 +66,13 @@ module Y2R
     end
 
     class Block < Node
-      def var_names
+      def variables
         symbols.select { |s| s.category == :variable }.map(&:name)
       end
 
       def report_var_aliases(context)
-        var_names.each do |v|
-          if context.var_names_in_scope.include?(v)
+        variables.each do |v|
+          if context.variables_in_scope.include?(v)
             raise NotImplementedError, "Variable aliases are not supported."
           end
         end
@@ -98,16 +98,16 @@ module Y2R
         blocks.first.is_a?(ModuleBlock) ? blocks.first.name : nil
       end
 
-      def var_names_in_scope
-        var_names = []
+      def variables_in_scope
+        variables = []
 
         @blocks.reverse.each do |block|
-          var_names += block.var_names if block.is_a?(Block)
+          variables += block.variables if block.is_a?(Block)
 
           break if block.is_a?(DefBlock)
         end
 
-        var_names
+        variables
       end
     end
 
