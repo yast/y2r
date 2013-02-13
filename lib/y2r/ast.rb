@@ -66,11 +66,10 @@ module Y2R
     end
 
     class Context
-      attr_accessor :blocks, :module_name
+      attr_accessor :blocks
 
       def initialize(attrs = {})
-        @blocks      = attrs[:blocks] || []
-        @module_name = attrs[:module_name]
+        @blocks = attrs[:blocks] || []
       end
 
       def in?(klass)
@@ -79,6 +78,10 @@ module Y2R
 
       def innermost(*klasses)
         @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
+      end
+
+      def module_name
+        blocks.first.is_a?(ModuleBlock) ? blocks.first.name : nil
       end
     end
 
@@ -296,8 +299,6 @@ module Y2R
 
     class ModuleBlock < Node
       def to_ruby(context = Context.new)
-        context.module_name = name
-
         assigns = statements.select { |s| s.is_a?(Assign) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
         other_statements = statements - assigns - fundefs

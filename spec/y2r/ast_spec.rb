@@ -40,7 +40,7 @@ module Y2R::AST
 
       describe "at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [ModuleBlock.new], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new(:name => "M")])
 
           @node_unprefixed.to_ruby(context).should == "@i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
@@ -64,7 +64,7 @@ module Y2R::AST
 
       describe "inside a function at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [ModuleBlock.new, DefBlock.new], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new(:name => "M"), DefBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
@@ -1180,7 +1180,7 @@ module Y2R::AST
 
       describe "at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [ModuleBlock.new], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new(:name => "M")])
 
           @node_unprefixed.to_ruby(context).should == "@i"
           @node_prefixed_m.to_ruby(context).should == "@i"
@@ -1204,7 +1204,7 @@ module Y2R::AST
 
       describe "inside a function at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [ModuleBlock.new, DefBlock.new], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new(:name => "M"), DefBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "@i"
