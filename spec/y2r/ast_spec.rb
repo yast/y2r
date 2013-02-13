@@ -135,20 +135,26 @@ module Y2R::AST
   describe Builtin do
     describe "#to_ruby" do
       it "emits correct code for builtins with no arguments and no block" do
-        node = Builtin.new(:name => "b", :symbols => [], :children => [])
+        node = Builtin.new(
+          :name    => "b",
+          :symbols => [],
+          :args    => [],
+          :block   => nil
+        )
 
         node.to_ruby.should == "Builtins.b"
       end
 
       it "emits correct code for builtins with arguments and no block" do
         node = Builtin.new(
-          :name     => "b",
-          :symbols  => [],
-          :children => [
+          :name    => "b",
+          :symbols => [],
+          :args    => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44")
-          ]
+          ],
+          :block   => nil
         )
 
         node.to_ruby.should == "Builtins.b(42, 43, 44)"
@@ -156,27 +162,26 @@ module Y2R::AST
 
       it "emits correct code for builtins with no arguments and a block" do
         node = Builtin.new(
-          :name     => "b",
-          :symbols  => ["integer a", "integer b", "integer c"],
-          :children => [
-            UnspecBlock.new(
-              :symbols    => [],
-              :statements => [
-                Assign.new(
-                  :name  => "i",
-                  :child => Const.new(:type => :int, :value => "42")
-                ),
-                Assign.new(
-                  :name  => "j",
-                  :child => Const.new(:type => :int, :value => "43")
-                ),
-                Assign.new(
-                  :name  => "k",
-                  :child => Const.new(:type => :int, :value => "44")
-                )
-              ]
-            )
-          ]
+          :name    => "b",
+          :symbols => ["integer a", "integer b", "integer c"],
+          :args    => [],
+          :block   => UnspecBlock.new(
+            :symbols    => [],
+            :statements => [
+              Assign.new(
+                :name  => "i",
+                :child => Const.new(:type => :int, :value => "42")
+              ),
+              Assign.new(
+                :name  => "j",
+                :child => Const.new(:type => :int, :value => "43")
+              ),
+              Assign.new(
+                :name  => "k",
+                :child => Const.new(:type => :int, :value => "44")
+              )
+            ]
+          )
         )
 
         node.to_ruby.should ==
@@ -185,30 +190,30 @@ module Y2R::AST
 
       it "emits correct code for builtins with arguments and a block" do
         node = Builtin.new(
-          :name     => "b",
-          :symbols  => ["integer a", "integer b", "integer c"],
-          :children => [
+          :name    => "b",
+          :symbols => ["integer a", "integer b", "integer c"],
+          :args    => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44"),
-            UnspecBlock.new(
-              :symbols    => [],
-              :statements => [
-                Assign.new(
-                  :name  => "i",
-                  :child => Const.new(:type => :int, :value => "42")
-                ),
-                Assign.new(
-                  :name  => "j",
-                  :child => Const.new(:type => :int, :value => "43")
-                ),
-                Assign.new(
-                  :name  => "k",
-                  :child => Const.new(:type => :int, :value => "44")
-                )
-              ]
-            )
-          ]
+            Const.new(:type => :int, :value => "44")
+          ],
+          :block => UnspecBlock.new(
+            :symbols    => [],
+            :statements => [
+              Assign.new(
+                :name  => "i",
+                :child => Const.new(:type => :int, :value => "42")
+              ),
+              Assign.new(
+                :name  => "j",
+                :child => Const.new(:type => :int, :value => "43")
+              ),
+              Assign.new(
+                :name  => "k",
+                :child => Const.new(:type => :int, :value => "44")
+              )
+            ]
+          )
         )
 
         node.to_ruby.should ==
@@ -216,11 +221,11 @@ module Y2R::AST
       end
 
       it "emits correct code for namespaced builtins" do
-        node_scr   = Builtin.new(:name => "SCR::b",   :symbols => [], :children => [])
-        node_wfm   = Builtin.new(:name => "WFM::b",   :symbols => [], :children => [])
-        node_float = Builtin.new(:name => "float::b", :symbols => [], :children => [])
-        node_list  = Builtin.new(:name => "list::b",  :symbols => [], :children => [])
-        node_none  = Builtin.new(:name => "b",        :symbols => [], :children => [])
+        node_scr   = Builtin.new(:name => "SCR::b",   :symbols => [], :args => [], :block => nil)
+        node_wfm   = Builtin.new(:name => "WFM::b",   :symbols => [], :args => [], :block => nil)
+        node_float = Builtin.new(:name => "float::b", :symbols => [], :args => [], :block => nil)
+        node_list  = Builtin.new(:name => "list::b",  :symbols => [], :args => [], :block => nil)
+        node_none  = Builtin.new(:name => "b",        :symbols => [], :args => [], :block => nil)
 
         node_scr.to_ruby.should   == "SCR.b"
         node_wfm.to_ruby.should   == "WFM.b"

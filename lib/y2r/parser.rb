@@ -88,11 +88,22 @@ module Y2R
 
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
+          symbols = symbol_attrs.values.map(&:value)
+          children = extract_children(element, :builtin)
+
+          if symbols.empty?
+            args  = children
+            block = nil
+          else
+            args  = children[0..-2]
+            block = children.last
+          end
 
           AST::Builtin.new(
-            :name     => element.attributes["name"],
-            :symbols  => symbol_attrs.values.map(&:value),
-            :children => extract_children(element, :builtin)
+            :name    => element.attributes["name"],
+            :symbols => symbols,
+            :args    => args,
+            :block   => block
           )
 
         when "call"

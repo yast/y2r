@@ -135,14 +135,6 @@ module Y2R
 
     class Builtin < Node
       def to_ruby(context = Context.new)
-        if symbols.empty?
-          args  = children
-          block = nil
-        else
-          args  = children[0..-2]
-          block = children.last
-        end
-
         module_name = case name
           when /^SCR::/
             "SCR"
