@@ -95,7 +95,8 @@ module Y2R
       end
 
       def module_name
-        blocks.first.is_a?(ModuleBlock) ? blocks.first.name : nil
+        toplevel_block = @blocks.first
+        toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
       end
 
       def variables_in_scope
