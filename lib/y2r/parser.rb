@@ -108,6 +108,7 @@ module Y2R
                 :name     => $3
               )
             end
+            block.symbols = block.args + block.symbols
           end
 
           AST::Builtin.new(
