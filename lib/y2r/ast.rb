@@ -100,15 +100,9 @@ module Y2R
       end
 
       def variables_in_scope
-        variables = []
-
-        @blocks.reverse.each do |block|
-          variables += block.variables
-
-          break if block.is_a?(DefBlock)
-        end
-
-        variables
+        index = @blocks.rindex { |b| b.is_a?(DefBlock) }
+        scope_blocks = index ? @blocks[index..-1] : @blocks
+        scope_blocks.reverse.map(&:variables).flatten
       end
     end
 
