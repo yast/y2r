@@ -13,9 +13,9 @@ module Y2R
         parts.join("\n")
       end
 
-      def inside_block(context, kind)
+      def inside_block(context)
         inner_context = context.dup
-        inner_context.blocks = inner_context.blocks + [kind]
+        inner_context.blocks = inner_context.blocks + [self]
 
         yield inner_context
       end
@@ -44,7 +44,7 @@ module Y2R
         if name =~ /^([^:]+)::([^:]+)$/
           $1 == context.module_name ? "@#$2" : name
         else
-          if context.innermost(:file, :module, :def) == :module
+          if context.innermost(FileBlock, ModuleBlock, DefBlock).is_a?(ModuleBlock)
             "@#{name}"
           else
             escape_ruby_local_var_name(name)
@@ -66,9 +66,6 @@ module Y2R
     end
 
     class Context
-      # TODO: Convert |blocks| from a list of symbols to the list of actual
-      #       blocks. |module_name| will be just the name of the outermost
-      #       block, if it is a module.
       attr_accessor :blocks, :module_name
 
       def initialize(attrs = {})
@@ -76,12 +73,12 @@ module Y2R
         @module_name = attrs[:module_name]
       end
 
-      def in?(kind)
-        @blocks.include?(kind)
+      def in?(klass)
+        @blocks.find { |b| b.is_a?(klass) } ? true : false
       end
 
-      def innermost(*kinds)
-        @blocks.reverse.find { |b| kinds.include?(b) }
+      def innermost(*klasses)
+        @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
       end
     end
 
@@ -106,9 +103,9 @@ module Y2R
     class Break < Node
       def to_ruby(context = Context.new)
         {
-          :loop   => "break",
-          :unspec => "raise Break"
-        }[context.innermost(:loop, :unspec)]
+          While       => "break",
+          UnspecBlock => "raise Break"
+        }[context.innermost(While, UnspecBlock).class]
       end
     end
 
@@ -200,7 +197,7 @@ module Y2R
 
     class DefBlock < Node
       def to_ruby(context = Context.new)
-        inside_block context, kind do |inner_context|
+        inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
         end
       end
@@ -214,7 +211,7 @@ module Y2R
 
     class FileBlock < Node
       def to_ruby(context = Context.new)
-        inside_block context, kind do |inner_context|
+        inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
         end
       end
@@ -222,7 +219,7 @@ module Y2R
 
     class FunDef < Node
       def to_ruby(context = Context.new)
-        if context.in?(:def)
+        if context.in?(DefBlock)
           raise NotImplementedError, "Nested functions are not supported."
         end
 
@@ -312,7 +309,7 @@ module Y2R
           parts << "  class #{name}Class"
           parts << "    extend Exportable"
 
-          inside_block context, kind do |inner_context|
+          inside_block context do |inner_context|
             unless other_statements.empty?
               parts << ""
               parts << indent(4, ruby_stmts(other_statements, inner_context))
@@ -347,14 +344,14 @@ module Y2R
 
     class Return < Node
       def to_ruby(context = Context.new)
-        unless context.in?(:def) || context.in?(:unspec)
+        unless context.in?(DefBlock) || context.in?(UnspecBlock)
           raise NotImplementedError, "The \"return\" statement at client toplevel is not supported."
         end
 
         stmt = {
-          :def    => "return",
-          :unspec => "next"
-        }[context.innermost(:def, :unspec)]
+          DefBlock    => "return",
+          UnspecBlock => "next"
+        }[context.innermost(DefBlock, UnspecBlock).class]
 
         if child
           "#{stmt} #{child.to_ruby(context)}"
@@ -366,7 +363,7 @@ module Y2R
 
     class StmtBlock < Node
       def to_ruby(context = Context.new)
-        inside_block context, kind do |inner_context|
+        inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
         end
       end
@@ -407,7 +404,7 @@ module Y2R
       def to_ruby(context = Context.new)
         combine do |parts|
           parts << "lambda {"
-          inside_block context, kind do |inner_context|
+          inside_block context do |inner_context|
             parts << indent(2, ruby_stmts(statements, inner_context))
           end
           parts << "}"
@@ -417,7 +414,7 @@ module Y2R
       def to_ruby_block(args, context = Context.new)
         combine do |parts|
           parts << "{ |#{args.join(", ")}|"
-          inside_block context, kind do |inner_context|
+          inside_block context do |inner_context|
             parts << indent(2, ruby_stmts(statements, inner_context))
           end
           parts << "}"
@@ -435,7 +432,7 @@ module Y2R
       def to_ruby(context = Context.new)
         combine do |parts|
           parts << "while #{cond.to_ruby(context)}"
-          inside_block context, :loop do |inner_context|
+          inside_block context do |inner_context|
             parts << indent(2, self.do.to_ruby(inner_context))
           end
           parts << "end"

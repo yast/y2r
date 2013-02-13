@@ -67,7 +67,6 @@ module Y2R
             :stmt   => AST::StmtBlock,
             :unspec => AST::UnspecBlock
           }[element.attributes["kind"].to_sym].new(
-            :kind       => element.attributes["kind"].to_sym,
             :name       => element.attributes["name"],
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)

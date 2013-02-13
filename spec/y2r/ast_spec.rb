@@ -28,7 +28,7 @@ module Y2R::AST
 
       describe "at client toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file])
+          context = Context.new(:blocks => [FileBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "M::i = 42"
@@ -40,7 +40,7 @@ module Y2R::AST
 
       describe "at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new], :module_name => "M")
 
           @node_unprefixed.to_ruby(context).should == "@i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
@@ -52,7 +52,7 @@ module Y2R::AST
 
       describe "inside a function at client toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :def])
+          context = Context.new(:blocks => [FileBlock.new, DefBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "M::i = 42"
@@ -64,7 +64,7 @@ module Y2R::AST
 
       describe "inside a function at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module, :def], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new, DefBlock.new], :module_name => "M")
 
           @node_unprefixed.to_ruby(context).should == "i = 42"
           @node_prefixed_m.to_ruby(context).should == "@i = 42"
@@ -100,7 +100,7 @@ module Y2R::AST
 
       describe "inside a loop" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :loop])
+          context = Context.new(:blocks => [FileBlock.new, While.new])
 
           @node.to_ruby(context).should == "break"
         end
@@ -108,7 +108,7 @@ module Y2R::AST
 
       describe "inside a loop which is inside a block expression" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :unspec, :loop])
+          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, While.new])
 
           @node.to_ruby(context).should == "break"
         end
@@ -116,7 +116,7 @@ module Y2R::AST
 
       describe "inside a block expression" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :unspec])
+          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
 
           @node.to_ruby(context).should == "raise Break"
         end
@@ -124,7 +124,7 @@ module Y2R::AST
 
       describe "inside a block expression which is inside a loop" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :loop, :unspec])
+          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
 
           @node.to_ruby(context).should == "raise Break"
         end
@@ -160,7 +160,6 @@ module Y2R::AST
           :symbols  => ["integer a", "integer b", "integer c"],
           :children => [
             UnspecBlock.new(
-              :kind       => :unspec,
               :statements => [
                 Assign.new(
                   :name  => "i",
@@ -192,7 +191,6 @@ module Y2R::AST
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44"),
             UnspecBlock.new(
-              :kind       => :unspec,
               :statements => [
                 Assign.new(
                   :name  => "i",
@@ -342,7 +340,6 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = DefBlock.new(
-          :kind       => :def,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -378,7 +375,6 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = FileBlock.new(
-          :kind       => :file,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -426,7 +422,6 @@ module Y2R::AST
             )
           ],
           :block => DefBlock.new(
-            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -439,7 +434,6 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => DefBlock.new(
-            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -495,7 +489,6 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => DefBlock.new(
-            :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -503,7 +496,7 @@ module Y2R::AST
         )
 
         lambda {
-          node.to_ruby(Context.new(:blocks => [:file, :def]))
+          node.to_ruby(Context.new(:blocks => [FileBlock.new, DefBlock.new]))
         }.should raise_error NotImplementedError, "Nested functions are not supported."
       end
     end
@@ -629,7 +622,6 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code for empty blocks" do
         node = ModuleBlock.new(
-          :kind       => :module,
           :name       => "M",
           :symbols    => [],
           :statements => []
@@ -650,7 +642,6 @@ module Y2R::AST
 
       it "emits correct code for blocks with symbols" do
         node = ModuleBlock.new(
-          :kind       => :module,
           :name       => "M",
           :symbols    => [
             Symbol.new(
@@ -693,7 +684,6 @@ module Y2R::AST
 
       it "emits correct code for blocks with statements" do
         node = ModuleBlock.new(
-          :kind       => :module,
           :name       => "M",
           :symbols    => [],
           :statements => [
@@ -725,7 +715,6 @@ module Y2R::AST
 
       it "emits correct code for blocks with variable declarations" do
         node = ModuleBlock.new(
-          :kind       => :module,
           :name       => "M",
           :symbols    => [],
           :statements => [
@@ -765,7 +754,6 @@ module Y2R::AST
 
       it "emits correct code for blocks with function declarations" do
         node = ModuleBlock.new(
-          :kind       => :module,
           :name       => "M",
           :symbols    => [],
           :statements => [
@@ -773,7 +761,6 @@ module Y2R::AST
               :name  => "f",
               :args  => [],
               :block => DefBlock.new(
-                :kind       => :def,
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "42"))
                 ]
@@ -783,7 +770,6 @@ module Y2R::AST
               :name  => "g",
               :args  => [],
               :block => DefBlock.new(
-                :kind       => :def,
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "43"))
                 ]
@@ -793,7 +779,6 @@ module Y2R::AST
               :name  => "h",
               :args  => [],
               :block => DefBlock.new(
-                :kind       => :def,
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "44"))
                 ]
@@ -847,7 +832,7 @@ module Y2R::AST
 
       describe "at client toplevel" do
         before :each do
-          @context = Context.new(:blocks => [:file])
+          @context = Context.new(:blocks => [FileBlock.new])
         end
 
         it "raises an exception for a return without a value" do
@@ -865,7 +850,7 @@ module Y2R::AST
 
       describe "inside a function" do
         before :each do
-          @context = Context.new(:blocks => [:file, :def])
+          @context = Context.new(:blocks => [FileBlock.new, DefBlock.new])
         end
 
         it "emits correct code for a return without a value" do
@@ -879,7 +864,7 @@ module Y2R::AST
 
       describe "inside a function which is inside a block expression" do
         before :each do
-          @context = Context.new(:blocks => [:file, :unspec, :def])
+          @context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, DefBlock.new])
         end
 
         it "emits correct code for a return without a value" do
@@ -893,7 +878,7 @@ module Y2R::AST
 
       describe "inside a block expression" do
         before :each do
-          @context = Context.new(:blocks => [:file, :unspec])
+          @context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
         end
 
         it "emits correct code for a return without a value" do
@@ -907,7 +892,7 @@ module Y2R::AST
 
       describe "inside a block expression which is inside a function" do
         before :each do
-          @context = Context.new(:blocks => [:file, :def, :unspec])
+          @context = Context.new(:blocks => [FileBlock.new, DefBlock.new, UnspecBlock.new])
         end
 
         it "emits correct code for a return without a value" do
@@ -925,7 +910,6 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = StmtBlock.new(
-          :kind       => :stmt,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1106,7 +1090,6 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = UnspecBlock.new(
-          :kind       => :unspec,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1130,7 +1113,6 @@ module Y2R::AST
     describe "#to_ruby_block" do
       it "emits correct code without arguments" do
         node = UnspecBlock.new(
-          :kind       => :unspec,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1152,7 +1134,6 @@ module Y2R::AST
 
       it "emits correct code with arguments" do
         node = UnspecBlock.new(
-          :kind       => :unspec,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1187,7 +1168,7 @@ module Y2R::AST
 
       describe "at client toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file])
+          context = Context.new(:blocks => [FileBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "M::i"
@@ -1199,7 +1180,7 @@ module Y2R::AST
 
       describe "at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new], :module_name => "M")
 
           @node_unprefixed.to_ruby(context).should == "@i"
           @node_prefixed_m.to_ruby(context).should == "@i"
@@ -1211,7 +1192,7 @@ module Y2R::AST
 
       describe "inside a function at client toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:file, :def])
+          context = Context.new(:blocks => [FileBlock.new, DefBlock.new])
 
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "M::i"
@@ -1223,7 +1204,7 @@ module Y2R::AST
 
       describe "inside a function at module toplevel" do
         it "emits correct code" do
-          context = Context.new(:blocks => [:module, :def], :module_name => "M")
+          context = Context.new(:blocks => [ModuleBlock.new, DefBlock.new], :module_name => "M")
 
           @node_unprefixed.to_ruby(context).should == "i"
           @node_prefixed_m.to_ruby(context).should == "@i"
