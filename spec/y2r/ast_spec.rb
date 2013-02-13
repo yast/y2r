@@ -1522,8 +1522,9 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = YEReturn.new(
-          :args  => [],
-          :child => Const.new(:type => :int, :value => "42")
+          :args    => [],
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby.should == "lambda { 42 }"
@@ -1533,8 +1534,9 @@ module Y2R::AST
     describe "#to_ruby_block" do
       it "emits correct code without arguments" do
         node = YEReturn.new(
-          :args  => [],
-          :child => Const.new(:type => :int, :value => "42")
+          :args    => [],
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby_block.should == "{ || 42 }"
@@ -1542,7 +1544,7 @@ module Y2R::AST
 
       it "emits correct code with arguments" do
         node = YEReturn.new(
-          :args  => [
+          :args    => [
             Symbol.new(
               :global   => false,
               :category => :variable,
@@ -1562,7 +1564,8 @@ module Y2R::AST
               :name     => "c"
             )
           ],
-          :child => Const.new(:type => :int, :value => "42")
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby_block.should == "{ |a, b, c| 42 }"

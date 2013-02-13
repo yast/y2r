@@ -256,8 +256,9 @@ module Y2R
 
         when "yereturn"
           AST::YEReturn.new(
-            :args  => [],
-            :child => element_to_node(element.elements[1], context)
+            :args    => [],
+            :symbols => [],
+            :child   => element_to_node(element.elements[1], context)
           )
 
         when "yeterm"
