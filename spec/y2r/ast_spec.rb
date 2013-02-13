@@ -160,6 +160,7 @@ module Y2R::AST
           :symbols  => ["integer a", "integer b", "integer c"],
           :children => [
             UnspecBlock.new(
+              :symbols    => [],
               :statements => [
                 Assign.new(
                   :name  => "i",
@@ -191,6 +192,7 @@ module Y2R::AST
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44"),
             UnspecBlock.new(
+              :symbols    => [],
               :statements => [
                 Assign.new(
                   :name  => "i",
@@ -340,6 +342,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = DefBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -375,6 +378,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = FileBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -422,6 +426,7 @@ module Y2R::AST
             )
           ],
           :block => DefBlock.new(
+            :symbols    => [],
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -434,6 +439,7 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => DefBlock.new(
+            :symbols    => [],
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -489,6 +495,7 @@ module Y2R::AST
           :name  => "f",
           :args  => [],
           :block => DefBlock.new(
+            :symbols    => [],
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
             ]
@@ -761,6 +768,7 @@ module Y2R::AST
               :name  => "f",
               :args  => [],
               :block => DefBlock.new(
+                :symbols    => [],
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "42"))
                 ]
@@ -770,6 +778,7 @@ module Y2R::AST
               :name  => "g",
               :args  => [],
               :block => DefBlock.new(
+                :symbols    => [],
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "43"))
                 ]
@@ -779,6 +788,7 @@ module Y2R::AST
               :name  => "h",
               :args  => [],
               :block => DefBlock.new(
+                :symbols    => [],
                 :statements => [
                   Return.new(:child => Const.new(:type => :int, :value => "44"))
                 ]
@@ -910,6 +920,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = StmtBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1090,6 +1101,7 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = UnspecBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1113,6 +1125,7 @@ module Y2R::AST
     describe "#to_ruby_block" do
       it "emits correct code without arguments" do
         node = UnspecBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1134,6 +1147,7 @@ module Y2R::AST
 
       it "emits correct code with arguments" do
         node = UnspecBlock.new(
+          :symbols    => [],
           :statements => [
             Assign.new(
               :name  => "i",
