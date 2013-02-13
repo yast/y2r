@@ -320,6 +320,46 @@ module YCP
 end
 ```
 
+Y2R does not support variable aliases in blocks. This is mostly because Ruby
+doesn't have block scope.
+
+#### YCP Code
+
+```ycp
+{
+  integer i = 42;
+
+  block<void> b = { integer i = 43; };
+}
+```
+
+#### Error Message
+
+```error
+Variable aliases are not supported.
+```
+
+Y2R does not support variable aliases in statement blocks. This is mostly
+because Ruby doesn't have block scope.
+
+#### YCP Code
+
+```ycp
+{
+  integer i = 42;
+
+  {
+    integer i = 43;
+  }
+}
+```
+
+#### Error Message
+
+```error
+Variable aliases are not supported.
+```
+
 ### Type Conversions
 
 Y2R translates YCP type conversions as calls of the `YCP::Convert.convert`

@@ -939,6 +939,33 @@ module Y2R::AST
 
         node.to_ruby.should == "i = 42\nj = 43\nk = 44"
       end
+
+      it "raises an exception when encountering a variable alias" do
+        symbol = Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "a"
+        )
+
+        node = StmtBlock.new(
+          :symbols    => [symbol],
+          :statements => []
+        )
+
+        context = Context.new(
+          :blocks => [
+              DefBlock.new(
+              :symbols    => [symbol],
+              :statements => []
+            )
+          ]
+        )
+
+        lambda {
+          node.to_ruby(context)
+        }.should raise_error NotImplementedError, "Variable aliases are not supported."
+      end
     end
   end
 
@@ -1120,6 +1147,33 @@ module Y2R::AST
 
         node.to_ruby.should == "lambda {\n  i = 42\n  j = 43\n  k = 44\n}"
       end
+
+      it "raises an exception when encountering a variable alias" do
+        symbol = Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "a"
+        )
+
+        node = UnspecBlock.new(
+          :symbols    => [symbol],
+          :statements => []
+        )
+
+        context = Context.new(
+          :blocks => [
+              DefBlock.new(
+              :symbols    => [symbol],
+              :statements => []
+            )
+          ]
+        )
+
+        lambda {
+          node.to_ruby(context)
+        }.should raise_error NotImplementedError, "Variable aliases are not supported."
+      end
     end
 
     describe "#to_ruby_block" do
@@ -1166,6 +1220,33 @@ module Y2R::AST
 
         node.to_ruby_block(["a", "b", "c"]).should ==
           "{ |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+
+      it "raises an exception when encountering a variable alias" do
+        symbol = Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "a"
+        )
+
+        node = UnspecBlock.new(
+          :symbols    => [symbol],
+          :statements => []
+        )
+
+        context = Context.new(
+          :blocks => [
+              DefBlock.new(
+              :symbols    => [symbol],
+              :statements => []
+            )
+          ]
+        )
+
+        lambda {
+          node.to_ruby_block([], context)
+        }.should raise_error NotImplementedError, "Variable aliases are not supported."
       end
     end
   end

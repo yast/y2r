@@ -65,6 +65,20 @@ module Y2R
       end
     end
 
+    class Block < Node
+      def var_names
+        symbols.select { |s| s.category == :variable }.map(&:name)
+      end
+
+      def report_var_aliases(context)
+        var_names.each do |v|
+          if context.var_names_in_scope.include?(v)
+            raise NotImplementedError, "Variable aliases are not supported."
+          end
+        end
+      end
+    end
+
     class Context
       attr_accessor :blocks
 
@@ -82,6 +96,18 @@ module Y2R
 
       def module_name
         blocks.first.is_a?(ModuleBlock) ? blocks.first.name : nil
+      end
+
+      def var_names_in_scope
+        var_names = []
+
+        @blocks.reverse.each do |block|
+          var_names += block.var_names if block.is_a?(Block)
+
+          break if block.is_a?(FileBlock) || block.is_a?(ModuleBlock) || block.is_a?(DefBlock)
+        end
+
+        var_names
       end
     end
 
@@ -198,7 +224,7 @@ module Y2R
       end
     end
 
-    class DefBlock < Node
+    class DefBlock < Block
       def to_ruby(context = Context.new)
         inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
@@ -212,7 +238,7 @@ module Y2R
       end
     end
 
-    class FileBlock < Node
+    class FileBlock < Block
       def to_ruby(context = Context.new)
         inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
@@ -297,7 +323,7 @@ module Y2R
       end
     end
 
-    class ModuleBlock < Node
+    class ModuleBlock < Block
       def to_ruby(context = Context.new)
         assigns = statements.select { |s| s.is_a?(Assign) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
@@ -362,8 +388,10 @@ module Y2R
       end
     end
 
-    class StmtBlock < Node
+    class StmtBlock < Block
       def to_ruby(context = Context.new)
+        report_var_aliases(context)
+
         inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
         end
@@ -401,8 +429,10 @@ module Y2R
       end
     end
 
-    class UnspecBlock < Node
+    class UnspecBlock < Block
       def to_ruby(context = Context.new)
+        report_var_aliases(context)
+
         combine do |parts|
           parts << "lambda {"
           inside_block context do |inner_context|
@@ -413,6 +443,8 @@ module Y2R
       end
 
       def to_ruby_block(args, context = Context.new)
+        report_var_aliases(context)
+
         combine do |parts|
           parts << "{ |#{args.join(", ")}|"
           inside_block context do |inner_context|
