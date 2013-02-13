@@ -54,11 +54,13 @@ module Y2R
         when "arg", "cond", "do", "else", "expr", "false", "key", "lhs", "rhs",
              "stmt","then", "true", "value", "ycp"
           element_to_node(element.elements[1], context)
+
         when "assign"
           AST::Assign.new(
             :name  => element.attributes["name"],
             :child => element_to_node(element.elements[1], context)
           )
+
         when "block"
           {
             :def    => AST::DefBlock,
@@ -71,41 +73,51 @@ module Y2R
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
+
         when "bracket"
           lhs = element.elements["lhs"]
+
           AST::Bracket.new(
             :entry => element_to_node(lhs.elements["entry"], context),
             :arg   => element_to_node(lhs.elements["arg"], context),
             :rhs   => element_to_node(element.elements["rhs"], context)
           )
+
         when "break"
           AST::Break.new
+
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
+
           AST::Builtin.new(
             :name     => element.attributes["name"],
             :symbols  => symbol_attrs.values.map(&:value),
             :children => extract_children(element, :builtin)
           )
+
         when "call"
           AST::Call.new(
             :ns   => element.attributes["ns"],
             :name => element.attributes["name"],
             :args => extract_collection(element, "args", context)
           )
+
         when "compare"
           AST::Compare.new(
             :op  => element.attributes["op"],
             :lhs => element_to_node(element.elements["lhs"], context),
             :rhs => element_to_node(element.elements["rhs"], context)
           )
+
         when "const"
           AST::Const.new(
             :type  => element.attributes["type"].to_sym,
             :value => element.attributes["value"]
           )
+
         when "continue"
           AST::Continue.new
+
         when "element"
           if context != :map
             element_to_node(element.elements[1], context)
@@ -115,8 +127,10 @@ module Y2R
               :value => element_to_node(element.elements["value"], context)
             )
           end
+
         when "entry"
           AST::Entry.new(:name => element.attributes["name"])
+
         when "fun_def"
           AST::FunDef.new(
             :name  => element.attributes["name"],
@@ -131,6 +145,7 @@ module Y2R
             end,
             :block => element_to_node(element.elements["block"], context),
           )
+
         when "if"
           AST::If.new(
             :cond => element_to_node(element.elements[1], context),
@@ -141,14 +156,19 @@ module Y2R
               nil
             end
           )
+
         when "import"
           AST::Import.new(:name => element.attributes["name"])
+
         when "list"
           AST::List.new(:children => extract_children(element, :list))
+
         when "locale"
           AST::Locale.new(:text => element.attributes["text"])
+
         when "map"
           AST::Map.new(:children => extract_children(element, :map))
+
         when "return"
           AST::Return.new(
             :child => if element.elements[1]
@@ -157,6 +177,7 @@ module Y2R
               nil
             end
           )
+
         when "symbol"
           AST::Symbol.new(
             :global   => element.attributes["global"] == "1",
@@ -171,53 +192,64 @@ module Y2R
               nil
             end
           )
+
         when "textdomain"
           AST::Textdomain.new(:name => element.attributes["name"])
+
         when "variable"
           AST::Variable.new(:name => element.attributes["name"])
+
         when "while"
           AST::While.new(
             :cond => element_to_node(element.elements["cond"], context),
             :do   => element_to_node(element.elements["do"], context)
           )
+
         when "yebinary"
           AST::YEBinary.new(
             :name => element.attributes["name"],
             :lhs  => element_to_node(element.elements[1], context),
             :rhs  => element_to_node(element.elements[2], context)
           )
+
         when "yebracket"
           AST::YEBracket.new(
             :value   => element_to_node(element.elements[1], context),
             :index   => element_to_node(element.elements[2], context),
             :default => element_to_node(element.elements[3], context)
           )
+
         when "yepropagate"
           AST::YEPropagate.new(
             :from  => element.attributes["from"],
             :to    => element.attributes["to"],
             :child => element_to_node(element.elements[1], context)
           )
+
         when "yereturn"
           AST::YEReturn.new(
             :child => element_to_node(element.elements[1], context)
           )
+
         when "yeterm"
           AST::YETerm.new(
             :name     => element.attributes["name"],
             :children => extract_children(element, :yeterm)
           )
+
         when "yetriple"
           AST::YETriple.new(
             :cond  => element_to_node(element.elements["cond"], context),
             :true  => element_to_node(element.elements["true"], context),
             :false => element_to_node(element.elements["false"], context)
           )
+
         when "yeunary"
           AST::YEUnary.new(
             :name  => element.attributes["name"],
             :child => element_to_node(element.elements[1], context)
           )
+
         else
           raise "Invalid element: <#{element.name}>."
       end
