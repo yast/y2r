@@ -13,6 +13,13 @@ module Y2R
         parts.join("\n")
       end
 
+      def inside_block(context, kind)
+        inner_context = context.dup
+        inner_context.blocks = inner_context.blocks + [kind]
+
+        yield inner_context
+      end
+
       def strip_const(type)
         type.sub(/^const /, "")
       end
@@ -88,14 +95,13 @@ module Y2R
 
     class Block < Node
       def to_ruby(context = Context.new)
-        statements_context = context.dup
-        statements_context.blocks = statements_context.blocks + [kind]
-
         case kind
           when :def, :file, :stmt
-            ruby_stmts(statements, statements_context)
+            inside_block context, kind do |inner_context|
+              ruby_stmts(statements, inner_context)
+            end
           when :module
-            statements_context.module_name = name
+            context.module_name = name
 
             assigns = statements.select { |s| s.is_a?(Assign) }
             fundefs = statements.select { |s| s.is_a?(FunDef) }
@@ -108,21 +114,23 @@ module Y2R
               parts << "  class #{name}Class"
               parts << "    extend Exportable"
 
-              unless other_statements.empty?
-                parts << ""
-                parts << indent(4, ruby_stmts(other_statements, statements_context))
-              end
+              inside_block context, kind do |inner_context|
+                unless other_statements.empty?
+                  parts << ""
+                  parts << indent(4, ruby_stmts(other_statements, inner_context))
+                end
 
-              unless assigns.empty?
-                parts << ""
-                parts << "    def initialize"
-                parts << indent(6, ruby_stmts(assigns, statements_context))
-                parts << "    end"
-              end
+                unless assigns.empty?
+                  parts << ""
+                  parts << "    def initialize"
+                  parts << indent(6, ruby_stmts(assigns, inner_context))
+                  parts << "    end"
+                end
 
-              unless fundefs.empty?
-                parts << ""
-                parts << indent(4, ruby_stmts(fundefs, statements_context))
+                unless fundefs.empty?
+                  parts << ""
+                  parts << indent(4, ruby_stmts(fundefs, inner_context))
+                end
               end
 
               symbols.each do |symbol|
@@ -139,7 +147,9 @@ module Y2R
           when :unspec
             combine do |parts|
               parts << "lambda {"
-              parts << indent(2, ruby_stmts(statements, statements_context))
+              inside_block context, kind do |inner_context|
+                parts << indent(2, ruby_stmts(statements, inner_context))
+              end
               parts << "}"
             end
           else
@@ -148,12 +158,11 @@ module Y2R
       end
 
       def to_ruby_block(args, context = Context.new)
-        statements_context = context.dup
-        statements_context.blocks = statements_context.blocks + [kind]
-
         combine do |parts|
           parts << "{ |#{args.join(", ")}|"
-          parts << indent(2, ruby_stmts(statements, statements_context))
+          inside_block context, kind do |inner_context|
+            parts << indent(2, ruby_stmts(statements, inner_context))
+          end
           parts << "}"
         end
       end
@@ -405,12 +414,11 @@ module Y2R
 
     class While < Node
       def to_ruby(context = Context.new)
-        do_context = context.dup
-        do_context.blocks = do_context.blocks + [:loop]
-
         combine do |parts|
           parts << "while #{cond.to_ruby(context)}"
-          parts << indent(2, self.do.to_ruby(do_context))
+          inside_block context, :loop do |inner_context|
+            parts << indent(2, self.do.to_ruby(inner_context))
+          end
           parts << "end"
         end
       end
