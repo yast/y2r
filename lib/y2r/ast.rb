@@ -104,7 +104,7 @@ module Y2R
         @blocks.reverse.each do |block|
           var_names += block.var_names if block.is_a?(Block)
 
-          break if block.is_a?(FileBlock) || block.is_a?(ModuleBlock) || block.is_a?(DefBlock)
+          break if block.is_a?(DefBlock)
         end
 
         var_names
