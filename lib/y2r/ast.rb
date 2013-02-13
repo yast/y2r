@@ -102,7 +102,7 @@ module Y2R
         variables = []
 
         @blocks.reverse.each do |block|
-          variables += block.variables if block.is_a?(Block)
+          variables += block.variables
 
           break if block.is_a?(DefBlock)
         end
@@ -462,6 +462,10 @@ module Y2R
     end
 
     class While < Node
+      def variables
+        []
+      end
+
       def to_ruby(context = Context.new)
         combine do |parts|
           parts << "while #{cond.to_ruby(context)}"
