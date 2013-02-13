@@ -60,7 +60,13 @@ module Y2R
             :child => element_to_node(element.elements[1], context)
           )
         when "block"
-          AST::Block.new(
+          {
+            :def    => AST::DefBlock,
+            :file   => AST::FileBlock,
+            :module => AST::ModuleBlock,
+            :stmt   => AST::StmtBlock,
+            :unspec => AST::UnspecBlock
+          }[element.attributes["kind"].to_sym].new(
             :kind       => element.attributes["kind"].to_sym,
             :name       => element.attributes["name"],
             :symbols    => extract_collection(element, "symbols", context),

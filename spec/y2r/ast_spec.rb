@@ -76,352 +76,6 @@ module Y2R::AST
     end
   end
 
-  describe Block do
-    describe "#to_ruby" do
-      it "emits correct code for def blocks" do
-        node = Block.new(
-          :kind       => :def,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for file blocks" do
-        node = Block.new(
-          :kind       => :file,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for stmt blocks" do
-        node = Block.new(
-          :kind       => :stmt,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
-      end
-
-      it "emits correct code for unspec blocks" do
-        node = Block.new(
-          :kind       => :unspec,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "lambda {\n  i = 42\n  j = 43\n  k = 44\n}"
-      end
-
-      it "emits correct code for empty module blocks" do
-        node = Block.new(
-          :kind       => :module,
-          :name       => "M",
-          :symbols    => [],
-          :statements => []
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits correct code for empty module blocks with symbols" do
-        node = Block.new(
-          :kind       => :module,
-          :name       => "M",
-          :symbols    => [
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
-            )
-          ],
-          :statements => []
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "    publish :variable => :a, :type => \"integer\"",
-          "    publish :variable => :b, :type => \"integer\"",
-          "    publish :variable => :c, :type => \"integer\"",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits correct code for module blocks with statements" do
-        node = Block.new(
-          :kind       => :module,
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            Textdomain.new(:name => "d"),
-            Textdomain.new(:name => "e"),
-            Textdomain.new(:name => "f")
-          ]
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
-          "    FastGettext.text_domain = \"d\"",
-          "",
-          "    FastGettext.text_domain = \"e\"",
-          "",
-          "    FastGettext.text_domain = \"f\"",
-          "",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits correct code for module blocks with variable declarations" do
-        node = Block.new(
-          :kind       => :module,
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
-          "    def initialize",
-          "      @i = 42",
-          "      @j = 43",
-          "      @k = 44",
-          "    end",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits correct code for module blocks with function declarations" do
-        node = Block.new(
-          :kind       => :module,
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            FunDef.new(
-              :name  => "f",
-              :args  => [],
-              :block => Block.new(
-                :kind       => :def,
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "42"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "g",
-              :args  => [],
-              :block => Block.new(
-                :kind       => :def,
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "43"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "h",
-              :args  => [],
-              :block => Block.new(
-                :kind       => :def,
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "44"))
-                ]
-              )
-            )
-          ]
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
-          "    def f",
-          "      return 42",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "    def g",
-          "      return 43",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "    def h",
-          "      return 44",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-    end
-
-    describe "#to_ruby_block" do
-      it "emits correct code without arguments" do
-        node = Block.new(
-          :kind       => :unspec,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby_block([]).should == "{ ||\n  i = 42\n  j = 43\n  k = 44\n}"
-      end
-
-      it "emits correct code with arguments" do
-        node = Block.new(
-          :kind       => :unspec,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby_block(["a", "b", "c"]).should ==
-          "{ |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
-      end
-    end
-  end
-
   describe Bracket do
     describe "#to_ruby" do
       it "emits correct code" do
@@ -505,7 +159,7 @@ module Y2R::AST
           :name     => "b",
           :symbols  => ["integer a", "integer b", "integer c"],
           :children => [
-            Block.new(
+            UnspecBlock.new(
               :kind       => :unspec,
               :statements => [
                 Assign.new(
@@ -537,7 +191,7 @@ module Y2R::AST
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44"),
-            Block.new(
+            UnspecBlock.new(
               :kind       => :unspec,
               :statements => [
                 Assign.new(
@@ -684,12 +338,64 @@ module Y2R::AST
     end
   end
 
+  describe DefBlock do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = DefBlock.new(
+          :kind       => :def,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
+      end
+    end
+  end
+
   describe Entry do
     describe "#to_ruby" do
       it "emits correct code" do
         node = Entry.new(:name => "e")
 
         node.to_ruby.should == "e"
+      end
+    end
+  end
+
+  describe FileBlock do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = FileBlock.new(
+          :kind       => :file,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
       end
     end
   end
@@ -719,7 +425,7 @@ module Y2R::AST
               :name     => "c"
             )
           ],
-          :block => Block.new(
+          :block => DefBlock.new(
             :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
@@ -732,7 +438,7 @@ module Y2R::AST
         node = FunDef.new(
           :name  => "f",
           :args  => [],
-          :block => Block.new(
+          :block => DefBlock.new(
             :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
@@ -788,7 +494,7 @@ module Y2R::AST
         node = FunDef.new(
           :name  => "f",
           :args  => [],
-          :block => Block.new(
+          :block => DefBlock.new(
             :kind       => :def,
             :statements => [
               Return.new(:child => Const.new(:type => :int, :value => "42"))
@@ -919,6 +625,217 @@ module Y2R::AST
     end
   end
 
+  describe ModuleBlock do
+    describe "#to_ruby" do
+      it "emits correct code for empty blocks" do
+        node = ModuleBlock.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [],
+          :statements => []
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with symbols" do
+        node = ModuleBlock.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => true,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
+          ],
+          :statements => []
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "    publish :variable => :a, :type => \"integer\"",
+          "    publish :variable => :b, :type => \"integer\"",
+          "    publish :variable => :c, :type => \"integer\"",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with statements" do
+        node = ModuleBlock.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [],
+          :statements => [
+            Textdomain.new(:name => "d"),
+            Textdomain.new(:name => "e"),
+            Textdomain.new(:name => "f")
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "",
+          "    FastGettext.text_domain = \"d\"",
+          "",
+          "    FastGettext.text_domain = \"e\"",
+          "",
+          "    FastGettext.text_domain = \"f\"",
+          "",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with variable declarations" do
+        node = ModuleBlock.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [],
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "",
+          "    def initialize",
+          "      @i = 42",
+          "      @j = 43",
+          "      @k = 44",
+          "    end",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with function declarations" do
+        node = ModuleBlock.new(
+          :kind       => :module,
+          :name       => "M",
+          :symbols    => [],
+          :statements => [
+            FunDef.new(
+              :name  => "f",
+              :args  => [],
+              :block => DefBlock.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "42"))
+                ]
+              )
+            ),
+            FunDef.new(
+              :name  => "g",
+              :args  => [],
+              :block => DefBlock.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "43"))
+                ]
+              )
+            ),
+            FunDef.new(
+              :name  => "h",
+              :args  => [],
+              :block => DefBlock.new(
+                :kind       => :def,
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "44"))
+                ]
+              )
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "",
+          "    def f",
+          "      return 42",
+          "",
+          "      nil",
+          "    end",
+          "",
+          "    def g",
+          "      return 43",
+          "",
+          "      nil",
+          "    end",
+          "",
+          "    def h",
+          "      return 44",
+          "",
+          "      nil",
+          "    end",
+          "",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+    end
+  end
+
   describe Return do
     describe "#to_ruby" do
       before :each do
@@ -1000,6 +917,32 @@ module Y2R::AST
         it "emits correct code for a return with a value" do
           @node_with_value.to_ruby(@context).should == "next 42"
         end
+      end
+    end
+  end
+
+  describe StmtBlock do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = StmtBlock.new(
+          :kind       => :stmt,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "i = 42\nj = 43\nk = 44"
       end
     end
   end
@@ -1155,6 +1098,79 @@ module Y2R::AST
         node = Textdomain.new(:name => "d")
 
         node.to_ruby.should == "FastGettext.text_domain = \"d\"\n"
+      end
+    end
+  end
+
+  describe UnspecBlock do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = UnspecBlock.new(
+          :kind       => :unspec,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == "lambda {\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+    end
+
+    describe "#to_ruby_block" do
+      it "emits correct code without arguments" do
+        node = UnspecBlock.new(
+          :kind       => :unspec,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby_block([]).should == "{ ||\n  i = 42\n  j = 43\n  k = 44\n}"
+      end
+
+      it "emits correct code with arguments" do
+        node = UnspecBlock.new(
+          :kind       => :unspec,
+          :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby_block(["a", "b", "c"]).should ==
+          "{ |a, b, c|\n  i = 42\n  j = 43\n  k = 44\n}"
       end
     end
   end

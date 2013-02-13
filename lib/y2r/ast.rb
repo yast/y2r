@@ -93,81 +93,6 @@ module Y2R
       end
     end
 
-    class Block < Node
-      def to_ruby(context = Context.new)
-        case kind
-          when :def, :file, :stmt
-            inside_block context, kind do |inner_context|
-              ruby_stmts(statements, inner_context)
-            end
-          when :module
-            context.module_name = name
-
-            assigns = statements.select { |s| s.is_a?(Assign) }
-            fundefs = statements.select { |s| s.is_a?(FunDef) }
-            other_statements = statements - assigns - fundefs
-
-            combine do |parts|
-              parts << "require \"ycp\""
-              parts << ""
-              parts << "module YCP"
-              parts << "  class #{name}Class"
-              parts << "    extend Exportable"
-
-              inside_block context, kind do |inner_context|
-                unless other_statements.empty?
-                  parts << ""
-                  parts << indent(4, ruby_stmts(other_statements, inner_context))
-                end
-
-                unless assigns.empty?
-                  parts << ""
-                  parts << "    def initialize"
-                  parts << indent(6, ruby_stmts(assigns, inner_context))
-                  parts << "    end"
-                end
-
-                unless fundefs.empty?
-                  parts << ""
-                  parts << indent(4, ruby_stmts(fundefs, inner_context))
-                end
-              end
-
-              symbols.each do |symbol|
-                if symbol.published?
-                  parts << indent(4, symbol.to_ruby_publish_call)
-                end
-              end
-
-              parts << "  end"
-              parts << ""
-              parts << "  #{name} = #{name}Class.new"
-              parts << "end"
-            end
-          when :unspec
-            combine do |parts|
-              parts << "lambda {"
-              inside_block context, kind do |inner_context|
-                parts << indent(2, ruby_stmts(statements, inner_context))
-              end
-              parts << "}"
-            end
-          else
-            raise "Unknown block kind: #{kind}."
-        end
-      end
-
-      def to_ruby_block(args, context = Context.new)
-        combine do |parts|
-          parts << "{ |#{args.join(", ")}|"
-          inside_block context, kind do |inner_context|
-            parts << indent(2, ruby_stmts(statements, inner_context))
-          end
-          parts << "}"
-        end
-      end
-    end
-
     class Bracket < Node
       def to_ruby(context = Context.new)
         entry_code = entry.to_ruby(context)
@@ -273,9 +198,25 @@ module Y2R
       end
     end
 
+    class DefBlock < Node
+      def to_ruby(context = Context.new)
+        inside_block context, kind do |inner_context|
+          ruby_stmts(statements, inner_context)
+        end
+      end
+    end
+
     class Entry < Node
       def to_ruby(context = Context.new)
         name
+      end
+    end
+
+    class FileBlock < Node
+      def to_ruby(context = Context.new)
+        inside_block context, kind do |inner_context|
+          ruby_stmts(statements, inner_context)
+        end
       end
     end
 
@@ -356,6 +297,54 @@ module Y2R
       end
     end
 
+    class ModuleBlock < Node
+      def to_ruby(context = Context.new)
+        context.module_name = name
+
+        assigns = statements.select { |s| s.is_a?(Assign) }
+        fundefs = statements.select { |s| s.is_a?(FunDef) }
+        other_statements = statements - assigns - fundefs
+
+        combine do |parts|
+          parts << "require \"ycp\""
+          parts << ""
+          parts << "module YCP"
+          parts << "  class #{name}Class"
+          parts << "    extend Exportable"
+
+          inside_block context, kind do |inner_context|
+            unless other_statements.empty?
+              parts << ""
+              parts << indent(4, ruby_stmts(other_statements, inner_context))
+            end
+
+            unless assigns.empty?
+              parts << ""
+              parts << "    def initialize"
+              parts << indent(6, ruby_stmts(assigns, inner_context))
+              parts << "    end"
+            end
+
+            unless fundefs.empty?
+              parts << ""
+              parts << indent(4, ruby_stmts(fundefs, inner_context))
+            end
+          end
+
+          symbols.each do |symbol|
+            if symbol.published?
+              parts << indent(4, symbol.to_ruby_publish_call)
+            end
+          end
+
+          parts << "  end"
+          parts << ""
+          parts << "  #{name} = #{name}Class.new"
+          parts << "end"
+        end
+      end
+    end
+
     class Return < Node
       def to_ruby(context = Context.new)
         unless context.in?(:def) || context.in?(:unspec)
@@ -371,6 +360,14 @@ module Y2R
           "#{stmt} #{child.to_ruby(context)}"
         else
           stmt
+        end
+      end
+    end
+
+    class StmtBlock < Node
+      def to_ruby(context = Context.new)
+        inside_block context, kind do |inner_context|
+          ruby_stmts(statements, inner_context)
         end
       end
     end
@@ -402,6 +399,28 @@ module Y2R
         combine do |parts|
           parts << "FastGettext.text_domain = #{name.inspect}"
           parts << ""
+        end
+      end
+    end
+
+    class UnspecBlock < Node
+      def to_ruby(context = Context.new)
+        combine do |parts|
+          parts << "lambda {"
+          inside_block context, kind do |inner_context|
+            parts << indent(2, ruby_stmts(statements, inner_context))
+          end
+          parts << "}"
+        end
+      end
+
+      def to_ruby_block(args, context = Context.new)
+        combine do |parts|
+          parts << "{ |#{args.join(", ")}|"
+          inside_block context, kind do |inner_context|
+            parts << indent(2, ruby_stmts(statements, inner_context))
+          end
+          parts << "}"
         end
       end
     end
