@@ -132,18 +132,25 @@ module Y2R
           AST::Entry.new(:name => element.attributes["name"])
 
         when "fun_def"
+          args = if element.elements["declaration"]
+            extract_collection(
+              element.elements["declaration"].elements["block"],
+              "symbols",
+              context
+            )
+          else
+            []
+          end
+          block = element_to_node(element.elements["block"], context)
+
+          # This will make the code consider arguments as local variables.
+          # Which is exactly what we want e.g. for alias detection.
+          block.symbols = args + block.symbols
+
           AST::FunDef.new(
             :name  => element.attributes["name"],
-            :args  => if element.elements["declaration"]
-              extract_collection(
-                element.elements["declaration"].elements["block"],
-                "symbols",
-                context
-              )
-            else
-              []
-            end,
-            :block => element_to_node(element.elements["block"], context),
+            :args  => args,
+            :block => block,
           )
 
         when "if"
