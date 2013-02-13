@@ -516,12 +516,18 @@ module Y2R
     end
 
     class YEReturn < Node
+      def variables
+        symbols.select { |s| s.category == :variable }.map(&:name)
+      end
+
       def to_ruby(context = Context.new)
         "lambda { #{child.to_ruby(context)} }"
       end
 
       def to_ruby_block(context = Context.new)
-        "{ |#{ruby_list(args, context)}| #{child.to_ruby(context)} }"
+        inside_block context do |inner_context|
+          "{ |#{ruby_list(args, context)}| #{child.to_ruby(inner_context)} }"
+        end
       end
     end
 
