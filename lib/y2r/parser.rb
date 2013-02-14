@@ -156,6 +156,9 @@ module Y2R
             :name => element.attributes["name"]
           )
 
+        when "filename"
+          AST::Include.new
+
         when "fun_def"
           args = if element.elements["declaration"]
             extract_collection(

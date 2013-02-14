@@ -237,6 +237,12 @@ module Y2R
       end
     end
 
+    class Filename < Node
+      def to_ruby(context = Context.new)
+        ""
+      end
+    end
+
     class FunDef < Node
       def to_ruby(context = Context.new)
         if context.in?(DefBlock)

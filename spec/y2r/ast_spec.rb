@@ -530,6 +530,16 @@ module Y2R::AST
     end
   end
 
+  describe Filename do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Filename.new
+
+        node.to_ruby.should == ""
+      end
+    end
+  end
+
   describe FunDef do
     describe "#to_ruby" do
       def fundef_with_args(type)
