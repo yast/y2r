@@ -44,10 +44,10 @@ module Y2R
         if name =~ /^([^:]+)::([^:]+)$/
           $1 == context.module_name ? "@#$2" : name
         else
-          if context.innermost(FileBlock, ModuleBlock, DefBlock).is_a?(ModuleBlock)
-            "@#{name}"
-          else
+          if (context.in?(DefBlock) && context.variables_in_scope.include?(name)) || context.in?(FileBlock)
             escape_ruby_local_var_name(name)
+          else
+            "@#{name}"
           end
         end
       end
