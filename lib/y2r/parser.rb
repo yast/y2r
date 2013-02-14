@@ -151,7 +151,10 @@ module Y2R
           end
 
         when "entry"
-          AST::Entry.new(:name => element.attributes["name"])
+          AST::Entry.new(
+            :ns   => element.attributes["ns"],
+            :name => element.attributes["name"]
+          )
 
         when "fun_def"
           args = if element.elements["declaration"]

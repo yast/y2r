@@ -24,6 +24,10 @@ module Y2R
         type.sub(/^const /, "")
       end
 
+      def qualified_name(ns, name)
+        (ns ? "#{ns}::" : "") + name
+      end
+
       # Escapes valid YCP variable names that are not valid Ruby local variable
       # names.
       def escape_ruby_local_var_name(name)
@@ -221,7 +225,7 @@ module Y2R
 
     class Entry < Node
       def to_ruby(context = Context.new)
-        name
+        ruby_var_name(qualified_name(ns, name), context)
       end
     end
 

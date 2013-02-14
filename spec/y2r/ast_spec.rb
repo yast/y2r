@@ -428,10 +428,78 @@ module Y2R::AST
 
   describe Entry do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Entry.new(:name => "e")
+      before :each do
+        @node_unprefixed_i = Entry.new(:ns => nil, :name => "i")
+        @node_unprefixed_j = Entry.new(:ns => nil, :name => "j")
+        @node_prefixed_m   = Entry.new(:ns => "M", :name => "i")
+        @node_prefixed_n   = Entry.new(:ns => "N", :name => "i")
+        @node_capital      = Entry.new(:ns => nil, :name => "I")
+        @node_underscore   = Entry.new(:ns => nil, :name => "_i")
 
-        node.to_ruby.should == "e"
+        @def_block    = DefBlock.new(
+          :symbols => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "i"
+            )
+          ]
+        )
+        @file_block   = FileBlock.new(:symbols => [])
+        @module_block = ModuleBlock.new(:name => "M", :symbols => [])
+      end
+
+      describe "at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [@file_block])
+
+          @node_unprefixed_i.to_ruby(context).should == "i"
+          @node_unprefixed_j.to_ruby(context).should == "j"
+          @node_prefixed_m.to_ruby(context).should   == "M::i"
+          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_capital.to_ruby(context).should      == "_I"
+          @node_underscore.to_ruby(context).should   == "__i"
+        end
+      end
+
+      describe "at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [@module_block])
+
+          @node_unprefixed_i.to_ruby(context).should == "@i"
+          @node_unprefixed_j.to_ruby(context).should == "@j"
+          @node_prefixed_m.to_ruby(context).should   == "@i"
+          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_capital.to_ruby(context).should      == "@I"
+          @node_underscore.to_ruby(context).should   == "@_i"
+        end
+      end
+
+      describe "inside a function at client toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [@file_block, @def_block])
+
+          @node_unprefixed_i.to_ruby(context).should == "i"
+          @node_unprefixed_j.to_ruby(context).should == "j"
+          @node_prefixed_m.to_ruby(context).should   == "M::i"
+          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_capital.to_ruby(context).should      == "_I"
+          @node_underscore.to_ruby(context).should   == "__i"
+        end
+      end
+
+      describe "inside a function at module toplevel" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [@module_block, @def_block])
+
+          @node_unprefixed_i.to_ruby(context).should == "i"
+          @node_unprefixed_j.to_ruby(context).should == "@j"
+          @node_prefixed_m.to_ruby(context).should   == "@i"
+          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_capital.to_ruby(context).should      == "@I"
+          @node_underscore.to_ruby(context).should   == "@_i"
+        end
       end
     end
   end
