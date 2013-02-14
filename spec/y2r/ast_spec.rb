@@ -677,6 +677,16 @@ module Y2R::AST
     end
   end
 
+  describe Include do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Include.new
+
+        node.to_ruby.should == ""
+      end
+    end
+  end
+
   describe List do
     describe "#to_ruby" do
       it "emits correct code for empty lists" do

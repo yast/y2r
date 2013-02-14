@@ -290,6 +290,12 @@ module Y2R
       end
     end
 
+    class Include < Node
+      def to_ruby(context = Context.new)
+        ""
+      end
+    end
+
     class List < Node
       def to_ruby(context = Context.new)
         "[#{ruby_list(children, context)}]"

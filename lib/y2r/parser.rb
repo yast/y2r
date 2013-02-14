@@ -192,6 +192,9 @@ module Y2R
         when "import"
           AST::Import.new(:name => element.attributes["name"])
 
+        when "include"
+          AST::Include.new
+
         when "list"
           AST::List.new(:children => extract_children(element, :list))
 
