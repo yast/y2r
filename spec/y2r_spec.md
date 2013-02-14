@@ -29,7 +29,7 @@ Y2R translates YCP `nil` as Ruby `nil`.
 #### Ruby Code
 
 ```ruby
-v = nil
+@v = nil
 ```
 
 ### Booleans
@@ -48,8 +48,8 @@ Y2R translates YCP booleans as Ruby booelans.
 #### Ruby Code
 
 ```ruby
-t = true
-f = false
+@t = true
+@f = false
 ```
 
 ### Integers
@@ -68,7 +68,7 @@ integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 #### Ruby Code
 
 ```ruby
-i = 42
+@i = 42
 ```
 
 ### Floats
@@ -88,8 +88,8 @@ level so the conversion is lossless.
 #### Ruby Code
 
 ```ruby
-f1 = 42.0
-f2 = 42.1
+@f1 = 42.0
+@f2 = 42.1
 ```
 
 ### Symbols
@@ -109,7 +109,7 @@ will always have US-ASCII encoding.
 #### Ruby Code
 
 ```ruby
-s = :abcd
+@s = :abcd
 ```
 
 ### Strings
@@ -129,7 +129,7 @@ explain a bit more.
 #### Ruby Code
 
 ```ruby
-s = "abcd"
+@s = "abcd"
 ```
 
 ### Paths
@@ -148,7 +148,7 @@ encoding?
 #### Ruby Code
 
 ```ruby
-p = Path.new(".abcd")
+@p = Path.new(".abcd")
 ```
 
 ### Lists
@@ -167,8 +167,8 @@ Y2R translates YCP lists as Ruby arrays.
 #### Ruby Code
 
 ```ruby
-l1 = []
-l2 = [42, 43, 44]
+@l1 = []
+@l2 = [42, 43, 44]
 ```
 
 ### Maps
@@ -187,8 +187,8 @@ Y2R translates YCP maps as Ruby hashes.
 #### Ruby Code
 
 ```ruby
-m1 = {}
-m2 = { :a => 42, :b => 43, :c => 44 }
+@m1 = {}
+@m2 = { :a => 42, :b => 43, :c => 44 }
 ```
 
 ### Terms
@@ -207,8 +207,8 @@ Y2R translates YCP terms as instances of the `YCP::Term` class
 #### Ruby Code
 
 ```ruby
-t1 = Term.new(:a)
-t2 = Term.new(:a, 42, 43, 44)
+@t1 = Term.new(:a)
+@t2 = Term.new(:a, 42, 43, 44)
 ```
 
 ### Blocks
@@ -226,7 +226,7 @@ Y2R translates YCP blocks as Ruby lambdas.
 #### Ruby Code
 
 ```ruby
-b = lambda {
+@b = lambda {
   Builtins.y2milestone("M1")
 }
 ```
@@ -263,7 +263,7 @@ end
 
 ```
 
-Y2R translates YCP variables at client toplevel as Ruby local variables.
+Y2R translates YCP variables at client toplevel as Ruby instance variables.
 
 #### YCP Code
 
@@ -277,8 +277,8 @@ Y2R translates YCP variables at client toplevel as Ruby local variables.
 #### Ruby Code
 
 ```ruby
-i = 42
-j = i
+@i = 42
+@j = @i
 ```
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
@@ -377,7 +377,7 @@ method.
 #### Ruby Code
 
 ```ruby
-f = Convert.convert(42, :from => "integer", :to => "float")
+@f = Convert.convert(42, :from => "integer", :to => "float")
 ```
 
 ### Builtin Calls
@@ -410,8 +410,8 @@ Builtins.time
 Builtins.random(100)
 SCR.Dir(Path.new(".syseditor.section"))
 WFM.Args
-f = Builtins::Float.abs(-42.0)
-l = Builtins::List.reverse([42, 43, 44])
+@f = Builtins::Float.abs(-42.0)
+@l = Builtins::List.reverse([42, 43, 44])
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -469,7 +469,7 @@ Y2R translates YCP `_` calls as calls of FastGettext's `_` method.
 ```ruby
 FastGettext.text_domain = "helloworld"
 
-s = _("Hello, world!")
+@s = _("Hello, world!")
 ```
 
 ### Function Calls
@@ -514,12 +514,12 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-b1 = Ops.equal(42, 43)
-b2 = Ops.not_equal(42, 43)
-b3 = Ops.less_than(42, 43)
-b4 = Ops.greater_than(42, 43)
-b5 = Ops.less_or_equal(42, 43)
-b6 = Ops.greater_or_equal(42, 43)
+@b1 = Ops.equal(42, 43)
+@b2 = Ops.not_equal(42, 43)
+@b3 = Ops.less_than(42, 43)
+@b4 = Ops.greater_than(42, 43)
+@b5 = Ops.less_or_equal(42, 43)
+@b6 = Ops.greater_or_equal(42, 43)
 ```
 
 ### Arithmetic Operators
@@ -547,13 +547,13 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-i = 42
-i1 = Ops.unary_minus(i)
-i2 = Ops.add(42, 43)
-i3 = Ops.subtract(42, 43)
-i4 = Ops.multiply(42, 43)
-i5 = Ops.divide(42, 43)
-i6 = Ops.modulo(42, 43)
+@i = 42
+@i1 = Ops.unary_minus(@i)
+@i2 = Ops.add(42, 43)
+@i3 = Ops.subtract(42, 43)
+@i4 = Ops.multiply(42, 43)
+@i5 = Ops.divide(42, 43)
+@i6 = Ops.modulo(42, 43)
 ```
 
 ### Bitwise Operators
@@ -578,12 +578,12 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-i1 = Ops.bitwise_not(42)
-i2 = Ops.bitwise_and(42, 43)
-i3 = Ops.bitwise_or(42, 43)
-i4 = Ops.bitwise_xor(42, 43)
-i5 = Ops.shift_left(42, 43)
-i6 = Ops.shift_right(42, 43)
+@i1 = Ops.bitwise_not(42)
+@i2 = Ops.bitwise_and(42, 43)
+@i3 = Ops.bitwise_or(42, 43)
+@i4 = Ops.bitwise_xor(42, 43)
+@i5 = Ops.shift_left(42, 43)
+@i6 = Ops.shift_right(42, 43)
 ```
 
 ### Logical Operators
@@ -608,10 +608,10 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-b = true
-b1 = Ops.logical_not(b)
-b2 = Ops.logical_and(true, false)
-b3 = Ops.logical_or(true, false)
+@b = true
+@b1 = Ops.logical_not(@b)
+@b2 = Ops.logical_and(true, false)
+@b3 = Ops.logical_or(true, false)
 ```
 
 ### Ternary Operator
@@ -631,8 +631,8 @@ Y2R translates YCP ternary operator as Ruby ternary operator.
 #### Ruby Code
 
 ```ruby
-b = true
-i = b ? 42 : 43
+@b = true
+@i = @b ? 42 : 43
 ```
 
 ### Index Operator
@@ -651,7 +651,7 @@ that implements its behavior. There is no equivalent operator in Ruby.
 #### Ruby Code
 
 ```ruby
-i = Ops.index([42, 43, 44], [1], 0)
+@i = Ops.index([42, 43, 44], [1], 0)
 ```
 
 ### Double Quote Operator
@@ -669,7 +669,7 @@ Y2R translates YCP double quote operator as a Ruby lambda.
 #### Ruby Code
 
 ```ruby
-b = lambda { 42 }
+@b = lambda { 42 }
 ```
 
 Statements
@@ -733,8 +733,8 @@ Y2R translates simple YCP assignments as Ruby assignments.
 #### Ruby Code
 
 ```ruby
-i = 42
-i = 43
+@i = 42
+@i = 43
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
@@ -754,8 +754,8 @@ in Ruby.
 #### Ruby Code
 
 ```ruby
-l = [42, 43, 44]
-Ops.assign(l, [0], 45)
+@l = [42, 43, 44]
+Ops.assign(@l, [0], 45)
 ```
 
 ### `return` Statement
