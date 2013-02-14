@@ -1573,6 +1573,19 @@ module Y2R::AST
     end
   end
 
+  describe YEIs do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YEIs.new(
+          :child => Const.new(:type => :int, :value => "42"),
+          :type  => "integer"
+        )
+
+        node.to_ruby.should == "Ops.is(42, \"integer\")"
+      end
+    end
+  end
+
   describe YEPropagate do
     describe "#to_ruby" do
       it "emits correct code when the types are the same" do

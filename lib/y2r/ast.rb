@@ -514,6 +514,12 @@ module Y2R
       end
     end
 
+    class YEIs < Node
+      def to_ruby(context = Context.new)
+        "Ops.is(#{child.to_ruby(code)}, \"#{type}\")"
+      end
+    end
+
     class YEPropagate < Node
       def to_ruby(context = Context.new)
         from_no_const = strip_const(from)

@@ -257,6 +257,12 @@ module Y2R
             :default => element_to_node(element.elements[3], context)
           )
 
+        when "yeis"
+          AST::YEIs.new(
+            :type  => element.attributes["type"],
+            :child => element_to_node(element.elements[1], context)
+          )
+
         when "yepropagate"
           AST::YEPropagate.new(
             :from  => element.attributes["from"],
