@@ -857,50 +857,13 @@ module Y2R::AST
           "  class MClass",
           "    extend Exportable",
           "",
-          "    FastGettext.text_domain = \"d\"",
-          "",
-          "    FastGettext.text_domain = \"e\"",
-          "",
-          "    FastGettext.text_domain = \"f\"",
-          "",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits correct code for blocks with variable declarations" do
-        node = ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
           "    def initialize",
-          "      @i = 42",
-          "      @j = 43",
-          "      @k = 44",
+          "      FastGettext.text_domain = \"d\"",
+          "",
+          "      FastGettext.text_domain = \"e\"",
+          "",
+          "      FastGettext.text_domain = \"f\"",
+          "",
           "    end",
           "  end",
           "",

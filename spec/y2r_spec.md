@@ -1110,10 +1110,9 @@ module YCP
   class MClass
     extend Exportable
 
-    YCP.import("String")
-
-
     def initialize
+      YCP.import("String")
+
       @i = 42
       @j = 43
     end

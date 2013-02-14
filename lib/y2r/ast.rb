@@ -333,9 +333,8 @@ module Y2R
 
     class ModuleBlock < Block
       def to_ruby(context = Context.new)
-        assigns = statements.select { |s| s.is_a?(Assign) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
-        other_statements = statements - assigns - fundefs
+        other_statements = statements - fundefs
 
         combine do |parts|
           parts << "require \"ycp\""
@@ -347,13 +346,8 @@ module Y2R
           inside_block context do |inner_context|
             unless other_statements.empty?
               parts << ""
-              parts << indent(4, ruby_stmts(other_statements, inner_context))
-            end
-
-            unless assigns.empty?
-              parts << ""
               parts << "    def initialize"
-              parts << indent(6, ruby_stmts(assigns, inner_context))
+              parts << indent(6, ruby_stmts(other_statements, inner_context))
               parts << "    end"
             end
 
