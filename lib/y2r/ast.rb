@@ -48,7 +48,7 @@ module Y2R
         if name =~ /^([^:]+)::([^:]+)$/
           $1 == context.module_name ? "@#$2" : name
         else
-          if (context.in?(DefBlock) && context.variables_in_scope.include?(name)) || context.in?(FileBlock)
+          if context.local_variables.include?(name) || context.in?(FileBlock)
             escape_ruby_local_var_name(name)
           else
             "@#{name}"
@@ -107,6 +107,11 @@ module Y2R
         index = @blocks.rindex { |b| b.is_a?(DefBlock) }
         scope_blocks = index ? @blocks[index..-1] : @blocks
         scope_blocks.reverse.map(&:variables).flatten
+      end
+
+      def local_variables
+        index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YEReturn) } || @blocks.length
+        @blocks[index..-1].map(&:variables).flatten
       end
     end
 
