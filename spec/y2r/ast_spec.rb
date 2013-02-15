@@ -541,7 +541,7 @@ module Y2R::AST
           "class YCP::Clients::C",
           "end",
           "",
-          "YCP::Clients::C.new"
+          "YCP::Clients::C.new.main"
         ].join("\n")
       end
 
@@ -558,7 +558,7 @@ module Y2R::AST
 
         node.to_ruby.should == [
           "class YCP::Clients::C",
-          "  def initialize",
+          "  def main",
           "    FastGettext.text_domain = \"d\"",
           "",
           "    FastGettext.text_domain = \"e\"",
@@ -568,7 +568,7 @@ module Y2R::AST
           "  end",
           "end",
           "",
-          "YCP::Clients::C.new"
+          "YCP::Clients::C.new.main"
         ].join("\n")
       end
 
@@ -633,7 +633,7 @@ module Y2R::AST
           "",
           "end",
           "",
-          "YCP::Clients::C.new"
+          "YCP::Clients::C.new.main"
         ].join("\n")
       end
     end

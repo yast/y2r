@@ -249,7 +249,7 @@ module Y2R
 
           inside_block context do |inner_context|
             unless other_statements.empty?
-              parts << "  def initialize"
+              parts << "  def main"
               parts << indent(4, ruby_stmts(other_statements, inner_context))
               parts << "  end"
             end
@@ -262,7 +262,7 @@ module Y2R
 
           parts << "end"
           parts << ""
-          parts << "#{class_name}.new"
+          parts << "#{class_name}.new.main"
         end
       end
     end
