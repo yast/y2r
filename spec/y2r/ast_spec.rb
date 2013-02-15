@@ -530,26 +530,111 @@ module Y2R::AST
 
   describe FileBlock do
     describe "#to_ruby" do
-      it "emits correct code" do
+      it "emits correct code for empty blocks" do
         node = FileBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => []
+        )
+
+        node.to_ruby.should == [
+          "class YCP::Clients::C",
+          "end",
+          "",
+          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with statements" do
+        node = FileBlock.new(
+          :filename   => "c.ycp",
           :symbols    => [],
           :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
+            Textdomain.new(:name => "d"),
+            Textdomain.new(:name => "e"),
+            Textdomain.new(:name => "f")
+          ]
+        )
+
+        node.to_ruby.should == [
+          "class YCP::Clients::C",
+          "  def initialize",
+          "    FastGettext.text_domain = \"d\"",
+          "",
+          "    FastGettext.text_domain = \"e\"",
+          "",
+          "    FastGettext.text_domain = \"f\"",
+          "",
+          "  end",
+          "end",
+          "",
+          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with function declarations" do
+        node = FileBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => [
+            FunDef.new(
+              :name  => "f",
+              :args  => [],
+              :block => DefBlock.new(
+                :symbols    => [],
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "42"))
+                ]
+              )
             ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
+            FunDef.new(
+              :name  => "g",
+              :args  => [],
+              :block => DefBlock.new(
+                :symbols    => [],
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "43"))
+                ]
+              )
             ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
+            FunDef.new(
+              :name  => "h",
+              :args  => [],
+              :block => DefBlock.new(
+                :symbols    => [],
+                :statements => [
+                  Return.new(:child => Const.new(:type => :int, :value => "44"))
+                ]
+              )
             )
           ]
         )
 
-        node.to_ruby.should == "@i = 42\n@j = 43\n@k = 44"
+        node.to_ruby.should == [
+          "class YCP::Clients::C",
+          "",
+          "  def f",
+          "    return 42",
+          "",
+          "    nil",
+          "  end",
+          "",
+          "  def g",
+          "    return 43",
+          "",
+          "    nil",
+          "  end",
+          "",
+          "  def h",
+          "    return 44",
+          "",
+          "    nil",
+          "  end",
+          "",
+          "end",
+          "",
+          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+        ].join("\n")
       end
     end
   end

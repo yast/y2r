@@ -236,8 +236,33 @@ module Y2R
 
     class FileBlock < Block
       def to_ruby(context = Context.new)
-        inside_block context do |inner_context|
-          ruby_stmts(statements, inner_context)
+        client_name = File.basename(filename, ".ycp")
+        class_name = "YCP::Clients::" + client_name.
+          gsub(/^./)    { |s| s.upcase    }.
+          gsub(/[_-]./) { |s| s[1].upcase }
+
+        fundefs = statements.select { |s| s.is_a?(FunDef) }
+        other_statements = statements - fundefs
+
+        combine do |parts|
+          parts << "class #{class_name}"
+
+          inside_block context do |inner_context|
+            unless other_statements.empty?
+              parts << "  def initialize"
+              parts << indent(4, ruby_stmts(other_statements, inner_context))
+              parts << "  end"
+            end
+
+            unless fundefs.empty?
+              parts << ""
+              parts << indent(2, ruby_stmts(fundefs, inner_context))
+            end
+          end
+
+          parts << "end"
+          parts << ""
+          parts << "YCP.clients[#{client_name.inspect}] = #{class_name}.new"
         end
       end
     end

@@ -29,7 +29,13 @@ Y2R translates YCP `nil` as Ruby `nil`.
 #### Ruby Code
 
 ```ruby
-@v = nil
+class YCP::Clients::Default
+  def initialize
+    @v = nil
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Booleans
@@ -48,8 +54,14 @@ Y2R translates YCP booleans as Ruby booelans.
 #### Ruby Code
 
 ```ruby
-@t = true
-@f = false
+class YCP::Clients::Default
+  def initialize
+    @t = true
+    @f = false
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Integers
@@ -68,7 +80,13 @@ integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 #### Ruby Code
 
 ```ruby
-@i = 42
+class YCP::Clients::Default
+  def initialize
+    @i = 42
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Floats
@@ -88,8 +106,14 @@ level so the conversion is lossless.
 #### Ruby Code
 
 ```ruby
-@f1 = 42.0
-@f2 = 42.1
+class YCP::Clients::Default
+  def initialize
+    @f1 = 42.0
+    @f2 = 42.1
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Symbols
@@ -109,7 +133,13 @@ will always have US-ASCII encoding.
 #### Ruby Code
 
 ```ruby
-@s = :abcd
+class YCP::Clients::Default
+  def initialize
+    @s = :abcd
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Strings
@@ -129,7 +159,13 @@ explain a bit more.
 #### Ruby Code
 
 ```ruby
-@s = "abcd"
+class YCP::Clients::Default
+  def initialize
+    @s = "abcd"
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Paths
@@ -148,7 +184,13 @@ encoding?
 #### Ruby Code
 
 ```ruby
-@p = Path.new(".abcd")
+class YCP::Clients::Default
+  def initialize
+    @p = Path.new(".abcd")
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Lists
@@ -167,8 +209,14 @@ Y2R translates YCP lists as Ruby arrays.
 #### Ruby Code
 
 ```ruby
-@l1 = []
-@l2 = [42, 43, 44]
+class YCP::Clients::Default
+  def initialize
+    @l1 = []
+    @l2 = [42, 43, 44]
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Maps
@@ -187,8 +235,14 @@ Y2R translates YCP maps as Ruby hashes.
 #### Ruby Code
 
 ```ruby
-@m1 = {}
-@m2 = { :a => 42, :b => 43, :c => 44 }
+class YCP::Clients::Default
+  def initialize
+    @m1 = {}
+    @m2 = { :a => 42, :b => 43, :c => 44 }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Terms
@@ -207,8 +261,14 @@ Y2R translates YCP terms as instances of the `YCP::Term` class
 #### Ruby Code
 
 ```ruby
-@t1 = Term.new(:a)
-@t2 = Term.new(:a, 42, 43, 44)
+class YCP::Clients::Default
+  def initialize
+    @t1 = Term.new(:a)
+    @t2 = Term.new(:a, 42, 43, 44)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Blocks
@@ -226,9 +286,15 @@ Y2R translates YCP blocks as Ruby lambdas.
 #### Ruby Code
 
 ```ruby
-@b = lambda {
-  Builtins.y2milestone("M1")
-}
+class YCP::Clients::Default
+  def initialize
+    @b = lambda {
+      Builtins.y2milestone("M1")
+    }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Expressions
@@ -254,13 +320,18 @@ Y2R translates YCP local variables as Ruby local variables.
 #### Ruby Code
 
 ```ruby
-def f
-  i = 42
-  j = i
+class YCP::Clients::Default
 
-  nil
+  def f
+    i = 42
+    j = i
+
+    nil
+  end
+
 end
 
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP variables at client toplevel as Ruby instance variables.
@@ -277,8 +348,14 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 #### Ruby Code
 
 ```ruby
-@i = 42
-@j = @i
+class YCP::Clients::Default
+  def initialize
+    @i = 42
+    @j = @i
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
@@ -377,7 +454,13 @@ method.
 #### Ruby Code
 
 ```ruby
-@f = Convert.convert(42, :from => "integer", :to => "float")
+class YCP::Clients::Default
+  def initialize
+    @f = Convert.convert(42, :from => "integer", :to => "float")
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Builtin Calls
@@ -404,14 +487,20 @@ builtins in Ruby.
 #### Ruby Code
 
 ```ruby
+class YCP::Clients::Default
+  def initialize
 
 
-Builtins.time
-Builtins.random(100)
-SCR.Dir(Path.new(".syseditor.section"))
-WFM.Args
-@f = Builtins::Float.abs(-42.0)
-@l = Builtins::List.reverse([42, 43, 44])
+    Builtins.time
+    Builtins.random(100)
+    SCR.Dir(Path.new(".syseditor.section"))
+    WFM.Args
+    @f = Builtins::Float.abs(-42.0)
+    @l = Builtins::List.reverse([42, 43, 44])
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -428,9 +517,15 @@ converts the block into a Ruby block.
 #### Ruby Code
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  Builtins.y2milestone("M1")
-}
+class YCP::Clients::Default
+  def initialize
+    Builtins.foreach([42, 43, 44]) { |i|
+      Builtins.y2milestone("M1")
+    }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R handles YCP builtin calls with a double quote expression as the last
@@ -447,7 +542,13 @@ argument specially. It converts the expression into a Ruby block.
 #### Ruby Code
 
 ```ruby
-Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
+class YCP::Clients::Default
+  def initialize
+    Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `_` Calls
@@ -467,9 +568,15 @@ Y2R translates YCP `_` calls as calls of FastGettext's `_` method.
 #### Ruby Code
 
 ```ruby
-FastGettext.text_domain = "helloworld"
+class YCP::Clients::Default
+  def initialize
+    FastGettext.text_domain = "helloworld"
 
-@s = _("Hello, world!")
+    @s = _("Hello, world!")
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Function Calls
@@ -487,9 +594,15 @@ Y2R translates YCP function calls as Ruby method calls.
 #### Ruby Code
 
 ```ruby
-YCP.import("UI")
+class YCP::Clients::Default
+  def initialize
+    YCP.import("UI")
 
-UI.OpenDialog(Term.new(:Label, "Hello, world!"))
+    UI.OpenDialog(Term.new(:Label, "Hello, world!"))
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Comparison Operators
@@ -514,12 +627,18 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-@b1 = Ops.equal(42, 43)
-@b2 = Ops.not_equal(42, 43)
-@b3 = Ops.less_than(42, 43)
-@b4 = Ops.greater_than(42, 43)
-@b5 = Ops.less_or_equal(42, 43)
-@b6 = Ops.greater_or_equal(42, 43)
+class YCP::Clients::Default
+  def initialize
+    @b1 = Ops.equal(42, 43)
+    @b2 = Ops.not_equal(42, 43)
+    @b3 = Ops.less_than(42, 43)
+    @b4 = Ops.greater_than(42, 43)
+    @b5 = Ops.less_or_equal(42, 43)
+    @b6 = Ops.greater_or_equal(42, 43)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Arithmetic Operators
@@ -547,13 +666,19 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-@i = 42
-@i1 = Ops.unary_minus(@i)
-@i2 = Ops.add(42, 43)
-@i3 = Ops.subtract(42, 43)
-@i4 = Ops.multiply(42, 43)
-@i5 = Ops.divide(42, 43)
-@i6 = Ops.modulo(42, 43)
+class YCP::Clients::Default
+  def initialize
+    @i = 42
+    @i1 = Ops.unary_minus(@i)
+    @i2 = Ops.add(42, 43)
+    @i3 = Ops.subtract(42, 43)
+    @i4 = Ops.multiply(42, 43)
+    @i5 = Ops.divide(42, 43)
+    @i6 = Ops.modulo(42, 43)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Bitwise Operators
@@ -578,12 +703,18 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-@i1 = Ops.bitwise_not(42)
-@i2 = Ops.bitwise_and(42, 43)
-@i3 = Ops.bitwise_or(42, 43)
-@i4 = Ops.bitwise_xor(42, 43)
-@i5 = Ops.shift_left(42, 43)
-@i6 = Ops.shift_right(42, 43)
+class YCP::Clients::Default
+  def initialize
+    @i1 = Ops.bitwise_not(42)
+    @i2 = Ops.bitwise_and(42, 43)
+    @i3 = Ops.bitwise_or(42, 43)
+    @i4 = Ops.bitwise_xor(42, 43)
+    @i5 = Ops.shift_left(42, 43)
+    @i6 = Ops.shift_right(42, 43)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Logical Operators
@@ -608,10 +739,16 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
-@b = true
-@b1 = Ops.logical_not(@b)
-@b2 = Ops.logical_and(true, false)
-@b3 = Ops.logical_or(true, false)
+class YCP::Clients::Default
+  def initialize
+    @b = true
+    @b1 = Ops.logical_not(@b)
+    @b2 = Ops.logical_and(true, false)
+    @b3 = Ops.logical_or(true, false)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Ternary Operator
@@ -631,8 +768,14 @@ Y2R translates YCP ternary operator as Ruby ternary operator.
 #### Ruby Code
 
 ```ruby
-@b = true
-@i = @b ? 42 : 43
+class YCP::Clients::Default
+  def initialize
+    @b = true
+    @i = @b ? 42 : 43
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Index Operator
@@ -651,7 +794,13 @@ that implements its behavior. There is no equivalent operator in Ruby.
 #### Ruby Code
 
 ```ruby
-@i = Ops.index([42, 43, 44], [1], 0)
+class YCP::Clients::Default
+  def initialize
+    @i = Ops.index([42, 43, 44], [1], 0)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Double Quote Operator
@@ -669,7 +818,13 @@ Y2R translates YCP double quote operator as a Ruby lambda.
 #### Ruby Code
 
 ```ruby
-@b = lambda { 42 }
+class YCP::Clients::Default
+  def initialize
+    @b = lambda { 42 }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Statements
@@ -692,8 +847,14 @@ Y2R translates YCP `import` statement as a `YCP.import` call.
 #### Ruby Code
 
 ```ruby
-YCP.import("String")
+class YCP::Clients::Default
+  def initialize
+    YCP.import("String")
 
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `textdomain` Statement
@@ -712,8 +873,14 @@ Y2R translates YCP `textdomain` statement as an assignment to
 #### Ruby Code
 
 ```ruby
-FastGettext.text_domain = "users"
+class YCP::Clients::Default
+  def initialize
+    FastGettext.text_domain = "users"
 
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Assignments
@@ -733,8 +900,14 @@ Y2R translates simple YCP assignments as Ruby assignments.
 #### Ruby Code
 
 ```ruby
-@i = 42
-@i = 43
+class YCP::Clients::Default
+  def initialize
+    @i = 42
+    @i = 43
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
@@ -754,8 +927,14 @@ in Ruby.
 #### Ruby Code
 
 ```ruby
-@l = [42, 43, 44]
-Ops.assign(@l, [0], 45)
+class YCP::Clients::Default
+  def initialize
+    @l = [42, 43, 44]
+    Ops.assign(@l, [0], 45)
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `return` Statement
@@ -778,18 +957,23 @@ statement.
 #### Ruby Code
 
 ```ruby
-def f1
-  return
+class YCP::Clients::Default
 
-  nil
+  def f1
+    return
+
+    nil
+  end
+
+  def f2
+    return 42
+
+    nil
+  end
+
 end
 
-def f2
-  return 42
-
-  nil
-end
-
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `return` statement inside block as Ruby `next` statement.
@@ -805,14 +989,20 @@ Y2R translates YCP `return` statement inside block as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
-Builtins.maplist([42, 43, 44]) { |i|
-  j = 42
-  next j
-}
-Builtins.foreach([42, 43, 44]) { |i|
-  j = 42
-  next
-}
+class YCP::Clients::Default
+  def initialize
+    Builtins.maplist([42, 43, 44]) { |i|
+      j = 42
+      next j
+    }
+    Builtins.foreach([42, 43, 44]) { |i|
+      j = 42
+      next
+    }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R does not support `return` statement at client toplevel. We didn't decide how
@@ -848,9 +1038,15 @@ statement.
 #### Ruby Code
 
 ```ruby
-while true
-  break
+class YCP::Clients::Default
+  def initialize
+    while true
+      break
+    end
+  end
 end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
@@ -865,9 +1061,15 @@ raises `YCP::Break`.
 #### Ruby Code
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  raise Break
-}
+class YCP::Clients::Default
+  def initialize
+    Builtins.foreach([42, 43, 44]) { |i|
+      raise Break
+    }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `continue` Statement
@@ -885,9 +1087,15 @@ Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
-while true
-  next
+class YCP::Clients::Default
+  def initialize
+    while true
+      next
+    end
+  end
 end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
@@ -901,9 +1109,15 @@ Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  next
-}
+class YCP::Clients::Default
+  def initialize
+    Builtins.foreach([42, 43, 44]) { |i|
+      next
+    }
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Function Definitions
@@ -941,39 +1155,44 @@ which are all immutable.
 #### Ruby Code
 
 ```ruby
-def f1
-  return 42
+class YCP::Clients::Default
 
-  nil
+  def f1
+    return 42
+
+    nil
+  end
+
+  def f2(a, b, c)
+    return 42
+
+    nil
+  end
+
+  def f3(a, b, c)
+    return 42
+
+    nil
+  end
+
+  def f4(a, b, c)
+    return 42
+
+    nil
+  end
+
+  def f5(a, b, c)
+    a = YCP.copy(a)
+    b = YCP.copy(b)
+    c = YCP.copy(c)
+    return 42
+
+    nil
+  end
+
 end
 
-def f2(a, b, c)
-  return 42
-
-  nil
-end
-
-def f3(a, b, c)
-  return 42
-
-  nil
-end
-
-def f4(a, b, c)
-  return 42
-
-  nil
-end
-
-def f5(a, b, c)
-  a = YCP.copy(a)
-  b = YCP.copy(b)
-  c = YCP.copy(c)
-  return 42
-
-  nil
-end
-
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 Y2R does not support nested functions. This is mostly because Ruby doesn't have
@@ -1019,9 +1238,15 @@ Y2R translates YCP statement blocks as Ruby statements.
 #### Error Message
 
 ```ruby
-Builtins.y2milestone("M1")
-Builtins.y2milestone("M2")
-Builtins.y2milestone("M3")
+class YCP::Clients::Default
+  def initialize
+    Builtins.y2milestone("M1")
+    Builtins.y2milestone("M2")
+    Builtins.y2milestone("M3")
+  end
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `if` Statement
@@ -1045,14 +1270,20 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 #### Ruby Code
 
 ```ruby
-if true
-  Builtins.y2milestone("M1")
+class YCP::Clients::Default
+  def initialize
+    if true
+      Builtins.y2milestone("M1")
+    end
+    if true
+      Builtins.y2milestone("M2")
+    else
+      Builtins.y2milestone("M3")
+    end
+  end
 end
-if true
-  Builtins.y2milestone("M2")
-else
-  Builtins.y2milestone("M3")
-end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### `while` Statement
@@ -1071,9 +1302,66 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 #### Ruby Code
 
 ```ruby
-while true
-  Builtins.y2milestone("M1")
+class YCP::Clients::Default
+  def initialize
+    while true
+      Builtins.y2milestone("M1")
+    end
+  end
 end
+
+YCP.clients["default"] = YCP::Clients::Default.new
+```
+
+### Clients
+
+Y2R translates YCP clients as Ruby classes that are instantiated.
+
+#### YCP Code
+
+```ycp
+{
+  import "String";
+
+  integer i = 42;
+  global integer j = 43;
+
+  integer f() {
+    return 42;
+  }
+
+  global integer g() {
+    return 43;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+class YCP::Clients::Default
+  def initialize
+    YCP.import("String")
+
+    @i = 42
+    @j = 43
+  end
+
+  def f
+    return 42
+
+    nil
+  end
+
+  def g
+    return 43
+
+    nil
+  end
+
+end
+
+YCP.clients["default"] = YCP::Clients::Default.new
 ```
 
 ### Modules
