@@ -4,13 +4,18 @@ module Y2R
   describe Parser do
     describe "#parse" do
       it "parses a simple program" do
-        ast = AST::Const.new(:type => :void, :value => nil)
+        ast = AST::Const.new(
+          :filename => "default.ycp",
+          :type     => :void,
+          :value    => nil
+        )
 
         Parser.new.parse("{}", compile_options).should == ast
       end
 
       it "parses a more complex program" do
         ast = AST::FileBlock.new(
+          :filename   => "default.ycp",
           :name       => nil,
           :symbols    => [
             AST::Symbol.new(

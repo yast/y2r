@@ -8,7 +8,7 @@ module Y2R
     end
 
     def parse(input, options = {})
-      xml_to_ast(ycp_to_xml(input, options))
+      xml_to_ast(ycp_to_xml(input, options), options)
     end
 
     private
@@ -45,8 +45,10 @@ module Y2R
       end
     end
 
-    def xml_to_ast(xml)
-      element_to_node(REXML::Document.new(xml).root)
+    def xml_to_ast(xml, options)
+      ast = element_to_node(REXML::Document.new(xml).root)
+      ast.filename = options[:filename] || "default.ycp"
+      ast
     end
 
     def element_to_node(element, context = nil)
