@@ -1005,23 +1005,6 @@ end
 YCP::Clients::Default.new.main
 ```
 
-Y2R does not support `return` statement at client toplevel. We didn't decide how
-to compile it yet.
-
-#### YCP Code
-
-```ycp
-{
-  return;
-}
-```
-
-#### Error Message
-
-```error
-The "return" statement at client toplevel is not supported.
-```
-
 ### `break` Statement
 
 Y2R translates YCP `break` statement inside loops as Ruby `next`

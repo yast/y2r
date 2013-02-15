@@ -398,10 +398,6 @@ module Y2R
 
     class Return < Node
       def to_ruby(context = Context.new)
-        unless context.in?(DefBlock) || context.in?(UnspecBlock)
-          raise NotImplementedError, "The \"return\" statement at client toplevel is not supported."
-        end
-
         stmt = {
           DefBlock    => "return",
           UnspecBlock => "next"

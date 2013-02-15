@@ -1062,24 +1062,6 @@ module Y2R::AST
         )
       end
 
-      describe "at client toplevel" do
-        before :each do
-          @context = Context.new(:blocks => [FileBlock.new])
-        end
-
-        it "raises an exception for a return without a value" do
-          lambda {
-            @node_without_value.to_ruby(@context)
-          }.should raise_error NotImplementedError, "The \"return\" statement at client toplevel is not supported."
-        end
-
-        it "raises an exception for a return with a value" do
-          lambda {
-            @node_with_value.to_ruby(@context)
-          }.should raise_error NotImplementedError, "The \"return\" statement at client toplevel is not supported."
-        end
-      end
-
       describe "inside a function" do
         before :each do
           @context = Context.new(:blocks => [FileBlock.new, DefBlock.new])
