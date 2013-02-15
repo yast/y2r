@@ -541,7 +541,7 @@ module Y2R::AST
           "class YCP::Clients::C",
           "end",
           "",
-          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+          "YCP::Clients::C.new"
         ].join("\n")
       end
 
@@ -568,7 +568,7 @@ module Y2R::AST
           "  end",
           "end",
           "",
-          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+          "YCP::Clients::C.new"
         ].join("\n")
       end
 
@@ -633,7 +633,7 @@ module Y2R::AST
           "",
           "end",
           "",
-          "YCP.clients[\"c\"] = YCP::Clients::C.new"
+          "YCP::Clients::C.new"
         ].join("\n")
       end
     end

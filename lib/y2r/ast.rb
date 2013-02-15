@@ -262,7 +262,7 @@ module Y2R
 
           parts << "end"
           parts << ""
-          parts << "YCP.clients[#{client_name.inspect}] = #{class_name}.new"
+          parts << "#{class_name}.new"
         end
       end
     end

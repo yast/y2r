@@ -35,7 +35,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Booleans
@@ -61,7 +61,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Integers
@@ -86,7 +86,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Floats
@@ -113,7 +113,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Symbols
@@ -139,7 +139,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Strings
@@ -165,7 +165,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Paths
@@ -190,7 +190,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Lists
@@ -216,7 +216,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Maps
@@ -242,7 +242,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Terms
@@ -268,7 +268,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Blocks
@@ -294,7 +294,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Expressions
@@ -331,7 +331,7 @@ class YCP::Clients::Default
 
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP variables at client toplevel as Ruby instance variables.
@@ -355,7 +355,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
@@ -460,7 +460,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Builtin Calls
@@ -500,7 +500,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -525,7 +525,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R handles YCP builtin calls with a double quote expression as the last
@@ -548,7 +548,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `_` Calls
@@ -576,7 +576,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Function Calls
@@ -602,7 +602,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Comparison Operators
@@ -638,7 +638,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Arithmetic Operators
@@ -678,7 +678,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Bitwise Operators
@@ -714,7 +714,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Logical Operators
@@ -748,7 +748,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Ternary Operator
@@ -775,7 +775,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Index Operator
@@ -800,7 +800,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Double Quote Operator
@@ -824,7 +824,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Statements
@@ -854,7 +854,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `textdomain` Statement
@@ -880,7 +880,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Assignments
@@ -907,7 +907,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
@@ -934,7 +934,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `return` Statement
@@ -973,7 +973,7 @@ class YCP::Clients::Default
 
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `return` statement inside block as Ruby `next` statement.
@@ -1002,7 +1002,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R does not support `return` statement at client toplevel. We didn't decide how
@@ -1046,7 +1046,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
@@ -1069,7 +1069,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `continue` Statement
@@ -1095,7 +1095,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
@@ -1117,7 +1117,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Function Definitions
@@ -1192,7 +1192,7 @@ class YCP::Clients::Default
 
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 Y2R does not support nested functions. This is mostly because Ruby doesn't have
@@ -1246,7 +1246,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `if` Statement
@@ -1283,7 +1283,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### `while` Statement
@@ -1310,7 +1310,7 @@ class YCP::Clients::Default
   end
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Clients
@@ -1361,7 +1361,7 @@ class YCP::Clients::Default
 
 end
 
-YCP.clients["default"] = YCP::Clients::Default.new
+YCP::Clients::Default.new
 ```
 
 ### Modules
