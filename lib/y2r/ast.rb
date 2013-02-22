@@ -431,15 +431,21 @@ module Y2R
       end
 
       def to_ruby(context = Context.new)
-        name
+        ruby_name
       end
 
       def to_ruby_copy_call
-        "#{name} = YCP.copy(#{name})"
+        "#{ruby_name} = YCP.copy(#{ruby_name})"
       end
 
       def to_ruby_publish_call
         "publish :#{category} => :#{name}, :type => \"#{type}\""
+      end
+
+      private
+
+      def ruby_name
+        escape_ruby_local_var_name(name)
       end
     end
 

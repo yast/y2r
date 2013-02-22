@@ -1279,27 +1279,55 @@ module Y2R::AST
 
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Symbol.new(
+        node_regular = Symbol.new(
           :global   => false,
           :category => :variable,
           :type     => "integer",
           :name     => "s"
         )
+        node_capital = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "S"
+        )
+        node_underscore = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "_s"
+        )
 
-        node.to_ruby.should == "s"
+        node_regular.to_ruby.should    == "s"
+        node_capital.to_ruby.should    == "_S"
+        node_underscore.to_ruby.should == "__s"
       end
     end
 
     describe "#to_ruby_copy_call" do
       it "emits correct code" do
-        node = Symbol.new(
+        node_regular = Symbol.new(
           :global   => false,
           :category => :variable,
           :type     => "integer",
           :name     => "s"
         )
+        node_capital = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "S"
+        )
+        node_underscore = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "_s"
+        )
 
-        node.to_ruby_copy_call.should == "s = YCP.copy(s)"
+        node_regular.to_ruby_copy_call.should    == "s = YCP.copy(s)"
+        node_capital.to_ruby_copy_call.should    == "_S = YCP.copy(_S)"
+        node_underscore.to_ruby_copy_call.should == "__s = YCP.copy(__s)"
       end
     end
 
