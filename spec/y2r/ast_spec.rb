@@ -61,8 +61,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "@i = 42"
           @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "M::i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N::i = 42"
+          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
+          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "@I = 42"
           @node_underscore.to_ruby(context).should   == "@_i = 42"
         end
@@ -75,7 +75,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "@i = 42"
           @node_unprefixed_j.to_ruby(context).should == "@j = 42"
           @node_prefixed_m.to_ruby(context).should   == "@i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N::i = 42"
+          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "@I = 42"
           @node_underscore.to_ruby(context).should   == "@_i = 42"
         end
@@ -87,8 +87,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "i = 42"
           @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "M::i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N::i = 42"
+          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
+          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "_I = 42"
           @node_underscore.to_ruby(context).should   == "__i = 42"
         end
@@ -101,7 +101,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "i = 42"
           @node_unprefixed_j.to_ruby(context).should == "@j = 42"
           @node_prefixed_m.to_ruby(context).should   == "@i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N::i = 42"
+          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "_I = 42"
           @node_underscore.to_ruby(context).should   == "__i = 42"
         end
@@ -480,8 +480,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "@i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M::i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
         end
@@ -494,7 +494,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "@i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
           @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
         end
@@ -506,8 +506,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M::i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
         end
@@ -520,7 +520,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
           @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
         end
@@ -1549,8 +1549,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "@i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M::i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
         end
@@ -1563,7 +1563,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "@i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
           @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
         end
@@ -1575,8 +1575,8 @@ module Y2R::AST
 
           @node_unprefixed_i.to_ruby(context).should == "i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M::i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
         end
@@ -1589,7 +1589,7 @@ module Y2R::AST
           @node_unprefixed_i.to_ruby(context).should == "i"
           @node_unprefixed_j.to_ruby(context).should == "@j"
           @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N::i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
         end

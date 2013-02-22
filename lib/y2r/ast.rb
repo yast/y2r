@@ -46,7 +46,7 @@ module Y2R
       # instance variables).
       def ruby_var_name(name, context)
         if name =~ /^([^:]+)::([^:]+)$/
-          $1 == context.module_name ? "@#$2" : name
+          $1 == context.module_name ? "@#$2" : "#$1.#$2"
         else
           if context.local_variables.include?(name)
             escape_ruby_local_var_name(name)
