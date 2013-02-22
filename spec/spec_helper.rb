@@ -10,9 +10,21 @@ def cleanup(s)
 end
 
 def compile_options
+  module_paths = if ENV["Y2R_MODULE_PATH"]
+    ENV["Y2R_MODULE_PATH"].split(":")
+  else
+    [File.dirname(__FILE__) + "/modules"]
+  end
+
+  include_paths = if ENV["Y2R_INCLUDE_PATH"]
+    ENV["Y2R_INCLUDE_PATH"].split(":")
+  else
+    nil
+  end
+
   {
-    :ycpc         => ENV["Y2R_YCPC"],
-    :module_path  => ENV["Y2R_MODULE_PATH"] || File.dirname(__FILE__) + "/modules",
-    :include_path => ENV["Y2R_INCLUDE_PATH"]
+    :ycpc          => ENV["Y2R_YCPC"],
+    :module_paths  => module_paths,
+    :include_paths => include_paths
   }
 end

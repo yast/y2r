@@ -14,6 +14,9 @@ module Y2R
     private
 
     def ycp_to_xml(ycp, options)
+      module_paths  = options[:module_paths]  || []
+      include_paths = options[:include_paths] || []
+
       ycp_file = Tempfile.new("y2r")
       begin
         begin
@@ -27,8 +30,12 @@ module Y2R
         begin
           begin
             cmd = options[:ycpc] || "ycpc", "-c", "-x", "-o", xml_file.path
-            cmd << '--module-path' << options[:module_path] if options[:module_path]
-            cmd << '--include-path' << options[:include_path] if options[:include_path]
+            module_paths.each do |module_path|
+              cmd << '--module-path' << module_path
+            end
+            include_paths.each do |include_path|
+              cmd << '--include-path' << include_path
+            end
             cmd << ycp_file.path
 
             Cheetah.run(cmd)

@@ -7,7 +7,8 @@ require File.expand_path(File.dirname(__FILE__) + "/../lib/y2r")
 doc = <<-EOT
 Y2R -- transpiler translating YCP code into Ruby
 
-Usage: y2r [options] [<ycp_file>] [<ruby_file>]
+Usage: y2r [--include-path <path> ...] [--module-path <path> ...] [options]
+           [<ycp_file>] [<ruby_file>]
 
 Options:
   -y, --ycpc <file>          Location of the ycpc interpreter to use.
@@ -33,10 +34,10 @@ begin
   end
 
   compile_options = {
-    :ycpc         => options["--ycpc"]         || ENV["Y2R_YCPC"],
-    :module_path  => options["--module-path"]  || ENV["Y2R_MODULE_PATH"],
-    :include_path => options["--include-path"] || ENV["Y2R_INCLUDE_PATH"],
-    :filename     => ycp_file
+    :ycpc          => options["--ycpc"]         || ENV["Y2R_YCPC"],
+    :module_paths  => options["--module-path"]  || ENV["Y2R_MODULE_PATH"].split(":"),
+    :include_paths => options["--include-path"] || ENV["Y2R_INCLUDE_PATH"].split(":"),
+    :filename      => ycp_file
   }
 
   output_stream.write(Y2R.compile(input_stream.read, compile_options))
