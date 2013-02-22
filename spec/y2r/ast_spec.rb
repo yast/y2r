@@ -307,6 +307,18 @@ module Y2R::AST
 
   describe Call do
     describe "#to_ruby" do
+      it "emits correct code for an unqualified call" do
+        node = Call.new(:ns => nil, :name => "f", :args => [])
+
+        node.to_ruby.should == "f"
+      end
+
+      it "emits correct code for a qualified call" do
+        node = Call.new(:ns => "n", :name => "f", :args => [])
+
+        node.to_ruby.should == "n.f"
+      end
+
       it "emits correct code for a call without arguments" do
         node = Call.new(:ns => "n", :name => "f", :args => [])
 

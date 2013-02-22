@@ -56,6 +56,10 @@ module Y2R
         end
       end
 
+      def ruby_method_name(name)
+        name.sub("::", ".")
+      end
+
       def ruby_list(items, context)
         items.map { |i| i.to_ruby(context) }.join(", ")
       end
@@ -171,7 +175,9 @@ module Y2R
 
     class Call < Node
       def to_ruby(context = Context.new)
-        "#{ns}.#{name}#{ruby_args(args, context)}"
+        method_name = ruby_method_name(qualified_name(ns, name))
+
+        "#{method_name}#{ruby_args(args, context)}"
       end
     end
 
