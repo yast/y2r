@@ -3,6 +3,51 @@ require "ostruct"
 module Y2R
   module AST
     class Node < OpenStruct
+      # Taken from Ruby's parse.y (for 1.9.3).
+      RUBY_KEYWORDS = [
+        "BEGIN",
+        "END",
+        "__ENCODING__",
+        "__FILE__",
+        "__LINE__",
+        "alias",
+        "and",
+        "begin",
+        "break",
+        "case",
+        "class",
+        "def",
+        "defined",
+        "do",
+        "else",
+        "elsif",
+        "end",
+        "ensure",
+        "false",
+        "for",
+        "if",
+        "in",
+        "module",
+        "next",
+        "nil",
+        "not",
+        "or",
+        "redo",
+        "rescue",
+        "retry",
+        "return",
+        "self",
+        "super",
+        "then",
+        "true",
+        "undef",
+        "unless",
+        "until",
+        "when",
+        "while",
+        "yield"
+      ]
+
       def indent(n, s)
         s.gsub(/^(?=.)/, " " * n)
       end
@@ -31,7 +76,7 @@ module Y2R
       # Escapes valid YCP variable names that are not valid Ruby local variable
       # names.
       def escape_ruby_local_var_name(name)
-        name.gsub(/^[A-Z_]/) { |ch| "_#{ch}" }
+        name.sub(/^(#{RUBY_KEYWORDS.join("|")}|[A-Z_].*)$/) { |s| "_#{s}" }
       end
 
       # Translates a variable name from ycpc's XML into its Ruby counterpart.

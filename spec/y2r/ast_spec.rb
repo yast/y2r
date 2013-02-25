@@ -28,6 +28,10 @@ module Y2R::AST
           :name  => "_i",
           :child => Const.new(:type => :int, :value => "42")
         )
+        @node_reserved = Assign.new(
+          :name  => "end",
+          :child => Const.new(:type => :int, :value => "42")
+        )
 
         @def_block    = DefBlock.new(
           :symbols => [
@@ -48,6 +52,12 @@ module Y2R::AST
               :category => :variable,
               :type     => "integer",
               :name     => "_i"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "end"
             )
           ]
         )
@@ -65,6 +75,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "@I = 42"
           @node_underscore.to_ruby(context).should   == "@_i = 42"
+          @node_reserved.to_ruby(context).should     == "@end = 42"
         end
       end
 
@@ -78,6 +89,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "@I = 42"
           @node_underscore.to_ruby(context).should   == "@_i = 42"
+          @node_reserved.to_ruby(context).should     == "@end = 42"
         end
       end
 
@@ -91,6 +103,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "_I = 42"
           @node_underscore.to_ruby(context).should   == "__i = 42"
+          @node_reserved.to_ruby(context).should     == "_end = 42"
         end
       end
 
@@ -104,6 +117,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
           @node_capital.to_ruby(context).should      == "_I = 42"
           @node_underscore.to_ruby(context).should   == "__i = 42"
+          @node_reserved.to_ruby(context).should     == "_end = 42"
         end
       end
     end
@@ -459,6 +473,7 @@ module Y2R::AST
         @node_prefixed_n   = Entry.new(:ns => "N", :name => "i")
         @node_capital      = Entry.new(:ns => nil, :name => "I")
         @node_underscore   = Entry.new(:ns => nil, :name => "_i")
+        @node_reserved     = Entry.new(:ns => nil, :name => "end")
 
         @def_block    = DefBlock.new(
           :symbols => [
@@ -479,6 +494,12 @@ module Y2R::AST
               :category => :variable,
               :type     => "integer",
               :name     => "_i"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "end"
             )
           ]
         )
@@ -496,6 +517,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
 
@@ -509,6 +531,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
 
@@ -522,6 +545,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
+          @node_reserved.to_ruby(context).should     == "_end"
         end
       end
 
@@ -535,6 +559,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
+          @node_reserved.to_ruby(context).should     == "_end"
         end
       end
     end
@@ -1528,6 +1553,7 @@ module Y2R::AST
         @node_prefixed_n   = Variable.new(:name => "N::i")
         @node_capital      = Variable.new(:name => "I")
         @node_underscore   = Variable.new(:name => "_i")
+        @node_reserved     = Variable.new(:name => "end")
 
         @def_block    = DefBlock.new(
           :symbols => [
@@ -1548,6 +1574,12 @@ module Y2R::AST
               :category => :variable,
               :type     => "integer",
               :name     => "_i"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "end"
             )
           ]
         )
@@ -1565,6 +1597,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
 
@@ -1578,6 +1611,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "@I"
           @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
 
@@ -1591,6 +1625,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
+          @node_reserved.to_ruby(context).should     == "_end"
         end
       end
 
@@ -1604,6 +1639,7 @@ module Y2R::AST
           @node_prefixed_n.to_ruby(context).should   == "N.i"
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
+          @node_reserved.to_ruby(context).should     == "_end"
         end
       end
     end
