@@ -1,5 +1,5 @@
 require "cheetah"
-require "rexml/document"
+require "nokogiri"
 require "tempfile"
 
 module Y2R
@@ -53,7 +53,7 @@ module Y2R
     end
 
     def xml_to_ast(xml, options)
-      ast = element_to_node(REXML::Document.new(xml).root)
+      ast = element_to_node(Nokogiri::XML(xml).root)
       ast.filename = options[:filename] || "default.ycp"
       ast
     end
@@ -62,12 +62,12 @@ module Y2R
       case element.name
         when "arg", "cond", "do", "else", "expr", "false", "key", "lhs", "rhs",
              "stmt","then", "true", "value", "ycp"
-          element_to_node(element.elements[1], context)
+          element_to_node(element.elements[0], context)
 
         when "assign"
           AST::Assign.new(
-            :name  => element.attributes["name"],
-            :child => element_to_node(element.elements[1], context)
+            :name  => element["name"],
+            :child => element_to_node(element.elements[0], context)
           )
 
         when "block"
@@ -77,19 +77,19 @@ module Y2R
             :module => AST::ModuleBlock,
             :stmt   => AST::StmtBlock,
             :unspec => AST::UnspecBlock
-          }[element.attributes["kind"].to_sym].new(
-            :name       => element.attributes["name"],
+          }[element["kind"].to_sym].new(
+            :name       => element["name"],
             :symbols    => extract_collection(element, "symbols", context),
             :statements => extract_collection(element, "statements", context)
           )
 
         when "bracket"
-          lhs = element.elements["lhs"]
+          lhs = element.at_xpath("./lhs")
 
           AST::Bracket.new(
-            :entry => element_to_node(lhs.elements["entry"], context),
-            :arg   => element_to_node(lhs.elements["arg"], context),
-            :rhs   => element_to_node(element.elements["rhs"], context)
+            :entry => element_to_node(lhs.at_xpath("./entry"), context),
+            :arg   => element_to_node(lhs.at_xpath("./arg"), context),
+            :rhs   => element_to_node(element.at_xpath("./rhs"), context)
           )
 
         when "break"
@@ -121,29 +121,29 @@ module Y2R
           end
 
           AST::Builtin.new(
-            :name    => element.attributes["name"],
+            :name    => element["name"],
             :args    => args,
             :block   => block
           )
 
         when "call"
           AST::Call.new(
-            :ns   => element.attributes["ns"],
-            :name => element.attributes["name"],
+            :ns   => element["ns"],
+            :name => element["name"],
             :args => extract_collection(element, "args", context)
           )
 
         when "compare"
           AST::Compare.new(
-            :op  => element.attributes["op"],
-            :lhs => element_to_node(element.elements["lhs"], context),
-            :rhs => element_to_node(element.elements["rhs"], context)
+            :op  => element["op"],
+            :lhs => element_to_node(element.at_xpath("./lhs"), context),
+            :rhs => element_to_node(element.at_xpath("./rhs"), context)
           )
 
         when "const"
           AST::Const.new(
-            :type  => element.attributes["type"].to_sym,
-            :value => element.attributes["value"]
+            :type  => element["type"].to_sym,
+            :value => element["value"]
           )
 
         when "continue"
@@ -151,58 +151,58 @@ module Y2R
 
         when "element"
           if context != :map
-            element_to_node(element.elements[1], context)
+            element_to_node(element.elements[0], context)
           else
             AST::MapElement.new(
-              :key   => element_to_node(element.elements["key"], context),
-              :value => element_to_node(element.elements["value"], context)
+              :key   => element_to_node(element.at_xpath("./key"), context),
+              :value => element_to_node(element.at_xpath("./value"), context)
             )
           end
 
         when "entry"
           AST::Entry.new(
-            :ns   => element.attributes["ns"],
-            :name => element.attributes["name"]
+            :ns   => element["ns"],
+            :name => element["name"]
           )
 
         when "filename"
           AST::Include.new
 
         when "fun_def"
-          args = if element.elements["declaration"]
+          args = if element.at_xpath("./declaration")
             extract_collection(
-              element.elements["declaration"].elements["block"],
+              element.at_xpath("./declaration/block"),
               "symbols",
               context
             )
           else
             []
           end
-          block = element_to_node(element.elements["block"], context)
+          block = element_to_node(element.at_xpath("./block"), context)
 
           # This will make the code consider arguments as local variables.
           # Which is exactly what we want e.g. for alias detection.
           block.symbols = args + block.symbols
 
           AST::FunDef.new(
-            :name  => element.attributes["name"],
+            :name  => element["name"],
             :args  => args,
             :block => block,
           )
 
         when "if"
           AST::If.new(
-            :cond => element_to_node(element.elements[1], context),
-            :then => element_to_node(element.elements[2], context),
+            :cond => element_to_node(element.elements[0], context),
+            :then => element_to_node(element.elements[1], context),
             :else => if element.elements.size > 2
-              element_to_node(element.elements[3], context)
+              element_to_node(element.elements[2], context)
             else
               nil
             end
           )
 
         when "import"
-          AST::Import.new(:name => element.attributes["name"])
+          AST::Import.new(:name => element["name"])
 
         when "include"
           AST::Include.new
@@ -211,15 +211,15 @@ module Y2R
           AST::List.new(:children => extract_children(element, :list))
 
         when "locale"
-          AST::Locale.new(:text => element.attributes["text"])
+          AST::Locale.new(:text => element["text"])
 
         when "map"
           AST::Map.new(:children => extract_children(element, :map))
 
         when "return"
           AST::Return.new(
-            :child => if element.elements[1]
-              element_to_node(element.elements[1], context)
+            :child => if element.elements[0]
+              element_to_node(element.elements[0], context)
             else
               nil
             end
@@ -227,82 +227,82 @@ module Y2R
 
         when "symbol"
           AST::Symbol.new(
-            :global   => element.attributes["global"] == "1",
-            :category => element.attributes["category"].to_sym,
-            :type     => element.attributes["type"],
+            :global   => element["global"] == "1",
+            :category => element["category"].to_sym,
+            :type     => element["type"],
             # We don't save names for files mainly because of the specs. They
             # use temporary files with unpredictable names and node equality
             # tests would fail because of that.
-            :name     => if element.attributes["category"] != "filename"
-              element.attributes["name"]
+            :name     => if element["category"] != "filename"
+              element["name"]
             else
               nil
             end
           )
 
         when "textdomain"
-          AST::Textdomain.new(:name => element.attributes["name"])
+          AST::Textdomain.new(:name => element["name"])
 
         when "variable"
-          AST::Variable.new(:name => element.attributes["name"])
+          AST::Variable.new(:name => element["name"])
 
         when "while"
           AST::While.new(
-            :cond => element_to_node(element.elements["cond"], context),
-            :do   => element_to_node(element.elements["do"], context)
+            :cond => element_to_node(element.at_xpath("./cond"), context),
+            :do   => element_to_node(element.at_xpath("./do"), context)
           )
 
         when "yebinary"
           AST::YEBinary.new(
-            :name => element.attributes["name"],
-            :lhs  => element_to_node(element.elements[1], context),
-            :rhs  => element_to_node(element.elements[2], context)
+            :name => element["name"],
+            :lhs  => element_to_node(element.elements[0], context),
+            :rhs  => element_to_node(element.elements[1], context)
           )
 
         when "yebracket"
           AST::YEBracket.new(
-            :value   => element_to_node(element.elements[1], context),
-            :index   => element_to_node(element.elements[2], context),
-            :default => element_to_node(element.elements[3], context)
+            :value   => element_to_node(element.elements[0], context),
+            :index   => element_to_node(element.elements[1], context),
+            :default => element_to_node(element.elements[2], context)
           )
 
         when "yeis"
           AST::YEIs.new(
-            :type  => element.attributes["type"],
-            :child => element_to_node(element.elements[1], context)
+            :type  => element["type"],
+            :child => element_to_node(element.elements[0], context)
           )
 
         when "yepropagate"
           AST::YEPropagate.new(
-            :from  => element.attributes["from"],
-            :to    => element.attributes["to"],
-            :child => element_to_node(element.elements[1], context)
+            :from  => element["from"],
+            :to    => element["to"],
+            :child => element_to_node(element.elements[0], context)
           )
 
         when "yereturn"
           AST::YEReturn.new(
             :args    => [],
             :symbols => [],
-            :child   => element_to_node(element.elements[1], context)
+            :child   => element_to_node(element.elements[0], context)
           )
 
         when "yeterm"
           AST::YETerm.new(
-            :name     => element.attributes["name"],
+            :name     => element["name"],
             :children => extract_children(element, :yeterm)
           )
 
         when "yetriple"
           AST::YETriple.new(
-            :cond  => element_to_node(element.elements["cond"], context),
-            :true  => element_to_node(element.elements["true"], context),
-            :false => element_to_node(element.elements["false"], context)
+            :cond  => element_to_node(element.at_xpath("./cond"), context),
+            :true  => element_to_node(element.at_xpath("./true"), context),
+            :false => element_to_node(element.at_xpath("./false"), context)
           )
 
         when "yeunary"
           AST::YEUnary.new(
-            :name  => element.attributes["name"],
-            :child => element_to_node(element.elements[1], context)
+            :name  => element["name"],
+            :child => element_to_node(element.elements[0], context)
           )
 
         else
@@ -315,7 +315,7 @@ module Y2R
     end
 
     def extract_collection(element, name, context)
-      child = element.elements[name]
+      child = element.at_xpath("./#{name}")
       child ? extract_children(child, context) : []
     end
   end

@@ -27,8 +27,9 @@ Gem::Specification.new do |s|
     "lib/y2r/version.rb"
   ]
 
-  s.add_dependency "cheetah", "0.3.0"
-  s.add_dependency "docopt",  "0.5.0"
+  s.add_dependency "cheetah",  "0.3.0"
+  s.add_dependency "docopt",   "0.5.0"
+  s.add_dependency "nokogiri", "1.5.6"
 
   s.add_development_dependency "redcarpet"
   s.add_development_dependency "rspec"
