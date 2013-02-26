@@ -1107,7 +1107,7 @@ YCP::Clients::Default.new.main
 
 Y2R translates YCP function definitions as Ruby method definitions. It maintains
 pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
-which are all immutable.
+(which are all immutable) and parameters passed by reference.
 
 #### YCP Code
 
@@ -1129,7 +1129,11 @@ which are all immutable.
     return 42;
   }
 
-  integer f5(any a, any b, any c) {
+  integer f5(string& a, string& b, string& c) {
+    return 42;
+  }
+
+  integer f6(string a, string b, string c) {
     return 42;
   }
 }
@@ -1165,6 +1169,12 @@ class YCP::Clients::Default
   end
 
   def f5(a, b, c)
+    return 42
+
+    nil
+  end
+
+  def f6(a, b, c)
     a = YCP.copy(a)
     b = YCP.copy(b)
     c = YCP.copy(c)

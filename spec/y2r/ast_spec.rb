@@ -1245,11 +1245,22 @@ module Y2R::AST
         node.needs_copy?.should be_false
       end
 
-      it "returns true for a any" do
+      it "returns false for a reference" do
         node = Symbol.new(
           :global   => false,
           :category => :variable,
-          :type     => "any",
+          :type     => "string &",
+          :name     => "s"
+        )
+
+        node.needs_copy?.should be_false
+      end
+
+      it "returns true for a string" do
+        node = Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "string",
           :name     => "s"
         )
 

@@ -474,7 +474,7 @@ module Y2R
 
     class Symbol < Node
       def needs_copy?
-        !["boolean", "integer", "symbol"].include?(strip_const(type))
+        strip_const(type) !~ /^(boolean|integer|symbol)$|&$/
       end
 
       def published?
