@@ -226,14 +226,16 @@ module Y2R
           )
 
         when "symbol"
+          category = element["category"].to_sym
+
           AST::Symbol.new(
             :global   => element["global"] == "1",
-            :category => element["category"].to_sym,
+            :category => category,
             :type     => element["type"],
             # We don't save names for files mainly because of the specs. They
             # use temporary files with unpredictable names and node equality
             # tests would fail because of that.
-            :name     => if element["category"] != "filename"
+            :name     => if category != :filename
               element["name"]
             else
               nil
