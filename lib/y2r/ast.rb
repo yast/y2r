@@ -547,8 +547,10 @@ module Y2R
       def to_ruby(context = Context.new)
         combine do |parts|
           parts << "while #{cond.to_ruby(context)}"
-          inside_block context do |inner_context|
-            parts << indent(2, self.do.to_ruby(inner_context))
+          if self.do
+            inside_block context do |inner_context|
+              parts << indent(2, self.do.to_ruby(inner_context))
+            end
           end
           parts << "end"
         end

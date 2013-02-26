@@ -255,7 +255,11 @@ module Y2R
         when "while"
           AST::While.new(
             :cond => element_to_node(element.at_xpath("./cond"), context),
-            :do   => element_to_node(element.at_xpath("./do"), context)
+            :do   => if element.at_xpath("./do")
+              element_to_node(element.at_xpath("./do"), context)
+            else
+              nil
+            end
           )
 
         when "yebinary"

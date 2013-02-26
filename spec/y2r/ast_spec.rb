@@ -1678,7 +1678,16 @@ module Y2R::AST
 
   describe While do
     describe "#to_ruby" do
-      it "emits correct code" do
+      it "emits correct code for whiles without do" do
+        node = While.new(
+          :cond => Const.new(:type => :bool, :value => "true"),
+          :do   => nil
+        )
+
+        node.to_ruby.should == "while true\nend"
+      end
+
+      it "emits correct code for whiles with do" do
         node = While.new(
           :cond => Const.new(:type => :bool, :value => "true"),
           :do   => Call.new(:ns => "n", :name => "f", :args => [])
