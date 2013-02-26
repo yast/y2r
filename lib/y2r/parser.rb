@@ -194,7 +194,7 @@ module Y2R
           AST::If.new(
             :cond => element_to_node(element.elements[0], context),
             :then => element_to_node(element.elements[1], context),
-            :else => if element.elements.size > 2
+            :else => if element.elements[2]
               element_to_node(element.elements[2], context)
             else
               nil
