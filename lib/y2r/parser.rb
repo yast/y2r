@@ -193,7 +193,11 @@ module Y2R
         when "if"
           AST::If.new(
             :cond => element_to_node(element.elements[0], context),
-            :then => element_to_node(element.elements[1], context),
+            :then => if element.elements[1]
+              element_to_node(element.elements[1], context)
+            else
+              nil
+            end,
             :else => if element.elements[2]
               element_to_node(element.elements[2], context)
             else

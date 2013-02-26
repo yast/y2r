@@ -797,7 +797,17 @@ module Y2R::AST
 
   describe If do
     describe "#to_ruby" do
-      it "emits correct code for ifs without else" do
+      it "emits correct code for ifs without then and else" do
+        node = If.new(
+          :cond => Const.new(:type => :bool, :value => "true"),
+          :then => nil,
+          :else => nil
+        )
+
+        node.to_ruby.should == "if true\nend"
+      end
+
+      it "emits correct code for ifs with then but without else" do
         node = If.new(
           :cond => Const.new(:type => :bool, :value => "true"),
           :then => Call.new(:ns => "n", :name => "f", :args => []),
@@ -807,7 +817,17 @@ module Y2R::AST
         node.to_ruby.should == "if true\n  n.f\nend"
       end
 
-      it "emits correct code for ifs with else" do
+      it "emits correct code for ifs without then but with else" do
+        node = If.new(
+          :cond => Const.new(:type => :bool, :value => "true"),
+          :then => nil,
+          :else => Call.new(:ns => "n", :name => "f", :args => [])
+        )
+
+        node.to_ruby.should == "if true\nelse\n  n.f\nend"
+      end
+
+      it "emits correct code for ifs with then and else" do
         node = If.new(
           :cond => Const.new(:type => :bool, :value => "true"),
           :then => Call.new(:ns => "n", :name => "f", :args => []),

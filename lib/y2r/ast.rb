@@ -349,17 +349,15 @@ module Y2R
     class If < Node
       def to_ruby(context = Context.new)
         combine do |parts|
-          if self.else
-            parts << "if #{cond.to_ruby(context)}"
+          parts << "if #{cond.to_ruby(context)}"
+          if self.then
             parts << indent(2, self.then.to_ruby(context))
+          end
+          if self.else
             parts << "else"
             parts << indent(2, self.else.to_ruby(context))
-            parts << "end"
-          else
-            parts << "if #{cond.to_ruby(context)}"
-            parts << indent(2, self.then.to_ruby(context))
-            parts << "end"
           end
+          parts << "end"
         end
       end
     end
