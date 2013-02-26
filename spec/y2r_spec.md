@@ -583,11 +583,28 @@ YCP::Clients::Default.new.main
 
 Y2R translates YCP function calls as Ruby method calls.
 
-#### YCP Code
-
 ```ycp
 {
-  UI::OpenDialog(`Label("Hello, world!"));
+  integer f1() {
+    return 42;
+  }
+
+  integer f2(string a, string b, string c) {
+    return 42;
+  }
+
+  integer f3(string& a, string& b, string& c) {
+    return 42;
+  }
+
+  f1();
+
+  string a = "a";
+  string b = "b";
+  string c = "c";
+
+  f2(a, b, c);
+  f3(a, b, c);
 }
 ```
 
@@ -596,10 +613,35 @@ Y2R translates YCP function calls as Ruby method calls.
 ```ruby
 class YCP::Clients::Default
   def main
-    YCP.import("UI")
-
-    UI.OpenDialog(Term.new(:Label, "Hello, world!"))
+    f1
+    @a = "a"
+    @b = "b"
+    @c = "c"
+    f2(@a, @b, @c)
+    f3(@a, @b, @c)
   end
+
+  def f1
+    return 42
+
+    nil
+  end
+
+  def f2(a, b, c)
+    a = YCP.copy(a)
+    b = YCP.copy(b)
+    c = YCP.copy(c)
+    return 42
+
+    nil
+  end
+
+  def f3(a, b, c)
+    return 42
+
+    nil
+  end
+
 end
 
 YCP::Clients::Default.new.main

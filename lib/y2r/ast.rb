@@ -614,6 +614,12 @@ module Y2R
       end
     end
 
+    class YEReference < Node
+      def to_ruby(context = Context.new)
+        child.to_ruby(context)
+      end
+    end
+
     class YEReturn < Node
       def variables
         symbols.select { |s| s.category == :variable }.map(&:name)

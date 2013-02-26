@@ -279,6 +279,11 @@ module Y2R
             :child => element_to_node(element.elements[0], context)
           )
 
+        when "yereference"
+          AST::YEReference.new(
+            :child => element_to_node(element.elements[0], context)
+          )
+
         when "yereturn"
           AST::YEReturn.new(
             :args    => [],

@@ -1811,6 +1811,18 @@ module Y2R::AST
     end
   end
 
+  describe YEReference do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YEReference.new(
+          :child => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby.should == "42"
+      end
+    end
+  end
+
   describe YEReturn do
     describe "#to_ruby" do
       it "emits correct code" do
