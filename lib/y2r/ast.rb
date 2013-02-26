@@ -593,7 +593,7 @@ module Y2R
 
     class YEIs < Node
       def to_ruby(context = Context.new)
-        "Ops.is(#{child.to_ruby(code)}, \"#{type}\")"
+        "Ops.is(#{child.to_ruby(context)}, \"#{type}\")"
       end
     end
 
