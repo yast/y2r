@@ -166,7 +166,7 @@ module Y2R
           )
 
         when "filename"
-          AST::Include.new
+          AST::Filename.new
 
         when "fun_def"
           args = if element.at_xpath("./declaration")
