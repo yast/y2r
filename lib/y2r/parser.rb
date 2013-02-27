@@ -249,6 +249,9 @@ module Y2R
         when "textdomain"
           AST::Textdomain.new(:name => element["name"])
 
+        when "typedef"
+          AST::Typedef.new
+
         when "variable"
           AST::Variable.new(:name => element["name"])
 

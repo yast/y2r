@@ -1424,6 +1424,16 @@ module Y2R::AST
     end
   end
 
+  describe Typedef do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Typedef.new
+
+        node.to_ruby.should == ""
+      end
+    end
+  end
+
   describe UnspecBlock do
     describe "#to_ruby" do
       it "emits correct code" do

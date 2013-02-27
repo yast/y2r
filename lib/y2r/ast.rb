@@ -507,6 +507,14 @@ module Y2R
       end
     end
 
+    class Typedef < Node
+      def to_ruby(context = Context.new)
+        # Typedefs can be completely ignored because ycpc expands defined types
+        # in the XML, so we never actually encounter them.
+        ""
+      end
+    end
+
     class UnspecBlock < Block
       def to_ruby(context = Context.new)
         report_var_aliases(context)
