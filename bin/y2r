@@ -33,10 +33,22 @@ begin
     output_stream = File.open(ruby_file, "w")
   end
 
+  module_paths = if options["--module-path"]
+    options["--module-path"]
+  else
+    ENV["Y2R_MODULE_PATH"] ? ENV["Y2R_MODULE_PATH"].split(":") : nil
+  end
+
+  include_paths = if options["--include-path"]
+    options["--include-path"]
+  else
+    ENV["Y2R_INCLUDE_PATH"] ? ENV["Y2R_INCLUDE_PATH"].split(":") : nil
+  end
+
   compile_options = {
-    :ycpc          => options["--ycpc"]         || ENV["Y2R_YCPC"],
-    :module_paths  => options["--module-path"]  || ENV["Y2R_MODULE_PATH"].split(":"),
-    :include_paths => options["--include-path"] || ENV["Y2R_INCLUDE_PATH"].split(":"),
+    :ycpc          => options["--ycpc"] || ENV["Y2R_YCPC"],
+    :module_paths  => module_paths,
+    :include_paths => include_paths,
     :filename      => ycp_file
   }
 
