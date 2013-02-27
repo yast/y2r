@@ -407,6 +407,10 @@ module Y2R
 
     class ModuleBlock < Block
       def to_ruby(context = Context.new)
+        if name =~ /\.ycp$/
+          raise NotImplementedError, "Module names with the .ycp extension are not supported."
+        end
+
         fundefs = statements.select { |s| s.is_a?(FunDef) }
         other_statements = statements - fundefs
 

@@ -1107,6 +1107,18 @@ module Y2R::AST
           "end"
         ].join("\n")
       end
+
+      it "raises an exception for blocks whose name contains the .ycp extension" do
+        node = ModuleBlock.new(
+          :name       => "M.ycp",
+          :symbols    => [],
+          :statements => []
+        )
+
+        lambda {
+          node.to_ruby
+        }.should raise_error NotImplementedError, "Module names with the .ycp extension are not supported."
+      end
     end
   end
 
