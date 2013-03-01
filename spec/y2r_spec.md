@@ -413,7 +413,7 @@ doesn't have block scope.
 #### Error Message
 
 ```error
-Variable aliases are not supported.
+Variable alias encountered: "i". Variable aliases are not supported.
 ```
 
 Y2R does not support variable aliases in statement blocks. This is mostly
@@ -434,7 +434,7 @@ because Ruby doesn't have block scope.
 #### Error Message
 
 ```error
-Variable aliases are not supported.
+Variable alias encountered: "i". Variable aliases are not supported.
 ```
 
 ### Type Conversions
@@ -1276,7 +1276,7 @@ any suitable equivalent construct.
 #### Error Message
 
 ```error
-Nested functions are not supported.
+Nested function enountered: "inner". Nested functions are not supported.
 ```
 
 ### Statement Blocks

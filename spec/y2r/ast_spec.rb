@@ -814,7 +814,7 @@ module Y2R::AST
 
         lambda {
           node.to_ruby(Context.new(:blocks => [FileBlock.new, DefBlock.new]))
-        }.should raise_error NotImplementedError, "Nested functions are not supported."
+        }.should raise_error NotImplementedError, "Nested function enountered: \"f\". Nested functions are not supported."
       end
     end
   end
@@ -1141,7 +1141,7 @@ module Y2R::AST
 
         lambda {
           node.to_ruby
-        }.should raise_error NotImplementedError, "Module names that are not Ruby class names are not supported."
+        }.should raise_error NotImplementedError, "Invalid module name: \"m\". Module names that are not Ruby class names are not supported."
       end
     end
   end
@@ -1283,7 +1283,7 @@ module Y2R::AST
 
         lambda {
           node.to_ruby(context)
-        }.should raise_error NotImplementedError, "Variable aliases are not supported."
+        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
       end
     end
   end
@@ -1542,7 +1542,7 @@ module Y2R::AST
 
         lambda {
           node.to_ruby(context)
-        }.should raise_error NotImplementedError, "Variable aliases are not supported."
+        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
       end
     end
 
@@ -1638,7 +1638,7 @@ module Y2R::AST
 
         lambda {
           node.to_ruby_block(context)
-        }.should raise_error NotImplementedError, "Variable aliases are not supported."
+        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
       end
     end
   end

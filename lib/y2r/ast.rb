@@ -126,7 +126,8 @@ module Y2R
       def report_var_aliases(context)
         variables.each do |v|
           if context.variables_in_scope.include?(v)
-            raise NotImplementedError, "Variable aliases are not supported."
+            raise NotImplementedError,
+                  "Variable alias encountered: #{v.inspect}. Variable aliases are not supported."
           end
         end
       end
@@ -328,7 +329,8 @@ module Y2R
     class FunDef < Node
       def to_ruby(context = Context.new)
         if context.in?(DefBlock)
-          raise NotImplementedError, "Nested functions are not supported."
+          raise NotImplementedError,
+               "Nested function enountered: #{name.inspect}. Nested functions are not supported."
         end
 
         combine do |parts|
@@ -409,7 +411,8 @@ module Y2R
     class ModuleBlock < Block
       def to_ruby(context = Context.new)
         if name !~ /^[A-Z][a-zA-Z0-9_]*$/
-          raise NotImplementedError, "Module names that are not Ruby class names are not supported."
+          raise NotImplementedError,
+                "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
         end
 
         fundefs = statements.select { |s| s.is_a?(FunDef) }
