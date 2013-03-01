@@ -1049,7 +1049,7 @@ YCP::Clients::Default.new.main
 
 ### `break` Statement
 
-Y2R translates YCP `break` statement inside loops as Ruby `next`
+Y2R translates YCP `break` statement inside a while statement as Ruby `next`
 statement.
 
 ```ycp
@@ -1068,6 +1068,31 @@ class YCP::Clients::Default
     while true
       break
     end
+  end
+end
+
+YCP::Clients::Default.new.main
+```
+
+Y2R translates YCP `break` statement inside a repeat statement as Ruby `next`
+statement.
+
+```ycp
+{
+  repeat {
+    break;
+  } until(true);
+}
+```
+
+#### Ruby Code
+
+```ruby
+class YCP::Clients::Default
+  def main
+    begin
+      break
+    end until true
   end
 end
 
@@ -1342,6 +1367,34 @@ class YCP::Clients::Default
     while true
       Builtins.y2milestone("M1")
     end
+  end
+end
+
+YCP::Clients::Default.new.main
+```
+
+### `repeat` Statement
+
+Y2R translates YCP `repeat` statement as Ruby `until` statement.
+
+#### YCP Code
+
+```ycp
+{
+  repeat {
+    y2milestone("M1");
+  } until(true);
+}
+```
+
+#### Ruby Code
+
+```ruby
+class YCP::Clients::Default
+  def main
+    begin
+      Builtins.y2milestone("M1")
+    end until true
   end
 end
 

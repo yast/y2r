@@ -61,7 +61,7 @@ module Y2R
     def element_to_node(element, context = nil)
       case element.name
         when "arg", "cond", "do", "else", "expr", "false", "key", "lhs", "rhs",
-             "stmt","then", "true", "value", "ycp"
+             "stmt","then", "true", "until", "value", "ycp"
           element_to_node(element.elements[0], context)
 
         when "assign"
@@ -219,6 +219,26 @@ module Y2R
 
         when "map"
           AST::Map.new(:children => extract_children(element, :map))
+
+        when "repeat"
+          # For some reason, blocks in |repeat| statements are of kind "unspec"
+          # but they really should be "stmt". Thus we need to construct the
+          # |StmtBlock| instance ourself.
+
+          block_element = element.at_xpath("./do/block")
+
+          AST::Repeat.new(
+            :do    => if block_element
+              AST::StmtBlock.new(
+                :name       => nil,
+                :symbols    => extract_collection(block_element, "symbols", context),
+                :statements => extract_collection(block_element, "statements", context)
+              )
+            else
+              nil
+            end,
+            :until => element_to_node(element.at_xpath("./until"), context)
+          )
 
         when "return"
           AST::Return.new(

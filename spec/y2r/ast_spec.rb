@@ -145,7 +145,7 @@ module Y2R::AST
         @node = Break.new
       end
 
-      describe "inside a loop" do
+      describe "inside a while statement" do
         it "emits correct code" do
           context = Context.new(:blocks => [FileBlock.new, While.new])
 
@@ -153,9 +153,25 @@ module Y2R::AST
         end
       end
 
-      describe "inside a loop which is inside a block expression" do
+      describe "inside a repeat statement" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [FileBlock.new, Repeat.new])
+
+          @node.to_ruby(context).should == "break"
+        end
+      end
+
+      describe "inside a while statement which is inside a block expression" do
         it "emits correct code" do
           context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, While.new])
+
+          @node.to_ruby(context).should == "break"
+        end
+      end
+
+      describe "inside a repeat statement which is inside a block expression" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, Repeat.new])
 
           @node.to_ruby(context).should == "break"
         end
@@ -169,9 +185,17 @@ module Y2R::AST
         end
       end
 
-      describe "inside a block expression which is inside a loop" do
+      describe "inside a block expression which is inside a while statement" do
         it "emits correct code" do
           context = Context.new(:blocks => [FileBlock.new, While.new, UnspecBlock.new])
+
+          @node.to_ruby(context).should == "raise Break"
+        end
+      end
+
+      describe "inside a block expression which is inside a repeat statement" do
+        it "emits correct code" do
+          context = Context.new(:blocks => [FileBlock.new, Repeat.new, UnspecBlock.new])
 
           @node.to_ruby(context).should == "raise Break"
         end
@@ -1118,6 +1142,28 @@ module Y2R::AST
         lambda {
           node.to_ruby
         }.should raise_error NotImplementedError, "Module names that are not Ruby class names are not supported."
+      end
+    end
+  end
+
+  describe Repeat do
+    describe "#to_ruby" do
+      it "emits correct code for repeats without do" do
+        node = Repeat.new(
+          :do   => nil,
+          :until => Const.new(:type => :bool, :value => "true")
+        )
+
+        node.to_ruby.should == "begin\nend until true"
+      end
+
+      it "emits correct code for repeats with do" do
+        node = Repeat.new(
+          :do    => Call.new(:ns => "n", :name => "f", :args => []),
+          :until => Const.new(:type => :bool, :value => "true")
+        )
+
+        node.to_ruby.should == "begin\n  n.f\nend until true"
       end
     end
   end

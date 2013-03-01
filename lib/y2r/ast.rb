@@ -186,8 +186,9 @@ module Y2R
       def to_ruby(context = Context.new)
         {
           While       => "break",
+          Repeat      => "break",
           UnspecBlock => "raise Break"
-        }[context.innermost(While, UnspecBlock).class]
+        }[context.innermost(While, Repeat, UnspecBlock).class]
       end
     end
 
@@ -445,6 +446,24 @@ module Y2R
           parts << ""
           parts << "  #{name} = #{name}Class.new"
           parts << "end"
+        end
+      end
+    end
+
+    class Repeat < Node
+      def variables
+        []
+      end
+
+      def to_ruby(context = Context.new)
+        combine do |parts|
+          parts << "begin"
+          if self.do
+            inside_block context do |inner_context|
+              parts << indent(2, self.do.to_ruby(inner_context))
+            end
+          end
+          parts << "end until #{self.until.to_ruby(context)}"
         end
       end
     end
