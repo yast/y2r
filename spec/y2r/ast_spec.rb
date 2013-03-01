@@ -171,7 +171,7 @@ module Y2R::AST
 
       describe "inside a block expression which is inside a loop" do
         it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
+          context = Context.new(:blocks => [FileBlock.new, While.new, UnspecBlock.new])
 
           @node.to_ruby(context).should == "raise Break"
         end
