@@ -289,7 +289,7 @@ module Y2R
 
     class FileBlock < Block
       def to_ruby(context = Context.new)
-        client_name = File.basename(filename, ".ycp")
+        client_name = File.basename(filename).sub(/\.[^.]*$/, "")
         class_name = "YCP::Clients::" + client_name.
           gsub(/^./)    { |s| s.upcase    }.
           gsub(/[_-]./) { |s| s[1].upcase }
