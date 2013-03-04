@@ -553,7 +553,7 @@ YCP::Clients::Default.new.main
 
 ### `_` Calls
 
-Y2R translates YCP `_` calls as calls of FastGettext's `_` method.
+Y2R translates YCP `_` calls as calls of the `_` method.
 
 #### YCP Code
 
@@ -569,9 +569,10 @@ Y2R translates YCP `_` calls as calls of FastGettext's `_` method.
 
 ```ruby
 class YCP::Clients::Default
-  def main
-    FastGettext.text_domain = "helloworld"
+  include I18n
+  textdomain "helloworld"
 
+  def main
     @s = _("Hello, world!")
   end
 end
@@ -901,8 +902,8 @@ YCP::Clients::Default.new.main
 
 ### `textdomain` Statement
 
-Y2R translates YCP `textdomain` statement as an assignment to
-`FastGettext.text_domain`.
+Y2R translates YCP `textdomain` statement as an include of the `I18n` module and
+call to set the text domain.
 
 #### YCP Code
 
@@ -916,10 +917,9 @@ Y2R translates YCP `textdomain` statement as an assignment to
 
 ```ruby
 class YCP::Clients::Default
-  def main
-    FastGettext.text_domain = "users"
+  include I18n
+  textdomain "users"
 
-  end
 end
 
 YCP::Clients::Default.new.main

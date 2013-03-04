@@ -611,6 +611,39 @@ module Y2R::AST
           :filename   => "c.ycp",
           :symbols    => [],
           :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "class YCP::Clients::C",
+          "  def main",
+          "    @i = 42",
+          "    @j = 43",
+          "    @k = 44",
+          "  end",
+          "end",
+          "",
+          "YCP::Clients::C.new.main"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with textdomains" do
+        node = FileBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => [
             Textdomain.new(:name => "d"),
             Textdomain.new(:name => "e"),
             Textdomain.new(:name => "f")
@@ -619,14 +652,15 @@ module Y2R::AST
 
         node.to_ruby.should == [
           "class YCP::Clients::C",
-          "  def main",
-          "    FastGettext.text_domain = \"d\"",
+          "  include I18n",
+          "  textdomain \"d\"",
           "",
-          "    FastGettext.text_domain = \"e\"",
+          "  include I18n",
+          "  textdomain \"e\"",
           "",
-          "    FastGettext.text_domain = \"f\"",
+          "  include I18n",
+          "  textdomain \"f\"",
           "",
-          "  end",
           "end",
           "",
           "YCP::Clients::C.new.main"
@@ -1034,6 +1068,45 @@ module Y2R::AST
           :name       => "M",
           :symbols    => [],
           :statements => [
+            Assign.new(
+              :name  => "i",
+              :child => Const.new(:type => :int, :value => "42")
+            ),
+            Assign.new(
+              :name  => "j",
+              :child => Const.new(:type => :int, :value => "43")
+            ),
+            Assign.new(
+              :name  => "k",
+              :child => Const.new(:type => :int, :value => "44")
+            )
+          ]
+        )
+
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "",
+          "    def initialize",
+          "      @i = 42",
+          "      @j = 43",
+          "      @k = 44",
+          "    end",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for blocks with textdomains" do
+        node = ModuleBlock.new(
+          :name       => "M",
+          :symbols    => [],
+          :statements => [
             Textdomain.new(:name => "d"),
             Textdomain.new(:name => "e"),
             Textdomain.new(:name => "f")
@@ -1046,15 +1119,15 @@ module Y2R::AST
           "module YCP",
           "  class MClass",
           "    extend Exportable",
+          "    include I18n",
+          "    textdomain \"d\"",
           "",
-          "    def initialize",
-          "      FastGettext.text_domain = \"d\"",
+          "    include I18n",
+          "    textdomain \"e\"",
           "",
-          "      FastGettext.text_domain = \"e\"",
+          "    include I18n",
+          "    textdomain \"f\"",
           "",
-          "      FastGettext.text_domain = \"f\"",
-          "",
-          "    end",
           "  end",
           "",
           "  M = MClass.new",
@@ -1477,7 +1550,7 @@ module Y2R::AST
       it "emits correct code" do
         node = Textdomain.new(:name => "d")
 
-        node.to_ruby.should == "FastGettext.text_domain = \"d\"\n"
+        node.to_ruby.should == "include I18n\ntextdomain \"d\"\n"
       end
     end
   end

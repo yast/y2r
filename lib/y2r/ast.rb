@@ -294,13 +294,18 @@ module Y2R
           gsub(/^./)    { |s| s.upcase    }.
           gsub(/[_-]./) { |s| s[1].upcase }
 
+        textdomains = statements.select { |s| s.is_a?(Textdomain) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
-        other_statements = statements - fundefs
+        other_statements = statements - textdomains - fundefs
 
         combine do |parts|
           parts << "class #{class_name}"
 
           inside_block context do |inner_context|
+            unless textdomains.empty?
+              parts << indent(2, ruby_stmts(textdomains, inner_context))
+            end
+
             unless other_statements.empty?
               parts << "  def main"
               parts << indent(4, ruby_stmts(other_statements, inner_context))
@@ -415,8 +420,9 @@ module Y2R
                 "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
         end
 
+        textdomains = statements.select { |s| s.is_a?(Textdomain) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
-        other_statements = statements - fundefs
+        other_statements = statements - textdomains - fundefs
 
         combine do |parts|
           parts << "require \"ycp\""
@@ -426,6 +432,10 @@ module Y2R
           parts << "    extend Exportable"
 
           inside_block context do |inner_context|
+            unless textdomains.empty?
+              parts << indent(4, ruby_stmts(textdomains, inner_context))
+            end
+
             unless other_statements.empty?
               parts << ""
               parts << "    def initialize"
@@ -527,7 +537,8 @@ module Y2R
     class Textdomain < Node
       def to_ruby(context = Context.new)
         combine do |parts|
-          parts << "FastGettext.text_domain = #{name.inspect}"
+          parts << "include I18n"
+          parts << "textdomain #{name.inspect}"
           parts << ""
         end
       end
