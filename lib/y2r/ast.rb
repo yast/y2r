@@ -160,7 +160,7 @@ module Y2R
       end
 
       def local_variables
-        index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YEReturn) } || @blocks.length
+        index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
         @blocks[index..-1].map(&:variables).flatten
       end
     end
@@ -587,6 +587,22 @@ module Y2R
             end
           end
           parts << "end"
+        end
+      end
+    end
+
+    class YCPCode < Node
+      def variables
+        symbols.select { |s| s.category == :variable }.map(&:name)
+      end
+
+      def to_ruby(context = Context.new)
+        "lambda { #{child.to_ruby(context)} }"
+      end
+
+      def to_ruby_block(context = Context.new)
+        inside_block context do |inner_context|
+          "{ |#{ruby_list(args, context)}| #{child.to_ruby(inner_context)} }"
         end
       end
     end

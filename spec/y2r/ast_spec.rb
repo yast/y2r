@@ -1766,6 +1766,61 @@ module Y2R::AST
     end
   end
 
+  describe YCPCode do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = YCPCode.new(
+          :args    => [],
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby.should == "lambda { 42 }"
+      end
+    end
+
+    describe "#to_ruby_block" do
+      it "emits correct code without arguments" do
+        node = YCPCode.new(
+          :args    => [],
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby_block.should == "{ || 42 }"
+      end
+
+      it "emits correct code with arguments" do
+        node = YCPCode.new(
+          :args    => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "a"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "b"
+            ),
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "c"
+            )
+          ],
+          :symbols => [],
+          :child   => Const.new(:type => :int, :value => "42")
+        )
+
+        node.to_ruby_block.should == "{ |a, b, c| 42 }"
+      end
+    end
+  end
+
   describe YEBinary do
     describe "#to_ruby" do
       it "emits correct code" do

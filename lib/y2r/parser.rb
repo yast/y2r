@@ -285,6 +285,13 @@ module Y2R
             end
           )
 
+        when "ycpcode"
+          AST::YCPCode.new(
+            :args    => [],
+            :symbols => [],
+            :child   => element_to_node(element.elements[0], context)
+          )
+
         when "yebinary"
           AST::YEBinary.new(
             :name => element["name"],
