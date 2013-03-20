@@ -290,37 +290,39 @@ module Y2R
     class FileBlock < Block
       def to_ruby(context = Context.new)
         client_name = File.basename(filename).sub(/\.[^.]*$/, "")
-        class_name = "YCP::Clients::" + client_name.
+        class_name = client_name.
           gsub(/^./)    { |s| s.upcase    }.
-          gsub(/[_-]./) { |s| s[1].upcase }
+          gsub(/[_-]./) { |s| s[1].upcase } + "Client"
 
         textdomains = statements.select { |s| s.is_a?(Textdomain) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
         other_statements = statements - textdomains - fundefs
 
         combine do |parts|
-          parts << "class #{class_name}"
+          parts << "module YCP::Clients"
+          parts << "  class #{class_name}"
 
           inside_block context do |inner_context|
             unless textdomains.empty?
-              parts << indent(2, ruby_stmts(textdomains, inner_context))
+              parts << indent(4, ruby_stmts(textdomains, inner_context))
             end
 
             unless other_statements.empty?
-              parts << "  def main"
-              parts << indent(4, ruby_stmts(other_statements, inner_context))
-              parts << "  end"
+              parts << "    def main"
+              parts << indent(6, ruby_stmts(other_statements, inner_context))
+              parts << "    end"
             end
 
             unless fundefs.empty?
               parts << ""
-              parts << indent(2, ruby_stmts(fundefs, inner_context))
+              parts << indent(4, ruby_stmts(fundefs, inner_context))
             end
           end
 
+          parts << "  end"
           parts << "end"
           parts << ""
-          parts << "#{class_name}.new.main"
+          parts << "YCP::Clients::#{class_name}.new.main"
         end
       end
     end

@@ -599,10 +599,12 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "class YCP::Clients::C",
+          "module YCP::Clients",
+          "  class CClient",
+          "  end",
           "end",
           "",
-          "YCP::Clients::C.new.main"
+          "YCP::Clients::CClient.new.main"
         ].join("\n")
       end
 
@@ -627,15 +629,17 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "class YCP::Clients::C",
-          "  def main",
-          "    @i = 42",
-          "    @j = 43",
-          "    @k = 44",
+          "module YCP::Clients",
+          "  class CClient",
+          "    def main",
+          "      @i = 42",
+          "      @j = 43",
+          "      @k = 44",
+          "    end",
           "  end",
           "end",
           "",
-          "YCP::Clients::C.new.main"
+          "YCP::Clients::CClient.new.main"
         ].join("\n")
       end
 
@@ -651,19 +655,21 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "class YCP::Clients::C",
-          "  include I18n",
-          "  textdomain \"d\"",
+          "module YCP::Clients",
+          "  class CClient",
+          "    include I18n",
+          "    textdomain \"d\"",
           "",
-          "  include I18n",
-          "  textdomain \"e\"",
+          "    include I18n",
+          "    textdomain \"e\"",
           "",
-          "  include I18n",
-          "  textdomain \"f\"",
+          "    include I18n",
+          "    textdomain \"f\"",
           "",
+          "  end",
           "end",
           "",
-          "YCP::Clients::C.new.main"
+          "YCP::Clients::CClient.new.main"
         ].join("\n")
       end
 
@@ -706,29 +712,31 @@ module Y2R::AST
         )
 
         node.to_ruby.should == [
-          "class YCP::Clients::C",
+          "module YCP::Clients",
+          "  class CClient",
           "",
-          "  def f",
-          "    return 42",
+          "    def f",
+          "      return 42",
           "",
-          "    nil",
+          "      nil",
+          "    end",
+          "",
+          "    def g",
+          "      return 43",
+          "",
+          "      nil",
+          "    end",
+          "",
+          "    def h",
+          "      return 44",
+          "",
+          "      nil",
+          "    end",
+          "",
           "  end",
-          "",
-          "  def g",
-          "    return 43",
-          "",
-          "    nil",
-          "  end",
-          "",
-          "  def h",
-          "    return 44",
-          "",
-          "    nil",
-          "  end",
-          "",
           "end",
           "",
-          "YCP::Clients::C.new.main"
+          "YCP::Clients::CClient.new.main"
         ].join("\n")
       end
     end
