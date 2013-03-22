@@ -1,4 +1,4 @@
 spec/y2r_spec.rb
 spec/modules/*.ybc
 Gemfile.lock
-.rbenv-version
+.ruby-version
