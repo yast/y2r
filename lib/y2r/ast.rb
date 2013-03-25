@@ -425,11 +425,7 @@ module Y2R
 
     class ModuleBlock < Block
       def to_ruby(context = Context.new)
-        if name !~ /^[A-Z][a-zA-Z0-9_]*$/
-          raise NotImplementedError,
-                "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
-        end
-
+        real_name = name.sub(/\.ycp$/, "")
         textdomains = statements.select { |s| s.is_a?(Textdomain) }
         fundefs = statements.select { |s| s.is_a?(FunDef) }
         other_statements = statements - textdomains - fundefs
@@ -438,7 +434,7 @@ module Y2R
           parts << "require \"ycp\""
           parts << ""
           parts << "module YCP"
-          parts << "  class #{name}Class"
+          parts << "  class #{real_name}Class"
           parts << "    extend Exportable"
 
           inside_block context do |inner_context|
@@ -467,7 +463,7 @@ module Y2R
 
           parts << "  end"
           parts << ""
-          parts << "  #{name} = #{name}Class.new"
+          parts << "  #{real_name} = #{real_name}Class.new"
           parts << "end"
         end
       end

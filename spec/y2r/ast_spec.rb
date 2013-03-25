@@ -1237,16 +1237,24 @@ module Y2R::AST
         ].join("\n")
       end
 
-      it "raises an exception for blocks whose name isn't a Ruby class name" do
+      it "strips the \".ycp\" extension from module name" do
         node = ModuleBlock.new(
-          :name       => "m",
+          :name       => "M.ycp",
           :symbols    => [],
           :statements => []
         )
 
-        lambda {
-          node.to_ruby
-        }.should raise_error NotImplementedError, "Invalid module name: \"m\". Module names that are not Ruby class names are not supported."
+        node.to_ruby.should == [
+          "require \"ycp\"",
+          "",
+          "module YCP",
+          "  class MClass",
+          "    extend Exportable",
+          "  end",
+          "",
+          "  M = MClass.new",
+          "end"
+        ].join("\n")
       end
     end
   end
