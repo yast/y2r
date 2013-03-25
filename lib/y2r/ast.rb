@@ -129,8 +129,12 @@ module Y2R
         items.map { |i| i.to_ruby(context) }.join(", ")
       end
 
-      def ruby_args(args, context)
+      def ruby_method_args(args, context)
         !args.empty? ? "(#{ruby_list(args, context)})" : ""
+      end
+
+      def ruby_block_args(args, context)
+        !args.empty? ? " |#{ruby_list(args, context)}|" : " ||"
       end
 
       def ruby_stmts(stmts, context)
@@ -232,7 +236,7 @@ module Y2R
           ""
         end
 
-        "#{module_name}.#{method_name}#{ruby_args(args, context)}#{block_code}"
+        "#{module_name}.#{method_name}#{ruby_method_args(args, context)}#{block_code}"
       end
     end
 
@@ -248,7 +252,7 @@ module Y2R
             raise "Unknown call category: #{category.inspect}."
         end
 
-        "#{method_name}#{ruby_args(args, context)}"
+        "#{method_name}#{ruby_method_args(args, context)}"
       end
     end
 
@@ -365,7 +369,7 @@ module Y2R
         end
 
         combine do |parts|
-          parts << "def #{name}#{ruby_args(args, context)}"
+          parts << "def #{name}#{ruby_method_args(args, context)}"
 
           args.each do |arg|
             parts << indent(2, arg.to_ruby_copy_call) if arg.needs_copy?
@@ -585,7 +589,7 @@ module Y2R
 
       def to_ruby_block(context = Context.new)
         combine do |parts|
-          parts << "{ |#{ruby_list(args, context)}|"
+          parts << "{#{ruby_block_args(args, context)}"
           inside_block context do |inner_context|
             parts << indent(2, ruby_stmts(statements, inner_context))
           end
@@ -641,7 +645,7 @@ module Y2R
 
       def to_ruby_block(context = Context.new)
         inside_block context do |inner_context|
-          "{ |#{ruby_list(args, context)}| #{child.to_ruby(inner_context)} }"
+          "{#{ruby_block_args(args, context)} #{child.to_ruby(inner_context)} }"
         end
       end
     end
@@ -720,7 +724,7 @@ module Y2R
 
       def to_ruby_block(context = Context.new)
         inside_block context do |inner_context|
-          "{ |#{ruby_list(args, context)}| #{child.to_ruby(inner_context)} }"
+          "{#{ruby_block_args(args, context)} #{child.to_ruby(inner_context)} }"
         end
       end
     end
