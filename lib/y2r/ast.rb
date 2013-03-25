@@ -222,7 +222,15 @@ module Y2R
 
     class Call < Node
       def to_ruby(context = Context.new)
-        method_name = ruby_method_name(qualified_name(ns, name))
+
+        method_name = case category 
+          when "variable" # function reference stored in variable
+            ruby_var_name(name, context) + ".call"
+          when "function"
+            ruby_method_name(qualified_name(ns, name))
+          else
+            raise "Unknown call category: #{category.inspect}."
+        end
 
         "#{method_name}#{ruby_args(args, context)}"
       end
@@ -262,7 +270,7 @@ module Y2R
           when :path
             "Path.new(#{value.inspect})"
           else
-            raise "Unknown const type: #{type}."
+            raise "Unknown const type: #{type.inspect}."
         end
       end
     end
@@ -582,7 +590,19 @@ module Y2R
 
     class Variable < Node
       def to_ruby(context = Context.new)
-        ruby_var_name(name, context)
+        case category
+          when "variable"
+            ruby_var_name(name, context)
+          when "function"
+            parts = name.split("::")
+            ns = parts.size > 1 ? parts.first : nil
+            variable_name = parts.last
+
+            ns_prefix = ns ? ns + "." : ""
+            "Reference.new(#{ns_prefix}method(:#{variable_name}), \"#{type}\")"
+          else
+            raise "Unknown variable category: #{category.inspect}."
+        end
       end
     end
 
