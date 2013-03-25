@@ -591,7 +591,7 @@ module Y2R
     class Variable < Node
       def to_ruby(context = Context.new)
         case category
-          when "variable"
+          when "variable", "reference"
             ruby_var_name(name, context)
           when "function"
             parts = name.split("::")
