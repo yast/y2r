@@ -134,7 +134,9 @@ module Y2R
       end
 
       def ruby_block_args(args, context)
-        !args.empty? ? " |#{ruby_list(args, context)}|" : ""
+        arg_names = args.map { |a| ruby_var_name(a.name, context) }
+
+        !args.empty? ? " |#{arg_names.join(", ")}|" : ""
       end
 
       def ruby_stmts(stmts, context)
@@ -579,21 +581,21 @@ module Y2R
     class UnspecBlock < Block
       def to_ruby(context = Context.new)
         combine do |parts|
-          parts << "lambda {"
           inside_block context do |inner_context|
+            parts << "lambda {"
             parts << indent(2, ruby_stmts(statements, inner_context))
+            parts << "}"
           end
-          parts << "}"
         end
       end
 
       def to_ruby_block(context = Context.new)
         combine do |parts|
-          parts << "{#{ruby_block_args(args, context)}"
           inside_block context do |inner_context|
+            parts << "{#{ruby_block_args(args, inner_context)}"
             parts << indent(2, ruby_stmts(statements, inner_context))
+            parts << "}"
           end
-          parts << "}"
         end
       end
     end
@@ -645,7 +647,7 @@ module Y2R
 
       def to_ruby_block(context = Context.new)
         inside_block context do |inner_context|
-          "{#{ruby_block_args(args, context)} #{child.to_ruby(inner_context)} }"
+          "{#{ruby_block_args(args, inner_context)} #{child.to_ruby(inner_context)} }"
         end
       end
     end
@@ -724,7 +726,7 @@ module Y2R
 
       def to_ruby_block(context = Context.new)
         inside_block context do |inner_context|
-          "{#{ruby_block_args(args, context)} #{child.to_ruby(inner_context)} }"
+          "{#{ruby_block_args(args, inner_context)} #{child.to_ruby(inner_context)} }"
         end
       end
     end

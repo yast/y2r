@@ -264,31 +264,33 @@ module Y2R::AST
       end
 
       it "emits correct code for builtins with no arguments and a block" do
+        args = [
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "a"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "b"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "c"
+          )
+        ]
+
         node = Builtin.new(
           :name    => "b",
           :args    => [],
           :block   => UnspecBlock.new(
-            :args       => [
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "a"
-              ),
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "b"
-              ),
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "c"
-              )
-            ],
-            :symbols    => [],
+            :args       => args,
+            :symbols    => args,
             :statements => [
               Assign.new(
                 :name  => "i",
@@ -311,6 +313,27 @@ module Y2R::AST
       end
 
       it "emits correct code for builtins with arguments and a block" do
+        args = [
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "a"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "b"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "c"
+          )
+        ]
+
         node = Builtin.new(
           :name    => "b",
           :args    => [
@@ -319,27 +342,8 @@ module Y2R::AST
             Const.new(:type => :int, :value => "44")
           ],
           :block => UnspecBlock.new(
-            :args       => [
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "a"
-              ),
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "b"
-              ),
-              Symbol.new(
-                :global   => false,
-                :category => :variable,
-                :type     => "integer",
-                :name     => "c"
-              )
-            ],
-            :symbols    => [],
+            :args       => args,
+            :symbols    => args,
             :statements => [
               Assign.new(
                 :name  => "i",
@@ -1681,28 +1685,30 @@ module Y2R::AST
       end
 
       it "emits correct code with arguments" do
+        args = [
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "a"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "b"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "c"
+          )
+        ]
+
         node = UnspecBlock.new(
-          :args       => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
-            )
-          ],
-          :symbols    => [],
+          :args       => args,
+          :symbols    => args,
           :statements => [
             Assign.new(
               :name  => "i",
@@ -1899,28 +1905,30 @@ module Y2R::AST
       end
 
       it "emits correct code with arguments" do
+        args = [
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "a"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "b"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "c"
+          )
+        ]
+
         node = YCPCode.new(
-          :args    => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
-            )
-          ],
-          :symbols => [],
+          :args    => args,
+          :symbols => args,
           :child   => Const.new(:type => :int, :value => "42")
         )
 
@@ -2108,28 +2116,30 @@ module Y2R::AST
       end
 
       it "emits correct code with arguments" do
+        args = [
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "a"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "b"
+          ),
+          Symbol.new(
+            :global   => false,
+            :category => :variable,
+            :type     => "integer",
+            :name     => "c"
+          )
+        ]
+
         node = YEReturn.new(
-          :args    => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
-            )
-          ],
-          :symbols => [],
+          :args    => args,
+          :symbols => args,
           :child   => Const.new(:type => :int, :value => "42")
         )
 
