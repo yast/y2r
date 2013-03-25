@@ -1,6 +1,14 @@
 require "spec_helper"
 
 module Y2R::AST
+
+  COMMON_FUNCTION_CALL = Call.new(
+    :ns       => "n", 
+    :name     => "f",
+    :category => "function",
+    :args     => []
+  )
+
   describe Assign do
     describe "#to_ruby" do
       before :each do
@@ -127,11 +135,11 @@ module Y2R::AST
     describe "#to_ruby" do
       it "emits correct code" do
         node = Bracket.new(
-          :entry => Variable.new(:name => "l"),
-          :arg => List.new(
+          :entry => Variable.new(:name => "l", :category => "variable"),
+          :arg   => List.new(
             :children => [Const.new(:type => :int, :value => "1")]
           ),
-          :rhs => Const.new(:type => :int, :value => "42")
+          :rhs   => Const.new(:type => :int, :value => "42")
         )
 
         node.to_ruby.should == "Ops.assign(@l, [1], 42)"
@@ -346,28 +354,44 @@ module Y2R::AST
   describe Call do
     describe "#to_ruby" do
       it "emits correct code for an unqualified call" do
-        node = Call.new(:ns => nil, :name => "f", :args => [])
+        node = Call.new(
+          :ns       => nil,
+          :name     => "f",
+          :category => "function",
+          :args     => []
+        )
 
         node.to_ruby.should == "f"
       end
 
       it "emits correct code for a qualified call" do
-        node = Call.new(:ns => "n", :name => "f", :args => [])
+        node = Call.new(
+          :ns       => "n",
+          :name     => "f",
+          :category => "function",
+          :args     => []
+        )
 
         node.to_ruby.should == "n.f"
       end
 
       it "emits correct code for a call without arguments" do
-        node = Call.new(:ns => "n", :name => "f", :args => [])
+        node = Call.new(
+          :ns       => "n",
+          :name     => "f",
+          :category => "function",
+          :args     => []
+        )
 
         node.to_ruby.should == "n.f"
       end
 
       it "emits correct code for a call with arguments" do
         node = Call.new(
-          :ns   => "n",
-          :name => "f",
-          :args => [
+          :ns       => "n",
+          :name     => "f",
+          :category => "function",
+          :args     => [
             Const.new(:type => :int, :value => "42"),
             Const.new(:type => :int, :value => "43"),
             Const.new(:type => :int, :value => "44")
@@ -876,7 +900,7 @@ module Y2R::AST
       it "emits correct code for ifs with then but without else" do
         node = If.new(
           :cond => Const.new(:type => :bool, :value => "true"),
-          :then => Call.new(:ns => "n", :name => "f", :args => []),
+          :then => COMMON_FUNCTION_CALL,
           :else => nil
         )
 
@@ -887,7 +911,7 @@ module Y2R::AST
         node = If.new(
           :cond => Const.new(:type => :bool, :value => "true"),
           :then => nil,
-          :else => Call.new(:ns => "n", :name => "f", :args => [])
+          :else => COMMON_FUNCTION_CALL,
         )
 
         node.to_ruby.should == "if true\nelse\n  n.f\nend"
@@ -896,8 +920,8 @@ module Y2R::AST
       it "emits correct code for ifs with then and else" do
         node = If.new(
           :cond => Const.new(:type => :bool, :value => "true"),
-          :then => Call.new(:ns => "n", :name => "f", :args => []),
-          :else => Call.new(:ns => "n", :name => "f", :args => [])
+          :then => COMMON_FUNCTION_CALL,
+          :else => COMMON_FUNCTION_CALL
         )
 
         node.to_ruby.should == "if true\n  n.f\nelse\n  n.f\nend"
@@ -1240,7 +1264,7 @@ module Y2R::AST
 
       it "emits correct code for repeats with do" do
         node = Repeat.new(
-          :do    => Call.new(:ns => "n", :name => "f", :args => []),
+          :do    => COMMON_FUNCTION_CALL,
           :until => Const.new(:type => :bool, :value => "true")
         )
 
@@ -1727,13 +1751,13 @@ module Y2R::AST
   describe Variable do
     describe "#to_ruby" do
       before :each do
-        @node_unprefixed_i = Variable.new(:name => "i")
-        @node_unprefixed_j = Variable.new(:name => "j")
-        @node_prefixed_m   = Variable.new(:name => "M::i")
-        @node_prefixed_n   = Variable.new(:name => "N::i")
-        @node_capital      = Variable.new(:name => "I")
-        @node_underscore   = Variable.new(:name => "_i")
-        @node_reserved     = Variable.new(:name => "end")
+        @node_unprefixed_i = Variable.new(:name => "i", :category => "variable")
+        @node_unprefixed_j = Variable.new(:name => "j", :category => "variable")
+        @node_prefixed_m   = Variable.new(:name => "M::i", :category => "variable")
+        @node_prefixed_n   = Variable.new(:name => "N::i", :category => "variable")
+        @node_capital      = Variable.new(:name => "I", :category => "variable")
+        @node_underscore   = Variable.new(:name => "_i", :category => "variable")
+        @node_reserved     = Variable.new(:name => "end", :category => "variable")
 
         @def_block    = DefBlock.new(
           :symbols => [
@@ -1839,7 +1863,7 @@ module Y2R::AST
       it "emits correct code for whiles with do" do
         node = While.new(
           :cond => Const.new(:type => :bool, :value => "true"),
-          :do   => Call.new(:ns => "n", :name => "f", :args => [])
+          :do   => COMMON_FUNCTION_CALL
         )
 
         node.to_ruby.should == "while true\n  n.f\nend"

@@ -319,6 +319,43 @@ end
 YCP::Clients::DefaultClient.new.main
 ```
 
+### Function References
+
+Y2R translates YCP Function References as instance of YCP::Reference class.
+
+#### YCP Code
+
+```ycp
+{
+  void f() {
+    return;
+  }
+
+  void () fref = f;
+}
+```
+
+#### Ruby Code
+
+```ruby
+module YCP::Clients
+  class DefaultClient
+    def main
+      @fref = Reference.new(method(:f), "void ()")
+    end
+
+    def f
+      return
+
+      nil
+    end
+
+  end
+end
+
+YCP::Clients::DefaultClient.new.main
+```
+
 Expressions
 -----------
 
@@ -676,6 +713,46 @@ module YCP::Clients
 
     def f3(a, b, c)
       return 42
+
+      nil
+    end
+
+  end
+end
+
+YCP::Clients::DefaultClient.new.main
+```
+
+### Function References Calling
+
+Y2R translates calling of YCP Function References as invoking the `call` method
+on them.
+
+#### YCP Code
+
+```ycp
+{
+  void f() {
+    return;
+  }
+
+  void () fref = f;
+  fref();
+}
+```
+
+#### Ruby Code
+
+```ruby
+module YCP::Clients
+  class DefaultClient
+    def main
+      @fref = Reference.new(method(:f), "void ()")
+      @fref.call
+    end
+
+    def f
+      return
 
       nil
     end

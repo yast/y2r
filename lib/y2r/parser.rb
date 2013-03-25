@@ -128,9 +128,10 @@ module Y2R
 
         when "call"
           AST::Call.new(
-            :ns   => element["ns"],
-            :name => element["name"],
-            :args => extract_collection(element, "args", context)
+            :ns       => element["ns"],
+            :name     => element["name"],
+            :category => element["category"],
+            :args     => extract_collection(element, "args", context)
           )
 
         when "compare"
@@ -273,7 +274,11 @@ module Y2R
           AST::Typedef.new
 
         when "variable"
-          AST::Variable.new(:name => element["name"])
+          AST::Variable.new(
+            :name     => element["name"],
+            :category => element["category"],
+            :type     => element["type"]
+          )
 
         when "while"
           AST::While.new(
