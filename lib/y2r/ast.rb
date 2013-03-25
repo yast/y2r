@@ -134,7 +134,7 @@ module Y2R
       end
 
       def ruby_block_args(args, context)
-        !args.empty? ? " |#{ruby_list(args, context)}|" : " ||"
+        !args.empty? ? " |#{ruby_list(args, context)}|" : ""
       end
 
       def ruby_stmts(stmts, context)

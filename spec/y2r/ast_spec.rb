@@ -1677,7 +1677,7 @@ module Y2R::AST
           ]
         )
 
-        node.to_ruby_block.should == "{ ||\n  @i = 42\n  @j = 43\n  @k = 44\n}"
+        node.to_ruby_block.should == "{\n  @i = 42\n  @j = 43\n  @k = 44\n}"
       end
 
       it "emits correct code with arguments" do
@@ -1895,7 +1895,7 @@ module Y2R::AST
           :child   => Const.new(:type => :int, :value => "42")
         )
 
-        node.to_ruby_block.should == "{ || 42 }"
+        node.to_ruby_block.should == "{ 42 }"
       end
 
       it "emits correct code with arguments" do
@@ -2104,7 +2104,7 @@ module Y2R::AST
           :child   => Const.new(:type => :int, :value => "42")
         )
 
-        node.to_ruby_block.should == "{ || 42 }"
+        node.to_ruby_block.should == "{ 42 }"
       end
 
       it "emits correct code with arguments" do
