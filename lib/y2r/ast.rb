@@ -93,10 +93,30 @@ module Y2R
         if name =~ /^([^:]+)::([^:]+)$/
           $1 == context.module_name ? "@#$2" : "#$1.#$2"
         else
-          if context.local_variables.include?(name)
-            escape_ruby_local_var_name(name)
+          is_local = context.local_variables.include?(name)
+          variables = if is_local
+            context.local_variables
           else
-            "@#{name}"
+            context.global_variables
+          end
+
+          # If there already is a variable with given name (coming from some
+          # parent scope), suffix the variable name with "2". If there are two
+          # such variables, suffix the name with "3". And so on.
+          #
+          # The loop is needed because we need to do the same check and maybe
+          # additional round(s) of suffixing also for suffixed variable names to
+          # prevent conflicts.
+          suffixed_name = name
+          begin
+            count = variables.select { |v| v == suffixed_name }.size
+            suffixed_name = suffixed_name + count.to_s if count > 1
+          end while count > 1
+
+          if is_local
+            escape_ruby_local_var_name(suffixed_name)
+          else
+            "@#{suffixed_name}"
           end
         end
       end
@@ -121,15 +141,6 @@ module Y2R
     class Block < Node
       def variables
         symbols.select { |s| s.category == :variable }.map(&:name)
-      end
-
-      def report_var_aliases(context)
-        variables.each do |v|
-          if context.variables_in_scope.include?(v)
-            raise NotImplementedError,
-                  "Variable alias encountered: #{v.inspect}. Variable aliases are not supported."
-          end
-        end
       end
     end
 
@@ -162,6 +173,11 @@ module Y2R
       def local_variables
         index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
         @blocks[index..-1].map(&:variables).flatten
+      end
+
+      def global_variables
+        index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+        @blocks[0..index - 1].map(&:variables).flatten
       end
     end
 
@@ -504,8 +520,6 @@ module Y2R
 
     class StmtBlock < Block
       def to_ruby(context = Context.new)
-        report_var_aliases(context)
-
         inside_block context do |inner_context|
           ruby_stmts(statements, inner_context)
         end
@@ -560,8 +574,6 @@ module Y2R
 
     class UnspecBlock < Block
       def to_ruby(context = Context.new)
-        report_var_aliases(context)
-
         combine do |parts|
           parts << "lambda {"
           inside_block context do |inner_context|
@@ -572,8 +584,6 @@ module Y2R
       end
 
       def to_ruby_block(context = Context.new)
-        report_var_aliases(context)
-
         combine do |parts|
           parts << "{ |#{ruby_list(args, context)}|"
           inside_block context do |inner_context|

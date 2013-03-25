@@ -460,44 +460,73 @@ module YCP
 end
 ```
 
-Y2R does not support variable aliases in blocks. This is mostly because Ruby
-doesn't have block scope.
+Y2R uses suffixes to disambiguate variable aliases in blocks.
 
 #### YCP Code
 
 ```ycp
 {
-  integer i = 42;
+  void f() {
+    integer i = 42;
 
-  block<void> b = { integer i = 43; };
-}
-```
-
-#### Error Message
-
-```error
-Variable alias encountered: "i". Variable aliases are not supported.
-```
-
-Y2R does not support variable aliases in statement blocks. This is mostly
-because Ruby doesn't have block scope.
-
-#### YCP Code
-
-```ycp
-{
-  integer i = 42;
-
-  {
-    integer i = 43;
+    block<void> b = { integer i = 43; };
   }
 }
 ```
 
 #### Error Message
 
-```error
-Variable alias encountered: "i". Variable aliases are not supported.
+```ruby
+module YCP::Clients
+  class DefaultClient
+
+    def f
+      i = 42
+      b = lambda {
+        i2 = 43
+      }
+
+      nil
+    end
+
+  end
+end
+
+YCP::Clients::DefaultClient.new.main
+```
+
+Y2R uses suffixes to disambiguate variable aliases in statement blocks.
+#### YCP Code
+
+```ycp
+{
+  void f() {
+    integer i = 42;
+
+    {
+      integer i = 43;
+    }
+  }
+}
+```
+
+#### Error Message
+
+```ruby
+module YCP::Clients
+  class DefaultClient
+
+    def f
+      i = 42
+      i2 = 43
+
+      nil
+    end
+
+  end
+end
+
+YCP::Clients::DefaultClient.new.main
 ```
 
 ### Type Conversions

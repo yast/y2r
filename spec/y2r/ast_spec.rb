@@ -71,6 +71,16 @@ module Y2R::AST
         )
         @file_block   = FileBlock.new(:symbols => [])
         @module_block = ModuleBlock.new(:name => "M", :symbols => [])
+        @unspec_block = UnspecBlock.new(
+          :symbols => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "i"
+            )
+          ]
+        )
       end
 
       describe "at client toplevel" do
@@ -126,6 +136,22 @@ module Y2R::AST
           @node_capital.to_ruby(context).should      == "_I = 42"
           @node_underscore.to_ruby(context).should   == "__i = 42"
           @node_reserved.to_ruby(context).should     == "_end = 42"
+        end
+      end
+
+      describe "inside nested blocks" do
+        it "emits correct code" do
+          context = Context.new(
+            :blocks => [@file_block, @unspec_block, @unspec_block]
+          )
+
+          @node_unprefixed_i.to_ruby(context).should == "i2 = 42"
+          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
+          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
+          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
+          @node_capital.to_ruby(context).should      == "@I = 42"
+          @node_underscore.to_ruby(context).should   == "@_i = 42"
+          @node_reserved.to_ruby(context).should     == "@end = 42"
         end
       end
     end
@@ -553,6 +579,16 @@ module Y2R::AST
         )
         @file_block   = FileBlock.new(:symbols => [])
         @module_block = ModuleBlock.new(:name => "M", :symbols => [])
+        @unspec_block = UnspecBlock.new(
+          :symbols => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "i"
+            )
+          ]
+        )
       end
 
       describe "at client toplevel" do
@@ -608,6 +644,22 @@ module Y2R::AST
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
           @node_reserved.to_ruby(context).should     == "_end"
+        end
+      end
+
+      describe "inside nested blocks" do
+        it "emits correct code" do
+          context = Context.new(
+            :blocks => [@file_block, @unspec_block, @unspec_block]
+          )
+
+          @node_unprefixed_i.to_ruby(context).should == "i2"
+          @node_unprefixed_j.to_ruby(context).should == "@j"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
+          @node_capital.to_ruby(context).should      == "@I"
+          @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
     end
@@ -1371,33 +1423,6 @@ module Y2R::AST
 
         node.to_ruby.should == "@i = 42\n@j = 43\n@k = 44"
       end
-
-      it "raises an exception when encountering a variable alias" do
-        symbol = Symbol.new(
-          :global   => true,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "a"
-        )
-
-        node = StmtBlock.new(
-          :symbols    => [symbol],
-          :statements => []
-        )
-
-        context = Context.new(
-          :blocks => [
-              DefBlock.new(
-              :symbols    => [symbol],
-              :statements => []
-            )
-          ]
-        )
-
-        lambda {
-          node.to_ruby(context)
-        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
-      end
     end
   end
 
@@ -1629,34 +1654,6 @@ module Y2R::AST
 
         node.to_ruby.should == "lambda {\n  @i = 42\n  @j = 43\n  @k = 44\n}"
       end
-
-      it "raises an exception when encountering a variable alias" do
-        symbol = Symbol.new(
-          :global   => true,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "a"
-        )
-
-        node = UnspecBlock.new(
-          :args       => [],
-          :symbols    => [symbol],
-          :statements => []
-        )
-
-        context = Context.new(
-          :blocks => [
-              DefBlock.new(
-              :symbols    => [symbol],
-              :statements => []
-            )
-          ]
-        )
-
-        lambda {
-          node.to_ruby(context)
-        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
-      end
     end
 
     describe "#to_ruby_block" do
@@ -1725,34 +1722,6 @@ module Y2R::AST
         node.to_ruby_block.should ==
           "{ |a, b, c|\n  @i = 42\n  @j = 43\n  @k = 44\n}"
       end
-
-      it "raises an exception when encountering a variable alias" do
-        symbol = Symbol.new(
-          :global   => true,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "a"
-        )
-
-        node = UnspecBlock.new(
-          :args       => [],
-          :symbols    => [symbol],
-          :statements => []
-        )
-
-        context = Context.new(
-          :blocks => [
-              DefBlock.new(
-              :symbols    => [symbol],
-              :statements => []
-            )
-          ]
-        )
-
-        lambda {
-          node.to_ruby_block(context)
-        }.should raise_error NotImplementedError, "Variable alias encountered: \"a\". Variable aliases are not supported."
-      end
     end
   end
 
@@ -1797,6 +1766,16 @@ module Y2R::AST
         )
         @file_block   = FileBlock.new(:symbols => [])
         @module_block = ModuleBlock.new(:name => "M", :symbols => [])
+        @unspec_block = UnspecBlock.new(
+          :symbols => [
+            Symbol.new(
+              :global   => false,
+              :category => :variable,
+              :type     => "integer",
+              :name     => "i"
+            )
+          ]
+        )
       end
 
       describe "at client toplevel" do
@@ -1852,6 +1831,22 @@ module Y2R::AST
           @node_capital.to_ruby(context).should      == "_I"
           @node_underscore.to_ruby(context).should   == "__i"
           @node_reserved.to_ruby(context).should     == "_end"
+        end
+      end
+
+      describe "inside nested blocks" do
+        it "emits correct code" do
+          context = Context.new(
+            :blocks => [@file_block, @unspec_block, @unspec_block]
+          )
+
+          @node_unprefixed_i.to_ruby(context).should == "i2"
+          @node_unprefixed_j.to_ruby(context).should == "@j"
+          @node_prefixed_m.to_ruby(context).should   == "M.i"
+          @node_prefixed_n.to_ruby(context).should   == "N.i"
+          @node_capital.to_ruby(context).should      == "@I"
+          @node_underscore.to_ruby(context).should   == "@_i"
+          @node_reserved.to_ruby(context).should     == "@end"
         end
       end
     end
