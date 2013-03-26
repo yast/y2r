@@ -430,6 +430,17 @@ module Y2R::AST
 
         node.to_ruby.should == "n.f(42, 43, 44)"
       end
+
+      it "emits correct code for an unqualified call of a method with const-like name without arguments" do
+        node = Call.new(
+          :ns       => nil,
+          :name     => "F",
+          :category => "function",
+          :args     => []
+        )
+
+        node.to_ruby.should == "F()"
+      end
     end
   end
 

@@ -254,7 +254,11 @@ module Y2R
             raise "Unknown call category: #{category.inspect}."
         end
 
-        "#{method_name}#{ruby_method_args(args, context)}"
+        if !ns && method_name =~ /^[A-Z]/ && args.empty?
+          "#{method_name}()"
+        else
+          "#{method_name}#{ruby_method_args(args, context)}"
+        end
       end
     end
 
