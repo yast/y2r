@@ -333,26 +333,28 @@ module Y2R
         other_statements = statements - textdomains - fundefs
 
         combine do |parts|
-          parts << "module YCP::Clients"
-          parts << "  class #{class_name}"
+          parts << "module YCP"
+          parts << "  module Clients"
+          parts << "    class #{class_name}"
 
           inside_block context do |inner_context|
             unless textdomains.empty?
-              parts << indent(4, ruby_stmts(textdomains, inner_context))
+              parts << indent(6, ruby_stmts(textdomains, inner_context))
             end
 
             unless other_statements.empty?
-              parts << "    def main"
-              parts << indent(6, ruby_stmts(other_statements, inner_context))
-              parts << "    end"
+              parts << "      def main"
+              parts << indent(8, ruby_stmts(other_statements, inner_context))
+              parts << "      end"
             end
 
             unless fundefs.empty?
               parts << ""
-              parts << indent(4, ruby_stmts(fundefs, inner_context))
+              parts << indent(6, ruby_stmts(fundefs, inner_context))
             end
           end
 
+          parts << "    end"
           parts << "  end"
           parts << "end"
           parts << ""
