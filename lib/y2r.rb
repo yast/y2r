@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + "/y2r/ast")
+require File.expand_path(File.dirname(__FILE__) + "/y2r/ast/ycp")
 require File.expand_path(File.dirname(__FILE__) + "/y2r/parser")
 require File.expand_path(File.dirname(__FILE__) + "/y2r/version")
 

@@ -4,7 +4,7 @@ module Y2R
   describe Parser do
     describe "#parse" do
       it "parses a simple program" do
-        ast = AST::Const.new(
+        ast = AST::YCP::Const.new(
           :filename => "default.ycp",
           :type     => :void,
           :value    => nil
@@ -14,29 +14,29 @@ module Y2R
       end
 
       it "parses a more complex program" do
-        ast = AST::FileBlock.new(
+        ast = AST::YCP::FileBlock.new(
           :filename   => "default.ycp",
           :name       => nil,
           :symbols    => [
-            AST::Symbol.new(
+            AST::YCP::Symbol.new(
               :global   => true,
               :category => :filename,
               :type     => "<unspec>",
               :name     => nil
             ),
-            AST::Symbol.new(
+            AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
               :type     => "integer",
               :name     => "i"
             ),
-            AST::Symbol.new(
+            AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
               :type     => "integer",
               :name     => "j"
             ),
-            AST::Symbol.new(
+            AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
               :type     => "integer",
@@ -44,17 +44,17 @@ module Y2R
             )
           ],
           :statements => [
-            AST::Assign.new(
+            AST::YCP::Assign.new(
               :name  => "i",
-              :child => AST::Const.new(:type => :int, :value => "42")
+              :child => AST::YCP::Const.new(:type => :int, :value => "42")
             ),
-            AST::Assign.new(
+            AST::YCP::Assign.new(
               :name  => "j",
-              :child => AST::Const.new(:type => :int, :value => "43")
+              :child => AST::YCP::Const.new(:type => :int, :value => "43")
             ),
-            AST::Assign.new(
+            AST::YCP::Assign.new(
               :name  => "k",
-              :child => AST::Const.new(:type => :int, :value => "44")
+              :child => AST::YCP::Const.new(:type => :int, :value => "44")
             )
           ]
         )

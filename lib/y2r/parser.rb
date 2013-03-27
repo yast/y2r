@@ -65,18 +65,18 @@ module Y2R
           element_to_node(element.elements[0], context)
 
         when "assign"
-          AST::Assign.new(
+          AST::YCP::Assign.new(
             :name  => element["name"],
             :child => element_to_node(element.elements[0], context)
           )
 
         when "block"
           {
-            :def    => AST::DefBlock,
-            :file   => AST::FileBlock,
-            :module => AST::ModuleBlock,
-            :stmt   => AST::StmtBlock,
-            :unspec => AST::UnspecBlock
+            :def    => AST::YCP::DefBlock,
+            :file   => AST::YCP::FileBlock,
+            :module => AST::YCP::ModuleBlock,
+            :stmt   => AST::YCP::StmtBlock,
+            :unspec => AST::YCP::UnspecBlock
           }[element["kind"].to_sym].new(
             :name       => element["name"],
             :symbols    => extract_collection(element, "symbols", context),
@@ -86,14 +86,14 @@ module Y2R
         when "bracket"
           lhs = element.at_xpath("./lhs")
 
-          AST::Bracket.new(
+          AST::YCP::Bracket.new(
             :entry => element_to_node(lhs.at_xpath("./entry"), context),
             :arg   => element_to_node(lhs.at_xpath("./arg"), context),
             :rhs   => element_to_node(element.at_xpath("./rhs"), context)
           )
 
         when "break"
-          AST::Break.new
+          AST::YCP::Break.new
 
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
@@ -110,7 +110,7 @@ module Y2R
             block.args = symbol_values.map do |value|
               value =~ /^((\S+\s+)*)(\S+)/
 
-              AST::Symbol.new(
+              AST::YCP::Symbol.new(
                 :global   => false,
                 :category => :variable,
                 :type     => $1,
@@ -120,14 +120,14 @@ module Y2R
             block.symbols = block.args + block.symbols
           end
 
-          AST::Builtin.new(
+          AST::YCP::Builtin.new(
             :name    => element["name"],
             :args    => args,
             :block   => block
           )
 
         when "call"
-          AST::Call.new(
+          AST::YCP::Call.new(
             :ns       => element["ns"],
             :name     => element["name"],
             :category => element["category"],
@@ -135,39 +135,39 @@ module Y2R
           )
 
         when "compare"
-          AST::Compare.new(
+          AST::YCP::Compare.new(
             :op  => element["op"],
             :lhs => element_to_node(element.at_xpath("./lhs"), context),
             :rhs => element_to_node(element.at_xpath("./rhs"), context)
           )
 
         when "const"
-          AST::Const.new(
+          AST::YCP::Const.new(
             :type  => element["type"].to_sym,
             :value => element["value"]
           )
 
         when "continue"
-          AST::Continue.new
+          AST::YCP::Continue.new
 
         when "element"
           if context != :map
             element_to_node(element.elements[0], context)
           else
-            AST::MapElement.new(
+            AST::YCP::MapElement.new(
               :key   => element_to_node(element.at_xpath("./key"), context),
               :value => element_to_node(element.at_xpath("./value"), context)
             )
           end
 
         when "entry"
-          AST::Entry.new(
+          AST::YCP::Entry.new(
             :ns   => element["ns"],
             :name => element["name"]
           )
 
         when "filename"
-          AST::Filename.new
+          AST::YCP::Filename.new
 
         when "fun_def"
           args = if element.at_xpath("./declaration")
@@ -185,14 +185,14 @@ module Y2R
           # Which is exactly what we want e.g. for alias detection.
           block.symbols = args + block.symbols
 
-          AST::FunDef.new(
+          AST::YCP::FunDef.new(
             :name  => element["name"],
             :args  => args,
             :block => block,
           )
 
         when "if"
-          AST::If.new(
+          AST::YCP::If.new(
             :cond => element_to_node(element.elements[0], context),
             :then => if element.elements[1]
               element_to_node(element.elements[1], context)
@@ -207,19 +207,19 @@ module Y2R
           )
 
         when "import"
-          AST::Import.new(:name => element["name"])
+          AST::YCP::Import.new(:name => element["name"])
 
         when "include"
-          AST::Include.new
+          AST::YCP::Include.new
 
         when "list"
-          AST::List.new(:children => extract_children(element, :list))
+          AST::YCP::List.new(:children => extract_children(element, :list))
 
         when "locale"
-          AST::Locale.new(:text => element["text"])
+          AST::YCP::Locale.new(:text => element["text"])
 
         when "map"
-          AST::Map.new(:children => extract_children(element, :map))
+          AST::YCP::Map.new(:children => extract_children(element, :map))
 
         when "repeat"
           # For some reason, blocks in |repeat| statements are of kind "unspec"
@@ -228,9 +228,9 @@ module Y2R
 
           block_element = element.at_xpath("./do/block")
 
-          AST::Repeat.new(
+          AST::YCP::Repeat.new(
             :do    => if block_element
-              AST::StmtBlock.new(
+              AST::YCP::StmtBlock.new(
                 :name       => nil,
                 :symbols    => extract_collection(block_element, "symbols", context),
                 :statements => extract_collection(block_element, "statements", context)
@@ -242,7 +242,7 @@ module Y2R
           )
 
         when "return"
-          AST::Return.new(
+          AST::YCP::Return.new(
             :child => if element.elements[0]
               element_to_node(element.elements[0], context)
             else
@@ -253,7 +253,7 @@ module Y2R
         when "symbol"
           category = element["category"].to_sym
 
-          AST::Symbol.new(
+          AST::YCP::Symbol.new(
             :global   => element["global"] == "1",
             :category => category,
             :type     => element["type"],
@@ -268,20 +268,20 @@ module Y2R
           )
 
         when "textdomain"
-          AST::Textdomain.new(:name => element["name"])
+          AST::YCP::Textdomain.new(:name => element["name"])
 
         when "typedef"
-          AST::Typedef.new
+          AST::YCP::Typedef.new
 
         when "variable"
-          AST::Variable.new(
+          AST::YCP::Variable.new(
             :name     => element["name"],
             :category => element["category"],
             :type     => element["type"]
           )
 
         when "while"
-          AST::While.new(
+          AST::YCP::While.new(
             :cond => element_to_node(element.at_xpath("./cond"), context),
             :do   => if element.at_xpath("./do")
               element_to_node(element.at_xpath("./do"), context)
@@ -291,66 +291,66 @@ module Y2R
           )
 
         when "ycpcode"
-          AST::YCPCode.new(
+          AST::YCP::YCPCode.new(
             :args    => [],
             :symbols => [],
             :child   => element_to_node(element.elements[0], context)
           )
 
         when "yebinary"
-          AST::YEBinary.new(
+          AST::YCP::YEBinary.new(
             :name => element["name"],
             :lhs  => element_to_node(element.elements[0], context),
             :rhs  => element_to_node(element.elements[1], context)
           )
 
         when "yebracket"
-          AST::YEBracket.new(
+          AST::YCP::YEBracket.new(
             :value   => element_to_node(element.elements[0], context),
             :index   => element_to_node(element.elements[1], context),
             :default => element_to_node(element.elements[2], context)
           )
 
         when "yeis"
-          AST::YEIs.new(
+          AST::YCP::YEIs.new(
             :type  => element["type"],
             :child => element_to_node(element.elements[0], context)
           )
 
         when "yepropagate"
-          AST::YEPropagate.new(
+          AST::YCP::YEPropagate.new(
             :from  => element["from"],
             :to    => element["to"],
             :child => element_to_node(element.elements[0], context)
           )
 
         when "yereference"
-          AST::YEReference.new(
+          AST::YCP::YEReference.new(
             :child => element_to_node(element.elements[0], context)
           )
 
         when "yereturn"
-          AST::YEReturn.new(
+          AST::YCP::YEReturn.new(
             :args    => [],
             :symbols => [],
             :child   => element_to_node(element.elements[0], context)
           )
 
         when "yeterm"
-          AST::YETerm.new(
+          AST::YCP::YETerm.new(
             :name     => element["name"],
             :children => extract_children(element, :yeterm)
           )
 
         when "yetriple"
-          AST::YETriple.new(
+          AST::YCP::YETriple.new(
             :cond  => element_to_node(element.at_xpath("./cond"), context),
             :true  => element_to_node(element.at_xpath("./true"), context),
             :false => element_to_node(element.at_xpath("./false"), context)
           )
 
         when "yeunary"
-          AST::YEUnary.new(
+          AST::YCP::YEUnary.new(
             :name  => element["name"],
             :child => element_to_node(element.elements[0], context)
           )

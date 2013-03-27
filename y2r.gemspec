@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
     "README.md",
     "VERSION",
     "lib/y2r.rb",
-    "lib/y2r/ast.rb",
+    "lib/y2r/ast/ycp.rb",
     "lib/y2r/parser.rb",
     "lib/y2r/version.rb"
   ]

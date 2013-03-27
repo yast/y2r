@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Y2R::AST
+module Y2R::AST::YCP
 
   COMMON_FUNCTION_CALL = Call.new(
     :ns       => "n", 
