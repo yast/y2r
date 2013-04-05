@@ -2,7 +2,52 @@ require "ostruct"
 
 module Y2R
   module AST
+    # Classes in this module represent YCP AST nodes. Their main taks is to
+    # compile themselves into Ruby AST nodes using the |compile| methods and its
+    # siblings (|compile_as_block|, etc.).
+    #
+    # The structure of the AST is heavily influenced by the structure of XML
+    # emitted by ycpc -x.
     module YCP
+      # Compilation context passed to nodes' |compile| method. It mainly tracks
+      # the scope we're in and contains related helper methods.
+      class Context
+        attr_accessor :blocks
+
+        def initialize(attrs = {})
+          @blocks = attrs[:blocks] || []
+        end
+
+        def in?(klass)
+          @blocks.find { |b| b.is_a?(klass) } ? true : false
+        end
+
+        def innermost(*klasses)
+          @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
+        end
+
+        def module_name
+          toplevel_block = @blocks.first
+          toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
+        end
+
+        def variables_in_scope
+          index = @blocks.rindex { |b| b.is_a?(DefBlock) }
+          scope_blocks = index ? @blocks[index..-1] : @blocks
+          scope_blocks.reverse.map(&:variables).flatten
+        end
+
+        def local_variables
+          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          @blocks[index..-1].map(&:variables).flatten
+        end
+
+        def global_variables
+          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          @blocks[0..index - 1].map(&:variables).flatten
+        end
+      end
+
       class Node < OpenStruct
         # Taken from Ruby's parse.y (for 1.9.3).
         RUBY_KEYWORDS = [
@@ -49,21 +94,21 @@ module Y2R
           "yield"
         ]
 
-        def indent(n, s)
-          s.gsub(/^(?=.)/, " " * n)
-        end
-
-        def combine
-          parts = []
-          yield parts
-          parts.join("\n")
-        end
-
         def inside_block(context)
           inner_context = context.dup
           inner_context.blocks = inner_context.blocks + [self]
 
           yield inner_context
+        end
+
+        def compile_inner_statements(statements, context)
+          if statements
+            inside_block context do |inner_context|
+              statements.compile(inner_context)
+            end
+          else
+            Ruby::Statements.new(:statements => [])
+          end
         end
 
         def strip_const(type)
@@ -80,7 +125,8 @@ module Y2R
           name.sub(/^(#{RUBY_KEYWORDS.join("|")}|[A-Z_].*)$/) { |s| "_#{s}" }
         end
 
-        # Translates a variable name from ycpc's XML into its Ruby counterpart.
+        # Builds a Ruby AST node for a variable with given name, doing all
+        # necessary esaping, de-aliasing, etc.
         #
         # The biggest issue is that in the XML, all global module variable
         # references are qualified (e.g. "M::i"). This includes references to
@@ -90,9 +136,19 @@ module Y2R
         # Note that Y2R currently supports only local variables (translated as
         # Ruby local variables) and module-level variables (translated as Ruby
         # instance variables).
-        def ruby_var_name(name, context)
+        def ruby_var(name, context)
           if name =~ /^([^:]+)::([^:]+)$/
-            $1 == context.module_name ? "@#$2" : "#$1.#$2"
+            if $1 == context.module_name
+              Ruby::Variable.new(:name => "@#$2")
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => $1),
+                :name     => $2,
+                :args     => [],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             is_local = context.local_variables.include?(name)
             variables = if is_local
@@ -114,34 +170,14 @@ module Y2R
               suffixed_name = suffixed_name + count.to_s if count > 1
             end while count > 1
 
-            if is_local
+            variable_name = if is_local
               escape_ruby_local_var_name(suffixed_name)
             else
               "@#{suffixed_name}"
             end
+
+            Ruby::Variable.new(:name => variable_name)
           end
-        end
-
-        def ruby_method_name(name)
-          name.sub("::", ".")
-        end
-
-        def ruby_list(items, context)
-          items.map { |i| i.to_ruby(context) }.join(", ")
-        end
-
-        def ruby_method_args(args, context)
-          !args.empty? ? "(#{ruby_list(args, context)})" : ""
-        end
-
-        def ruby_block_args(args, context)
-          arg_names = args.map { |a| ruby_var_name(a.name, context) }
-
-          !args.empty? ? " |#{arg_names.join(", ")}|" : ""
-        end
-
-        def ruby_stmts(stmts, context)
-          stmts.map { |s| s.to_ruby(context) }.join("\n")
         end
       end
 
@@ -151,73 +187,54 @@ module Y2R
         end
       end
 
-      class Context
-        attr_accessor :blocks
-
-        def initialize(attrs = {})
-          @blocks = attrs[:blocks] || []
-        end
-
-        def in?(klass)
-          @blocks.find { |b| b.is_a?(klass) } ? true : false
-        end
-
-        def innermost(*klasses)
-          @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
-        end
-
-        def module_name
-          toplevel_block = @blocks.first
-          toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
-        end
-
-        def variables_in_scope
-          index = @blocks.rindex { |b| b.is_a?(DefBlock) }
-          scope_blocks = index ? @blocks[index..-1] : @blocks
-          scope_blocks.reverse.map(&:variables).flatten
-        end
-
-        def local_variables
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[index..-1].map(&:variables).flatten
-        end
-
-        def global_variables
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[0..index - 1].map(&:variables).flatten
-        end
-      end
-
       # Sorted alphabetically.
 
       class Assign < Node
-        def to_ruby(context = Context.new)
-          "#{ruby_var_name(name, context)} = #{child.to_ruby(context)}"
+        def compile(context)
+          Ruby::Assignment.new(
+            :lhs => ruby_var(name, context),
+            :rhs => child.compile(context)
+          )
         end
       end
 
       class Bracket < Node
-        def to_ruby(context = Context.new)
-          entry_code = entry.to_ruby(context)
-          arg_code   = arg.to_ruby(context)
-          rhs_code   = rhs.to_ruby(context)
-
-          "Ops.assign(#{entry_code}, #{arg_code}, #{rhs_code})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => "assign",
+            :args     => [
+              entry.compile(context),
+              arg.compile(context),
+              rhs.compile(context),
+            ],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class Break < Node
-        def to_ruby(context = Context.new)
-          {
-            While       => "break",
-            Repeat      => "break",
-            UnspecBlock => "raise Break"
-          }[context.innermost(While, Repeat, UnspecBlock).class]
+        def compile(context)
+          case context.innermost(While, Repeat, UnspecBlock)
+            when While, Repeat
+              Ruby::Break.new
+            when UnspecBlock
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "raise",
+                :args     => [Ruby::Variable.new(:name => "Break")],
+                :block    => nil,
+                :parens   => false
+              )
+            else
+              raise "Misplaced \"break\" statement."
+          end
         end
       end
 
       class Builtin < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           module_name = case name
             when /^SCR::/
               "SCR"
@@ -233,32 +250,37 @@ module Y2R
 
           method_name = name.split("::").last
 
-          block_code = if block
-            " #{block.to_ruby_block(context)}"
-          else
-            ""
-          end
-
-          "#{module_name}.#{method_name}#{ruby_method_args(args, context)}#{block_code}"
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => module_name),
+            :name     => method_name,
+            :args     => args.map { |a| a.compile(context) },
+            :block    => block ? block.compile_as_block(context) : nil,
+            :parens   => true
+          )
         end
       end
 
       class Call < Node
-        def to_ruby(context = Context.new)
-
-          method_name = case category 
-            when "variable" # function reference stored in variable
-              ruby_var_name(name, context) + ".call"
+        def compile(context)
+          case category
             when "function"
-              ruby_method_name(qualified_name(ns, name))
+              Ruby::MethodCall.new(
+                :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                :name     => name,
+                :args     => args.map { |a| a.compile(context) },
+                :block    => nil,
+                :parens   => true
+              )
+            when "variable" # function reference stored in variable
+              Ruby::MethodCall.new(
+                :receiver => ruby_var(qualified_name(ns, name), context),
+                :name     => "call",
+                :args     => args.map { |a| a.compile(context) },
+                :block    => nil,
+                :parens   => true
+              )
             else
               raise "Unknown call category: #{category.inspect}."
-          end
-
-          if !ns && method_name =~ /^[A-Z]/ && args.empty?
-            "#{method_name}()"
-          else
-            "#{method_name}#{ruby_method_args(args, context)}"
           end
         end
       end
@@ -273,29 +295,47 @@ module Y2R
           ">=" => "greater_or_equal"
         }
 
-        def to_ruby(context = Context.new)
-          lhs_code = lhs.to_ruby(context)
-          rhs_code = rhs.to_ruby(context)
-
-          "Ops.#{OPS_TO_METHODS[op]}(#{lhs_code}, #{rhs_code})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => OPS_TO_METHODS[op],
+            :args     => [lhs.compile(context), rhs.compile(context)],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class Const < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           case type
             when :void
-              "nil"
-            when :bool, :int
-              value
+              Ruby::Literal.new(:value => nil)
+            when :bool
+              case value
+                when "true"
+                  Ruby::Literal.new(:value => true)
+                when "false"
+                  Ruby::Literal.new(:value => false)
+                else
+                  raise "Unknown boolean value: #{value.inspect}."
+              end
+            when :int
+              Ruby::Literal.new(:value => value.to_i)
             when :float
-              value.sub(/\.$/, ".0")
+              Ruby::Literal.new(:value => value.sub(/\.$/, ".0").to_f)
             when :symbol
-              ":#{value}"
+              Ruby::Literal.new(:value => value.to_sym)
             when :string
-              value.inspect
+              Ruby::Literal.new(:value => value)
             when :path
-              "Path.new(#{value.inspect})"
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Path"),
+                :name     => "new",
+                :args     => [Ruby::Literal.new(:value => value)],
+                :block    => nil,
+                :parens   => true
+              )
             else
               raise "Unknown const type: #{type.inspect}."
           end
@@ -303,27 +343,29 @@ module Y2R
       end
 
       class Continue < Node
-        def to_ruby(context = Context.new)
-          "next"
+        def compile(context)
+          Ruby::Next.new
         end
       end
 
       class DefBlock < Block
-        def to_ruby(context = Context.new)
+        def compile(context)
           inside_block context do |inner_context|
-            ruby_stmts(statements, inner_context)
+            Ruby::Statements.new(
+              :statements => statements.map { |s| s.compile(inner_context) }
+            )
           end
         end
       end
 
       class Entry < Node
-        def to_ruby(context = Context.new)
-          ruby_var_name(qualified_name(ns, name), context)
+        def compile(context)
+          ruby_var(qualified_name(ns, name), context)
         end
       end
 
       class FileBlock < Block
-        def to_ruby(context = Context.new)
+        def compile(context)
           client_name = File.basename(filename).sub(/\.[^.]*$/, "")
           class_name = client_name.
             gsub(/^./)    { |s| s.upcase    }.
@@ -333,168 +375,234 @@ module Y2R
           fundefs = statements.select { |s| s.is_a?(FunDef) }
           other_statements = statements - textdomains - fundefs
 
-          combine do |parts|
-            parts << "module YCP"
-            parts << "  module Clients"
-            parts << "    class #{class_name}"
+          class_statements = []
 
-            inside_block context do |inner_context|
-              unless textdomains.empty?
-                parts << indent(6, ruby_stmts(textdomains, inner_context))
-              end
+          inside_block context do |inner_context|
+            class_statements += textdomains.map { |t| t.compile(inner_context) }
 
-              unless other_statements.empty?
-                parts << "      def main"
-                parts << indent(8, ruby_stmts(other_statements, inner_context))
-                parts << "      end"
-              end
-
-              unless fundefs.empty?
-                parts << ""
-                parts << indent(6, ruby_stmts(fundefs, inner_context))
-              end
+            unless other_statements.empty?
+              class_statements << Ruby::Def.new(
+                :name       => "main",
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => other_statements.map { |s| s.compile(inner_context) }
+                )
+              )
             end
 
-            parts << "    end"
-            parts << "  end"
-            parts << "end"
-            parts << ""
-            parts << "YCP::Clients::#{class_name}.new.main"
+            class_statements += fundefs.map { |f| f.compile(inner_context) }
           end
+
+          Ruby::Statements.new(
+            :statements => [
+              Ruby::Module.new(
+                :name       => "YCP",
+                :statements => Ruby::Module.new(
+                  :name       => "Clients",
+                  :statements => Ruby::Class.new(
+                    :name       => class_name,
+                    :statements => Ruby::Statements.new(
+                      :statements => class_statements
+                    )
+                  )
+                )
+              ),
+              Ruby::MethodCall.new(
+                :receiver => Ruby::MethodCall.new(
+                  :receiver => Ruby::ConstAccess.new(
+                    :receiver => Ruby::ConstAccess.new(
+                      :receiver => Ruby::Variable.new(:name => "YCP"),
+                      :name     => "Clients"
+                    ),
+                    :name     => class_name
+                  ),
+                  :name     => "new",
+                  :args     => [],
+                  :block    => nil,
+                  :parens   => true
+                ),
+                :name     => "main",
+                :args     => [],
+                :block    => nil,
+                :parens   => true
+              )
+            ]
+          )
         end
       end
 
       class Filename < Node
-        def to_ruby(context = Context.new)
-          ""
+        def compile(context)
+          # Ignored because we don't care about filename information.
         end
       end
 
       class FunDef < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           if context.in?(DefBlock)
             raise NotImplementedError,
                  "Nested function enountered: #{name.inspect}. Nested functions are not supported."
           end
 
-          combine do |parts|
-            parts << "def #{name}#{ruby_method_args(args, context)}"
+          statements = block.compile(context)
+          statements.statements = args.select(&:needs_copy?).map do |arg|
+            arg.compile_as_copy_call(context)
+          end + statements.statements
+          statements.statements << Ruby::Literal.new(:value => nil)
 
-            args.each do |arg|
-              parts << indent(2, arg.to_ruby_copy_call) if arg.needs_copy?
-            end
-
-            parts << indent(2, block.to_ruby(context))
-            parts << ""
-            parts << "  nil"
-            parts << "end"
-            parts << ""
-          end
+          Ruby::Def.new(
+            :name       => name,
+            :args       => args.map { |a| a.compile(context) },
+            :statements => statements
+          )
         end
       end
 
       class If < Node
-        def to_ruby(context = Context.new)
-          combine do |parts|
-            parts << "if #{cond.to_ruby(context)}"
-            if self.then
-              parts << indent(2, self.then.to_ruby(context))
-            end
-            if self.else
-              parts << "else"
-              parts << indent(2, self.else.to_ruby(context))
-            end
-            parts << "end"
+        def compile(context)
+          then_compiled = compile_inner_statements(self.then, context)
+          else_compiled = if self.else
+            compile_inner_statements(self.else, context)
+          else
+            nil
           end
+
+          Ruby::If.new(
+            :condition => cond.compile(context),
+            :then      => then_compiled,
+            :else      => else_compiled
+          )
         end
       end
 
       class Import < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           # Using any SCR or WFM function results in an auto-import. We ignore
           # these auto-imports becasue neither SCR nor WFM are real modules.
-          return "" if name == "SCR" || name == "WFM"
+          return nil if name == "SCR" || name == "WFM"
 
-          combine do |parts|
-            parts << "YCP.import(#{name.inspect})"
-            parts << ""
-          end
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "YCP"),
+            :name     => "import",
+            :args     => [Ruby::Literal.new(:value => name)],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class Include < Node
-        def to_ruby(context = Context.new)
-          ""
+        def compile(context)
+          # Ignored because ycpc already included the file for us.
         end
       end
 
       class List < Node
-        def to_ruby(context = Context.new)
-          "[#{ruby_list(children, context)}]"
+        def compile(context)
+          Ruby::Array.new(
+            :elements => children.map { |ch| ch.compile(context) }
+          )
         end
       end
 
       class Locale < Node
-        def to_ruby(context = Context.new)
-          "_(#{text.inspect})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "_",
+            :args     => [Ruby::Literal.new(:value => text)],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class Map < Node
-        def to_ruby(context = Context.new)
-          !children.empty? ? "{ #{ruby_list(children, context)} }" : "{}"
+        def compile(context)
+          Ruby::Hash.new(:entries => children.map { |ch| ch.compile(context) })
         end
       end
 
       class MapElement < Node
-        def to_ruby(context = Context.new)
-          "#{key.to_ruby(context)} => #{value.to_ruby(context)}"
+        def compile(context)
+          Ruby::HashEntry.new(
+            :key   => key.compile(context),
+            :value => value.compile(context)
+          )
         end
       end
 
       class ModuleBlock < Block
-        def to_ruby(context = Context.new)
+        def compile(context)
           real_name = name.sub(/\.ycp$/, "")
           textdomains = statements.select { |s| s.is_a?(Textdomain) }
           fundefs = statements.select { |s| s.is_a?(FunDef) }
           other_statements = statements - textdomains - fundefs
 
-          combine do |parts|
-            parts << "require \"ycp\""
-            parts << ""
-            parts << "module YCP"
-            parts << "  class #{real_name}Class"
-            parts << "    extend Exportable"
+          class_statements = [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "extend",
+              :args     => [Ruby::Variable.new(:name => "Exportable")],
+              :block    => nil,
+              :parens   => false
+            )
+          ]
 
-            inside_block context do |inner_context|
-              unless textdomains.empty?
-                parts << indent(4, ruby_stmts(textdomains, inner_context))
-              end
+          inside_block context do |inner_context|
+            class_statements += textdomains.map { |t| t.compile(inner_context) }
 
-              unless other_statements.empty?
-                parts << ""
-                parts << "    def initialize"
-                parts << indent(6, ruby_stmts(other_statements, inner_context))
-                parts << "    end"
-              end
-
-              unless fundefs.empty?
-                parts << ""
-                parts << indent(4, ruby_stmts(fundefs, inner_context))
-              end
+            unless other_statements.empty?
+              class_statements << Ruby::Def.new(
+                :name       => "initialize",
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => other_statements.map { |s| s.compile(inner_context) }
+                )
+              )
             end
 
-            symbols.each do |symbol|
-              if symbol.published?
-                parts << indent(4, symbol.to_ruby_publish_call)
-              end
-            end
+            class_statements += fundefs.map { |f| f.compile(inner_context) }
 
-            parts << "  end"
-            parts << ""
-            parts << "  #{real_name} = #{real_name}Class.new"
-            parts << "end"
+            symbols.select(&:published?).each do |symbol|
+              class_statements << symbol.compile_as_publish_call(inner_context)
+            end
           end
+
+          Ruby::Statements.new(
+            :statements => [
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "require",
+                :args     => [Ruby::Literal.new(:value => "ycp")],
+                :block    => nil,
+                :parens   => false
+              ),
+              Ruby::Module.new(
+                :name       => "YCP",
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    Ruby::Class.new(
+                      :name       => "MClass",
+                      :statements => Ruby::Statements.new(
+                        :statements => class_statements
+                      )
+                    ),
+                    Ruby::Assignment.new(
+                      :lhs => Ruby::Variable.new(:name => "M"),
+                      :rhs => Ruby::MethodCall.new(
+                        :receiver => Ruby::Variable.new(:name => "MClass"),
+                        :name     => "new",
+                        :args     => [],
+                        :block    => nil,
+                        :parens   => true
+                      )
+                    )
+                  ]
+                )
+              )
+            ]
+          )
         end
       end
 
@@ -503,38 +611,35 @@ module Y2R
           []
         end
 
-        def to_ruby(context = Context.new)
-          combine do |parts|
-            parts << "begin"
-            if self.do
-              inside_block context do |inner_context|
-                parts << indent(2, self.do.to_ruby(inner_context))
-              end
-            end
-            parts << "end until #{self.until.to_ruby(context)}"
-          end
+        def compile(context)
+          Ruby::Until.new(
+            :condition => self.until.compile(context),
+            :body      => Ruby::Begin.new(
+              :statements => compile_inner_statements(self.do, context)
+            )
+          )
         end
       end
 
       class Return < Node
-        def to_ruby(context = Context.new)
-          stmt = {
-            DefBlock    => "return",
-            UnspecBlock => "next"
-          }[context.innermost(DefBlock, UnspecBlock).class]
-
-          if child
-            "#{stmt} #{child.to_ruby(context)}"
-          else
-            stmt
+        def compile(context)
+          case context.innermost(DefBlock, FileBlock, UnspecBlock)
+            when DefBlock, FileBlock
+              Ruby::Return.new(:value => child ? child.compile(context) : nil)
+            when UnspecBlock
+              Ruby::Next.new(:value => child ? child.compile(context) : nil)
+            else
+              raise "Misplaced \"return\" statement."
           end
         end
       end
 
       class StmtBlock < Block
-        def to_ruby(context = Context.new)
+        def compile(context)
           inside_block context do |inner_context|
-            ruby_stmts(statements, inner_context)
+            Ruby::Statements.new(
+              :statements => statements.map { |s| s.compile(inner_context) }
+            )
           end
         end
       end
@@ -548,16 +653,44 @@ module Y2R
           global && (category == :variable || category == :function)
         end
 
-        def to_ruby(context = Context.new)
-          ruby_name
+        def compile(context)
+          Ruby::Arg.new(:name => ruby_name, :default => nil)
         end
 
-        def to_ruby_copy_call
-          "#{ruby_name} = YCP.copy(#{ruby_name})"
+        def compile_as_copy_call(context)
+          Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => ruby_name),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :name     => "copy",
+              :args     => [Ruby::Variable.new(:name => ruby_name)],
+              :block    => nil,
+              :parens   => true
+            )
+          )
         end
 
-        def to_ruby_publish_call
-          "publish :#{category} => :#{name}, :type => \"#{type}\""
+        def compile_as_publish_call(context)
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "publish",
+            :args     => [
+              Ruby::Hash.new(
+                :entries => [
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => category),
+                    :value => Ruby::Literal.new(:value => name.to_sym)
+                  ),
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => :type),
+                    :value => Ruby::Literal.new(:value => type)
+                  )
+                ]
+              )
+            ],
+            :block    => nil,
+            :parens   => true
+          )
         end
 
         private
@@ -568,57 +701,93 @@ module Y2R
       end
 
       class Textdomain < Node
-        def to_ruby(context = Context.new)
-          combine do |parts|
-            parts << "include I18n"
-            parts << "textdomain #{name.inspect}"
-            parts << ""
-          end
+        def compile(context)
+          Ruby::Statements.new(
+            :statements => [
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "include",
+                :args     => [Ruby::Variable.new(:name => "I18n")],
+                :block    => nil,
+                :parens   => false
+              ),
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "textdomain",
+                :args     => [Ruby::Literal.new(:value => name)],
+                :block    => nil,
+                :parens   => false
+              )
+            ]
+          )
         end
       end
 
       class Typedef < Node
-        def to_ruby(context = Context.new)
-          # Typedefs can be completely ignored because ycpc expands defined types
-          # in the XML, so we never actually encounter them.
-          ""
+        def compile(context)
+          # Ignored because ycpc expands defined types in the XML, so we never
+          # actually encounter them.
         end
       end
 
       class UnspecBlock < Block
-        def to_ruby(context = Context.new)
-          combine do |parts|
-            inside_block context do |inner_context|
-              parts << "lambda {"
-              parts << indent(2, ruby_stmts(statements, inner_context))
-              parts << "}"
-            end
+        def compile(context)
+          inside_block context do |inner_context|
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "lambda",
+              :args     => [],
+              :block    => Ruby::Block.new(
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => statements.map { |s| s.compile(inner_context) }
+                )
+              ),
+              :parens   => true
+            )
           end
         end
 
-        def to_ruby_block(context = Context.new)
-          combine do |parts|
-            inside_block context do |inner_context|
-              parts << "{#{ruby_block_args(args, inner_context)}"
-              parts << indent(2, ruby_stmts(statements, inner_context))
-              parts << "}"
-            end
+        def compile_as_block(context)
+          inside_block context do |inner_context|
+            Ruby::Block.new(
+              :args       => args.map { |a| a.compile(inner_context) },
+              :statements => Ruby::Statements.new(
+                :statements => statements.map { |s| s.compile(inner_context) }
+              )
+            )
           end
         end
       end
 
       class Variable < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           case category
             when "variable", "reference"
-              ruby_var_name(name, context)
+              ruby_var(name, context)
             when "function"
               parts = name.split("::")
               ns = parts.size > 1 ? parts.first : nil
               variable_name = parts.last
 
-              ns_prefix = ns ? ns + "." : ""
-              "Reference.new(#{ns_prefix}method(:#{variable_name}), \"#{type}\")"
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Reference"),
+                :name     => "new",
+                :args     => [
+                  Ruby::MethodCall.new(
+                    :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                    :name     => "method",
+                    :args     => [
+                      Ruby::Literal.new(:value => variable_name.to_sym)
+                    ],
+                    :block    => nil,
+                    :parens   => true
+                  ),
+                  Ruby::Literal.new(:value => type)
+                ],
+                :block    => nil,
+                :parens   => true
+              )
             else
               raise "Unknown variable category: #{category.inspect}."
           end
@@ -630,16 +799,11 @@ module Y2R
           []
         end
 
-        def to_ruby(context = Context.new)
-          combine do |parts|
-            parts << "while #{cond.to_ruby(context)}"
-            if self.do
-              inside_block context do |inner_context|
-                parts << indent(2, self.do.to_ruby(inner_context))
-              end
-            end
-            parts << "end"
-          end
+        def compile(context)
+          Ruby::While.new(
+            :condition => cond.compile(context),
+            :body      => compile_inner_statements(self.do, context)
+          )
         end
       end
 
@@ -648,13 +812,25 @@ module Y2R
           symbols.select { |s| s.category == :variable }.map(&:name)
         end
 
-        def to_ruby(context = Context.new)
-          "lambda { #{child.to_ruby(context)} }"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "lambda",
+            :args     => [],
+            :block    => Ruby::Block.new(
+              :args       => [],
+              :statements => child.compile(context)
+            ),
+            :parens   => true
+          )
         end
 
-        def to_ruby_block(context = Context.new)
+        def compile_as_block(context)
           inside_block context do |inner_context|
-            "{#{ruby_block_args(args, inner_context)} #{child.to_ruby(inner_context)} }"
+            Ruby::Block.new(
+              :args       => args.map { |a| a.compile(inner_context) },
+              :statements => child.compile(inner_context)
+            )
           end
         end
       end
@@ -675,50 +851,84 @@ module Y2R
           "||" => "logical_or"
         }
 
-        def to_ruby(context = Context.new)
-          lhs_code = lhs.to_ruby(context)
-          rhs_code = rhs.to_ruby(context)
-
-          "Ops.#{OPS_TO_METHODS[name]}(#{lhs_code}, #{rhs_code})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => OPS_TO_METHODS[name],
+            :args     => [lhs.compile(context), rhs.compile(context)],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class YEBracket < Node
-        def to_ruby(context = Context.new)
-          value_code   = value.to_ruby(context)
-          index_code   = index.to_ruby(context)
-          default_code = default.to_ruby(context)
-
-          "Ops.index(#{value_code}, #{index_code}, #{default_code})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => "index",
+            :args     => [
+              value.compile(context),
+              index.compile(context),
+              default.compile(context),
+            ],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class YEIs < Node
-        def to_ruby(context = Context.new)
-          "Ops.is(#{child.to_ruby(context)}, \"#{type}\")"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => "is",
+            :args     => [
+              child.compile(context),
+              Ruby::Literal.new(:value => type)
+            ],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class YEPropagate < Node
-        def to_ruby(context = Context.new)
+        def compile(context)
           from_no_const = strip_const(from)
           to_no_const   = strip_const(to)
 
           if from_no_const != to_no_const
-            child_code = child.to_ruby(context)
-            from_code  = from_no_const.inspect
-            to_code    = to_no_const.inspect
-
-            "Convert.convert(#{child_code}, :from => #{from_code}, :to => #{to_code})"
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Convert"),
+              :name     => "convert",
+              :args     => [
+                child.compile(context),
+                Ruby::Hash.new(
+                  :entries => [
+                    Ruby::HashEntry.new(
+                      :key   => Ruby::Literal.new(:value => :from),
+                      :value => Ruby::Literal.new(:value => from_no_const)
+                    ),
+                    Ruby::HashEntry.new(
+                      :key   => Ruby::Literal.new(:value => :to),
+                      :value => Ruby::Literal.new(:value => to_no_const)
+                    )
+                  ]
+                )
+              ],
+              :block    => nil,
+              :parens   => true
+            )
           else
-            child.to_ruby(context)
+            child.compile(context)
           end
         end
       end
 
       class YEReference < Node
-        def to_ruby(context = Context.new)
-          child.to_ruby(context)
+        def compile(context)
+          child.compile(context)
         end
       end
 
@@ -727,34 +937,51 @@ module Y2R
           symbols.select { |s| s.category == :variable }.map(&:name)
         end
 
-        def to_ruby(context = Context.new)
-          "lambda { #{child.to_ruby(context)} }"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "lambda",
+            :args     => [],
+            :block    => Ruby::Block.new(
+              :args       => [],
+              :statements => child.compile(context)
+            ),
+            :parens   => true
+          )
         end
 
-        def to_ruby_block(context = Context.new)
+        def compile_as_block(context)
           inside_block context do |inner_context|
-            "{#{ruby_block_args(args, inner_context)} #{child.to_ruby(inner_context)} }"
+            Ruby::Block.new(
+              :args       => args.map { |a| a.compile(inner_context) },
+              :statements => child.compile(inner_context)
+            )
           end
         end
       end
 
       class YETerm < Node
-        def to_ruby(context = Context.new)
-          if !children.empty?
-            "Term.new(:#{name}, #{ruby_list(children, context)})"
-          else
-            "Term.new(:#{name})"
-          end
+        def compile(context)
+          name_compiled     = Ruby::Literal.new(:value => name.to_sym)
+          children_compiled = children.map { |ch| ch.compile(context) }
+
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Term"),
+            :name     => "new",
+            :args     => [name_compiled] + children_compiled,
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
 
       class YETriple < Node
-        def to_ruby(context = Context.new)
-          cond_code  = cond.to_ruby(context)
-          true_code  = self.true.to_ruby(context)
-          false_code = self.false.to_ruby(context)
-
-          "#{cond_code} ? #{true_code} : #{false_code}"
+        def compile(context)
+          Ruby::Ternary.new(
+            :condition => cond.compile(context),
+            :then      => self.true.compile(context),
+            :else      => self.false.compile(context)
+          )
         end
       end
 
@@ -765,8 +992,14 @@ module Y2R
           "!"  => "logical_not"
         }
 
-        def to_ruby(context = Context.new)
-          "Ops.#{OPS_TO_METHODS[name]}(#{child.to_ruby(context)})"
+        def compile(context)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => OPS_TO_METHODS[name],
+            :args     => [child.compile(context)],
+            :block    => nil,
+            :parens   => true
+          )
         end
       end
     end

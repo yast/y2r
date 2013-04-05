@@ -38,7 +38,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -68,7 +67,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -97,7 +95,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -128,7 +125,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -158,7 +154,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -188,7 +183,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -217,7 +211,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -247,7 +240,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -277,7 +269,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -307,7 +298,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -337,7 +327,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -366,17 +355,13 @@ module YCP
       def main
         @fref = Reference.new(method(:f), "void ()")
       end
-
       def f
         return
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -406,18 +391,14 @@ Y2R translates YCP local variables as Ruby local variables.
 module YCP
   module Clients
     class DefaultClient
-
       def f
         i = 42
         j = i
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -445,7 +426,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -469,21 +449,18 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 
 ```ruby
 require "ycp"
-
 module YCP
   class MClass
     extend Exportable
-
     def initialize
       @i = 42
       @j = @i
       @k = 42
       @l = @i
     end
-    publish :variable => :k, :type => "integer"
-    publish :variable => :l, :type => "integer"
+    publish({ :variable => :k, :type => "integer" })
+    publish({ :variable => :l, :type => "integer" })
   end
-
   M = MClass.new
 end
 ```
@@ -508,20 +485,16 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 module YCP
   module Clients
     class DefaultClient
-
       def f
         i = 42
         b = lambda {
           i2 = 43
         }
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -546,18 +519,14 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 module YCP
   module Clients
     class DefaultClient
-
       def f
         i = 42
         i2 = 43
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -582,12 +551,11 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @f = Convert.convert(42, :from => "integer", :to => "float")
+        @f = Convert.convert(42, { :from => "integer", :to => "float" })
       end
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -619,8 +587,6 @@ module YCP
   module Clients
     class DefaultClient
       def main
-
-
         Builtins.time
         Builtins.random(100)
         SCR.Dir(Path.new(".syseditor.section"))
@@ -631,7 +597,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -660,7 +625,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -682,12 +646,13 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
+        Builtins.maplist([42, 43, 44]) { |i|
+          Ops.multiply(i, i)
+        }
       end
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -713,14 +678,12 @@ module YCP
     class DefaultClient
       include I18n
       textdomain "helloworld"
-
       def main
         @s = _("Hello, world!")
       end
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -767,32 +730,24 @@ module YCP
         f2(@a, @b, @c)
         f3(@a, @b, @c)
       end
-
       def f1
         return 42
-
         nil
       end
-
       def f2(a, b, c)
         a = YCP.copy(a)
         b = YCP.copy(b)
         c = YCP.copy(c)
         return 42
-
         nil
       end
-
       def f3(a, b, c)
         return 42
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -824,17 +779,13 @@ module YCP
         @fref = Reference.new(method(:f), "void ()")
         @fref.call
       end
-
       def f
         return
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -874,7 +825,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -918,7 +868,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -958,7 +907,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -996,7 +944,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1027,7 +974,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1056,7 +1002,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1079,12 +1024,13 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @b = lambda { 42 }
+        @b = lambda {
+          42
+        }
       end
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1113,12 +1059,10 @@ module YCP
     class DefaultClient
       def main
         YCP.import("String")
-
       end
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1143,11 +1087,9 @@ module YCP
     class DefaultClient
       include I18n
       textdomain "users"
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1178,7 +1120,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1209,7 +1150,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1236,23 +1176,17 @@ statement.
 module YCP
   module Clients
     class DefaultClient
-
       def f1
         return
-
         nil
       end
-
       def f2
         return 42
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1285,7 +1219,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1316,7 +1249,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1345,7 +1277,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1372,7 +1303,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1402,7 +1332,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1428,7 +1357,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1474,50 +1402,36 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 module YCP
   module Clients
     class DefaultClient
-
       def f1
         return 42
-
         nil
       end
-
       def f2(a, b, c)
         return 42
-
         nil
       end
-
       def f3(a, b, c)
         return 42
-
         nil
       end
-
       def f4(a, b, c)
         return 42
-
         nil
       end
-
       def f5(a, b, c)
         return 42
-
         nil
       end
-
       def f6(a, b, c)
         a = YCP.copy(a)
         b = YCP.copy(b)
         c = YCP.copy(c)
         return 42
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1575,7 +1489,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1616,7 +1529,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1647,7 +1559,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1679,7 +1590,6 @@ module YCP
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1714,27 +1624,20 @@ module YCP
     class DefaultClient
       def main
         YCP.import("String")
-
         @i = 42
         @j = 43
       end
-
       def f
         return 42
-
         nil
       end
-
       def g
         return 43
-
         nil
       end
-
     end
   end
 end
-
 YCP::Clients::DefaultClient.new.main
 ```
 
@@ -1767,34 +1670,25 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 
 ```ruby
 require "ycp"
-
 module YCP
   class MClass
     extend Exportable
-
     def initialize
       YCP.import("String")
-
       @i = 42
       @j = 43
     end
-
     def f
       return 42
-
       nil
     end
-
     def g
       return 43
-
       nil
     end
-
-    publish :variable => :j, :type => "integer"
-    publish :function => :g, :type => "integer ()"
+    publish({ :variable => :j, :type => "integer" })
+    publish({ :function => :g, :type => "integer ()" })
   end
-
   M = MClass.new
 end
 ```

@@ -1,2221 +1,2953 @@
 require "spec_helper"
 
-module Y2R::AST::YCP
+module Y2R::AST
+  RSpec.configure do |c|
+    c.before :each, :type => :ycp do
+      # ----- YCP AST Nodes -----
 
-  COMMON_FUNCTION_CALL = Call.new(
-    :ns       => "n", 
-    :name     => "f",
-    :category => "function",
-    :args     => []
-  )
+      @ycp_true = YCP::Const.new(:type => :bool, :value => "true")
 
-  describe Assign do
-    describe "#to_ruby" do
-      before :each do
-        @node_unprefixed_i = Assign.new(
-          :name  => "i",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_unprefixed_j = Assign.new(
-          :name  => "j",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_prefixed_m = Assign.new(
-          :name  => "M::i",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_prefixed_n = Assign.new(
-          :name  => "N::i",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_capital    = Assign.new(
-          :name  => "I",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_underscore = Assign.new(
-          :name  => "_i",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        @node_reserved = Assign.new(
-          :name  => "end",
-          :child => Const.new(:type => :int, :value => "42")
-        )
+      @ycp_const_a = YCP::Const.new(:type => :symbol, :value => "a")
+      @ycp_const_b = YCP::Const.new(:type => :symbol, :value => "b")
+      @ycp_const_c = YCP::Const.new(:type => :symbol, :value => "c")
 
-        @def_block    = DefBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "I"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "_i"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "end"
-            )
-          ]
-        )
-        @file_block   = FileBlock.new(:symbols => [])
-        @module_block = ModuleBlock.new(:name => "M", :symbols => [])
-        @unspec_block = UnspecBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
-            )
-          ]
-        )
-      end
+      @ycp_const_0  = YCP::Const.new(:type => :int, :value => "0")
+      @ycp_const_1  = YCP::Const.new(:type => :int, :value => "1")
+      @ycp_const_42 = YCP::Const.new(:type => :int, :value => "42")
+      @ycp_const_43 = YCP::Const.new(:type => :int, :value => "43")
+      @ycp_const_44 = YCP::Const.new(:type => :int, :value => "44")
 
-      describe "at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block])
+      @ycp_assign_a_42 = YCP::Assign.new(:name  => "a", :child => @ycp_const_42)
+      @ycp_assign_b_43 = YCP::Assign.new(:name  => "b", :child => @ycp_const_43)
+      @ycp_assign_c_44 = YCP::Assign.new(:name  => "c", :child => @ycp_const_44)
 
-          @node_unprefixed_i.to_ruby(context).should == "@i = 42"
-          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
-          @node_capital.to_ruby(context).should      == "@I = 42"
-          @node_underscore.to_ruby(context).should   == "@_i = 42"
-          @node_reserved.to_ruby(context).should     == "@end = 42"
-        end
-      end
+      @ycp_textdomain_d = YCP::Textdomain.new(:name => "d")
+      @ycp_textdomain_e = YCP::Textdomain.new(:name => "e")
+      @ycp_textdomain_f = YCP::Textdomain.new(:name => "f")
 
-      describe "at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block])
+      @ycp_statements = [@ycp_assign_a_42, @ycp_assign_b_43, @ycp_assign_c_44]
 
-          @node_unprefixed_i.to_ruby(context).should == "@i = 42"
-          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "@i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
-          @node_capital.to_ruby(context).should      == "@I = 42"
-          @node_underscore.to_ruby(context).should   == "@_i = 42"
-          @node_reserved.to_ruby(context).should     == "@end = 42"
-        end
-      end
+      @ycp_symbol_a = YCP::Symbol.new(
+        :global   => true,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "a"
+      )
+      @ycp_symbol_b = YCP::Symbol.new(
+        :global   => true,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "b"
+      )
+      @ycp_symbol_c = YCP::Symbol.new(
+        :global   => true,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "c"
+      )
 
-      describe "inside a function at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block, @def_block])
+      @ycp_symbol_regular = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "a"
+      )
+      @ycp_symbol_capital = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "A"
+      )
+      @ycp_symbol_underscore = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "_a"
+      )
+      @ycp_symbol_reserved = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "end"
+      )
 
-          @node_unprefixed_i.to_ruby(context).should == "i = 42"
-          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
-          @node_capital.to_ruby(context).should      == "_I = 42"
-          @node_underscore.to_ruby(context).should   == "__i = 42"
-          @node_reserved.to_ruby(context).should     == "_end = 42"
-        end
-      end
+      @symbols = [
+        @ycp_symbol_regular,
+        @ycp_symbol_capital,
+        @ycp_symbol_underscore,
+        @ycp_symbol_reserved
+      ]
 
-      describe "inside a function at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block, @def_block])
+      @ycp_stmt_block = YCP::StmtBlock.new(
+        :symbols    => [],
+        :statements => @ycp_statements
+      )
+      @ycp_def_block = YCP::DefBlock.new(
+        :symbols    => [],
+        :statements => @ycp_statements
+      )
 
-          @node_unprefixed_i.to_ruby(context).should == "i = 42"
-          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "@i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
-          @node_capital.to_ruby(context).should      == "_I = 42"
-          @node_underscore.to_ruby(context).should   == "__i = 42"
-          @node_reserved.to_ruby(context).should     == "_end = 42"
-        end
-      end
+      @ycp_fundef_f = ycp_node = YCP::FunDef.new(
+        :name  => "f",
+        :args  => [],
+        :block => @ycp_def_block
+      )
+      @ycp_fundef_g = ycp_node = YCP::FunDef.new(
+        :name  => "g",
+        :args  => [],
+        :block => @ycp_def_block
+      )
+      @ycp_fundef_h = ycp_node = YCP::FunDef.new(
+        :name  => "h",
+        :args  => [],
+        :block => @ycp_def_block
+      )
 
-      describe "inside nested blocks" do
-        it "emits correct code" do
-          context = Context.new(
-            :blocks => [@file_block, @unspec_block, @unspec_block]
-          )
+      # ----- Ruby AST Nodes -----
 
-          @node_unprefixed_i.to_ruby(context).should == "i2 = 42"
-          @node_unprefixed_j.to_ruby(context).should == "@j = 42"
-          @node_prefixed_m.to_ruby(context).should   == "M.i = 42"
-          @node_prefixed_n.to_ruby(context).should   == "N.i = 42"
-          @node_capital.to_ruby(context).should      == "@I = 42"
-          @node_underscore.to_ruby(context).should   == "@_i = 42"
-          @node_reserved.to_ruby(context).should     == "@end = 42"
-        end
-      end
-    end
-  end
+      @ruby_literal_nil = Ruby::Literal.new(:value => nil)
 
-  describe Bracket do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Bracket.new(
-          :entry => Variable.new(:name => "l", :category => "variable"),
-          :arg   => List.new(
-            :children => [Const.new(:type => :int, :value => "1")]
+      @ruby_literal_true = Ruby::Literal.new(:value => true)
+
+      @ruby_literal_a = Ruby::Literal.new(:value => :a)
+      @ruby_literal_b = Ruby::Literal.new(:value => :b)
+      @ruby_literal_c = Ruby::Literal.new(:value => :c)
+
+      @ruby_literal_0  = Ruby::Literal.new(:value => 0)
+      @ruby_literal_1  = Ruby::Literal.new(:value => 1)
+      @ruby_literal_42 = Ruby::Literal.new(:value => 42)
+      @ruby_literal_43 = Ruby::Literal.new(:value => 43)
+      @ruby_literal_44 = Ruby::Literal.new(:value => 44)
+
+      @ruby_variable_a = Ruby::Variable.new(:name => "@a")
+      @ruby_variable_b = Ruby::Variable.new(:name => "@b")
+      @ruby_variable_c = Ruby::Variable.new(:name => "@c")
+
+      @ruby_assignment_a_42 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_a,
+        :rhs => @ruby_literal_42
+      )
+      @ruby_assignment_b_43 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_b,
+        :rhs => @ruby_literal_43
+      )
+      @ruby_assignment_c_44 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_c,
+        :rhs => @ruby_literal_44
+      )
+
+      @ruby_textdomain_d = Ruby::Statements.new(
+        :statements => [
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "include",
+            :args     => [Ruby::Variable.new(:name => "I18n")],
+            :block    => nil,
+            :parens   => false
           ),
-          :rhs   => Const.new(:type => :int, :value => "42")
-        )
-
-        node.to_ruby.should == "Ops.assign(@l, [1], 42)"
-      end
-    end
-  end
-
-  describe Break do
-    describe "#to_ruby" do
-      before :each do
-        @node = Break.new
-      end
-
-      describe "inside a while statement" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, While.new])
-
-          @node.to_ruby(context).should == "break"
-        end
-      end
-
-      describe "inside a repeat statement" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, Repeat.new])
-
-          @node.to_ruby(context).should == "break"
-        end
-      end
-
-      describe "inside a while statement which is inside a block expression" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, While.new])
-
-          @node.to_ruby(context).should == "break"
-        end
-      end
-
-      describe "inside a repeat statement which is inside a block expression" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, Repeat.new])
-
-          @node.to_ruby(context).should == "break"
-        end
-      end
-
-      describe "inside a block expression" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
-
-          @node.to_ruby(context).should == "raise Break"
-        end
-      end
-
-      describe "inside a block expression which is inside a while statement" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, While.new, UnspecBlock.new])
-
-          @node.to_ruby(context).should == "raise Break"
-        end
-      end
-
-      describe "inside a block expression which is inside a repeat statement" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [FileBlock.new, Repeat.new, UnspecBlock.new])
-
-          @node.to_ruby(context).should == "raise Break"
-        end
-      end
-    end
-  end
-
-  describe Builtin do
-    describe "#to_ruby" do
-      it "emits correct code for builtins with no arguments and no block" do
-        node = Builtin.new(
-          :name    => "b",
-          :args    => [],
-          :block   => nil
-        )
-
-        node.to_ruby.should == "Builtins.b"
-      end
-
-      it "emits correct code for builtins with arguments and no block" do
-        node = Builtin.new(
-          :name    => "b",
-          :args    => [
-            Const.new(:type => :int, :value => "42"),
-            Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44")
-          ],
-          :block   => nil
-        )
-
-        node.to_ruby.should == "Builtins.b(42, 43, 44)"
-      end
-
-      it "emits correct code for builtins with no arguments and a block" do
-        args = [
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "a"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "b"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "c"
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "textdomain",
+            :args     => [Ruby::Literal.new(:value => "d")],
+            :block    => nil,
+            :parens   => false
           )
         ]
-
-        node = Builtin.new(
-          :name    => "b",
-          :args    => [],
-          :block   => UnspecBlock.new(
-            :args       => args,
-            :symbols    => args,
-            :statements => [
-              Assign.new(
-                :name  => "i",
-                :child => Const.new(:type => :int, :value => "42")
-              ),
-              Assign.new(
-                :name  => "j",
-                :child => Const.new(:type => :int, :value => "43")
-              ),
-              Assign.new(
-                :name  => "k",
-                :child => Const.new(:type => :int, :value => "44")
-              )
-            ]
-          )
-        )
-
-        node.to_ruby.should ==
-          "Builtins.b { |a, b, c|\n  @i = 42\n  @j = 43\n  @k = 44\n}"
-      end
-
-      it "emits correct code for builtins with arguments and a block" do
-        args = [
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "a"
+      )
+      @ruby_textdomain_e = Ruby::Statements.new(
+        :statements => [
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "include",
+            :args     => [Ruby::Variable.new(:name => "I18n")],
+            :block    => nil,
+            :parens   => false
           ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "b"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "c"
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "textdomain",
+            :args     => [Ruby::Literal.new(:value => "e")],
+            :block    => nil,
+            :parens   => false
           )
         ]
-
-        node = Builtin.new(
-          :name    => "b",
-          :args    => [
-            Const.new(:type => :int, :value => "42"),
-            Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44")
-          ],
-          :block => UnspecBlock.new(
-            :args       => args,
-            :symbols    => args,
-            :statements => [
-              Assign.new(
-                :name  => "i",
-                :child => Const.new(:type => :int, :value => "42")
-              ),
-              Assign.new(
-                :name  => "j",
-                :child => Const.new(:type => :int, :value => "43")
-              ),
-              Assign.new(
-                :name  => "k",
-                :child => Const.new(:type => :int, :value => "44")
-              )
-            ]
+      )
+      @ruby_textdomain_f = Ruby::Statements.new(
+        :statements => [
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "include",
+            :args     => [Ruby::Variable.new(:name => "I18n")],
+            :block    => nil,
+            :parens   => false
+          ),
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "textdomain",
+            :args     => [Ruby::Literal.new(:value => "f")],
+            :block    => nil,
+            :parens   => false
           )
-        )
+        ]
+      )
 
-        node.to_ruby.should ==
-          "Builtins.b(42, 43, 44) { |a, b, c|\n  @i = 42\n  @j = 43\n  @k = 44\n}"
-      end
+      @ruby_statements_empty     = Ruby::Statements.new(:statements => [])
+      @ruby_statements_non_empty = Ruby::Statements.new(
+        :statements => [
+          @ruby_assignment_a_42,
+          @ruby_assignment_b_43,
+          @ruby_assignment_c_44
+        ]
+      )
 
-      it "emits correct code for namespaced builtins" do
-        node_scr   = Builtin.new(:name => "SCR::b",   :args => [], :block => nil)
-        node_wfm   = Builtin.new(:name => "WFM::b",   :args => [], :block => nil)
-        node_float = Builtin.new(:name => "float::b", :args => [], :block => nil)
-        node_list  = Builtin.new(:name => "list::b",  :args => [], :block => nil)
-        node_none  = Builtin.new(:name => "b",        :args => [], :block => nil)
+      @ruby_arg_a = Ruby::Arg.new(:name => "a", :default => nil)
+      @ruby_arg_b = Ruby::Arg.new(:name => "b", :default => nil)
+      @ruby_arg_c = Ruby::Arg.new(:name => "c", :default => nil)
 
-        node_scr.to_ruby.should   == "SCR.b"
-        node_wfm.to_ruby.should   == "WFM.b"
-        node_float.to_ruby.should == "Builtins::Float.b"
-        node_list.to_ruby.should  == "Builtins::List.b"
-        node_none.to_ruby.should  == "Builtins.b"
-      end
-    end
-  end
-
-  describe Call do
-    describe "#to_ruby" do
-      it "emits correct code for an unqualified call" do
-        node = Call.new(
-          :ns       => nil,
-          :name     => "f",
-          :category => "function",
-          :args     => []
-        )
-
-        node.to_ruby.should == "f"
-      end
-
-      it "emits correct code for a qualified call" do
-        node = Call.new(
-          :ns       => "n",
-          :name     => "f",
-          :category => "function",
-          :args     => []
-        )
-
-        node.to_ruby.should == "n.f"
-      end
-
-      it "emits correct code for a call without arguments" do
-        node = Call.new(
-          :ns       => "n",
-          :name     => "f",
-          :category => "function",
-          :args     => []
-        )
-
-        node.to_ruby.should == "n.f"
-      end
-
-      it "emits correct code for a call with arguments" do
-        node = Call.new(
-          :ns       => "n",
-          :name     => "f",
-          :category => "function",
-          :args     => [
-            Const.new(:type => :int, :value => "42"),
-            Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44")
-          ]
-        )
-
-        node.to_ruby.should == "n.f(42, 43, 44)"
-      end
-
-      it "emits correct code for an unqualified call of a method with const-like name without arguments" do
-        node = Call.new(
-          :ns       => nil,
-          :name     => "F",
-          :category => "function",
-          :args     => []
-        )
-
-        node.to_ruby.should == "F()"
-      end
-    end
-  end
-
-  describe Compare do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        lhs = Const.new(:type => :int, :value => "42")
-        rhs = Const.new(:type => :int, :value => "43")
-
-        node_equal            = Compare.new(:op => "==", :lhs => lhs, :rhs => rhs)
-        node_not_equal        = Compare.new(:op => "!=", :lhs => lhs, :rhs => rhs)
-        node_less_than        = Compare.new(:op => "<",  :lhs => lhs, :rhs => rhs)
-        node_greater_than     = Compare.new(:op => ">",  :lhs => lhs, :rhs => rhs)
-        node_less_or_equal    = Compare.new(:op => "<=", :lhs => lhs, :rhs => rhs)
-        node_greater_or_equal = Compare.new(:op => ">=", :lhs => lhs, :rhs => rhs)
-
-        node_equal.to_ruby.should            == "Ops.equal(42, 43)"
-        node_not_equal.to_ruby.should        == "Ops.not_equal(42, 43)"
-        node_less_than.to_ruby.should        == "Ops.less_than(42, 43)"
-        node_greater_than.to_ruby.should     == "Ops.greater_than(42, 43)"
-        node_less_or_equal.to_ruby.should    == "Ops.less_or_equal(42, 43)"
-        node_greater_or_equal.to_ruby.should == "Ops.greater_or_equal(42, 43)"
-      end
-    end
-  end
-
-  describe Const do
-    describe "#to_ruby" do
-      it "emits correct code for void constants" do
-        node = Const.new(:type => :void)
-
-        node.to_ruby.should == "nil"
-      end
-
-      it "emits correct code for boolean constants" do
-        node_true  = Const.new(:type => :bool, :value => "true")
-        node_false = Const.new(:type => :bool, :value => "false")
-
-        node_true.to_ruby.should  == "true"
-        node_false.to_ruby.should == "false"
-      end
-
-      it "emits correct code for integer constants" do
-        node = Const.new(:type => :int, :value => "42")
-
-        node.to_ruby.should == "42"
-      end
-
-      it "emits correct code for float constants" do
-        node_without_decimals = Const.new(:type => :float, :value => "42.")
-        node_with_decimals    = Const.new(:type => :float, :value => "42.1")
-
-        node_without_decimals.to_ruby.should == "42.0"
-        node_with_decimals.to_ruby.should    == "42.1"
-      end
-
-      it "emits correct code for symbol constants" do
-        node = Const.new(:type => :symbol, :value => "abcd")
-
-        node.to_ruby.should == ":abcd"
-      end
-
-      it "emits correct code for string constants" do
-        node = Const.new(:type => :string, :value => "abcd")
-
-        node.to_ruby.should == "\"abcd\""
-      end
-
-      it "emits correct code for path constants" do
-        node = Const.new(:type => :path, :value => ".abcd")
-
-        node.to_ruby.should == "Path.new(\".abcd\")"
-      end
-    end
-  end
-
-  describe Continue do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Continue.new
-
-        node.to_ruby.should == "next"
-      end
-    end
-  end
-
-  describe DefBlock do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = DefBlock.new(
-          :symbols    => [],
+      @ruby_def_f = Ruby::Def.new(
+        :name => "f",
+        :args => [],
+        :statements => Ruby::Statements.new(
           :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
+            @ruby_assignment_a_42,
+            @ruby_assignment_b_43,
+            @ruby_assignment_c_44,
+            @ruby_literal_nil
           ]
         )
+      )
+      @ruby_def_g = Ruby::Def.new(
+        :name => "g",
+        :args => [],
+        :statements => Ruby::Statements.new(
+          :statements => [
+            @ruby_assignment_a_42,
+            @ruby_assignment_b_43,
+            @ruby_assignment_c_44,
+            @ruby_literal_nil
+          ]
+        )
+      )
+      @ruby_def_h = Ruby::Def.new(
+        :name => "h",
+        :args => [],
+        :statements => Ruby::Statements.new(
+          :statements => [
+            @ruby_assignment_a_42,
+            @ruby_assignment_b_43,
+            @ruby_assignment_c_44,
+            @ruby_literal_nil
+          ]
+        )
+      )
 
-        node.to_ruby.should == "@i = 42\n@j = 43\n@k = 44"
-      end
+      # ----- Contexts -----
+
+      # Note we use non-filled AST nodes for :blocks. This doesn't cause any
+      # harm as the compiler code only looks at the node class, not its data.
+
+      @context_empty = YCP::Context.new
+
+      @context_while           = YCP::Context.new(:blocks => [YCP::While.new])
+      @context_while_in_unspec = YCP::Context.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::While.new]
+      )
+
+      @context_repeat           = YCP::Context.new(:blocks => [YCP::Repeat.new])
+      @context_repeat_in_unspec = YCP::Context.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::Repeat.new]
+      )
+
+      @context_unspec           = YCP::Context.new(
+        :blocks => [YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_while  = YCP::Context.new(
+        :blocks => [YCP::While.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_repeat = YCP::Context.new(
+        :blocks => [YCP::Repeat.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_file = YCP::Context.new(
+        :blocks => [YCP::FileBlock.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_def = YCP::Context.new(
+        :blocks => [YCP::DefBlock.new, YCP::UnspecBlock.new]
+      )
+
+      @context_def           = YCP::Context.new(
+        :blocks => [YCP::DefBlock.new]
+      )
+      @context_def_in_file = YCP::Context.new(
+        :blocks => [YCP::FileBlock.new, YCP::DefBlock.new]
+      )
+      @context_def_in_unspec = YCP::Context.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::DefBlock.new]
+      )
+
+      # The following contexts are used in context-sensitive variable name
+      # handling tests, so we fill-in at least some data needed by them.
+
+      @context_module = YCP::Context.new(
+        :blocks => [YCP::ModuleBlock.new(:name => "M")]
+      )
+      @context_global = YCP::Context.new(
+        :blocks => [YCP::FileBlock.new(:symbols => @symbols)]
+      )
+      @context_local_global_vars = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => @symbols),
+          YCP::DefBlock.new(:symbols => [])
+        ]
+      )
+      @context_local_local_vars = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => @symbols)
+        ]
+      )
+      @context_local_nested = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => @symbols),
+          YCP::DefBlock.new(:symbols => @symbols)
+        ]
+      )
     end
   end
 
-  describe Entry do
-    describe "#to_ruby" do
-      before :each do
-        @node_unprefixed_i = Entry.new(:ns => nil, :name => "i")
-        @node_unprefixed_j = Entry.new(:ns => nil, :name => "j")
-        @node_prefixed_m   = Entry.new(:ns => "M", :name => "i")
-        @node_prefixed_n   = Entry.new(:ns => "N", :name => "i")
-        @node_capital      = Entry.new(:ns => nil, :name => "I")
-        @node_underscore   = Entry.new(:ns => nil, :name => "_i")
-        @node_reserved     = Entry.new(:ns => nil, :name => "end")
+  describe YCP::Assign, :type => :ycp do
+    describe "#compile" do
+      describe "for qualified assignments" do
+        it "returns correct AST node" do
+          ycp_node_m = YCP::Assign.new(:name => "M::a", :child => @ycp_const_42)
+          ycp_node_n = YCP::Assign.new(:name => "N::a", :child => @ycp_const_42)
 
-        @def_block    = DefBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
+          ruby_node_m = Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => "@a"),
+            :rhs => @ruby_literal_42
+          )
+          ruby_node_n = Ruby::Assignment.new(
+            :lhs => Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "N"),
+              :name     => "a",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
             ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "I"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "_i"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "end"
-            )
-          ]
-        )
-        @file_block   = FileBlock.new(:symbols => [])
-        @module_block = ModuleBlock.new(:name => "M", :symbols => [])
-        @unspec_block = UnspecBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
-            )
-          ]
-        )
-      end
-
-      describe "at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "@i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
-        end
-      end
-
-      describe "at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "@i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
-        end
-      end
-
-      describe "inside a function at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block, @def_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "_I"
-          @node_underscore.to_ruby(context).should   == "__i"
-          @node_reserved.to_ruby(context).should     == "_end"
-        end
-      end
-
-      describe "inside a function at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block, @def_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "_I"
-          @node_underscore.to_ruby(context).should   == "__i"
-          @node_reserved.to_ruby(context).should     == "_end"
-        end
-      end
-
-      describe "inside nested blocks" do
-        it "emits correct code" do
-          context = Context.new(
-            :blocks => [@file_block, @unspec_block, @unspec_block]
+            :rhs => @ruby_literal_42
           )
 
-          @node_unprefixed_i.to_ruby(context).should == "i2"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
+          ycp_node_m.compile(@context_module).should == ruby_node_m
+          ycp_node_n.compile(@context_module).should == ruby_node_n
+        end
+      end
+
+      describe "for unqualified assignments" do
+        def ruby_assignment(name)
+          Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => name),
+            :rhs => @ruby_literal_42
+          )
+        end
+
+        before :each do
+          @ycp_node_regular    = YCP::Assign.new(
+            :name  => "a",
+            :child => @ycp_const_42
+          )
+          @ycp_node_capital    = YCP::Assign.new(
+            :name  => "A",
+            :child => @ycp_const_42
+          )
+          @ycp_node_underscore = YCP::Assign.new(
+            :name  => "_a",
+            :child => @ycp_const_42
+          )
+          @ycp_node_reserved   = YCP::Assign.new(
+            :name  => "end",
+            :child => @ycp_const_42
+          )
+        end
+
+        describe "in global context that assign to global variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_assignment("@a")
+            ruby_node_capital    = ruby_assignment("@A")
+            ruby_node_underscore = ruby_assignment("@_a")
+            ruby_node_reserved   = ruby_assignment("@end")
+
+            @ycp_node_regular.compile(@context_global).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_global).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_global).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_global).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in local context that assign to global variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_assignment("@a")
+            ruby_node_capital    = ruby_assignment("@A")
+            ruby_node_underscore = ruby_assignment("@_a")
+            ruby_node_reserved   = ruby_assignment("@end")
+
+            @ycp_node_regular.compile(@context_local_global_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_global_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_global_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_global_vars).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in local context that assign to local variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_assignment("a")
+            ruby_node_capital    = ruby_assignment("_A")
+            ruby_node_underscore = ruby_assignment("__a")
+            ruby_node_reserved   = ruby_assignment("_end")
+
+            @ycp_node_regular.compile(@context_local_local_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_local_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_local_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_local_vars).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in nested local context that assign to inner variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_assignment("a2")
+            ruby_node_capital    = ruby_assignment("_A2")
+            ruby_node_underscore = ruby_assignment("__a2")
+            ruby_node_reserved   = ruby_assignment("end2")
+
+            @ycp_node_regular.compile(@context_local_nested).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_nested).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_nested).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_nested).should ==
+              ruby_node_reserved
+          end
         end
       end
     end
   end
 
-  describe FileBlock do
-    describe "#to_ruby" do
-      it "emits correct code for empty blocks" do
-        node = FileBlock.new(
+  describe YCP::Bracket, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Bracket.new(
+          :entry => YCP::Variable.new(:category => "variable", :name => "l"),
+          :arg   => YCP::List.new(:children => [@ycp_const_1]),
+          :rhs   => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "assign",
+          :args     => [
+            Ruby::Variable.new(:name => "@l"),
+            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Break, :type => :ycp do
+    describe "#compile" do
+      before :each do
+        @ycp_node = YCP::Break.new
+
+        @ruby_node_break = Ruby::Break.new
+        @ruby_node_raise = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "raise",
+          :args     => [Ruby::Variable.new(:name => "Break")],
+          :block    => nil,
+          :parens   => false
+        )
+      end
+
+      describe "for break statements inside a while statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_while).should == @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a repeat statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_repeat).should == @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a while statement which is inside a block expression" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_while_in_unspec).should == @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a repeat statement which is inside a block expression" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_repeat_in_unspec).should ==
+            @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a block expression" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec).should == @ruby_node_raise
+        end
+      end
+
+      describe "for break statements inside a block expression which is inside a while statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec_in_while).should == @ruby_node_raise
+        end
+      end
+
+      describe "for break statements inside a block expression which is inside a repeat statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec_in_repeat).should == @ruby_node_raise
+        end
+      end
+    end
+  end
+
+  describe YCP::Builtin, :type => :ycp do
+    describe "#compile" do
+      def ycp_builtin(name)
+        YCP::Builtin.new(:name => name, :args => [], :block => nil)
+      end
+
+      def ruby_builtin_call(module_name, method_name)
+        Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => module_name),
+          :name     => method_name,
+          :args     => [],
+          :block    => nil,
+          :parens   => true
+        )
+      end
+
+      it "returns correct AST node for builtins with no arguments and no block" do
+        ycp_node = YCP::Builtin.new(:name  => "b", :args => [], :block => nil)
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Builtins"),
+          :name     => "b",
+          :args     => [],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for builtins with arguments and no block" do
+        ycp_node = YCP::Builtin.new(
+          :name    => "b",
+          :args    => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+          :block   => nil
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Builtins"),
+          :name     => "b",
+          :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for builtins with no arguments and a block" do
+        ycp_node = YCP::Builtin.new(
+          :name  => "b",
+          :args  => [],
+          :block =>  YCP::UnspecBlock.new(
+            :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+            :symbols    => [],
+            :statements => @ycp_statements
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Builtins"),
+          :name     => "b",
+          :args     => [],
+          :block    => Ruby::Block.new(
+            :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :statements => @ruby_statements_non_empty
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for builtins with arguments and a block" do
+        ycp_node = YCP::Builtin.new(
+          :name  => "b",
+          :args  => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+          :block =>  YCP::UnspecBlock.new(
+            :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+            :symbols    => [],
+            :statements => @ycp_statements
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Builtins"),
+          :name     => "b",
+          :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+          :block    => Ruby::Block.new(
+            :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :statements => @ruby_statements_non_empty
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for namespaced builtins" do
+        ycp_node_scr   = ycp_builtin("SCR::b")
+        ycp_node_wfm   = ycp_builtin("WFM::b")
+        ycp_node_float = ycp_builtin("float::b")
+        ycp_node_list  = ycp_builtin("list::b")
+        ycp_node_none  = ycp_builtin("b")
+
+        ruby_node_scr   = ruby_builtin_call("SCR", "b")
+        ruby_node_wfm   = ruby_builtin_call("WFM", "b")
+        ruby_node_float = ruby_builtin_call("Builtins::Float", "b")
+        ruby_node_list  = ruby_builtin_call("Builtins::List", "b")
+        ruby_node_none  = ruby_builtin_call("Builtins", "b")
+
+        ycp_node_scr.compile(@context_empty).should   == ruby_node_scr
+        ycp_node_wfm.compile(@context_empty).should   == ruby_node_wfm
+        ycp_node_float.compile(@context_empty).should == ruby_node_float
+        ycp_node_list.compile(@context_empty).should  == ruby_node_list
+        ycp_node_none.compile(@context_empty).should  == ruby_node_none
+      end
+    end
+  end
+
+  describe YCP::Call, :type => :ycp do
+    describe "#compile" do
+      describe "for calls with category == \"function\"" do
+        it "returns correct AST node for unqualified calls" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => []
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "f",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for qualified calls" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => "N",
+            :name     => "f",
+            :args     => []
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "N"),
+            :name     => "f",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for calls without arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => []
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "f",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for calls with arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "f",
+            :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+      end
+
+      describe "for calls with category == \"variable\"" do
+        describe "that are qualified" do
+          it "returns correct AST node" do
+            ycp_node_m = YCP::Entry.new(:ns => "M", :name => "a")
+            ycp_node_n = YCP::Entry.new(:ns => "N", :name => "a")
+
+            ruby_node_m = Ruby::Variable.new(:name => "@a")
+            ruby_node_n = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "N"),
+              :name     => "a",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node_m.compile(@context_module).should == ruby_node_m
+            ycp_node_n.compile(@context_module).should == ruby_node_n
+          end
+        end
+
+        describe "that are unqualified" do
+          def ruby_method_call(name)
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => name),
+              :name     => "call",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          end
+
+          before :each do
+            @ycp_node_regular    = YCP::Call.new(
+              :category => "variable",
+              :ns       => nil,
+              :name     => "a",
+              :args     => []
+            )
+            @ycp_node_capital    = YCP::Call.new(
+              :category => "variable",
+              :ns       => nil,
+              :name     => "A",
+              :args     => []
+            )
+            @ycp_node_underscore = YCP::Call.new(
+              :category => "variable",
+              :ns       => nil,
+              :name     => "_a",
+              :args     => []
+            )
+            @ycp_node_reserved   = YCP::Call.new(
+              :category => "variable",
+              :ns       => nil,
+              :name     => "end",
+              :args     => []
+            )
+          end
+
+          describe "in global context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("@a")
+              ruby_node_capital    = ruby_method_call("@A")
+              ruby_node_underscore = ruby_method_call("@_a")
+              ruby_node_reserved   = ruby_method_call("@end")
+
+              @ycp_node_regular.compile(@context_global).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_global).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_global).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_global).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("@a")
+              ruby_node_capital    = ruby_method_call("@A")
+              ruby_node_underscore = ruby_method_call("@_a")
+              ruby_node_reserved   = ruby_method_call("@end")
+
+              @ycp_node_regular.compile(@context_local_global_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_global_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_global_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_global_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to local variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("a")
+              ruby_node_capital    = ruby_method_call("_A")
+              ruby_node_underscore = ruby_method_call("__a")
+              ruby_node_reserved   = ruby_method_call("_end")
+
+              @ycp_node_regular.compile(@context_local_local_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_local_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_local_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_local_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in nested local context that refer to inner variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("a2")
+              ruby_node_capital    = ruby_method_call("_A2")
+              ruby_node_underscore = ruby_method_call("__a2")
+              ruby_node_reserved   = ruby_method_call("end2")
+
+              @ycp_node_regular.compile(@context_local_nested).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_nested).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_nested).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_nested).should ==
+                ruby_node_reserved
+            end
+          end
+        end
+
+        it "returns correct AST node for calls without arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "variable",
+            :ns       => nil,
+            :name     => "f",
+            :args     => []
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "@f"),
+            :name     => "call",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for calls with arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "variable",
+            :ns       => nil,
+            :name     => "f",
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "@f"),
+            :name     => "call",
+            :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+      end
+    end
+  end
+
+  describe YCP::Compare, :type => :ycp do
+    describe "#compile" do
+      def ycp_compare(op)
+        YCP::Compare.new(
+          :op  => op,
+          :lhs => @ycp_const_42,
+          :rhs => @ycp_const_43
+        )
+      end
+
+      def ruby_ops_call(name)
+        Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => name,
+          :args     => [@ruby_literal_42, @ruby_literal_43],
+          :block    => nil,
+          :parens   => true
+        )
+      end
+
+      it "returns correct AST node" do
+        ycp_node_equal            = ycp_compare("==")
+        ycp_node_not_equal        = ycp_compare("!=")
+        ycp_node_less_than        = ycp_compare("<")
+        ycp_node_greater_than     = ycp_compare(">")
+        ycp_node_less_or_equal    = ycp_compare("<=")
+        ycp_node_greater_or_equal = ycp_compare(">=")
+
+        ruby_node_equal            = ruby_ops_call("equal")
+        ruby_node_not_equal        = ruby_ops_call("not_equal")
+        ruby_node_less_than        = ruby_ops_call("less_than")
+        ruby_node_greater_than     = ruby_ops_call("greater_than")
+        ruby_node_less_or_equal    = ruby_ops_call("less_or_equal")
+        ruby_node_greater_or_equal = ruby_ops_call("greater_or_equal")
+
+        ycp_node_equal.compile(@context_empty).should ==
+          ruby_node_equal
+        ycp_node_not_equal.compile(@context_empty).should ==
+          ruby_node_not_equal
+        ycp_node_less_than.compile(@context_empty).should ==
+          ruby_node_less_than
+        ycp_node_greater_than.compile(@context_empty).should ==
+          ruby_node_greater_than
+        ycp_node_less_or_equal.compile(@context_empty).should ==
+          ruby_node_less_or_equal
+        ycp_node_greater_or_equal.compile(@context_empty).should ==
+          ruby_node_greater_or_equal
+      end
+    end
+  end
+
+  describe YCP::Const, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node for void constants" do
+        ycp_node  = YCP::Const.new(:type => :void)
+
+        ruby_node = @ruby_literal_nil
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for boolean constants" do
+        ycp_node_true   = YCP::Const.new(:type => :bool, :value => "true")
+        ycp_node_false  = YCP::Const.new(:type => :bool, :value => "false")
+
+        ruby_node_true  = Ruby::Literal.new(:value => true)
+        ruby_node_false = Ruby::Literal.new(:value => false)
+
+        ycp_node_true.compile(@context_empty).should  == ruby_node_true
+        ycp_node_false.compile(@context_empty).should == ruby_node_false
+      end
+
+      it "returns correct AST node for integer constants" do
+        ycp_node  = YCP::Const.new(:type => :int, :value => "42")
+
+        ruby_node = Ruby::Literal.new(:value => 42)
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for float constants" do
+        ycp_node_without_decimals = YCP::Const.new(
+          :type  => :float,
+          :value => "42."
+        )
+        ycp_node_with_decimals    = YCP::Const.new(
+          :type => :float,
+          :value => "42.1"
+        )
+
+        ruby_node_without_decimals = Ruby::Literal.new(:value => 42.0)
+        ruby_node_with_decimals    = Ruby::Literal.new(:value => 42.1)
+
+        ycp_node_without_decimals.compile(@context_empty).should ==
+          ruby_node_without_decimals
+        ycp_node_with_decimals.compile(@context_empty).should ==
+          ruby_node_with_decimals
+      end
+
+      it "returns correct AST node for symbol constants" do
+        ycp_node = YCP::Const.new(:type => :symbol, :value => "abcd")
+
+        ruby_node = Ruby::Literal.new(:value => :abcd)
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for string constants" do
+        ycp_node = YCP::Const.new(:type => :string, :value => "abcd")
+
+        ruby_node = Ruby::Literal.new(:value => "abcd")
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for path constants" do
+        ycp_node  = YCP::Const.new(:type => :path, :value => ".abcd")
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Path"),
+          :name     => "new",
+          :args     => [Ruby::Literal.new(:value => ".abcd")],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Continue, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Continue.new
+
+        ruby_node = Ruby::Next.new
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::DefBlock, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::DefBlock.new(
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = Ruby::Statements.new(
+          :statements => [
+            @ruby_assignment_a_42,
+            @ruby_assignment_b_43,
+            @ruby_assignment_c_44
+          ]
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Entry, :type => :ycp do
+    describe "#compile" do
+      describe "for qualified entries" do
+        it "returns correct AST node" do
+          ycp_node_m = YCP::Entry.new(:ns => "M", :name => "a")
+          ycp_node_n = YCP::Entry.new(:ns => "N", :name => "a")
+
+          ruby_node_m = Ruby::Variable.new(:name => "@a")
+          ruby_node_n = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "N"),
+            :name     => "a",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node_m.compile(@context_module).should == ruby_node_m
+          ycp_node_n.compile(@context_module).should == ruby_node_n
+        end
+      end
+
+      describe "for unqualified entries" do
+        def ruby_variable(name)
+          Ruby::Variable.new(:name => name)
+        end
+
+        before :each do
+          @ycp_node_regular    = YCP::Entry.new(:ns => nil, :name => "a")
+          @ycp_node_capital    = YCP::Entry.new(:ns => nil, :name => "A")
+          @ycp_node_underscore = YCP::Entry.new(:ns => nil, :name => "_a")
+          @ycp_node_reserved   = YCP::Entry.new(:ns => nil, :name => "end")
+        end
+
+        describe "in global context that refer to global variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_variable("@a")
+            ruby_node_capital    = ruby_variable("@A")
+            ruby_node_underscore = ruby_variable("@_a")
+            ruby_node_reserved   = ruby_variable("@end")
+
+            @ycp_node_regular.compile(@context_global).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_global).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_global).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_global).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in local context that refer to global variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_variable("@a")
+            ruby_node_capital    = ruby_variable("@A")
+            ruby_node_underscore = ruby_variable("@_a")
+            ruby_node_reserved   = ruby_variable("@end")
+
+            @ycp_node_regular.compile(@context_local_global_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_global_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_global_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_global_vars).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in local context that refer to local variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_variable("a")
+            ruby_node_capital    = ruby_variable("_A")
+            ruby_node_underscore = ruby_variable("__a")
+            ruby_node_reserved   = ruby_variable("_end")
+
+            @ycp_node_regular.compile(@context_local_local_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_local_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_local_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_local_vars).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in nested local context that refer to inner variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_variable("a2")
+            ruby_node_capital    = ruby_variable("_A2")
+            ruby_node_underscore = ruby_variable("__a2")
+            ruby_node_reserved   = ruby_variable("end2")
+
+            @ycp_node_regular.compile(@context_local_nested).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_nested).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_nested).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_nested).should ==
+              ruby_node_reserved
+          end
+        end
+      end
+    end
+  end
+
+  describe YCP::FileBlock, :type => :ycp do
+    describe "#compile" do
+      def ruby_client_statements(statements)
+        Ruby::Statements.new(
+          :statements => [
+            Ruby::Module.new(
+              :name       => "YCP",
+              :statements => Ruby::Module.new(
+                :name       => "Clients",
+                :statements => Ruby::Class.new(
+                  :name       => "CClient",
+                  :statements => Ruby::Statements.new(:statements => statements)
+                )
+              )
+            ),
+            Ruby::MethodCall.new(
+              :receiver => Ruby::MethodCall.new(
+                :receiver => Ruby::ConstAccess.new(
+                  :receiver => Ruby::ConstAccess.new(
+                    :receiver => Ruby::Variable.new(:name => "YCP"),
+                    :name     => "Clients"
+                  ),
+                  :name     => "CClient"
+                ),
+                :name     => "new",
+                :args     => [],
+                :block    => nil,
+                :parens   => true
+              ),
+              :name     => "main",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          ]
+        )
+      end
+
+      it "returns correct AST node for empty blocks" do
+        ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
           :symbols    => [],
           :statements => []
         )
 
-        node.to_ruby.should == [
-          "module YCP",
-          "  module Clients",
-          "    class CClient",
-          "    end",
-          "  end",
-          "end",
-          "",
-          "YCP::Clients::CClient.new.main"
-        ].join("\n")
+        ruby_node = ruby_client_statements([])
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for blocks with statements" do
-        node = FileBlock.new(
+      it "returns correct AST node for blocks with statements" do
+        ycp_node = YCP::FileBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = ruby_client_statements([
+          Ruby::Def.new(
+            :name       => "main",
+            :args       => [],
+            :statements => @ruby_statements_non_empty
+          )
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with textdomain statements" do
+        ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
           :symbols    => [],
           :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
+            @ycp_textdomain_d,
+            @ycp_textdomain_e,
+            @ycp_textdomain_f
           ]
         )
 
-        node.to_ruby.should == [
-          "module YCP",
-          "  module Clients",
-          "    class CClient",
-          "      def main",
-          "        @i = 42",
-          "        @j = 43",
-          "        @k = 44",
-          "      end",
-          "    end",
-          "  end",
-          "end",
-          "",
-          "YCP::Clients::CClient.new.main"
-        ].join("\n")
+        ruby_node = ruby_client_statements([
+          @ruby_textdomain_d,
+          @ruby_textdomain_e,
+          @ruby_textdomain_f
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for blocks with textdomains" do
-        node = FileBlock.new(
+      it "returns correct AST node for blocks with function definitions" do
+        ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
           :symbols    => [],
           :statements => [
-            Textdomain.new(:name => "d"),
-            Textdomain.new(:name => "e"),
-            Textdomain.new(:name => "f")
+            @ycp_fundef_f,
+            @ycp_fundef_g,
+            @ycp_fundef_h
           ]
         )
 
-        node.to_ruby.should == [
-          "module YCP",
-          "  module Clients",
-          "    class CClient",
-          "      include I18n",
-          "      textdomain \"d\"",
-          "",
-          "      include I18n",
-          "      textdomain \"e\"",
-          "",
-          "      include I18n",
-          "      textdomain \"f\"",
-          "",
-          "    end",
-          "  end",
-          "end",
-          "",
-          "YCP::Clients::CClient.new.main"
-        ].join("\n")
-      end
+        ruby_node = ruby_client_statements([
+          @ruby_def_f,
+          @ruby_def_g,
+          @ruby_def_h,
+        ])
 
-      it "emits correct code for blocks with function declarations" do
-        node = FileBlock.new(
-          :filename   => "c.ycp",
-          :symbols    => [],
-          :statements => [
-            FunDef.new(
-              :name  => "f",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "42"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "g",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "43"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "h",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "44"))
-                ]
-              )
-            )
-          ]
-        )
-
-        node.to_ruby.should == [
-          "module YCP",
-          "  module Clients",
-          "    class CClient",
-          "",
-          "      def f",
-          "        return 42",
-          "",
-          "        nil",
-          "      end",
-          "",
-          "      def g",
-          "        return 43",
-          "",
-          "        nil",
-          "      end",
-          "",
-          "      def h",
-          "        return 44",
-          "",
-          "        nil",
-          "      end",
-          "",
-          "    end",
-          "  end",
-          "end",
-          "",
-          "YCP::Clients::CClient.new.main"
-        ].join("\n")
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Filename do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Filename.new
+  describe YCP::Filename, :type => :ycp do
+    describe "#compile" do
+      it "returns nil" do
+        ycp_node = YCP::Filename.new
 
-        node.to_ruby.should == ""
+        ycp_node.compile(@context_empty).should be_nil
       end
     end
   end
 
-  describe FunDef do
-    describe "#to_ruby" do
-      def fundef_with_args(type)
-        FunDef.new(
+  describe YCP::FunDef, :type => :ycp do
+    describe "#compile" do
+      def ycp_symbol(type, name)
+        YCP::Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => type,
+          :name     => name
+        )
+      end
+
+      def ycp_fundef_with_args(type)
+        YCP::FunDef.new(
           :name  => "f",
           :args  => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => type,
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => type,
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => type,
-              :name     => "c"
-            )
+            ycp_symbol(type, "a"),
+            ycp_symbol(type, "b"),
+            ycp_symbol(type, "c")
           ],
-          :block => DefBlock.new(
-            :symbols    => [],
-            :statements => [
-              Return.new(:child => Const.new(:type => :int, :value => "42"))
-            ]
+          :block => @ycp_def_block
+        )
+      end
+
+      def ruby_arg_copy(name)
+        Ruby::Assignment.new(
+          :lhs => Ruby::Variable.new(:name => name),
+          :rhs => Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "YCP"),
+            :name     => "copy",
+            :args     => [Ruby::Variable.new(:name => name)],
+            :block    => nil,
+            :parens   => true
           )
         )
       end
 
-      it "emits correct code for fundefs without arguments" do
-        node = FunDef.new(
+      it "returns correct AST node for function definitions without arguments" do
+        ycp_node = YCP::FunDef.new(
           :name  => "f",
           :args  => [],
-          :block => DefBlock.new(
-            :symbols    => [],
+          :block => @ycp_def_block
+        )
+
+        ruby_node = Ruby::Def.new(
+          :name => "f",
+          :args => [],
+          :statements => Ruby::Statements.new(
             :statements => [
-              Return.new(:child => Const.new(:type => :int, :value => "42"))
+              @ruby_assignment_a_42,
+              @ruby_assignment_b_43,
+              @ruby_assignment_c_44,
+              @ruby_literal_nil
             ]
           )
         )
 
-        node.to_ruby.should == "def f\n  return 42\n\n  nil\nend\n"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for fundefs with arguments" do
-        node_boolean       = fundef_with_args("boolean")
-        node_integer       = fundef_with_args("integer")
-        node_symbol        = fundef_with_args("symbol")
-        node_any           = fundef_with_args("any")
-        node_const_boolean = fundef_with_args("const boolean")
-        node_const_integer = fundef_with_args("const integer")
-        node_const_symbol  = fundef_with_args("const symbol")
-        node_const_any     = fundef_with_args("const any")
+      it "returns correct AST node for function definitions with arguments" do
+        ycp_node_without_copy = ycp_fundef_with_args("boolean")
+        ycp_node_with_copy    = ycp_fundef_with_args("string")
 
-        code_without_copy = [
-          "def f(a, b, c)",
-          "  return 42",
-          "",
-          "  nil",
-          "end",
-          ""
-        ].join("\n")
+        ruby_node_without_copy = Ruby::Def.new(
+          :name => "f",
+          :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :statements => Ruby::Statements.new(
+            :statements => [
+              @ruby_assignment_a_42,
+              @ruby_assignment_b_43,
+              @ruby_assignment_c_44,
+              @ruby_literal_nil
+            ]
+          )
+        )
 
-        code_with_copy = [
-          "def f(a, b, c)",
-          "  a = YCP.copy(a)",
-          "  b = YCP.copy(b)",
-          "  c = YCP.copy(c)",
-          "  return 42",
-          "",
-          "  nil",
-          "end",
-          ""
-        ].join("\n")
+        ruby_node_with_copy = Ruby::Def.new(
+          :name => "f",
+          :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :statements => Ruby::Statements.new(
+            :statements => [
+              ruby_arg_copy("a"),
+              ruby_arg_copy("b"),
+              ruby_arg_copy("c"),
+              @ruby_assignment_a_42,
+              @ruby_assignment_b_43,
+              @ruby_assignment_c_44,
+              @ruby_literal_nil
+            ]
+          )
+        )
 
-        node_boolean.to_ruby.should       == code_without_copy
-        node_integer.to_ruby.should       == code_without_copy
-        node_symbol.to_ruby.should        == code_without_copy
-        node_any.to_ruby.should           == code_with_copy
-        node_const_boolean.to_ruby.should == code_without_copy
-        node_const_integer.to_ruby.should == code_without_copy
-        node_const_symbol.to_ruby.should  == code_without_copy
-        node_const_any.to_ruby.should     == code_with_copy
+        ycp_node_without_copy.compile(@context_empty).should ==
+          ruby_node_without_copy
+        ycp_node_with_copy.compile(@context_empty).should ==
+          ruby_node_with_copy
       end
 
       it "raises an exception for nested functions" do
-        node = FunDef.new(
+        ycp_node = YCP::FunDef.new(
           :name  => "f",
           :args  => [],
-          :block => DefBlock.new(
-            :symbols    => [],
-            :statements => [
-              Return.new(:child => Const.new(:type => :int, :value => "42"))
-            ]
-          )
+          :block => @ycp_def_block
         )
 
         lambda {
-          node.to_ruby(Context.new(:blocks => [FileBlock.new, DefBlock.new]))
+          ycp_node.compile(@context_def)
         }.should raise_error NotImplementedError, "Nested function enountered: \"f\". Nested functions are not supported."
       end
     end
   end
 
-  describe If do
+  describe YCP::If, :type => :ycp do
     describe "#to_ruby" do
-      it "emits correct code for ifs without then and else" do
-        node = If.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
-          :then => nil,
+      it "returns correct AST node for if statements without then and else" do
+        ycp_node = YCP::If.new(:cond => @ycp_true, :then => nil, :else => nil)
+
+        ruby_node = Ruby::If.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_statements_empty,
+          :else      => nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for if statements with then but without else" do
+        ycp_node = YCP::If.new(
+          :cond => @ycp_true,
+          :then => @ycp_stmt_block,
           :else => nil
         )
 
-        node.to_ruby.should == "if true\nend"
-      end
-
-      it "emits correct code for ifs with then but without else" do
-        node = If.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
-          :then => COMMON_FUNCTION_CALL,
-          :else => nil
+        ruby_node = Ruby::If.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_statements_non_empty,
+          :else      => nil
         )
 
-        node.to_ruby.should == "if true\n  n.f\nend"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for ifs without then but with else" do
-        node = If.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
+      it "returns correct AST node for if statements without then but with else" do
+        ycp_node = YCP::If.new(
+          :cond => @ycp_true,
           :then => nil,
-          :else => COMMON_FUNCTION_CALL,
+          :else => @ycp_stmt_block
         )
 
-        node.to_ruby.should == "if true\nelse\n  n.f\nend"
-      end
-
-      it "emits correct code for ifs with then and else" do
-        node = If.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
-          :then => COMMON_FUNCTION_CALL,
-          :else => COMMON_FUNCTION_CALL
+        ruby_node = Ruby::If.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_statements_empty,
+          :else      => @ruby_statements_non_empty
         )
 
-        node.to_ruby.should == "if true\n  n.f\nelse\n  n.f\nend"
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for if statements with then and else" do
+        ycp_node = YCP::If.new(
+          :cond => @ycp_true,
+          :then => @ycp_stmt_block,
+          :else => @ycp_stmt_block
+        )
+
+        ruby_node = Ruby::If.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_statements_non_empty,
+          :else      => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Import do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node_regular = Import.new(:name => "M")
-        node_scr     = Import.new(:name => "SCR")
-        node_wfm     = Import.new(:name => "WFM")
+  describe YCP::Import, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node for regular imports" do
+        ycp_node = YCP::Import.new(:name => "M")
 
-        node_regular.to_ruby.should == "YCP.import(\"M\")\n"
-        node_scr.to_ruby.should     == ""
-        node_wfm.to_ruby.should     == ""
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "YCP"),
+          :name     => "import",
+          :args     => [Ruby::Literal.new(:value => "M")],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns nil for SCR imports" do
+        ycp_node = YCP::Import.new(:name => "SCR")
+
+        ycp_node.compile(@context_empty).should be_nil
+      end
+
+      it "returns nil for WFM imports" do
+        ycp_node = YCP::Import.new(:name => "WFM")
+
+        ycp_node.compile(@context_empty).should be_nil
       end
     end
   end
 
-  describe Include do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Include.new
+  describe YCP::Include, :type => :ycp do
+    describe "#compile" do
+      it "returns nil" do
+        ycp_node = YCP::Include.new
 
-        node.to_ruby.should == ""
+        ycp_node.compile(@context_empty).should be_nil
       end
     end
   end
 
-  describe List do
-    describe "#to_ruby" do
-      it "emits correct code for empty lists" do
-        node = List.new(:children => [])
+  describe YCP::List, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::List.new(
+          :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+        )
 
-        node.to_ruby.should == "[]"
+        ruby_node = Ruby::Array.new(
+          :elements => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44]
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
+    end
+  end
 
-      it "emits correct code for non-empty lists" do
-        node = List.new(
+  describe YCP::Locale, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Locale.new(:text => "text")
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "_",
+          :args     => [Ruby::Literal.new(:value => "text")],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Map, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Map.new(
           :children => [
-            Const.new(:type => :int, :value => "42"),
-            Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44")
+            YCP::MapElement.new(:key => @ycp_const_a, :value => @ycp_const_42),
+            YCP::MapElement.new(:key => @ycp_const_b, :value => @ycp_const_43),
+            YCP::MapElement.new(:key => @ycp_const_c, :value => @ycp_const_44)
           ]
         )
 
-        node.to_ruby.should == "[42, 43, 44]"
-      end
-    end
-  end
-
-  describe Locale do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Locale.new(
-          :text => "Translated text."
-        )
-
-        node.to_ruby.should == "_(\"Translated text.\")"
-      end
-    end
-  end
-
-  describe Map do
-    describe "#to_ruby" do
-      it "emits correct code for empty maps" do
-        node = Map.new(:children => [])
-
-        node.to_ruby.should == "{}"
-      end
-
-      it "emits correct code for non-empty maps" do
-        node = Map.new(
-          :children => [
-            MapElement.new(
-              :key   => Const.new(:type => :symbol, :value => "a"),
-              :value => Const.new(:type => :int,    :value => "42")
+        ruby_node = Ruby::Hash.new(
+          :entries => [
+            Ruby::HashEntry.new(
+              :key   => @ruby_literal_a,
+              :value => @ruby_literal_42
             ),
-            MapElement.new(
-              :key   => Const.new(:type => :symbol, :value => "b"),
-              :value => Const.new(:type => :int,    :value => "43")
+            Ruby::HashEntry.new(
+              :key   => @ruby_literal_b,
+              :value => @ruby_literal_43
             ),
-            MapElement.new(
-              :key   => Const.new(:type => :symbol, :value => "c"),
-              :value => Const.new(:type => :int,    :value => "44")
+            Ruby::HashEntry.new(
+              :key   => @ruby_literal_c,
+              :value => @ruby_literal_44
             )
           ]
         )
 
-        node.to_ruby.should == "{ :a => 42, :b => 43, :c => 44 }"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe MapElement do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = MapElement.new(
-          :key   => Const.new(:type => :symbol, :value => "a"),
-          :value => Const.new(:type => :int,    :value => "42")
+  describe YCP::MapElement, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::MapElement.new(
+          :key   => @ycp_const_a,
+          :value => @ycp_const_42
         )
 
-        node.to_ruby.should == ":a => 42"
+        ruby_node = Ruby::HashEntry.new(
+          :key   => @ruby_literal_a,
+          :value => @ruby_literal_42
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe ModuleBlock do
-    describe "#to_ruby" do
-      it "emits correct code for empty blocks" do
-        node = ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [],
-          :statements => []
-        )
+  describe YCP::ModuleBlock, :type => :ycp do
+    describe "#compile" do
+      def ruby_module_statements(statements)
+        class_statements = [
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "extend",
+            :args     => [Ruby::Variable.new(:name => "Exportable")],
+            :block    => nil,
+            :parens   => false
+          )
+        ] + statements
 
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
+        Ruby::Statements.new(
+          :statements => [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "require",
+              :args     => [Ruby::Literal.new(:value => "ycp")],
+              :block    => nil,
+              :parens   => false
+            ),
+            Ruby::Module.new(
+              :name       => "YCP",
+              :statements => Ruby::Statements.new(
+                :statements => [
+                  Ruby::Class.new(
+                    :name       => "MClass",
+                    :statements => Ruby::Statements.new(:statements => class_statements)
+                  ),
+                  Ruby::Assignment.new(
+                    :lhs => Ruby::Variable.new(:name => "M"),
+                    :rhs => Ruby::MethodCall.new(
+                      :receiver => Ruby::Variable.new(:name => "MClass"),
+                      :name     => "new",
+                      :args     => [],
+                      :block    => nil,
+                      :parens   => true
+                    )
+                  )
+                ]
+              )
+            ),
+          ]
+        )
       end
 
-      it "emits correct code for blocks with symbols" do
-        node = ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "a"
-            ),
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "b"
-            ),
-            Symbol.new(
-              :global   => true,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "c"
+      def ruby_publish_call(name)
+        Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "publish",
+          :args     => [
+            Ruby::Hash.new(
+              :entries => [
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :variable),
+                  :value => Ruby::Literal.new(:value => name.to_sym)
+                ),
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :type),
+                  :value => Ruby::Literal.new(:value => "integer")
+                )
+              ]
             )
           ],
+          :block    => nil,
+          :parens   => true
+        )
+      end
+
+      it "returns correct AST node for empty blocks" do
+        ycp_node = YCP::ModuleBlock.new(
+          :name       => "M",
+          :symbols    => [],
           :statements => []
         )
 
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "    publish :variable => :a, :type => \"integer\"",
-          "    publish :variable => :b, :type => \"integer\"",
-          "    publish :variable => :c, :type => \"integer\"",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
+        ruby_node = ruby_module_statements([])
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for blocks with statements" do
-        node = ModuleBlock.new(
+      it "returns correct AST node for blocks with symbols" do
+        ycp_node = YCP::ModuleBlock.new(
+          :name       => "M",
+          :symbols    => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+          :statements => []
+        )
+
+        ruby_node = ruby_module_statements([
+          ruby_publish_call("a"),
+          ruby_publish_call("b"),
+          ruby_publish_call("c")
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with statements" do
+        ycp_node = YCP::ModuleBlock.new(
+          :name       => "M",
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = ruby_module_statements([
+          Ruby::Def.new(
+            :name       => "initialize",
+            :args       => [],
+            :statements => @ruby_statements_non_empty
+          )
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with textdomain statements" do
+        ycp_node = YCP::ModuleBlock.new(
           :name       => "M",
           :symbols    => [],
           :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
+            @ycp_textdomain_d,
+            @ycp_textdomain_e,
+            @ycp_textdomain_f
           ]
         )
 
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
-          "    def initialize",
-          "      @i = 42",
-          "      @j = 43",
-          "      @k = 44",
-          "    end",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
+        ruby_node = ruby_module_statements([
+          @ruby_textdomain_d,
+          @ruby_textdomain_e,
+          @ruby_textdomain_f
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for blocks with textdomains" do
-        node = ModuleBlock.new(
+      it "returns correct AST node for blocks with function definitions" do
+        ycp_node = YCP::ModuleBlock.new(
           :name       => "M",
           :symbols    => [],
           :statements => [
-            Textdomain.new(:name => "d"),
-            Textdomain.new(:name => "e"),
-            Textdomain.new(:name => "f")
+            @ycp_fundef_f,
+            @ycp_fundef_g,
+            @ycp_fundef_h
           ]
         )
 
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "    include I18n",
-          "    textdomain \"d\"",
-          "",
-          "    include I18n",
-          "    textdomain \"e\"",
-          "",
-          "    include I18n",
-          "    textdomain \"f\"",
-          "",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
-      end
+        ruby_node = ruby_module_statements([
+          @ruby_def_f,
+          @ruby_def_g,
+          @ruby_def_h,
+        ])
 
-      it "emits correct code for blocks with function declarations" do
-        node = ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            FunDef.new(
-              :name  => "f",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "42"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "g",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "43"))
-                ]
-              )
-            ),
-            FunDef.new(
-              :name  => "h",
-              :args  => [],
-              :block => DefBlock.new(
-                :symbols    => [],
-                :statements => [
-                  Return.new(:child => Const.new(:type => :int, :value => "44"))
-                ]
-              )
-            )
-          ]
-        )
-
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "",
-          "    def f",
-          "      return 42",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "    def g",
-          "      return 43",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "    def h",
-          "      return 44",
-          "",
-          "      nil",
-          "    end",
-          "",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
       it "strips the \".ycp\" extension from module name" do
-        node = ModuleBlock.new(
+        ycp_node = YCP::ModuleBlock.new(
           :name       => "M.ycp",
           :symbols    => [],
           :statements => []
         )
 
-        node.to_ruby.should == [
-          "require \"ycp\"",
-          "",
-          "module YCP",
-          "  class MClass",
-          "    extend Exportable",
-          "  end",
-          "",
-          "  M = MClass.new",
-          "end"
-        ].join("\n")
+        ruby_node = ruby_module_statements([])
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Repeat do
-    describe "#to_ruby" do
-      it "emits correct code for repeats without do" do
-        node = Repeat.new(
-          :do   => nil,
-          :until => Const.new(:type => :bool, :value => "true")
+  describe YCP::Repeat, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node for repeat statements without do" do
+        ycp_node = YCP::Repeat.new(:do => nil, :until => @ycp_true)
+
+        ruby_node = Ruby::Until.new(
+          :condition => @ruby_literal_true,
+          :body      => Ruby::Begin.new(:statements => @ruby_statements_empty)
         )
 
-        node.to_ruby.should == "begin\nend until true"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for repeats with do" do
-        node = Repeat.new(
-          :do    => COMMON_FUNCTION_CALL,
-          :until => Const.new(:type => :bool, :value => "true")
+      it "returns correct AST node for repeat statements with do" do
+        ycp_node = YCP::Repeat.new(:do => @ycp_stmt_block, :until => @ycp_true)
+
+        ruby_node = Ruby::Until.new(
+          :condition => @ruby_literal_true,
+          :body      => Ruby::Begin.new(
+            :statements => @ruby_statements_non_empty
+          )
         )
 
-        node.to_ruby.should == "begin\n  n.f\nend until true"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Return do
-    describe "#to_ruby" do
+  describe YCP::Return, :type => :ycp do
+    describe "#compile" do
       before :each do
-        @node_without_value = Return.new(:child => nil)
-        @node_with_value    = Return.new(
-          :child => Const.new(:type => :int, :value => "42")
-        )
+        @ycp_node_without_value = YCP::Return.new(:child => nil)
+        @ycp_node_with_value    = YCP::Return.new(:child => @ycp_const_42)
+
+        @ruby_node_return_without_value = Ruby::Return.new(:value => nil)
+        @ruby_node_return_with_value    = Ruby::Return.new(:value => @ruby_literal_42)
+        @ruby_node_next_without_value   = Ruby::Next.new(:value => nil)
+        @ruby_node_next_with_value      = Ruby::Next.new(:value => @ruby_literal_42)
       end
 
-      describe "inside a function" do
-        before :each do
-          @context = Context.new(:blocks => [FileBlock.new, DefBlock.new])
+      describe "for return statements at the client toplevel" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_def).should ==
+            @ruby_node_return_without_value
         end
 
-        it "emits correct code for a return without a value" do
-          @node_without_value.to_ruby(@context).should == "return"
-        end
-
-        it "emits correct code for a return with a value" do
-          @node_with_value.to_ruby(@context).should == "return 42"
-        end
-      end
-
-      describe "inside a function which is inside a block expression" do
-        before :each do
-          @context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new, DefBlock.new])
-        end
-
-        it "emits correct code for a return without a value" do
-          @node_without_value.to_ruby(@context).should == "return"
-        end
-
-        it "emits correct code for a return with a value" do
-          @node_with_value.to_ruby(@context).should == "return 42"
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_def).should ==
+            @ruby_node_return_with_value
         end
       end
 
-      describe "inside a block expression" do
-        before :each do
-          @context = Context.new(:blocks => [FileBlock.new, UnspecBlock.new])
+      describe "for return statements inside a function" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_def).should ==
+            @ruby_node_return_without_value
         end
 
-        it "emits correct code for a return without a value" do
-          @node_without_value.to_ruby(@context).should == "next"
-        end
-
-        it "emits correct code for a return with a value" do
-          @node_with_value.to_ruby(@context).should == "next 42"
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_def).should ==
+            @ruby_node_return_with_value
         end
       end
 
-      describe "inside a block expression which is inside a function" do
-        before :each do
-          @context = Context.new(:blocks => [FileBlock.new, DefBlock.new, UnspecBlock.new])
+      describe "for return statements inside a function which is inside a client toplevel" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_def_in_file).should ==
+            @ruby_node_return_without_value
         end
 
-        it "emits correct code for a return without a value" do
-          @node_without_value.to_ruby(@context).should == "next"
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_def_in_file).should ==
+            @ruby_node_return_with_value
+        end
+      end
+
+      describe "for return statements inside a function which is inside a block expression" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_def_in_unspec).should ==
+            @ruby_node_return_without_value
         end
 
-        it "emits correct code for a return with a value" do
-          @node_with_value.to_ruby(@context).should == "next 42"
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_def_in_unspec).should ==
+            @ruby_node_return_with_value
+        end
+      end
+
+      describe "for return statements inside a block expression" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_unspec).should ==
+            @ruby_node_next_without_value
+        end
+
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_unspec).should ==
+            @ruby_node_next_with_value
+        end
+      end
+
+      describe "for return statements inside a block expression which is inside a client toplevel" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_unspec_in_file).should ==
+            @ruby_node_next_without_value
+        end
+
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_unspec_in_file).should ==
+            @ruby_node_next_with_value
+        end
+      end
+
+      describe "for return statements inside a block expression which is inside a function" do
+        it "returns correct AST node for a return without a value" do
+          @ycp_node_without_value.compile(@context_unspec_in_def).should ==
+            @ruby_node_next_without_value
+        end
+
+        it "returns correct AST node for a return with a value" do
+          @ycp_node_with_value.compile(@context_unspec_in_def).should ==
+            @ruby_node_next_with_value
         end
       end
     end
   end
 
-  describe StmtBlock do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = StmtBlock.new(
+  describe YCP::StmtBlock, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::StmtBlock.new(
           :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = Ruby::Statements.new(
           :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
+            @ruby_assignment_a_42,
+            @ruby_assignment_b_43,
+            @ruby_assignment_c_44
           ]
         )
 
-        node.to_ruby.should == "@i = 42\n@j = 43\n@k = 44"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Symbol do
+  describe YCP::Symbol, :type => :ycp do
+    before :each do
+      @ycp_node_regular = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "s"
+      )
+      @ycp_node_capital = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "S"
+      )
+      @ycp_node_underscore = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "_s"
+      )
+      @ycp_node_reserved = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "end"
+      )
+    end
+
     describe "#needs_copy?" do
-      it "returns false for a boolean" do
-        node = Symbol.new(
+      def ycp_symbol(type)
+        YCP::Symbol.new(
           :global   => false,
           :category => :variable,
-          :type     => "boolean",
+          :type     => type,
           :name     => "s"
         )
-
-        node.needs_copy?.should be_false
       end
 
-      it "returns false for an integer" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "s"
-        )
+      it "returns false for booleans" do
+        ycp_node = ycp_symbol("boolean")
 
-        node.needs_copy?.should be_false
+        ycp_node.needs_copy?.should be_false
       end
 
-      it "returns false for a symbol" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "symbol",
-          :name     => "s"
-        )
+      it "returns false for integers" do
+        ycp_node = ycp_symbol("integer")
 
-        node.needs_copy?.should be_false
+        ycp_node.needs_copy?.should be_false
       end
 
-      it "returns false for a reference" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "string &",
-          :name     => "s"
-        )
+      it "returns false for symbols" do
+        ycp_node = ycp_symbol("symbol")
 
-        node.needs_copy?.should be_false
+        ycp_node.needs_copy?.should be_false
       end
 
-      it "returns true for a string" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "string",
-          :name     => "s"
-        )
+      it "returns false for references" do
+        ycp_node = ycp_symbol("string &")
 
-        node.needs_copy?.should be_true
+        ycp_node.needs_copy?.should be_false
+      end
+
+      it "returns true for other types" do
+        ycp_node = ycp_symbol("string")
+
+        ycp_node.needs_copy?.should be_true
       end
     end
 
     describe "#published?" do
-      it "returns true for a global variable" do
-        node = Symbol.new(
-          :global   => true,
-          :category => :variable,
-          :type     => "integer",
+      def ycp_symbol(global, category, type)
+        YCP::Symbol.new(
+          :global   => global,
+          :category => category,
+          :type     => type,
           :name     => "s"
         )
-
-        node.should be_published
       end
 
-      it "returns true for a global function" do
-        node = Symbol.new(
-          :global   => true,
-          :category => :function,
-          :type     => "integer ()",
-          :name     => "s"
-        )
+      it "returns true for global variables" do
+        ycp_node = ycp_symbol(true, :variable, "integer")
 
-        node.should be_published
+        ycp_node.should be_published
       end
 
-      it "returns false for a global filename" do
-        node = Symbol.new(
-          :global   => true,
-          :category => :filename,
-          :type     => nil,
-          :name     => "s"
-        )
+      it "returns true for global functions" do
+        ycp_node = ycp_symbol(true, :function, "integer ()")
 
-        node.should_not be_published
+        ycp_node.should be_published
       end
 
-      it "returns false for a non-global variable" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "s"
-        )
+      it "returns false for other global symbols" do
+        ycp_node = ycp_symbol(true, :filename, nil)
 
-        node.should_not be_published
+        ycp_node.should_not be_published
       end
 
-      it "returns false-true for a global function" do
-        node = Symbol.new(
-          :global   => false,
-          :category => :function,
-          :type     => "integer ()",
-          :name     => "s"
-        )
+      it "returns false for non-global variables" do
+        ycp_node = ycp_symbol(false, :variable, "integer")
 
-        node.should_not be_published
+        ycp_node.should_not be_published
+      end
+
+      it "returns false for non-global functions" do
+        ycp_node = ycp_symbol(false, :function, "integer ()")
+
+        ycp_node.should_not be_published
       end
     end
 
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node_regular = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "s"
-        )
-        node_capital = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "S"
-        )
-        node_underscore = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "_s"
-        )
+    describe "#compile" do
+      it "returns correct AST node" do
+        ruby_node_regular    = Ruby::Arg.new(:name => "s", :default => nil)
+        ruby_node_capital    = Ruby::Arg.new(:name => "_S", :default => nil)
+        ruby_node_underscore = Ruby::Arg.new(:name => "__s", :default => nil)
+        ruby_node_reserved   = Ruby::Arg.new(:name => "_end", :default => nil)
 
-        node_regular.to_ruby.should    == "s"
-        node_capital.to_ruby.should    == "_S"
-        node_underscore.to_ruby.should == "__s"
+        @ycp_node_regular.compile(@context_empty).should ==
+          ruby_node_regular
+        @ycp_node_capital.compile(@context_empty).should ==
+          ruby_node_capital
+        @ycp_node_underscore.compile(@context_empty).should ==
+          ruby_node_underscore
+        @ycp_node_reserved.compile(@context_empty).should ==
+          ruby_node_reserved
       end
     end
 
-    describe "#to_ruby_copy_call" do
-      it "emits correct code" do
-        node_regular = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "s"
-        )
-        node_capital = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "S"
-        )
-        node_underscore = Symbol.new(
-          :global   => false,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "_s"
-        )
-
-        node_regular.to_ruby_copy_call.should    == "s = YCP.copy(s)"
-        node_capital.to_ruby_copy_call.should    == "_S = YCP.copy(_S)"
-        node_underscore.to_ruby_copy_call.should == "__s = YCP.copy(__s)"
-      end
-    end
-
-    describe "#to_ruby_publish_call" do
-      it "emits correct code" do
-        node = Symbol.new(
-          :global   => true,
-          :category => :variable,
-          :type     => "integer",
-          :name     => "s"
-        )
-
-        node.to_ruby_publish_call.should ==
-          "publish :variable => :s, :type => \"integer\""
-      end
-    end
-  end
-
-  describe Textdomain do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Textdomain.new(:name => "d")
-
-        node.to_ruby.should == "include I18n\ntextdomain \"d\"\n"
-      end
-    end
-  end
-
-  describe Typedef do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Typedef.new
-
-        node.to_ruby.should == ""
-      end
-    end
-  end
-
-  describe UnspecBlock do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = UnspecBlock.new(
-          :args       => [],
-          :symbols    => [],
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby.should == "lambda {\n  @i = 42\n  @j = 43\n  @k = 44\n}"
-      end
-    end
-
-    describe "#to_ruby_block" do
-      it "emits correct code without arguments" do
-        node = UnspecBlock.new(
-          :args       => [],
-          :symbols    => [],
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
-        )
-
-        node.to_ruby_block.should == "{\n  @i = 42\n  @j = 43\n  @k = 44\n}"
-      end
-
-      it "emits correct code with arguments" do
-        args = [
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "a"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "b"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "c"
+    describe "#compile_as_copy_call" do
+      def ruby_copy_call(name)
+        Ruby::Assignment.new(
+          :lhs => Ruby::Variable.new(:name => name),
+          :rhs => Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "YCP"),
+            :name     => "copy",
+            :args     => [Ruby::Variable.new(:name => name)],
+            :block    => nil,
+            :parens   => true
           )
-        ]
+        )
+      end
 
-        node = UnspecBlock.new(
-          :args       => args,
-          :symbols    => args,
-          :statements => [
-            Assign.new(
-              :name  => "i",
-              :child => Const.new(:type => :int, :value => "42")
-            ),
-            Assign.new(
-              :name  => "j",
-              :child => Const.new(:type => :int, :value => "43")
-            ),
-            Assign.new(
-              :name  => "k",
-              :child => Const.new(:type => :int, :value => "44")
-            )
-          ]
+      it "returns correct AST node" do
+        ruby_node_regular    = ruby_copy_call("s")
+        ruby_node_capital    = ruby_copy_call("_S")
+        ruby_node_underscore = ruby_copy_call("__s")
+
+        @ycp_node_regular.compile_as_copy_call(@context_empty).should ==
+          ruby_node_regular
+        @ycp_node_capital.compile_as_copy_call(@context_empty).should ==
+          ruby_node_capital
+        @ycp_node_underscore.compile_as_copy_call(@context_empty).should ==
+          ruby_node_underscore
+      end
+    end
+
+    describe "#compile_as_publish_call" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Symbol.new(
+          :global   => false,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
         )
 
-        node.to_ruby_block.should ==
-          "{ |a, b, c|\n  @i = 42\n  @j = 43\n  @k = 44\n}"
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "publish",
+          :args     => [
+            Ruby::Hash.new(
+              :entries => [
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :variable),
+                  :value => Ruby::Literal.new(:value => :s)
+                ),
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :type),
+                  :value => Ruby::Literal.new(:value => "integer")
+                )
+              ]
+            )
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_publish_call(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe Variable do
-    describe "#to_ruby" do
-      before :each do
-        @node_unprefixed_i = Variable.new(:name => "i", :category => "variable")
-        @node_unprefixed_j = Variable.new(:name => "j", :category => "variable")
-        @node_prefixed_m   = Variable.new(:name => "M::i", :category => "variable")
-        @node_prefixed_n   = Variable.new(:name => "N::i", :category => "variable")
-        @node_capital      = Variable.new(:name => "I", :category => "variable")
-        @node_underscore   = Variable.new(:name => "_i", :category => "variable")
-        @node_reserved     = Variable.new(:name => "end", :category => "variable")
+  describe YCP::Textdomain, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Textdomain.new(:name => "d")
 
-        @def_block    = DefBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
+        ruby_node = Ruby::Statements.new(
+          :statements => [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "include",
+              :args     => [Ruby::Variable.new(:name => "I18n")],
+              :block    => nil,
+              :parens   => false
             ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "I"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "_i"
-            ),
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "textdomain",
+              :args     => [Ruby::Literal.new(:value => "d")],
+              :block    => nil,
+              :parens   => false
+            )
+          ]
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Typedef, :type => :ycp do
+    describe "#compile" do
+      it "returns nil" do
+        ycp_node = YCP::Typedef.new
+
+        ycp_node.compile(@context_empty).should be_nil
+      end
+    end
+  end
+
+  describe YCP::UnspecBlock, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::UnspecBlock.new(
+          :args       => [],
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "lambda",
+          :args     => [],
+          :block    => Ruby::Block.new(
+            :args       => [],
+            :statements => @ruby_statements_non_empty
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+
+    describe "#compile_as_block" do
+      it "returns correct AST node without arguments" do
+        ycp_node = YCP::UnspecBlock.new(
+          :args       => [],
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = Ruby::Block.new(
+          :args       => [],
+          :statements => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node with arguments" do
+        ycp_node = YCP::UnspecBlock.new(
+          :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+          :symbols    => [],
+          :statements => @ycp_statements
+        )
+
+        ruby_node = Ruby::Block.new(
+          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :statements => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Variable, :type => :ycp do
+    describe "#compile" do
+      describe "for calls with category == \"variable\"" do
+        describe "that are qualified" do
+          it "returns correct AST node" do
+            ycp_node_m = YCP::Variable.new(
+              :category => "variable",
+              :name     => "M::a"
+            )
+            ycp_node_n = YCP::Variable.new(
+              :category => "variable",
+              :name     => "N::a"
+            )
+
+            ruby_node_m = Ruby::Variable.new(:name => "@a")
+            ruby_node_n = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "N"),
+              :name     => "a",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node_m.compile(@context_module).should == ruby_node_m
+            ycp_node_n.compile(@context_module).should == ruby_node_n
+          end
+        end
+
+        describe "that are unqualified" do
+          def ruby_variable(name)
+            Ruby::Variable.new(:name => name)
+          end
+
+          before :each do
+            @ycp_node_regular    = YCP::Variable.new(
+              :category => "variable",
+              :name     => "a"
+            )
+            @ycp_node_capital    = YCP::Variable.new(
+              :category => "variable",
+              :name     => "A"
+            )
+            @ycp_node_underscore = YCP::Variable.new(
+              :category => "variable",
+              :name     => "_a"
+            )
+            @ycp_node_reserved   = YCP::Variable.new(
+              :category => "variable",
               :name     => "end"
             )
-          ]
-        )
-        @file_block   = FileBlock.new(:symbols => [])
-        @module_block = ModuleBlock.new(:name => "M", :symbols => [])
-        @unspec_block = UnspecBlock.new(
-          :symbols => [
-            Symbol.new(
-              :global   => false,
-              :category => :variable,
-              :type     => "integer",
-              :name     => "i"
+          end
+
+          describe "in global context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("@a")
+              ruby_node_capital    = ruby_variable("@A")
+              ruby_node_underscore = ruby_variable("@_a")
+              ruby_node_reserved   = ruby_variable("@end")
+
+              @ycp_node_regular.compile(@context_global).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_global).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_global).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_global).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("@a")
+              ruby_node_capital    = ruby_variable("@A")
+              ruby_node_underscore = ruby_variable("@_a")
+              ruby_node_reserved   = ruby_variable("@end")
+
+              @ycp_node_regular.compile(@context_local_global_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_global_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_global_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_global_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to local variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("a")
+              ruby_node_capital    = ruby_variable("_A")
+              ruby_node_underscore = ruby_variable("__a")
+              ruby_node_reserved   = ruby_variable("_end")
+
+              @ycp_node_regular.compile(@context_local_local_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_local_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_local_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_local_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in nested local context that refer to inner variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("a2")
+              ruby_node_capital    = ruby_variable("_A2")
+              ruby_node_underscore = ruby_variable("__a2")
+              ruby_node_reserved   = ruby_variable("end2")
+
+              @ycp_node_regular.compile(@context_local_nested).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_nested).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_nested).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_nested).should ==
+                ruby_node_reserved
+            end
+          end
+        end
+      end
+
+      describe "for calls with category == \"reference\"" do
+        describe "that are qualified" do
+          it "returns correct AST node" do
+            ycp_node_m = YCP::Variable.new(
+              :category => "reference",
+              :name     => "M::a"
             )
-          ]
-        )
-      end
+            ycp_node_n = YCP::Variable.new(
+              :category => "reference",
+              :name     => "N::a"
+            )
 
-      describe "at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block])
+            ruby_node_m = Ruby::Variable.new(:name => "@a")
+            ruby_node_n = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "N"),
+              :name     => "a",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
 
-          @node_unprefixed_i.to_ruby(context).should == "@i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
+            ycp_node_m.compile(@context_module).should == ruby_node_m
+            ycp_node_n.compile(@context_module).should == ruby_node_n
+          end
+        end
+
+        describe "that are unqualified" do
+          def ruby_variable(name)
+            Ruby::Variable.new(:name => name)
+          end
+
+          before :each do
+            @ycp_node_regular    = YCP::Variable.new(
+              :category => "reference",
+              :name     => "a"
+            )
+            @ycp_node_capital    = YCP::Variable.new(
+              :category => "reference",
+              :name     => "A"
+            )
+            @ycp_node_underscore = YCP::Variable.new(
+              :category => "reference",
+              :name     => "_a"
+            )
+            @ycp_node_reserved   = YCP::Variable.new(
+              :category => "reference",
+              :name     => "end"
+            )
+          end
+
+          describe "in global context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("@a")
+              ruby_node_capital    = ruby_variable("@A")
+              ruby_node_underscore = ruby_variable("@_a")
+              ruby_node_reserved   = ruby_variable("@end")
+
+              @ycp_node_regular.compile(@context_global).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_global).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_global).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_global).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to global variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("@a")
+              ruby_node_capital    = ruby_variable("@A")
+              ruby_node_underscore = ruby_variable("@_a")
+              ruby_node_reserved   = ruby_variable("@end")
+
+              @ycp_node_regular.compile(@context_local_global_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_global_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_global_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_global_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in local context that refer to local variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("a")
+              ruby_node_capital    = ruby_variable("_A")
+              ruby_node_underscore = ruby_variable("__a")
+              ruby_node_reserved   = ruby_variable("_end")
+
+              @ycp_node_regular.compile(@context_local_local_vars).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_local_vars).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_local_vars).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_local_vars).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in nested local context that refer to inner variables" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_variable("a2")
+              ruby_node_capital    = ruby_variable("_A2")
+              ruby_node_underscore = ruby_variable("__a2")
+              ruby_node_reserved   = ruby_variable("end2")
+
+              @ycp_node_regular.compile(@context_local_nested).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_nested).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_nested).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_nested).should ==
+                ruby_node_reserved
+            end
+          end
         end
       end
 
-      describe "at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "@i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
-        end
-      end
-
-      describe "inside a function at client toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@file_block, @def_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "_I"
-          @node_underscore.to_ruby(context).should   == "__i"
-          @node_reserved.to_ruby(context).should     == "_end"
-        end
-      end
-
-      describe "inside a function at module toplevel" do
-        it "emits correct code" do
-          context = Context.new(:blocks => [@module_block, @def_block])
-
-          @node_unprefixed_i.to_ruby(context).should == "i"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "@i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "_I"
-          @node_underscore.to_ruby(context).should   == "__i"
-          @node_reserved.to_ruby(context).should     == "_end"
-        end
-      end
-
-      describe "inside nested blocks" do
-        it "emits correct code" do
-          context = Context.new(
-            :blocks => [@file_block, @unspec_block, @unspec_block]
+      describe "for calls with category == \"function\"" do
+        it "returns correct AST node for unqualified variables" do
+          ycp_node = YCP::Variable.new(
+            :category => "function",
+            :name     => "a",
+            :type     => "integer ()"
           )
 
-          @node_unprefixed_i.to_ruby(context).should == "i2"
-          @node_unprefixed_j.to_ruby(context).should == "@j"
-          @node_prefixed_m.to_ruby(context).should   == "M.i"
-          @node_prefixed_n.to_ruby(context).should   == "N.i"
-          @node_capital.to_ruby(context).should      == "@I"
-          @node_underscore.to_ruby(context).should   == "@_i"
-          @node_reserved.to_ruby(context).should     == "@end"
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Reference"),
+            :name     => "new",
+            :args     => [
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "method",
+                :args     => [Ruby::Literal.new(:value => :a)],
+                :block    => nil,
+                :parens   => true
+              ),
+              Ruby::Literal.new(:value => "integer ()")
+            ],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for qualified variables" do
+          ycp_node = YCP::Variable.new(
+            :category => "function",
+            :name     => "M::a",
+            :type     => "integer ()"
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Reference"),
+            :name     => "new",
+            :args     => [
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "M"),
+                :name     => "method",
+                :args     => [Ruby::Literal.new(:value => :a)],
+                :block    => nil,
+                :parens   => true
+              ),
+              Ruby::Literal.new(:value => "integer ()")
+            ],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
         end
       end
     end
   end
 
-  describe While do
-    describe "#to_ruby" do
-      it "emits correct code for whiles without do" do
-        node = While.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
-          :do   => nil
+  describe YCP::While, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node for while statements without do" do
+        ycp_node = YCP::While.new(:cond => @ycp_true, :do => nil)
+
+        ruby_node = Ruby::While.new(
+          :condition => @ruby_literal_true,
+          :body      => @ruby_statements_empty
         )
 
-        node.to_ruby.should == "while true\nend"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "emits correct code for whiles with do" do
-        node = While.new(
-          :cond => Const.new(:type => :bool, :value => "true"),
-          :do   => COMMON_FUNCTION_CALL
+      it "returns correct AST node for while statements with do" do
+        ycp_node = YCP::While.new(:cond => @ycp_true, :do => @ycp_stmt_block)
+
+        ruby_node = Ruby::While.new(
+          :condition => @ruby_literal_true,
+          :body      => @ruby_statements_non_empty
         )
 
-        node.to_ruby.should == "while true\n  n.f\nend"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YCPCode do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YCPCode.new(
+  describe YCP::YCPCode, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YCPCode.new(
           :args    => [],
           :symbols => [],
-          :child   => Const.new(:type => :int, :value => "42")
+          :child   => @ycp_const_42
         )
 
-        node.to_ruby.should == "lambda { 42 }"
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "lambda",
+          :args     => [],
+          :block    => Ruby::Block.new(
+            :args       => [],
+            :statements => @ruby_literal_42
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
 
-    describe "#to_ruby_block" do
-      it "emits correct code without arguments" do
-        node = YCPCode.new(
+    describe "#compile_as_block" do
+      it "returns correct AST node without arguments" do
+        ycp_node = YCP::YCPCode.new(
           :args    => [],
           :symbols => [],
-          :child   => Const.new(:type => :int, :value => "42")
+          :child   => @ycp_const_42
         )
 
-        node.to_ruby_block.should == "{ 42 }"
+        ruby_node = Ruby::Block.new(
+          :args       => [],
+          :statements => @ruby_literal_42
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
       end
 
-      it "emits correct code with arguments" do
-        args = [
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "a"
+      it "returns correct AST node with arguments" do
+        ycp_args = [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c]
+
+        ycp_node = YCP::YCPCode.new(
+          :args    => ycp_args,
+          :symbols => ycp_args,
+          :child   => @ycp_const_42
+        )
+
+        ruby_node = Ruby::Block.new(
+          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :statements => @ruby_literal_42
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::YEBinary, :type => :ycp do
+    describe "#compile" do
+      def ycp_ye_binary(name)
+        YCP::YEBinary.new(
+          :name => name,
+          :lhs  => @ycp_const_42,
+          :rhs  => @ycp_const_43
+        )
+      end
+
+      def ruby_ops_call(name)
+        Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => name,
+          :args     => [@ruby_literal_42, @ruby_literal_43],
+          :block    => nil,
+          :parens   => true
+        )
+      end
+
+      it "returns correct AST node" do
+        ycp_node_add         = ycp_ye_binary("+")
+        ycp_node_subtract    = ycp_ye_binary("-")
+        ycp_node_multiply    = ycp_ye_binary("*")
+        ycp_node_divide      = ycp_ye_binary("/")
+        ycp_node_modulo      = ycp_ye_binary("%")
+        ycp_node_bitwise_and = ycp_ye_binary("&")
+        ycp_node_bitwise_or  = ycp_ye_binary("|" )
+        ycp_node_bitwise_xor = ycp_ye_binary("^" )
+        ycp_node_shift_left  = ycp_ye_binary("<<")
+        ycp_node_shift_right = ycp_ye_binary(">>")
+        ycp_node_logical_and = ycp_ye_binary("&&")
+        ycp_node_logical_or  = ycp_ye_binary("||")
+
+        ruby_node_add         = ruby_ops_call("add")
+        ruby_node_subtract    = ruby_ops_call("subtract")
+        ruby_node_multiply    = ruby_ops_call("multiply")
+        ruby_node_divide      = ruby_ops_call("divide")
+        ruby_node_modulo      = ruby_ops_call("modulo")
+        ruby_node_bitwise_and = ruby_ops_call("bitwise_and")
+        ruby_node_bitwise_or  = ruby_ops_call("bitwise_or")
+        ruby_node_bitwise_xor = ruby_ops_call("bitwise_xor")
+        ruby_node_shift_left  = ruby_ops_call("shift_left")
+        ruby_node_shift_right = ruby_ops_call("shift_right")
+        ruby_node_logical_and = ruby_ops_call("logical_and")
+        ruby_node_logical_or  = ruby_ops_call("logical_or")
+
+        ycp_node_add.compile(@context_empty).should ==
+          ruby_node_add
+        ycp_node_subtract.compile(@context_empty).should ==
+          ruby_node_subtract
+        ycp_node_multiply.compile(@context_empty).should ==
+          ruby_node_multiply
+        ycp_node_divide.compile(@context_empty).should ==
+          ruby_node_divide
+        ycp_node_modulo.compile(@context_empty).should ==
+          ruby_node_modulo
+        ycp_node_bitwise_and.compile(@context_empty).should ==
+          ruby_node_bitwise_and
+        ycp_node_bitwise_or.compile(@context_empty).should ==
+          ruby_node_bitwise_or
+        ycp_node_bitwise_xor.compile(@context_empty).should ==
+          ruby_node_bitwise_xor
+        ycp_node_shift_left.compile(@context_empty).should ==
+          ruby_node_shift_left
+        ycp_node_shift_right.compile(@context_empty).should ==
+          ruby_node_shift_right
+        ycp_node_logical_and.compile(@context_empty).should ==
+          ruby_node_logical_and
+        ycp_node_logical_or.compile(@context_empty).should ==
+          ruby_node_logical_or
+      end
+    end
+  end
+
+  describe YCP::YEBracket, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
           ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "b"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "c"
-          )
-        ]
-
-        node = YCPCode.new(
-          :args    => args,
-          :symbols => args,
-          :child   => Const.new(:type => :int, :value => "42")
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => @ycp_const_0
         )
 
-        node.to_ruby_block.should == "{ |a, b, c| 42 }"
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YEBinary do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        lhs = Const.new(:type => :int, :value => "42")
-        rhs = Const.new(:type => :int, :value => "43")
+  describe YCP::YEIs, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YEIs.new(:child => @ycp_const_42, :type  => "integer")
 
-        node_add         = YEBinary.new(:name => "+",  :lhs => lhs, :rhs => rhs)
-        node_subtract    = YEBinary.new(:name => "-",  :lhs => lhs, :rhs => rhs)
-        node_multiply    = YEBinary.new(:name => "*",  :lhs => lhs, :rhs => rhs)
-        node_divide      = YEBinary.new(:name => "/",  :lhs => lhs, :rhs => rhs)
-        node_modulo      = YEBinary.new(:name => "%",  :lhs => lhs, :rhs => rhs)
-        node_bitwise_and = YEBinary.new(:name => "&",  :lhs => lhs, :rhs => rhs)
-        node_bitwise_or  = YEBinary.new(:name => "|" , :lhs => lhs, :rhs => rhs)
-        node_bitwise_xor = YEBinary.new(:name => "^" , :lhs => lhs, :rhs => rhs)
-        node_shift_left  = YEBinary.new(:name => "<<", :lhs => lhs, :rhs => rhs)
-        node_shift_right = YEBinary.new(:name => ">>", :lhs => lhs, :rhs => rhs)
-        node_logical_and = YEBinary.new(:name => "&&", :lhs => lhs, :rhs => rhs)
-        node_logical_or  = YEBinary.new(:name => "||", :lhs => lhs, :rhs => rhs)
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "is",
+          :args     => [
+            @ruby_literal_42,
+            Ruby::Literal.new(:value => "integer")
+          ],
+          :block    => nil,
+          :parens   => true
+        )
 
-        node_add.to_ruby.should         == "Ops.add(42, 43)"
-        node_subtract.to_ruby.should    == "Ops.subtract(42, 43)"
-        node_multiply.to_ruby.should    == "Ops.multiply(42, 43)"
-        node_divide.to_ruby.should      == "Ops.divide(42, 43)"
-        node_modulo.to_ruby.should      == "Ops.modulo(42, 43)"
-        node_bitwise_and.to_ruby.should == "Ops.bitwise_and(42, 43)"
-        node_bitwise_or.to_ruby.should  == "Ops.bitwise_or(42, 43)"
-        node_bitwise_xor.to_ruby.should == "Ops.bitwise_xor(42, 43)"
-        node_shift_left.to_ruby.should  == "Ops.shift_left(42, 43)"
-        node_shift_right.to_ruby.should == "Ops.shift_right(42, 43)"
-        node_logical_and.to_ruby.should == "Ops.logical_and(42, 43)"
-        node_logical_or.to_ruby.should  == "Ops.logical_or(42, 43)"
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YEBracket do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YEBracket.new(
-          :value => List.new(
-            :children => [
-              Const.new(:type => :int, :value => "42"),
-              Const.new(:type => :int, :value => "43"),
-              Const.new(:type => :int, :value => "44")
-            ]
-          ),
-          :index => List.new(
-            :children => [Const.new(:type => :int, :value => "1")]
-          ),
-          :default => Const.new(:type => :int, :value => "0")
+  describe YCP::YEPropagate, :type => :ycp do
+    describe "#compile" do
+      def ycp_yepropagate(from, to)
+        YCP::YEPropagate.new(
+          :from  => from,
+          :to    => to,
+          :child => @ycp_const_42
         )
+      end
 
-        node.to_ruby.should == "Ops.index([42, 43, 44], [1], 0)"
+      def ruby_convert_call(from, to)
+        Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Convert"),
+          :name     => "convert",
+          :args     => [
+            @ruby_literal_42,
+            Ruby::Hash.new(
+              :entries => [
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :from),
+                  :value => Ruby::Literal.new(:value => from)
+                ),
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :to),
+                  :value => Ruby::Literal.new(:value => to)
+                )
+              ]
+            )
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+      end
+
+      it "returns correct AST node when the types are the same" do
+        ycp_node_no_const   = ycp_yepropagate("integer", "integer")
+        ycp_node_both_const = ycp_yepropagate("const integer", "const integer")
+
+        ycp_node_no_const.compile(@context_empty).should   == @ruby_literal_42
+        ycp_node_both_const.compile(@context_empty).should == @ruby_literal_42
+      end
+
+      it "returns correct AST node when the types are the same but their constness is different" do
+        ycp_node_from_const = ycp_yepropagate("const integer", "integer")
+        ycp_node_to_const   = ycp_yepropagate("integer", "const integer")
+
+        ycp_node_from_const.compile(@context_empty).should == @ruby_literal_42
+        ycp_node_to_const.compile(@context_empty).should   == @ruby_literal_42
+      end
+
+      it "returns correct AST node when the types are different" do
+        ycp_node_no_const   = ycp_yepropagate("integer", "float")
+        ycp_node_both_const = ycp_yepropagate("const integer", "const float")
+
+        ruby_node_no_const   = ruby_convert_call("integer", "float")
+        ruby_node_both_const = ruby_convert_call("integer", "float")
+
+        ycp_node_no_const.compile(@context_empty).should ==
+          ruby_node_no_const
+        ycp_node_both_const.compile(@context_empty).should ==
+          ruby_node_both_const
+      end
+
+      it "returns correct AST node when when both the types and their constness are different" do
+        ycp_node_from_const = ycp_yepropagate("const integer", "float")
+        ycp_node_to_const   = ycp_yepropagate("integer", "const float")
+
+        ruby_node_from_const = ruby_convert_call("integer", "float")
+        ruby_node_to_const   = ruby_convert_call("integer", "float")
+
+        ycp_node_from_const.compile(@context_empty).should ==
+          ruby_node_from_const
+        ycp_node_to_const.compile(@context_empty).should ==
+          ruby_node_to_const
       end
     end
   end
 
-  describe YEIs do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YEIs.new(
-          :child => Const.new(:type => :int, :value => "42"),
-          :type  => "integer"
-        )
+  describe YCP::YEReference, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YEReference.new(:child => @ycp_const_42)
 
-        node.to_ruby.should == "Ops.is(42, \"integer\")"
+        ruby_node = @ruby_literal_42
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YEPropagate do
-    describe "#to_ruby" do
-      it "emits correct code when the types are the same" do
-        node_no_const = YEPropagate.new(
-          :from  => "integer",
-          :to    => "integer",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        node_both_const = YEPropagate.new(
-          :from  => "const integer",
-          :to    => "const integer",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-
-        node_no_const.to_ruby.should   == "42"
-        node_both_const.to_ruby.should == "42"
-      end
-
-      it "emits correct code when the types are the same but their constness is different" do
-        node_from_const = YEPropagate.new(
-          :from  => "const integer",
-          :to    => "integer",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        node_to_const = YEPropagate.new(
-          :from  => "integer",
-          :to    => "const integer",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-
-        node_from_const.to_ruby.should == "42"
-        node_to_const.to_ruby.should   == "42"
-      end
-
-      it "emits correct code when the types are different" do
-        node_no_const = YEPropagate.new(
-          :from  => "integer",
-          :to    => "float",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        node_both_const = YEPropagate.new(
-          :from  => "const integer",
-          :to    => "const float",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-
-        node_no_const.to_ruby.should ==
-          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
-        node_both_const.to_ruby.should ==
-          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
-      end
-
-      it "emits correct code when both the types and their constness are different" do
-        node_from_const = YEPropagate.new(
-          :from  => "const integer",
-          :to    => "float",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-        node_to_const = YEPropagate.new(
-          :from  => "integer",
-          :to    => "const float",
-          :child => Const.new(:type => :int, :value => "42")
-        )
-
-        node_from_const.to_ruby.should ==
-          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
-        node_to_const.to_ruby.should ==
-          "Convert.convert(42, :from => \"integer\", :to => \"float\")"
-      end
-    end
-  end
-
-  describe YEReference do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YEReference.new(
-          :child => Const.new(:type => :int, :value => "42")
-        )
-
-        node.to_ruby.should == "42"
-      end
-    end
-  end
-
-  describe YEReturn do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YEReturn.new(
+  describe YCP::YEReturn, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YEReturn.new(
           :args    => [],
           :symbols => [],
-          :child   => Const.new(:type => :int, :value => "42")
+          :child   => @ycp_const_42
         )
 
-        node.to_ruby.should == "lambda { 42 }"
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "lambda",
+          :args     => [],
+          :block    => Ruby::Block.new(
+            :args       => [],
+            :statements => @ruby_literal_42
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
 
-    describe "#to_ruby_block" do
-      it "emits correct code without arguments" do
-        node = YEReturn.new(
+    describe "#compile_as_block" do
+      it "returns correct AST node without arguments" do
+        ycp_node = YCP::YEReturn.new(
           :args    => [],
           :symbols => [],
-          :child   => Const.new(:type => :int, :value => "42")
+          :child   => @ycp_const_42
         )
 
-        node.to_ruby_block.should == "{ 42 }"
+        ruby_node = Ruby::Block.new(
+          :args       => [],
+          :statements => @ruby_literal_42
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
       end
 
-      it "emits correct code with arguments" do
-        args = [
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "a"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "b"
-          ),
-          Symbol.new(
-            :global   => false,
-            :category => :variable,
-            :type     => "integer",
-            :name     => "c"
-          )
-        ]
+      it "returns correct AST node with arguments" do
+        ycp_args = [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c]
 
-        node = YEReturn.new(
-          :args    => args,
-          :symbols => args,
-          :child   => Const.new(:type => :int, :value => "42")
+        ycp_node = YCP::YEReturn.new(
+          :args    => ycp_args,
+          :symbols => ycp_args,
+          :child   => @ycp_const_42
         )
 
-        node.to_ruby_block.should == "{ |a, b, c| 42 }"
+        ruby_node = Ruby::Block.new(
+          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :statements => @ruby_literal_42
+        )
+
+        ycp_node.compile_as_block(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YETerm do
-    describe "#to_ruby" do
-      it "emits correct code for empty terms" do
-        node = YETerm.new(:name => "a", :children => [])
-
-        node.to_ruby.should == "Term.new(:a)"
-      end
-
-      it "emits correct code for non-empty terms" do
-        node = YETerm.new(
-          :name     => "a",
-          :children => [
-            Const.new(:type => :int, :value => "42"),
-            Const.new(:type => :int, :value => "43"),
-            Const.new(:type => :int, :value => "44")
-          ]
+  describe YCP::YETerm, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YETerm.new(
+          :name     => "t",
+          :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
         )
 
-        node.to_ruby.should == "Term.new(:a, 42, 43, 44)"
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Term"),
+          :name     => "new",
+          :args     => [
+            Ruby::Literal.new(:value => :t),
+            @ruby_literal_42,
+            @ruby_literal_43,
+            @ruby_literal_44
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YETriple do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = YETriple.new(
-          :cond  => Const.new(:type => :bool, :value => "true"),
-          :true  => Const.new(:type => :int, :value => "42"),
-          :false => Const.new(:type => :int, :value => "43")
+  describe YCP::YETriple, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::YETriple.new(
+          :cond  => @ycp_true,
+          :true  => @ycp_const_42,
+          :false => @ycp_const_43
         )
 
-        node.to_ruby.should == "true ? 42 : 43"
+        ruby_node = Ruby::Ternary.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_literal_42,
+          :else      => @ruby_literal_43
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
 
-  describe YEUnary do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        child = Const.new(:type => :int, :value => "42")
+  describe YCP::YEUnary, :type => :ycp do
+    describe "#compile" do
+      def ycp_ye_unary(name)
+        YCP::YEUnary.new(:name => name, :child => @ycp_const_42)
+      end
 
-        node_unary_minus = YEUnary.new(:name => "-", :child => child)
-        node_bitwise_not = YEUnary.new(:name => "~", :child => child)
-        node_logical_not = YEUnary.new(:name => "!", :child => child)
+      def ruby_ops_call(name)
+        Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => name,
+          :args     => [@ruby_literal_42],
+          :block    => nil,
+          :parens   => true
+        )
+      end
 
-        node_unary_minus.to_ruby.should == "Ops.unary_minus(42)"
-        node_bitwise_not.to_ruby.should == "Ops.bitwise_not(42)"
-        node_logical_not.to_ruby.should == "Ops.logical_not(42)"
+      it "returns correct AST node" do
+        ycp_node_unary_minus = ycp_ye_unary("-")
+        ycp_node_bitwise_not = ycp_ye_unary("~")
+        ycp_node_logical_not = ycp_ye_unary("!")
+
+        ruby_node_unary_minus = ruby_ops_call("unary_minus")
+        ruby_node_bitwise_not = ruby_ops_call("bitwise_not")
+        ruby_node_logical_not = ruby_ops_call("logical_not")
+
+        ycp_node_unary_minus.compile(@context_empty).should ==
+          ruby_node_unary_minus
+        ycp_node_bitwise_not.compile(@context_empty).should ==
+          ruby_node_bitwise_not
+        ycp_node_logical_not.compile(@context_empty).should ==
+          ruby_node_logical_not
       end
     end
   end
