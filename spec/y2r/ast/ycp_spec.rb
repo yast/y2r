@@ -1021,8 +1021,8 @@ module Y2R::AST
         ycp_node  = YCP::Const.new(:type => :path, :value => ".abcd")
 
         ruby_node = Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "Path"),
-          :name     => "new",
+          :receiver => nil,
+          :name     => "path",
           :args     => [Ruby::Literal.new(:value => ".abcd")],
           :block    => nil,
           :parens   => true

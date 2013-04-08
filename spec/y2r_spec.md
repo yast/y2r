@@ -188,8 +188,10 @@ YCP::Clients::DefaultClient.new.main
 
 ### Paths
 
-Y2R translates YCP paths as instances of the `YCP::Path` class. TODO: What about
-encoding?
+Y2R translates YCP paths as calls to the `YCP.path` method, which creates an
+instance of the `YCP::Path` class.
+
+TODO: What about encoding?
 
 #### YCP Code
 
@@ -206,7 +208,7 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @p = Path.new(".abcd")
+        @p = path(".abcd")
       end
     end
   end
@@ -590,7 +592,7 @@ module YCP
       def main
         Builtins.time
         Builtins.random(100)
-        SCR.Dir(Path.new(".syseditor.section"))
+        SCR.Dir(path(".syseditor.section"))
         WFM.Args
         @f = Builtins::Float.abs(-42.0)
         @l = Builtins::List.reverse([42, 43, 44])

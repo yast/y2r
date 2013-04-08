@@ -330,8 +330,8 @@ module Y2R
               Ruby::Literal.new(:value => value)
             when :path
               Ruby::MethodCall.new(
-                :receiver => Ruby::Variable.new(:name => "Path"),
-                :name     => "new",
+                :receiver => nil,
+                :name     => "path",
                 :args     => [Ruby::Literal.new(:value => value)],
                 :block    => nil,
                 :parens   => true
