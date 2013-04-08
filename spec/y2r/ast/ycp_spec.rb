@@ -1673,24 +1673,29 @@ module Y2R::AST
         )
       end
 
-      def ruby_publish_call(name)
+      def ruby_publish_call(name, private)
+        entries = [
+          Ruby::HashEntry.new(
+            :key   => Ruby::Literal.new(:value => :variable),
+            :value => Ruby::Literal.new(:value => name.to_sym)
+          ),
+          Ruby::HashEntry.new(
+            :key   => Ruby::Literal.new(:value => :type),
+            :value => Ruby::Literal.new(:value => "integer")
+          )
+        ]
+
+        if private
+          entries << Ruby::HashEntry.new(
+            :key   => Ruby::Literal.new(:value => :private),
+            :value => Ruby::Literal.new(:value => true)
+          )
+        end
+
         Ruby::MethodCall.new(
           :receiver => nil,
           :name     => "publish",
-          :args     => [
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => name.to_sym)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :type),
-                  :value => Ruby::Literal.new(:value => "integer")
-                )
-              ]
-            )
-          ],
+          :args     => [Ruby::Hash.new(:entries => entries)],
           :block    => nil,
           :parens   => true
         )
@@ -1716,9 +1721,9 @@ module Y2R::AST
         )
 
         ruby_node = ruby_module_statements([
-          ruby_publish_call("a"),
-          ruby_publish_call("b"),
-          ruby_publish_call("c")
+          ruby_publish_call("a", false),
+          ruby_publish_call("b", false),
+          ruby_publish_call("c", false)
         ])
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1821,9 +1826,9 @@ module Y2R::AST
           )
 
           ruby_node = ruby_module_statements([
-            ruby_publish_call("a"),
-            ruby_publish_call("b"),
-            ruby_publish_call("c")
+            ruby_publish_call("a", true),
+            ruby_publish_call("b", true),
+            ruby_publish_call("c", true)
           ])
 
           ycp_node.compile(context).should == ruby_node
@@ -2125,7 +2130,39 @@ module Y2R::AST
     end
 
     describe "#compile_as_publish_call" do
-      it "returns correct AST node" do
+      it "returns correct AST node for global symbols" do
+        ycp_node = YCP::Symbol.new(
+          :global   => true,
+          :category => :variable,
+          :type     => "integer",
+          :name     => "s"
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "publish",
+          :args     => [
+            Ruby::Hash.new(
+              :entries => [
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :variable),
+                  :value => Ruby::Literal.new(:value => :s)
+                ),
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :type),
+                  :value => Ruby::Literal.new(:value => "integer")
+                )
+              ]
+            )
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_publish_call(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for non-global symbols" do
         ycp_node = YCP::Symbol.new(
           :global   => false,
           :category => :variable,
@@ -2146,6 +2183,10 @@ module Y2R::AST
                 Ruby::HashEntry.new(
                   :key   => Ruby::Literal.new(:value => :type),
                   :value => Ruby::Literal.new(:value => "integer")
+                ),
+                Ruby::HashEntry.new(
+                  :key   => Ruby::Literal.new(:value => :private),
+                  :value => Ruby::Literal.new(:value => true)
                 )
               ]
             )
