@@ -2880,8 +2880,8 @@ module Y2R::AST
         )
 
         ruby_node = Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "Term"),
-          :name     => "new",
+          :receiver => nil,
+          :name     => "term",
           :args     => [
             Ruby::Literal.new(:value => :t),
             @ruby_literal_42,

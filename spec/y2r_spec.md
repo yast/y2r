@@ -274,7 +274,8 @@ YCP::Clients::DefaultClient.new.main
 
 ### Terms
 
-Y2R translates YCP terms as instances of the `YCP::Term` class
+Y2R translates YCP terms as calls to the `YCP.term` method, which creates an
+instance of the `YCP::Term` class
 
 #### YCP Code
 
@@ -292,8 +293,8 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @t1 = Term.new(:a)
-        @t2 = Term.new(:a, 42, 43, 44)
+        @t1 = term(:a)
+        @t2 = term(:a, 42, 43, 44)
       end
     end
   end

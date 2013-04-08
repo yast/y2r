@@ -966,8 +966,8 @@ module Y2R
           children_compiled = children.map { |ch| ch.compile(context) }
 
           Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Term"),
-            :name     => "new",
+            :receiver => nil,
+            :name     => "term",
             :args     => [name_compiled] + children_compiled,
             :block    => nil,
             :parens   => true
