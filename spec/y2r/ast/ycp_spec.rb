@@ -27,24 +27,55 @@ module Y2R::AST
 
       @ycp_statements = [@ycp_assign_a_42, @ycp_assign_b_43, @ycp_assign_c_44]
 
-      @ycp_symbol_a = YCP::Symbol.new(
+      @ycp_symbol_private_a = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "a"
+      )
+      @ycp_symbol_private_b = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "b"
+      )
+      @ycp_symbol_private_c = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => "integer",
+        :name     => "c"
+      )
+
+      @ycp_symbols_private = [
+        @ycp_symbol_private_a,
+        @ycp_symbol_private_b,
+        @ycp_symbol_private_c
+      ]
+
+      @ycp_symbol_public_a = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
         :type     => "integer",
         :name     => "a"
       )
-      @ycp_symbol_b = YCP::Symbol.new(
+      @ycp_symbol_public_b = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
         :type     => "integer",
         :name     => "b"
       )
-      @ycp_symbol_c = YCP::Symbol.new(
+      @ycp_symbol_public_c = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
         :type     => "integer",
         :name     => "c"
       )
+
+      @ycp_symbols_public = [
+        @ycp_symbol_public_a,
+        @ycp_symbol_public_b,
+        @ycp_symbol_public_c
+      ]
 
       @ycp_symbol_regular = YCP::Symbol.new(
         :global   => false,
@@ -583,7 +614,7 @@ module Y2R::AST
           :name  => "b",
           :args  => [],
           :block =>  YCP::UnspecBlock.new(
-            :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+            :args       => @ycp_symbols_private,
             :symbols    => [],
             :statements => @ycp_statements
           )
@@ -608,7 +639,7 @@ module Y2R::AST
           :name  => "b",
           :args  => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
           :block =>  YCP::UnspecBlock.new(
-            :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+            :args       => @ycp_symbols_private,
             :symbols    => [],
             :statements => @ycp_statements
           )
@@ -1680,7 +1711,7 @@ module Y2R::AST
       it "returns correct AST node for blocks with symbols" do
         ycp_node = YCP::ModuleBlock.new(
           :name       => "M",
-          :symbols    => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+          :symbols    => @ycp_symbols_public,
           :statements => []
         )
 
@@ -2184,7 +2215,7 @@ module Y2R::AST
 
       it "returns correct AST node with arguments" do
         ycp_node = YCP::UnspecBlock.new(
-          :args       => [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c],
+          :args       => @ycp_symbols_private,
           :symbols    => [],
           :statements => @ycp_statements
         )
@@ -2574,11 +2605,9 @@ module Y2R::AST
       end
 
       it "returns correct AST node with arguments" do
-        ycp_args = [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c]
-
         ycp_node = YCP::YCPCode.new(
-          :args    => ycp_args,
-          :symbols => ycp_args,
+          :args    => @ycp_symbols_private,
+          :symbols => @ycp_symbols_private,
           :child   => @ycp_const_42
         )
 
@@ -2853,11 +2882,9 @@ module Y2R::AST
       end
 
       it "returns correct AST node with arguments" do
-        ycp_args = [@ycp_symbol_a, @ycp_symbol_b, @ycp_symbol_c]
-
         ycp_node = YCP::YEReturn.new(
-          :args    => ycp_args,
-          :symbols => ycp_args,
+          :args    => @ycp_symbols_private,
+          :symbols => @ycp_symbols_private,
           :child   => @ycp_const_42
         )
 
