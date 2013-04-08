@@ -12,10 +12,11 @@ module Y2R
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
       class Context
-        attr_accessor :blocks
+        attr_accessor :blocks, :export_private
 
         def initialize(attrs = {})
-          @blocks = attrs[:blocks] || []
+          @blocks         = attrs[:blocks] || []
+          @export_private = attrs[:export_private] || false
         end
 
         def in?(klass)
@@ -564,8 +565,13 @@ module Y2R
 
             class_statements += fundefs.map { |f| f.compile(inner_context) }
 
-            symbols.select(&:published?).each do |symbol|
-              class_statements << symbol.compile_as_publish_call(inner_context)
+            exported_symbols = if context.export_private
+              symbols.select(&:exportable?)
+            else
+              symbols.select { |s| s.exportable? && s.global }
+            end
+            class_statements += exported_symbols.map do |symbol|
+              symbol.compile_as_publish_call(inner_context)
             end
           end
 
@@ -649,8 +655,8 @@ module Y2R
           strip_const(type) !~ /^(boolean|integer|symbol)$|&$/
         end
 
-        def published?
-          global && (category == :variable || category == :function)
+        def exportable?
+          category == :variable || category == :function
         end
 
         def compile(context)

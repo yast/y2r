@@ -1793,6 +1793,42 @@ module Y2R::AST
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
+
+      describe "in context with export_private == false" do
+        it "does not export private symbols" do
+          context = YCP::Context.new(:export_private => false)
+
+          ycp_node = YCP::ModuleBlock.new(
+            :name       => "M",
+            :symbols    => @ycp_symbols_private,
+            :statements => []
+          )
+
+          ruby_node = ruby_module_statements([])
+
+          ycp_node.compile(context).should == ruby_node
+        end
+      end
+
+      describe "in context with export_private == true" do
+        it "does exports private symbols" do
+          context = YCP::Context.new(:export_private => true)
+
+          ycp_node = YCP::ModuleBlock.new(
+            :name       => "M",
+            :symbols    => @ycp_symbols_private,
+            :statements => []
+          )
+
+          ruby_node = ruby_module_statements([
+            ruby_publish_call("a"),
+            ruby_publish_call("b"),
+            ruby_publish_call("c")
+          ])
+
+          ycp_node.compile(context).should == ruby_node
+        end
+      end
     end
   end
 
@@ -2012,46 +2048,35 @@ module Y2R::AST
       end
     end
 
-    describe "#published?" do
-      def ycp_symbol(global, category, type)
+    describe "#exportable?" do
+      def ycp_symbol(category, type)
         YCP::Symbol.new(
-          :global   => global,
+          :global   => false,
           :category => category,
           :type     => type,
           :name     => "s"
         )
       end
 
-      it "returns true for global variables" do
-        ycp_node = ycp_symbol(true, :variable, "integer")
+      it "returns true for variables" do
+        ycp_node = ycp_symbol(:variable, "integer")
 
-        ycp_node.should be_published
+        ycp_node.should be_exportable
       end
 
-      it "returns true for global functions" do
-        ycp_node = ycp_symbol(true, :function, "integer ()")
+      it "returns true for functions" do
+        ycp_node = ycp_symbol(:function, "integer ()")
 
-        ycp_node.should be_published
+        ycp_node.should be_exportable
       end
 
       it "returns false for other global symbols" do
-        ycp_node = ycp_symbol(true, :filename, nil)
+        ycp_node = ycp_symbol(:filename, nil)
 
-        ycp_node.should_not be_published
-      end
-
-      it "returns false for non-global variables" do
-        ycp_node = ycp_symbol(false, :variable, "integer")
-
-        ycp_node.should_not be_published
-      end
-
-      it "returns false for non-global functions" do
-        ycp_node = ycp_symbol(false, :function, "integer ()")
-
-        ycp_node.should_not be_published
+        ycp_node.should_not be_exportable
       end
     end
+
 
     describe "#compile" do
       it "returns correct AST node" do
