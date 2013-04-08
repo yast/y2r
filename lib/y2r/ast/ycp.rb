@@ -771,8 +771,8 @@ module Y2R
               variable_name = parts.last
 
               Ruby::MethodCall.new(
-                :receiver => Ruby::Variable.new(:name => "Reference"),
-                :name     => "new",
+                :receiver => nil,
+                :name     => "reference",
                 :args     => [
                   Ruby::MethodCall.new(
                     :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,

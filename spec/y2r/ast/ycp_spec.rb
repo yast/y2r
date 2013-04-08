@@ -2458,8 +2458,8 @@ module Y2R::AST
           )
 
           ruby_node = Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Reference"),
-            :name     => "new",
+            :receiver => nil,
+            :name     => "reference",
             :args     => [
               Ruby::MethodCall.new(
                 :receiver => nil,
@@ -2485,8 +2485,8 @@ module Y2R::AST
           )
 
           ruby_node = Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Reference"),
-            :name     => "new",
+            :receiver => nil,
+            :name     => "reference",
             :args     => [
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "M"),

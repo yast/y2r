@@ -335,7 +335,8 @@ YCP::Clients::DefaultClient.new.main
 
 ### Function References
 
-Y2R translates YCP Function References as instance of YCP::Reference class.
+Y2R translates YCP function references as calls to the `reference` method, which
+creates an instance of the `YCP::Reference` class.
 
 #### YCP Code
 
@@ -356,7 +357,7 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @fref = Reference.new(method(:f), "void ()")
+        @fref = reference(method(:f), "void ()")
       end
       def f
         return
@@ -779,7 +780,7 @@ module YCP
   module Clients
     class DefaultClient
       def main
-        @fref = Reference.new(method(:f), "void ()")
+        @fref = reference(method(:f), "void ()")
         @fref.call
       end
       def f
