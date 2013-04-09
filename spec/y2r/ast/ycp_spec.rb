@@ -1208,38 +1208,42 @@ module Y2R::AST
   describe YCP::FileBlock, :type => :ycp do
     describe "#compile" do
       def ruby_client_statements(statements)
-        Ruby::Statements.new(
-          :statements => [
-            Ruby::Module.new(
-              :name       => "YCP",
-              :statements => Ruby::Module.new(
-                :name       => "Clients",
-                :statements => Ruby::Class.new(
-                  :name       => "CClient",
-                  :statements => Ruby::Statements.new(:statements => statements)
+        Ruby::Program.new(
+          :statements => Ruby::Statements.new(
+            :statements => [
+              Ruby::Module.new(
+                :name       => "YCP",
+                :statements => Ruby::Module.new(
+                  :name       => "Clients",
+                  :statements => Ruby::Class.new(
+                    :name       => "CClient",
+                    :statements => Ruby::Statements.new(
+                      :statements => statements
+                    )
+                  )
                 )
-              )
-            ),
-            Ruby::MethodCall.new(
-              :receiver => Ruby::MethodCall.new(
-                :receiver => Ruby::ConstAccess.new(
+              ),
+              Ruby::MethodCall.new(
+                :receiver => Ruby::MethodCall.new(
                   :receiver => Ruby::ConstAccess.new(
-                    :receiver => Ruby::Variable.new(:name => "YCP"),
-                    :name     => "Clients"
+                    :receiver => Ruby::ConstAccess.new(
+                      :receiver => Ruby::Variable.new(:name => "YCP"),
+                      :name     => "Clients"
+                    ),
+                    :name     => "CClient"
                   ),
-                  :name     => "CClient"
+                  :name     => "new",
+                  :args     => [],
+                  :block    => nil,
+                  :parens   => true
                 ),
-                :name     => "new",
+                :name     => "main",
                 :args     => [],
                 :block    => nil,
                 :parens   => true
-              ),
-              :name     => "main",
-              :args     => [],
-              :block    => nil,
-              :parens   => true
-            )
-          ]
+              )
+            ]
+          )
         )
       end
 
@@ -1639,37 +1643,41 @@ module Y2R::AST
           )
         ] + statements
 
-        Ruby::Statements.new(
-          :statements => [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "require",
-              :args     => [Ruby::Literal.new(:value => "ycp")],
-              :block    => nil,
-              :parens   => false
-            ),
-            Ruby::Module.new(
-              :name       => "YCP",
-              :statements => Ruby::Statements.new(
-                :statements => [
-                  Ruby::Class.new(
-                    :name       => "MClass",
-                    :statements => Ruby::Statements.new(:statements => class_statements)
-                  ),
-                  Ruby::Assignment.new(
-                    :lhs => Ruby::Variable.new(:name => "M"),
-                    :rhs => Ruby::MethodCall.new(
-                      :receiver => Ruby::Variable.new(:name => "MClass"),
-                      :name     => "new",
-                      :args     => [],
-                      :block    => nil,
-                      :parens   => true
+        Ruby::Program.new(
+          :statements => Ruby::Statements.new(
+            :statements => [
+              Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "require",
+                :args     => [Ruby::Literal.new(:value => "ycp")],
+                :block    => nil,
+                :parens   => false
+              ),
+              Ruby::Module.new(
+                :name       => "YCP",
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    Ruby::Class.new(
+                      :name       => "MClass",
+                      :statements => Ruby::Statements.new(
+                        :statements => class_statements
+                      )
+                    ),
+                    Ruby::Assignment.new(
+                      :lhs => Ruby::Variable.new(:name => "M"),
+                      :rhs => Ruby::MethodCall.new(
+                        :receiver => Ruby::Variable.new(:name => "MClass"),
+                        :name     => "new",
+                        :args     => [],
+                        :block    => nil,
+                        :parens   => true
+                      )
                     )
-                  )
-                ]
-              )
-            ),
-          ]
+                  ]
+                )
+              ),
+            ]
+          )
         )
       end
 

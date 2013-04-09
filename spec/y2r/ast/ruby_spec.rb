@@ -42,6 +42,22 @@ module Y2R::AST::Ruby
     end
   end
 
+  describe Program, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Program.new(:statements => @statements)
+
+        node.to_ruby.should == [
+          "# encoding: utf-8",
+          "",
+          "a = 42",
+          "b = 43",
+          "c = 44"
+        ].join("\n")
+      end
+    end
+  end
+
   describe Class, :type => :ruby do
     describe "#to_ruby" do
       it "emits correct code" do

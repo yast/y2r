@@ -28,6 +28,16 @@ module Y2R
 
       # ===== Statements =====
 
+      class Program < Node
+        def to_ruby
+          combine do |parts|
+            parts << "# encoding: utf-8"
+            parts << ""
+            parts << statements.to_ruby
+          end
+        end
+      end
+
       class Class < Node
         def to_ruby
           combine do |parts|

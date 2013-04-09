@@ -29,6 +29,8 @@ Y2R translates YCP `nil` as Ruby `nil`.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -57,6 +59,8 @@ Y2R translates YCP booleans as Ruby booelans.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -86,6 +90,8 @@ integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -115,6 +121,8 @@ level so the conversion is lossless.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -145,6 +153,8 @@ will always have US-ASCII encoding.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -174,6 +184,8 @@ explain a bit more.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -204,6 +216,8 @@ TODO: What about encoding?
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -232,6 +246,8 @@ Y2R translates YCP lists as Ruby arrays.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -261,6 +277,8 @@ Y2R translates YCP maps as Ruby hashes.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -291,6 +309,8 @@ instance of the `YCP::Term` class
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -319,6 +339,8 @@ Y2R translates YCP blocks as Ruby lambdas.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -353,6 +375,8 @@ creates an instance of the `YCP::Reference` class.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -392,6 +416,8 @@ Y2R translates YCP local variables as Ruby local variables.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -420,6 +446,8 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -452,6 +480,8 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 require "ycp"
 module YCP
   class MClass
@@ -486,6 +516,8 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 #### Error Message
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -520,6 +552,8 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 #### Error Message
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -551,6 +585,8 @@ method.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -587,6 +623,8 @@ builtins in Ruby.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -618,6 +656,8 @@ converts the block into a Ruby block.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -646,6 +686,8 @@ argument specially. It converts the expression into a Ruby block.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -677,6 +719,8 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -723,6 +767,8 @@ Y2R translates YCP function calls as Ruby method calls.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -776,6 +822,8 @@ on them.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -815,6 +863,8 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -857,6 +907,8 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -897,6 +949,8 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -936,6 +990,8 @@ because their behavior differs from the behavior of YCP operators in some cases.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -968,6 +1024,8 @@ Y2R translates YCP ternary operator as Ruby ternary operator.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -997,6 +1055,8 @@ that implements its behavior. There is no equivalent operator in Ruby.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1024,6 +1084,8 @@ Y2R translates YCP double quote operator as a Ruby lambda.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1058,6 +1120,8 @@ Y2R translates YCP `import` statement as a `YCP.import` call.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1086,6 +1150,8 @@ call to set the text domain.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1114,6 +1180,8 @@ Y2R translates simple YCP assignments as Ruby assignments.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1144,6 +1212,8 @@ in Ruby.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1177,6 +1247,8 @@ statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1207,6 +1279,8 @@ Y2R translates YCP `return` statement inside block as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1242,6 +1316,8 @@ statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1270,6 +1346,8 @@ statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1296,6 +1374,8 @@ raises `YCP::Break`.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1325,6 +1405,8 @@ Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1350,6 +1432,8 @@ Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1403,6 +1487,8 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1482,6 +1568,8 @@ Y2R translates YCP statement blocks as Ruby statements.
 #### Error Message
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1517,6 +1605,8 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1552,6 +1642,8 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1583,6 +1675,8 @@ Y2R translates YCP `repeat` statement as Ruby `until` statement.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1623,6 +1717,8 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 module YCP
   module Clients
     class DefaultClient
@@ -1673,6 +1769,8 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 #### Ruby Code
 
 ```ruby
+# encoding: utf-8
+
 require "ycp"
 module YCP
   class MClass
