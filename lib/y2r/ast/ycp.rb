@@ -369,8 +369,8 @@ module Y2R
         def compile(context)
           client_name = File.basename(filename).sub(/\.[^.]*$/, "")
           class_name = client_name.
-            gsub(/^./)    { |s| s.upcase    }.
-            gsub(/[_-]./) { |s| s[1].upcase } + "Client"
+            gsub(/^./)     { |s| s.upcase    }.
+            gsub(/[_.-]./) { |s| s[1].upcase } + "Client"
 
           textdomains = statements.select { |s| s.is_a?(Textdomain) }
           fundefs = statements.select { |s| s.is_a?(FunDef) }
