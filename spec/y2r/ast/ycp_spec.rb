@@ -113,10 +113,34 @@ module Y2R::AST
         :symbols    => [],
         :statements => @ycp_statements
       )
+      @ycp_stmt_block_break = YCP::StmtBlock.new(
+        :symbols    => [],
+        :statements => [
+          @ycp_assign_a_42,
+          @ycp_assign_b_43,
+          @ycp_assign_c_44,
+          YCP::Break.new
+        ]
+      )
       @ycp_def_block = YCP::DefBlock.new(
         :symbols    => [],
         :statements => @ycp_statements
       )
+
+      @ycp_case_42 = YCP::Case.new(
+        :value => @ycp_const_42,
+        :body  => @ycp_stmt_block_break
+      )
+      @ycp_case_43 = YCP::Case.new(
+        :value => @ycp_const_43,
+        :body  => @ycp_stmt_block_break
+      )
+      @ycp_case_44 = YCP::Case.new(
+        :value => @ycp_const_44,
+        :body  => @ycp_stmt_block_break
+      )
+
+      @ycp_default = YCP::Default.new(:body => @ycp_stmt_block)
 
       @ycp_fundef_f = ycp_node = YCP::FunDef.new(
         :name  => "f",
@@ -230,6 +254,21 @@ module Y2R::AST
           @ruby_assignment_c_44
         ]
       )
+
+      @ruby_when_42 = Ruby::When.new(
+        :value => @ruby_literal_42,
+        :body  => @ruby_statements_non_empty
+      )
+      @ruby_when_43 = Ruby::When.new(
+        :value => @ruby_literal_43,
+        :body  => @ruby_statements_non_empty
+      )
+      @ruby_when_44 = Ruby::When.new(
+        :value => @ruby_literal_44,
+        :body  => @ruby_statements_non_empty
+      )
+
+      @ruby_else = Ruby::Else.new(:body => @ruby_statements_non_empty)
 
       @ruby_arg_a = Ruby::Arg.new(:name => "a", :default => nil)
       @ruby_arg_b = Ruby::Arg.new(:name => "b", :default => nil)
@@ -933,6 +972,49 @@ module Y2R::AST
     end
   end
 
+  describe YCP::Case, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Case.new(
+          :value => @ycp_const_42,
+          :body  => @ycp_stmt_block_break
+        )
+
+        ruby_node = Ruby::When.new(
+          :value => @ruby_literal_42,
+          :body  => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "removes a break statement from the end" do
+        ycp_node = YCP::Case.new(
+          :value => @ycp_const_42,
+          :body  => @ycp_stmt_block_break
+        )
+
+        ruby_node = Ruby::When.new(
+          :value => @ruby_literal_42,
+          :body  => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "raises an exception for cases wihtout break" do
+        ycp_node = YCP::Case.new(
+          :value => @ycp_const_42,
+          :body  => @ycp_stmt_block
+        )
+
+        lambda {
+          ycp_node.compile(@context_empty)
+        }.should raise_error NotImplementedError, "Case without a break encountered. These are not supported."
+      end
+    end
+  end
+
   describe YCP::Compare, :type => :ycp do
     describe "#compile" do
       def ycp_compare(op)
@@ -1070,6 +1152,26 @@ module Y2R::AST
         ycp_node = YCP::Continue.new
 
         ruby_node = Ruby::Next.new
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Default, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node" do
+        ycp_node = YCP::Default.new(:body => @ycp_stmt_block)
+
+        ruby_node = Ruby::Else.new(:body => @ruby_statements_non_empty)
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "removes a break statement from the end" do
+        ycp_node = YCP::Default.new(:body => @ycp_stmt_block_break)
+
+        ruby_node = Ruby::Else.new(:body => @ruby_statements_non_empty)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -1985,6 +2087,90 @@ module Y2R::AST
             @ruby_assignment_b_43,
             @ruby_assignment_c_44
           ]
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Switch, :type => :ycp do
+    describe "#compile" do
+      it "emits correct code for empty switch statements" do
+        ycp_node = YCP::Switch.new(
+          :cond    => @ycp_const_42,
+          :cases   => [],
+          :default => nil
+        )
+
+        ruby_node = Ruby::Case.new(
+          :expression => @ruby_literal_42,
+          :whens      => [],
+          :else       => nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "emits correct code for switch statements with one case and no default" do
+        ycp_node = YCP::Switch.new(
+          :cond    => @ycp_const_42,
+          :cases   => [@ycp_case_42],
+          :default => nil
+        )
+
+        ruby_node = Ruby::Case.new(
+          :expression => @ruby_literal_42,
+          :whens      => [@ruby_when_42],
+          :else       => nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "emits correct code for switch statements with multiple cases and no default" do
+        ycp_node = YCP::Switch.new(
+          :cond    => @ycp_const_42,
+          :cases   => [@ycp_case_42, @ycp_case_43, @ycp_case_44],
+          :default => nil
+        )
+
+        ruby_node = Ruby::Case.new(
+          :expression => @ruby_literal_42,
+          :whens      => [@ruby_when_42, @ruby_when_43, @ruby_when_44],
+          :else       => nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "emits correct code for switch statements with one case and a default" do
+        ycp_node = YCP::Switch.new(
+          :cond    => @ycp_const_42,
+          :cases   => [@ycp_case_42],
+          :default => @ycp_default
+        )
+
+        ruby_node = Ruby::Case.new(
+          :expression => @ruby_literal_42,
+          :whens      => [@ruby_when_42],
+          :else       => @ruby_else
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "emits correct code for switch statements with multiple cases and a default" do
+        ycp_node = YCP::Switch.new(
+          :cond    => @ycp_const_42,
+          :cases   => [@ycp_case_42, @ycp_case_43, @ycp_case_44],
+          :default => @ycp_default
+        )
+
+        ruby_node = Ruby::Case.new(
+          :expression => @ruby_literal_42,
+          :whens      => [@ruby_when_42, @ruby_when_43, @ruby_when_44],
+          :else       => @ruby_else
         )
 
         ycp_node.compile(@context_empty).should == ruby_node

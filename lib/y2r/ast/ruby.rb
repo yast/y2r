@@ -125,6 +125,37 @@ module Y2R
         end
       end
 
+      class Case < Node
+        def to_ruby
+          combine do |parts|
+            parts << "case #{expression.to_ruby}"
+            whens.each do |whem|
+              parts << indent(whem.to_ruby)
+            end
+            parts << indent(self.else.to_ruby) if self.else
+            parts << "end"
+          end
+        end
+      end
+
+      class When < Node
+        def to_ruby
+          combine do |parts|
+            parts << "when #{value.to_ruby}"
+            parts << indent(self.body.to_ruby)
+          end
+        end
+      end
+
+      class Else < Node
+        def to_ruby
+          combine do |parts|
+            parts << "else"
+            parts << indent(self.body.to_ruby)
+          end
+        end
+      end
+
       class While < Node
         def to_ruby
           if !body.is_a?(Begin)

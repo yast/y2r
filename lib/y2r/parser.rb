@@ -134,6 +134,16 @@ module Y2R
             :args     => extract_collection(element, "args", context)
           )
 
+        when "case"
+          AST::YCP::Case.new(
+            :value => element_to_node(element.at_xpath("./value"), context),
+            :body  => AST::YCP::StmtBlock.new(
+              :name       => nil,
+              :symbols    => [],
+              :statements => extract_collection(element, "body", context)
+            )
+          )
+
         when "compare"
           AST::YCP::Compare.new(
             :op  => element["op"],
@@ -149,6 +159,15 @@ module Y2R
 
         when "continue"
           AST::YCP::Continue.new
+
+        when "default"
+          AST::YCP::Default.new(
+            :body  => AST::YCP::StmtBlock.new(
+              :name       => nil,
+              :symbols    => [],
+              :statements => extract_children(element, context)
+            )
+          )
 
         when "element"
           if context != :map
@@ -245,6 +264,19 @@ module Y2R
           AST::YCP::Return.new(
             :child => if element.elements[0]
               element_to_node(element.elements[0], context)
+            else
+              nil
+            end
+          )
+
+        when "switch"
+          case_elements = element.elements.select { |e| e.name == "case" }
+
+          AST::YCP::Switch.new(
+            :cond    => element_to_node(element.at_xpath("./cond"), context),
+            :cases   => case_elements.map { |e| element_to_node(e, context) },
+            :default => if element.at_xpath("./default")
+              element_to_node(element.at_xpath("./default"), context)
             else
               nil
             end

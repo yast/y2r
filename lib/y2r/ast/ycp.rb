@@ -286,6 +286,26 @@ module Y2R
         end
       end
 
+      class Case < Node
+        def compile(context)
+          if body.statements.last.is_a?(Break)
+            # The following dance is here because we want ot keep the AST nodes
+            # immutable and thus avoid modifying their data.
+
+            body_without_break = body.dup
+            body_without_break.statements = body.statements[0..-2]
+          else
+            raise NotImplementedError,
+                  "Case without a break encountered. These are not supported."
+          end
+
+          Ruby::When.new(
+            :value => value.compile(context),
+            :body  => body_without_break.compile(context)
+          )
+        end
+      end
+
       class Compare < Node
         OPS_TO_METHODS = {
           "==" => "equal",
@@ -346,6 +366,22 @@ module Y2R
       class Continue < Node
         def compile(context)
           Ruby::Next.new
+        end
+      end
+
+      class Default < Node
+        def compile(context)
+          if body.statements.last.is_a?(Break)
+            # The following dance is here because we want ot keep the AST nodes
+            # immutable and thus avoid modifying their data.
+
+            body_without_break = body.dup
+            body_without_break.statements = body.statements[0..-2]
+          else
+            body_without_break = body
+          end
+
+          Ruby::Else.new(:body => body_without_break.compile(context))
         end
       end
 
@@ -651,6 +687,16 @@ module Y2R
               :statements => statements.map { |s| s.compile(inner_context) }
             )
           end
+        end
+      end
+
+      class Switch < Node
+        def compile(context)
+          Ruby::Case.new(
+            :expression => cond.compile(context),
+            :whens      => cases.map { |c| c.compile(context) },
+            :else       => default ? default.compile(context) : nil
+          )
         end
       end
 

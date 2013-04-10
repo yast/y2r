@@ -1626,6 +1626,79 @@ end
 YCP::Clients::DefaultClient.new.main
 ```
 
+### `switch` Statement
+
+Y2R translates YCP `switch` statement as Ruby `case` statement.
+
+#### YCP Code
+
+```ycp
+{
+  switch (42) {
+    case 42:
+      y2milestone("M1");
+      break;
+
+    case 43:
+      y2milestone("M2");
+      break;
+
+    case 44:
+      y2milestone("M3");
+      break;
+
+    default:
+      y2milestone("M4");
+      break;
+  }
+}
+```
+
+#### Ruby Code
+
+```ruby
+# encoding: utf-8
+
+module YCP
+  module Clients
+    class DefaultClient
+      def main
+        case 42
+          when 42
+            Builtins.y2milestone("M1")
+          when 43
+            Builtins.y2milestone("M2")
+          when 44
+            Builtins.y2milestone("M3")
+          else
+            Builtins.y2milestone("M4")
+        end
+      end
+    end
+  end
+end
+YCP::Clients::DefaultClient.new.main
+```
+
+Y2R does not support cases without a break at the end. This is mostly because
+Ruby doesn't have any suitable equivalent construct.
+
+#### YCP Code
+
+```ycp
+{
+  switch (42) {
+    case 42:
+      y2milestone("M1");
+  }
+}
+```
+
+#### Error Message
+
+```error
+Case without a break encountered. These are not supported.
+```
 ### `while` Statement
 
 Y2R translates YCP `while` statement as Ruby `while` statement.

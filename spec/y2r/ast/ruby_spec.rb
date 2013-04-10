@@ -36,6 +36,12 @@ module Y2R::AST::Ruby
 
       @begin = Begin.new(:statements => @statements)
 
+      @when_42 = When.new(:value => @literal_42, :body => @statements)
+      @when_43 = When.new(:value => @literal_43, :body => @statements)
+      @when_44 = When.new(:value => @literal_44, :body => @statements)
+
+      @else = Else.new(:body => @statements)
+
       @arg_a = Arg.new(:name => "a", :default => nil)
       @arg_b = Arg.new(:name => "b", :default => nil)
       @arg_c = Arg.new(:name => "c", :default => nil)
@@ -283,6 +289,145 @@ module Y2R::AST::Ruby
           "  b = 43",
           "  c = 44",
           "end"
+        ].join("\n")
+      end
+    end
+  end
+
+  describe Case, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code for empty case statements" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [],
+          :else       => nil
+        )
+
+        node.to_ruby.should == [
+          "case 42",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for case statements with one when clause and no else clause" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [@when_42],
+          :else       => nil
+        )
+
+        node.to_ruby.should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for case statements with one when clause and an else clause" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [@when_42],
+          :else       => @else
+        )
+
+        node.to_ruby.should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  else",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for case statements with multiple when clauses and no else clause" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [@when_42, @when_43, @when_44],
+          :else       => nil
+        )
+
+        node.to_ruby.should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 43",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 44",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
+      end
+
+      it "emits correct code for case statements with multiple when clauses and an else clause" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [@when_42, @when_43, @when_44],
+          :else       => @else
+        )
+
+        node.to_ruby.should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 43",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 44",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  else",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
+      end
+    end
+  end
+
+  describe When, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = When.new(:value => @literal_42, :body => @statements)
+
+        node.to_ruby.should == [
+          "when 42",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
+      end
+    end
+  end
+
+  describe Else, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = Else.new(:body => @statements)
+
+        node.to_ruby.should == [
+          "else",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
         ].join("\n")
       end
     end
