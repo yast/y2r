@@ -37,12 +37,15 @@ module Y2R
               "-x",
               "-o", xml_file.path
             ]
+
             module_paths.each do |module_path|
               cmd << '--module-path' << module_path
             end
+
             include_paths.each do |include_path|
               cmd << '--include-path' << include_path
             end
+
             cmd << ycp_file.path
 
             Cheetah.run(cmd)
