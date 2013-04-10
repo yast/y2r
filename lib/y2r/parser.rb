@@ -31,8 +31,8 @@ module Y2R
           begin
             cmd = [
               options[:ycpc] || "ycpc",
-              "--no-std-includes",
               "--no-std-modules",
+              "--no-std-includes",
               "-c",
               "-x",
               "-o", xml_file.path
