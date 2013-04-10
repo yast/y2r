@@ -29,7 +29,14 @@ module Y2R
         xml_file.close
         begin
           begin
-            cmd = options[:ycpc] || "ycpc", "-c", "-x", "-o", xml_file.path
+            cmd = [
+              options[:ycpc] || "ycpc",
+              "--no-std-includes",
+              "--no-std-modules",
+              "-c",
+              "-x",
+              "-o", xml_file.path
+            ]
             module_paths.each do |module_path|
               cmd << '--module-path' << module_path
             end
