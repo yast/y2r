@@ -137,11 +137,7 @@ module Y2R
         when "case"
           AST::YCP::Case.new(
             :value => element_to_node(element.at_xpath("./value"), context),
-            :body  => AST::YCP::StmtBlock.new(
-              :name       => nil,
-              :symbols    => [],
-              :statements => extract_collection(element, "body", context)
-            )
+            :body  => build_body(extract_collection(element, "body", context))
           )
 
         when "compare"
@@ -162,11 +158,7 @@ module Y2R
 
         when "default"
           AST::YCP::Default.new(
-            :body  => AST::YCP::StmtBlock.new(
-              :name       => nil,
-              :symbols    => [],
-              :statements => extract_children(element, context)
-            )
+            :body => build_body(extract_children(element, context))
           )
 
         when "element"
@@ -399,6 +391,18 @@ module Y2R
     def extract_collection(element, name, context)
       child = element.at_xpath("./#{name}")
       child ? extract_children(child, context) : []
+    end
+
+    def build_body(statements)
+      if statements.size == 1 && statements.first.is_a?(AST::YCP::StmtBlock)
+        body = statements.first
+      else
+        body = AST::YCP::StmtBlock.new(
+          :name       => nil,
+          :symbols    => [],
+          :statements => statements
+        )
+      end
     end
   end
 end
