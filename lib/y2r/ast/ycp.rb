@@ -628,15 +628,15 @@ module Y2R
                   :statements => Ruby::Statements.new(
                     :statements => [
                       Ruby::Class.new(
-                        :name       => "MClass",
+                        :name       => "#{real_name}Class",
                         :statements => Ruby::Statements.new(
                           :statements => class_statements
                         )
                       ),
                       Ruby::Assignment.new(
-                        :lhs => Ruby::Variable.new(:name => "M"),
+                        :lhs => Ruby::Variable.new(:name => real_name),
                         :rhs => Ruby::MethodCall.new(
-                          :receiver => Ruby::Variable.new(:name => "MClass"),
+                          :receiver => Ruby::Variable.new(:name => "#{real_name}Class"),
                           :name     => "new",
                           :args     => [],
                           :block    => nil,
