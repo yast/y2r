@@ -158,10 +158,21 @@ module Y2R
           )
 
         when "const"
-          AST::YCP::Const.new(
-            :type  => element["type"].to_sym,
-            :value => element["value"]
-          )
+          # For some weird reason, some terms (e.g. those placed in lists) are
+          # represented as <const type="term" ...>, while others are represented
+          # as <yeterm ...>. We unify this mess here so that it doesn't
+          # propagate into the AST.
+          if element["type"] != "term"
+            AST::YCP::Const.new(
+              :type  => element["type"].to_sym,
+              :value => element["value"]
+            )
+          else
+            AST::YCP::YETerm.new(
+              :name     => element["name"],
+              :children => extract_collection(element, "list", :yeterm)
+            )
+          end
 
         when "continue"
           AST::YCP::Continue.new
