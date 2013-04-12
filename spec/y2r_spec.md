@@ -34,6 +34,7 @@ Y2R translates YCP `nil` as Ruby `nil`.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @v = nil
       end
@@ -64,6 +65,7 @@ Y2R translates YCP booleans as Ruby booelans.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @t = true
         @f = false
@@ -95,6 +97,7 @@ integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i = 42
       end
@@ -126,6 +129,7 @@ level so the conversion is lossless.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @f1 = 42.0
         @f2 = 42.1
@@ -158,6 +162,7 @@ will always have US-ASCII encoding.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @s = :abcd
       end
@@ -189,6 +194,7 @@ explain a bit more.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @s = "abcd"
       end
@@ -221,6 +227,7 @@ TODO: What about encoding?
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @p = path(".abcd")
       end
@@ -251,6 +258,7 @@ Y2R translates YCP lists as Ruby arrays.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @l1 = []
         @l2 = [42, 43, 44]
@@ -282,6 +290,7 @@ Y2R translates YCP maps as Ruby hashes.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @m1 = {}
         @m2 = { :a => 42, :b => 43, :c => 44 }
@@ -314,6 +323,7 @@ instance of the `YCP::Term` class
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @t1 = term(:a)
         @t2 = term(:a, 42, 43, 44)
@@ -344,6 +354,7 @@ Y2R translates YCP blocks as Ruby lambdas.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @b = lambda {
           Builtins.y2milestone("M1")
@@ -380,6 +391,7 @@ creates an instance of the `YCP::Reference` class.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @fref = reference(method(:f), "void ()")
       end
@@ -421,6 +433,7 @@ Y2R translates YCP local variables as Ruby local variables.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def f
         i = 42
         j = i
@@ -451,6 +464,7 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i = 42
         @j = @i
@@ -522,6 +536,7 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def f
         i = 42
         b = lambda {
@@ -558,6 +573,7 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def f
         i = 42
         i2 = 43
@@ -591,6 +607,7 @@ method.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @f = Convert.convert(42, { :from => "integer", :to => "float" })
       end
@@ -629,6 +646,7 @@ builtins in Ruby.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.time
         Builtins.random(100)
@@ -662,6 +680,7 @@ converts the block into a Ruby block.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.foreach([42, 43, 44]) { |i|
           Builtins.y2milestone("M1")
@@ -692,6 +711,7 @@ argument specially. It converts the expression into a Ruby block.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.maplist([42, 43, 44]) { |i|
           Ops.multiply(i, i)
@@ -725,6 +745,7 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       include I18n
       textdomain "helloworld"
       def main
@@ -773,6 +794,7 @@ Y2R translates YCP function calls as Ruby method calls.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         f1
         @a = "a"
@@ -828,6 +850,7 @@ on them.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @fref = reference(method(:f), "void ()")
         @fref.call
@@ -869,6 +892,7 @@ because their behavior differs from the behavior of YCP operators in some cases.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @b1 = Ops.equal(42, 43)
         @b2 = Ops.not_equal(42, 43)
@@ -913,6 +937,7 @@ because their behavior differs from the behavior of YCP operators in some cases.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i = 42
         @i1 = Ops.unary_minus(@i)
@@ -955,6 +980,7 @@ because their behavior differs from the behavior of YCP operators in some cases.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i1 = Ops.bitwise_not(42)
         @i2 = Ops.bitwise_and(42, 43)
@@ -996,6 +1022,7 @@ because their behavior differs from the behavior of YCP operators in some cases.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @b = true
         @b1 = Ops.logical_not(@b)
@@ -1030,6 +1057,7 @@ Y2R translates YCP ternary operator as Ruby ternary operator.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @b = true
         @i = @b ? 42 : 43
@@ -1061,6 +1089,7 @@ that implements its behavior. There is no equivalent operator in Ruby.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i = Ops.index([42, 43, 44], [1], 0)
       end
@@ -1090,6 +1119,7 @@ Y2R translates YCP double quote operator as a Ruby lambda.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @b = lambda {
           42
@@ -1126,6 +1156,7 @@ Y2R translates YCP `import` statement as a `YCP.import` call.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         YCP.import("String")
       end
@@ -1156,6 +1187,7 @@ call to set the text domain.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       include I18n
       textdomain "users"
     end
@@ -1186,6 +1218,7 @@ Y2R translates simple YCP assignments as Ruby assignments.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @i = 42
         @i = 43
@@ -1218,6 +1251,7 @@ in Ruby.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         @l = [42, 43, 44]
         Ops.assign(@l, [0], 45)
@@ -1253,6 +1287,7 @@ statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def f1
         return
         nil
@@ -1285,6 +1320,7 @@ Y2R translates YCP `return` statement inside block as Ruby `next` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.maplist([42, 43, 44]) { |i|
           j = 42
@@ -1322,6 +1358,7 @@ statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         while true
           break
@@ -1352,6 +1389,7 @@ statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         begin
           break
@@ -1380,6 +1418,7 @@ raises `YCP::Break`.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.foreach([42, 43, 44]) { |i|
           raise Break
@@ -1411,6 +1450,7 @@ Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         while true
           next
@@ -1438,6 +1478,7 @@ Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.foreach([42, 43, 44]) { |i|
           next
@@ -1493,6 +1534,7 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def f1
         return 42
         nil
@@ -1574,6 +1616,7 @@ Y2R translates YCP statement blocks as Ruby statements.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         Builtins.y2milestone("M1")
         Builtins.y2milestone("M2")
@@ -1611,6 +1654,7 @@ Y2R translates YCP `if` statement as Ruby `if` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         if true
           Builtins.y2milestone("M1")
@@ -1663,6 +1707,7 @@ Y2R translates YCP `switch` statement as Ruby `case` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         case 42
           when 42
@@ -1720,6 +1765,7 @@ case/default statements are wrapped a block.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         case 42
           when 42
@@ -1800,6 +1846,7 @@ Y2R translates YCP `while` statement as Ruby `while` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         while true
           Builtins.y2milestone("M1")
@@ -1833,6 +1880,7 @@ Y2R translates YCP `repeat` statement as Ruby `until` statement.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         begin
           Builtins.y2milestone("M1")
@@ -1875,6 +1923,7 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 module YCP
   module Clients
     class DefaultClient
+      include YCP
       def main
         YCP.import("String")
         @i = 42

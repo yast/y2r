@@ -1310,6 +1310,16 @@ module Y2R::AST
   describe YCP::FileBlock, :type => :ycp do
     describe "#compile" do
       def ruby_client_statements(statements)
+        class_statements = [
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "include",
+            :args     => [Ruby::Variable.new(:name => "YCP")],
+            :block    => nil,
+            :parens   => false
+          )
+        ] + statements
+
         Ruby::Program.new(
           :statements => Ruby::Statements.new(
             :statements => [
@@ -1320,7 +1330,7 @@ module Y2R::AST
                   :statements => Ruby::Class.new(
                     :name       => "CClient",
                     :statements => Ruby::Statements.new(
-                      :statements => statements
+                      :statements => class_statements
                     )
                   )
                 )

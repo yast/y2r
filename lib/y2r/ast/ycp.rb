@@ -412,7 +412,15 @@ module Y2R
           fundefs = statements.select { |s| s.is_a?(FunDef) }
           other_statements = statements - textdomains - fundefs
 
-          class_statements = []
+          class_statements = [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "include",
+              :args     => [Ruby::Variable.new(:name => "YCP")],
+              :block    => nil,
+              :parens   => false
+            )
+          ]
 
           inside_block context do |inner_context|
             class_statements += textdomains.map { |t| t.compile(inner_context) }
