@@ -808,9 +808,9 @@ module YCP
         nil
       end
       def f2(a, b, c)
-        a = YCP.copy(a)
-        b = YCP.copy(b)
-        c = YCP.copy(c)
+        a = copy_arg(a)
+        b = copy_arg(b)
+        c = copy_arg(c)
         return 42
         nil
       end
@@ -1556,9 +1556,9 @@ module YCP
         nil
       end
       def f6(a, b, c)
-        a = YCP.copy(a)
-        b = YCP.copy(b)
-        c = YCP.copy(c)
+        a = copy_arg(a)
+        b = copy_arg(b)
+        c = copy_arg(c)
         return 42
         nil
       end

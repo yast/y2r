@@ -493,7 +493,7 @@ module Y2R
 
           statements = block.compile(context)
           statements.statements = args.select(&:needs_copy?).map do |arg|
-            arg.compile_as_copy_call(context)
+            arg.compile_as_copy_arg_call(context)
           end + statements.statements
           statements.statements << Ruby::Literal.new(:value => nil)
 
@@ -730,12 +730,12 @@ module Y2R
           Ruby::Arg.new(:name => ruby_name, :default => nil)
         end
 
-        def compile_as_copy_call(context)
+        def compile_as_copy_arg_call(context)
           Ruby::Assignment.new(
             :lhs => Ruby::Variable.new(:name => ruby_name),
             :rhs => Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "YCP"),
-              :name     => "copy",
+              :receiver => nil,
+              :name     => "copy_arg",
               :args     => [Ruby::Variable.new(:name => ruby_name)],
               :block    => nil,
               :parens   => true

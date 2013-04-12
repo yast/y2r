@@ -1468,8 +1468,8 @@ module Y2R::AST
         Ruby::Assignment.new(
           :lhs => Ruby::Variable.new(:name => name),
           :rhs => Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "YCP"),
-            :name     => "copy",
+            :receiver => nil,
+            :name     => "copy_arg",
             :args     => [Ruby::Variable.new(:name => name)],
             :block    => nil,
             :parens   => true
@@ -2324,13 +2324,13 @@ module Y2R::AST
       end
     end
 
-    describe "#compile_as_copy_call" do
+    describe "#compile_as_copy_arg_call" do
       def ruby_copy_call(name)
         Ruby::Assignment.new(
           :lhs => Ruby::Variable.new(:name => name),
           :rhs => Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "YCP"),
-            :name     => "copy",
+            :receiver => nil,
+            :name     => "copy_arg",
             :args     => [Ruby::Variable.new(:name => name)],
             :block    => nil,
             :parens   => true
@@ -2343,11 +2343,11 @@ module Y2R::AST
         ruby_node_capital    = ruby_copy_call("_S")
         ruby_node_underscore = ruby_copy_call("__s")
 
-        @ycp_node_regular.compile_as_copy_call(@context_empty).should ==
+        @ycp_node_regular.compile_as_copy_arg_call(@context_empty).should ==
           ruby_node_regular
-        @ycp_node_capital.compile_as_copy_call(@context_empty).should ==
+        @ycp_node_capital.compile_as_copy_arg_call(@context_empty).should ==
           ruby_node_capital
-        @ycp_node_underscore.compile_as_copy_call(@context_empty).should ==
+        @ycp_node_underscore.compile_as_copy_arg_call(@context_empty).should ==
           ruby_node_underscore
       end
     end
