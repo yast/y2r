@@ -1138,7 +1138,7 @@ Y2R translates YCP statements into Ruby statements.
 
 ### `import` Statement
 
-Y2R translates YCP `import` statement as a `YCP.import` call.
+Y2R translates YCP `import` statement as a `import` call.
 
 #### YCP Code
 
@@ -1158,7 +1158,7 @@ module YCP
     class DefaultClient
       include YCP
       def main
-        YCP.import("String")
+        import("String")
       end
     end
   end
@@ -1925,7 +1925,7 @@ module YCP
     class DefaultClient
       include YCP
       def main
-        YCP.import("String")
+        import("String")
         @i = 42
         @j = 43
       end
@@ -1979,7 +1979,7 @@ module YCP
     include YCP
     extend Exportable
     def initialize
-      YCP.import("String")
+      import("String")
       @i = 42
       @j = 43
     end
