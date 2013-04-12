@@ -1897,6 +1897,18 @@ module Y2R::AST
         ycp_node.compile(@context_empty).should == ruby_node
       end
 
+      it "uppercases the first letter of the module name" do
+        ycp_node = YCP::ModuleBlock.new(
+          :name       => "m.ycp",
+          :symbols    => [],
+          :statements => []
+        )
+
+        ruby_node = ruby_module_statements([])
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
       it "strips the \".ycp\" extension from module name" do
         ycp_node = YCP::ModuleBlock.new(
           :name       => "M.ycp",

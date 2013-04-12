@@ -573,7 +573,9 @@ module Y2R
 
       class ModuleBlock < Block
         def compile(context)
-          real_name = name.sub(/\.ycp$/, "")
+          real_name = name.
+            sub(/^./) { |s| s.upcase }.
+            sub(/\.ycp$/, "")
           textdomains = statements.select { |s| s.is_a?(Textdomain) }
           fundefs = statements.select { |s| s.is_a?(FunDef) }
           other_statements = statements - textdomains - fundefs
