@@ -529,7 +529,7 @@ module Y2R
           return nil if name == "SCR" || name == "WFM"
 
           Ruby::MethodCall.new(
-            :receiver => nil,
+            :receiver => Ruby::Variable.new(:name => "YCP"),
             :name     => "import",
             :args     => [Ruby::Literal.new(:value => name)],
             :block    => nil,

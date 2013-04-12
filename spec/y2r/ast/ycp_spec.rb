@@ -1623,7 +1623,7 @@ module Y2R::AST
         ycp_node = YCP::Import.new(:name => "M")
 
         ruby_node = Ruby::MethodCall.new(
-          :receiver => nil,
+          :receiver => Ruby::Variable.new(:name => "YCP"),
           :name     => "import",
           :args     => [Ruby::Literal.new(:value => "M")],
           :block    => nil,
