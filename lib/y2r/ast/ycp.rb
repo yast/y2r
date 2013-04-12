@@ -583,6 +583,13 @@ module Y2R
           class_statements = [
             Ruby::MethodCall.new(
               :receiver => nil,
+              :name     => "include",
+              :args     => [Ruby::Variable.new(:name => "YCP")],
+              :block    => nil,
+              :parens   => false
+            ),
+            Ruby::MethodCall.new(
+              :receiver => nil,
               :name     => "extend",
               :args     => [Ruby::Variable.new(:name => "Exportable")],
               :block    => nil,
