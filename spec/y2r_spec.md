@@ -2,10 +2,11 @@ Y2R Compiler Specification
 ==========================
 
 This document specifies how [Y2R](https://github.com/yast/y2r) translates
-various YCP constructs into Ruby. It serves both as a human-readable
-documentation and as an executable specification. Technically, this is
-implemented by translating the document from
-[Markdown](http://daringfireball.net/projects/markdown/) into
+various
+[YCP](http://doc.opensuse.org/projects/YaST/SLES10/tdg/Book-YCPLanguage.html)
+constructs into Ruby. It serves both as a human-readable documentation and as an
+executable specification. Technically, this is implemented by translating this
+document from [Markdown](http://daringfireball.net/projects/markdown/) into
 [RSpec](http://rspec.info/).
 
 Contents
