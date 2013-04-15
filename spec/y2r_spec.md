@@ -8,6 +8,53 @@ implemented by translating the document from
 [Markdown](http://daringfireball.net/projects/markdown/) into
 [RSpec](http://rspec.info/).
 
+Contents
+--------
+
+  * [Contents](#contents)
+  * [Values](#values)
+    * [Voids](#voids)
+    * [Booleans](#booleans)
+    * [Integers](#integers)
+    * [Floats](#floats)
+    * [Symbols](#symbols)
+    * [Strings](#strings)
+    * [Paths](#paths)
+    * [Lists](#lists)
+    * [Maps](#maps)
+    * [Terms](#terms)
+    * [Blocks](#blocks)
+    * [Function References](#function-references)
+  * [Expressions](#expressions)
+    * [Variables](#variables)
+    * [Type Conversions](#type-conversions)
+    * [Builtin Calls](#builtin-calls)
+    * [`_` Calls](#_-calls)
+    * [Function Calls](#function-calls)
+    * [Function References Calling](#function-references-calling)
+    * [Comparison Operators](#comparison-operators)
+    * [Arithmetic Operators](#arithmetic-operators)
+    * [Bitwise Operators](#bitwise-operators)
+    * [Logical Operators](#logical-operators)
+    * [Ternary Operator](#ternary-operator)
+    * [Index Operator](#index-operator)
+    * [Double Quote Operator](#double-quote-operator)
+  * [Statements](#statements)
+    * [`import` Statement](#import-statement)
+    * [`textdomain` Statement](#textdomain-statement)
+    * [Assignments](#assignments)
+    * [`return` Statement](#return-statement)
+    * [`break` Statement](#break-statement)
+    * [`continue` Statement](#continue-statement)
+    * [Function Definitions](#function-definitions)
+    * [Statement Blocks](#statement-blocks)
+    * [`if` Statement](#if-statement)
+    * [`switch` Statement](#switch-statement)
+    * [`while` Statement](#while-statement)
+    * [`repeat` Statement](#repeat-statement)
+    * [Clients](#clients)
+    * [Modules](#modules)
+
 Values
 ------
 
