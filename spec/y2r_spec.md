@@ -222,9 +222,8 @@ YCP::Clients::DefaultClient.new.main
 
 ### Strings
 
-Y2R translates YCP strings as Ruby strings. YCP strings use UTF-8 internally so
-the conversion is lossless. TODO: Add encoding header to translated files,
-explain a bit more.
+Y2R translates YCP strings as Ruby strings. YCP strings use UTF-8 internally and
+tre translated code is in UTF-8 too, so the conversion is lossless.
 
 #### YCP Code
 
