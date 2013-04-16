@@ -8,11 +8,12 @@ class RSpecRenderer < Redcarpet::Render::Base
 
     @level = 0
     @separate = false
+    @fragment = false
   end
 
   def header(text, header_level)
     case header_level
-      when 1, 4 # 1 = top level header, 4 = code block header
+      when 1   # top level header
         nil
       when 2, 3
         level = header_level - 1
@@ -25,6 +26,10 @@ class RSpecRenderer < Redcarpet::Render::Base
         lines << push_describe(text.downcase)
 
         join(lines)
+      when 4   # code block header
+        @fragment = text =~ /fragment/
+
+        nil
       else
         raise "Invalid header level: #{header_level}."
     end
@@ -40,12 +45,45 @@ class RSpecRenderer < Redcarpet::Render::Base
     case language
       when "ycp"
         raise "Unexpected YCP code: #{code}." if @ycp_code
-        @ycp_code = code[0..-2]
+
+        if @fragment
+          lines = []
+
+          lines << "{"
+          lines << indent(code[0..-2], 1)
+          lines << "}"
+
+          @ycp_code = lines.join("\n")
+        else
+          @ycp_code = code[0..-2]
+        end
       when "ruby"
         raise "Unexpected Ruby code: #{code}." if !@ycp_code
-        @ruby_code = code[0..-2]
+
+        if @fragment
+          lines = []
+
+          lines << "# encoding: utf-8"
+          lines << ""
+          lines << "module YCP"
+          lines << "  module Clients"
+          lines << "    class DefaultClient"
+          lines << "      include YCP"
+          lines << "      def main"
+          lines << indent(code[0..-2], 4)
+          lines << "      end"
+          lines << "    end"
+          lines << "  end"
+          lines << "end"
+          lines << "YCP::Clients::DefaultClient.new.main"
+
+          @ruby_code = lines.join("\n")
+        else
+          @ruby_code = code[0..-2]
+        end
       when "error"
         raise "Unexpected error message: #{code}." if !@ycp_code
+
         @error_code = code[0..-2]
       else
         raise "Invalid language: #{language}."

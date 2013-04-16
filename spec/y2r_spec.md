@@ -66,62 +66,34 @@ any are translated as instances of special classes.
 
 Y2R translates YCP `nil` as Ruby `nil`.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  void v = nil;
-}
+void v = nil;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @v = nil
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@v = nil
 ```
 
 ### Booleans
 
 Y2R translates YCP booleans as Ruby booelans.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  boolean t = true;
-  boolean f = false;
-}
+boolean t = true;
+boolean f = false;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @t = true
-        @f = false
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@t = true
+@f = false
 ```
 
 ### Integers
@@ -129,30 +101,17 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP integers as `Fixnum`s. It ignores the issue of overflow (YCP
 integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  integer i = 42;
-}
+integer i = 42;
+
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @i = 42
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@i = 42
 ```
 
 ### Floats
@@ -160,32 +119,18 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP floats as Ruby floats. Both are stored as `double` on the C
 level so the conversion is lossless.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  float f1 = 42.;
-  float f2 = 42.1;
-}
+float f1 = 42.;
+float f2 = 42.1;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @f1 = 42.0
-        @f2 = 42.1
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@f1 = 42.0
+@f2 = 42.1
 ```
 
 ### Symbols
@@ -194,30 +139,16 @@ Y2R translates YCP symbols as Ruby symbols. YCP symbols are always composed of
 alphanumeric characters and uderscores, which means the equivalent Ruby symbols
 will always have US-ASCII encoding.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  symbol s = `abcd;
-}
+symbol s = `abcd;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @s = :abcd
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@s = :abcd
 ```
 
 ### Strings
@@ -225,30 +156,16 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP strings as Ruby strings. YCP strings use UTF-8 internally and
 tre translated code is in UTF-8 too, so the conversion is lossless.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  string s = "abcd";
-}
+string s = "abcd";
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @s = "abcd"
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@s = "abcd"
 ```
 
 ### Paths
@@ -258,94 +175,52 @@ instance of the `YCP::Path` class.
 
 TODO: What about encoding?
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  path p = .abcd;
-}
+path p = .abcd;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @p = path(".abcd")
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@p = path(".abcd")
 ```
 
 ### Lists
 
 Y2R translates YCP lists as Ruby arrays.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  list l1 = [];
-  list l2 = [42, 43, 44];
-}
+list l1 = [];
+list l2 = [42, 43, 44];
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @l1 = []
-        @l2 = [42, 43, 44]
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@l1 = []
+@l2 = [42, 43, 44]
 ```
 
 ### Maps
 
 Y2R translates YCP maps as Ruby hashes.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  map m1 = $[];
-  map m2 = $[`a: 42, `b: 43, `c: 44];
-}
+map m1 = $[];
+map m2 = $[`a: 42, `b: 43, `c: 44];
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @m1 = {}
-        @m2 = { :a => 42, :b => 43, :c => 44 }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@m1 = {}
+@m2 = { :a => 42, :b => 43, :c => 44 }
 ```
 
 ### Terms
@@ -353,64 +228,36 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP terms as calls to the `YCP.term` method, which creates an
 instance of the `YCP::Term` class
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  term t1 = `a();
-  term t2 = `a(42, 43, 44);
-}
+term t1 = `a();
+term t2 = `a(42, 43, 44);
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @t1 = term(:a)
-        @t2 = term(:a, 42, 43, 44)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@t1 = term(:a)
+@t2 = term(:a, 42, 43, 44)
 ```
 
 ### Blocks
 
 Y2R translates YCP blocks as Ruby lambdas.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  block<void> b = { y2milestone("M1"); };
-}
+block<void> b = { y2milestone("M1"); };
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @b = lambda {
-          Builtins.y2milestone("M1")
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@b = lambda {
+  Builtins.y2milestone("M1")
+}
 ```
 
 ### Function References
@@ -418,7 +265,7 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP function references as calls to the `reference` method, which
 creates an instance of the `YCP::Reference` class.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -430,7 +277,7 @@ creates an instance of the `YCP::Reference` class.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -461,7 +308,7 @@ Y2R translates YCP expressions into Ruby expressions.
 
 Y2R translates YCP local variables as Ruby local variables.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -472,7 +319,7 @@ Y2R translates YCP local variables as Ruby local variables.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -494,7 +341,7 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates YCP variables at client toplevel as Ruby instance variables.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -503,7 +350,7 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -524,7 +371,7 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -538,7 +385,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -563,7 +410,7 @@ end
 
 Y2R uses suffixes to disambiguate variable aliases in blocks.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -598,7 +445,7 @@ YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R uses suffixes to disambiguate variable aliases in statement blocks.
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -638,30 +485,16 @@ Y2R translates YCP type conversions as calls of the `YCP::Convert.convert`
 method.
 
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  float f = (float) 42;
-}
+float f = (float) 42;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @f = Convert.convert(42, { :from => "integer", :to => "float" })
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@f = Convert.convert(42, { :from => "integer", :to => "float" })
 ```
 
 ### Builtin Calls
@@ -670,111 +503,69 @@ Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`,
 `YCP::SCR` and `YCP::WFM` modules. These reimplement the behavior of all YCP
 builtins in Ruby.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  time();
-  random(100);
+time();
+random(100);
 
-  SCR::Dir(.syseditor.section);
-  WFM::Args();
+SCR::Dir(.syseditor.section);
+WFM::Args();
 
-  float f = float::abs(-42.0);
-  list  l = list::reverse([42, 43, 44]);
-}
+float f = float::abs(-42.0);
+list  l = list::reverse([42, 43, 44]);
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.time
-        Builtins.random(100)
-        SCR.Dir(path(".syseditor.section"))
-        WFM.Args
-        @f = Builtins::Float.abs(-42.0)
-        @l = Builtins::List.reverse([42, 43, 44])
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.time
+Builtins.random(100)
+SCR.Dir(path(".syseditor.section"))
+WFM.Args
+@f = Builtins::Float.abs(-42.0)
+@l = Builtins::List.reverse([42, 43, 44])
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
 converts the block into a Ruby block.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  foreach(integer i, [42, 43, 44], { y2milestone("M1"); });
-}
+foreach(integer i, [42, 43, 44], { y2milestone("M1"); });
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.foreach([42, 43, 44]) { |i|
-          Builtins.y2milestone("M1")
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.foreach([42, 43, 44]) { |i|
+  Builtins.y2milestone("M1")
+}
 ```
 
 Y2R handles YCP builtin calls with a double quote expression as the last
 argument specially. It converts the expression into a Ruby block.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  maplist(integer i, [42, 43, 44], ``(i * i));
-}
+maplist(integer i, [42, 43, 44], ``(i * i));
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.maplist([42, 43, 44]) { |i|
-          Ops.multiply(i, i)
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.maplist([42, 43, 44]) { |i|
+  Ops.multiply(i, i)
+}
 ```
 
 ### `_` Calls
 
 Y2R translates YCP `_` calls as calls of the `_` method.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -784,7 +575,7 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -833,7 +624,7 @@ Y2R translates YCP function calls as Ruby method calls.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -876,7 +667,7 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates calling of YCP Function References as invoking the `call` method
 on them.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -889,7 +680,7 @@ on them.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -918,40 +709,26 @@ Y2R translates YCP comparison operators as calls of methods in the `YCP::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  boolean b1 = 42 == 43;
-  boolean b2 = 42 != 43;
-  boolean b3 = 42 < 43;
-  boolean b4 = 42 > 43;
-  boolean b5 = 42 <= 43;
-  boolean b6 = 42 >= 43;
-}
+boolean b1 = 42 == 43;
+boolean b2 = 42 != 43;
+boolean b3 = 42 < 43;
+boolean b4 = 42 > 43;
+boolean b5 = 42 <= 43;
+boolean b6 = 42 >= 43;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @b1 = Ops.equal(42, 43)
-        @b2 = Ops.not_equal(42, 43)
-        @b3 = Ops.less_than(42, 43)
-        @b4 = Ops.greater_than(42, 43)
-        @b5 = Ops.less_or_equal(42, 43)
-        @b6 = Ops.greater_or_equal(42, 43)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@b1 = Ops.equal(42, 43)
+@b2 = Ops.not_equal(42, 43)
+@b3 = Ops.less_than(42, 43)
+@b4 = Ops.greater_than(42, 43)
+@b5 = Ops.less_or_equal(42, 43)
+@b6 = Ops.greater_or_equal(42, 43)
 ```
 
 ### Arithmetic Operators
@@ -960,44 +737,30 @@ Y2R translates YCP arithmetic operators as calls of methods in the `YCP::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  # Using a variable defeats constant propagation.
-  integer i  = 42;
+# Using a variable defeats constant propagation.
+integer i  = 42;
 
-  integer i1 = -i;
-  integer i2 = 42 + 43;
-  integer i3 = 42 - 43;
-  integer i4 = 42 * 43;
-  integer i5 = 42 / 43;
-  integer i6 = 42 % 43;
-}
+integer i1 = -i;
+integer i2 = 42 + 43;
+integer i3 = 42 - 43;
+integer i4 = 42 * 43;
+integer i5 = 42 / 43;
+integer i6 = 42 % 43;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @i = 42
-        @i1 = Ops.unary_minus(@i)
-        @i2 = Ops.add(42, 43)
-        @i3 = Ops.subtract(42, 43)
-        @i4 = Ops.multiply(42, 43)
-        @i5 = Ops.divide(42, 43)
-        @i6 = Ops.modulo(42, 43)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@i = 42
+@i1 = Ops.unary_minus(@i)
+@i2 = Ops.add(42, 43)
+@i3 = Ops.subtract(42, 43)
+@i4 = Ops.multiply(42, 43)
+@i5 = Ops.divide(42, 43)
+@i6 = Ops.modulo(42, 43)
 ```
 
 ### Bitwise Operators
@@ -1006,40 +769,26 @@ Y2R translates YCP bitwise operators as calls of methods in the `YCP::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  integer i1 = ~42;
-  integer i2 = 42 & 43;
-  integer i3 = 42 | 43;
-  integer i4 = 42 ^ 43;
-  integer i5 = 42 << 43;
-  integer i6 = 42 >> 43;
-}
+integer i1 = ~42;
+integer i2 = 42 & 43;
+integer i3 = 42 | 43;
+integer i4 = 42 ^ 43;
+integer i5 = 42 << 43;
+integer i6 = 42 >> 43;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @i1 = Ops.bitwise_not(42)
-        @i2 = Ops.bitwise_and(42, 43)
-        @i3 = Ops.bitwise_or(42, 43)
-        @i4 = Ops.bitwise_xor(42, 43)
-        @i5 = Ops.shift_left(42, 43)
-        @i6 = Ops.shift_right(42, 43)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@i1 = Ops.bitwise_not(42)
+@i2 = Ops.bitwise_and(42, 43)
+@i3 = Ops.bitwise_or(42, 43)
+@i4 = Ops.bitwise_xor(42, 43)
+@i5 = Ops.shift_left(42, 43)
+@i6 = Ops.shift_right(42, 43)
 ```
 
 ### Logical Operators
@@ -1048,71 +797,43 @@ Y2R translates YCP logical operators as calls of methods in the `YCP::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  # Using a variable defeats constant propagation.
-  boolean b = true;
+# Using a variable defeats constant propagation.
+boolean b = true;
 
-  boolean b1 = !b;
-  boolean b2 = true && false;
-  boolean b3 = true || false;
-}
+boolean b1 = !b;
+boolean b2 = true && false;
+boolean b3 = true || false;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @b = true
-        @b1 = Ops.logical_not(@b)
-        @b2 = Ops.logical_and(true, false)
-        @b3 = Ops.logical_or(true, false)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@b = true
+@b1 = Ops.logical_not(@b)
+@b2 = Ops.logical_and(true, false)
+@b3 = Ops.logical_or(true, false)
 ```
 
 ### Ternary Operator
 
 Y2R translates YCP ternary operator as Ruby ternary operator.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  # Using a variable defeats constant propagation.
-  boolean b = true;
-  integer i = b ? 42 : 43;
-}
+# Using a variable defeats constant propagation.
+boolean b = true;
+integer i = b ? 42 : 43;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @b = true
-        @i = @b ? 42 : 43
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@b = true
+@i = @b ? 42 : 43
 ```
 
 ### Index Operator
@@ -1120,62 +841,34 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP index operator as a call of a method in the `YCP::Ops` module
 that implements its behavior. There is no equivalent operator in Ruby.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  integer i = [42, 43, 44][1]:0;
-}
+integer i = [42, 43, 44][1]:0;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @i = Ops.index([42, 43, 44], [1], 0)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@i = Ops.index([42, 43, 44], [1], 0)
 ```
 
 ### Double Quote Operator
 
 Y2R translates YCP double quote operator as a Ruby lambda.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  block<integer> b = ``(42);
-}
+block<integer> b = ``(42);
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @b = lambda {
-          42
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@b = lambda {
+  42
+}
 ```
 
 Statements
@@ -1187,30 +880,16 @@ Y2R translates YCP statements into Ruby statements.
 
 Y2R translates YCP `import` statement as a `YCP.import` call.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  import "String";
-}
+import "String";
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        YCP.import("String")
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+YCP.import("String")
 ```
 
 ### `textdomain` Statement
@@ -1218,7 +897,7 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP `textdomain` statement as an include of the `I18n` module and
 call to set the text domain.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1226,7 +905,7 @@ call to set the text domain.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -1247,72 +926,46 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates simple YCP assignments as Ruby assignments.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  integer i = 42;
+integer i = 42;
 
-  i = 43;
-}
+i = 43;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @i = 42
-        @i = 43
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@i = 42
+@i = 43
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
 `YCP::Ops` module that implements its behavior. There is no equivalent operator
 in Ruby.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  list l = [42, 43, 44];
+list l = [42, 43, 44];
 
-  l[0] = 45;
-}
+l[0] = 45;
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        @l = [42, 43, 44]
-        Ops.assign(@l, [0], 45)
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+@l = [42, 43, 44]
+Ops.assign(@l, [0], 45)
 ```
 
 ### `return` Statement
 
 Y2R translates YCP `return` statement inside functions as Ruby `return`
 statement.
+
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1326,7 +979,7 @@ statement.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -1351,37 +1004,25 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates YCP `return` statement inside block as Ruby `next` statement.
 
+#### YCP (fragment)
+
 ```ycp
-{
-  # A variable prevents translating the block as YEReturn.
-  maplist(integer i, [42, 43, 44], { integer j = 42; return j; });
-  foreach(integer i, [42, 43, 44], { integer j = 42; return; });
-}
+# A variable prevents translating the block as YEReturn.
+maplist(integer i, [42, 43, 44], { integer j = 42; return j; });
+foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.maplist([42, 43, 44]) { |i|
-          j = 42
-          next j
-        }
-        Builtins.foreach([42, 43, 44]) { |i|
-          j = 42
-          next
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.maplist([42, 43, 44]) { |i|
+  j = 42
+  next j
+}
+Builtins.foreach([42, 43, 44]) { |i|
+  j = 42
+  next
+}
 ```
 
 ### `break` Statement
@@ -1390,91 +1031,49 @@ Y2R translates YCP `break` statement inside a while statement as Ruby `next`
 statement.
 
 ```ycp
-{
-  while (true) {
-    break;
-  }
+while (true) {
+  break;
 }
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        while true
-          break
-        end
-      end
-    end
-  end
+while true
+  break
 end
-YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R translates YCP `break` statement inside a repeat statement as Ruby `next`
 statement.
 
 ```ycp
-{
-  repeat {
-    break;
-  } until(true);
-}
+repeat {
+  break;
+} until(true);
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        begin
-          break
-        end until true
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+begin
+  break
+end until true
 ```
 
 Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
 raises `YCP::Break`.
 
 ```ycp
-{
-  foreach(integer i, [42, 43, 44], { break; });
-}
+foreach(integer i, [42, 43, 44], { break; });
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.foreach([42, 43, 44]) { |i|
-          raise Break
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.foreach([42, 43, 44]) { |i|
+  raise Break
+}
 ```
 
 ### `continue` Statement
@@ -1482,59 +1081,31 @@ YCP::Clients::DefaultClient.new.main
 Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
 
 ```ycp
-{
-  while (true) {
-    continue;
-  }
+while (true) {
+  continue;
 }
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        while true
-          next
-        end
-      end
-    end
-  end
+while true
+  next
 end
-YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
 
 ```ycp
-{
-  foreach(integer i, [42, 43, 44], { continue; });
-}
+foreach(integer i, [42, 43, 44], { continue; });
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        Builtins.foreach([42, 43, 44]) { |i|
-          next
-        }
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+Builtins.foreach([42, 43, 44]) { |i|
+  next
+}
 ```
 
 ### Function Definitions
@@ -1543,7 +1114,7 @@ Y2R translates YCP function definitions as Ruby method definitions. It maintains
 pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 (which are all immutable) and parameters passed by reference.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1573,7 +1144,7 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -1618,7 +1189,7 @@ YCP::Clients::DefaultClient.new.main
 Y2R does not support nested functions. This is mostly because Ruby doesn't have
 any suitable equivalent construct.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1643,7 +1214,7 @@ Nested function enountered: "inner". Nested functions are not supported.
 
 Y2R translates YCP statement blocks as Ruby statements.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1679,169 +1250,125 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates YCP `if` statement as Ruby `if` statement.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  if (true)
-    y2milestone("M1");
+if (true)
+  y2milestone("M1");
 
-  if (true)
-    y2milestone("M2");
-  else
-    y2milestone("M3");
-}
+if (true)
+  y2milestone("M2");
+else
+  y2milestone("M3");
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        if true
-          Builtins.y2milestone("M1")
-        end
-        if true
-          Builtins.y2milestone("M2")
-        else
-          Builtins.y2milestone("M3")
-        end
-      end
-    end
-  end
+if true
+  Builtins.y2milestone("M1")
 end
-YCP::Clients::DefaultClient.new.main
+if true
+  Builtins.y2milestone("M2")
+else
+  Builtins.y2milestone("M3")
+end
 ```
 
 ### `switch` Statement
 
 Y2R translates YCP `switch` statement as Ruby `case` statement.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  switch (42) {
-    case 42:
-      y2milestone("M1");
-      break;
+switch (42) {
+  case 42:
+    y2milestone("M1");
+    break;
 
-    case 43:
-      y2milestone("M2");
-      break;
+  case 43:
+    y2milestone("M2");
+    break;
 
-    case 44:
-      y2milestone("M3");
-      break;
+  case 44:
+    y2milestone("M3");
+    break;
 
-    default:
-      y2milestone("M4");
-      break;
-  }
+  default:
+    y2milestone("M4");
+    break;
 }
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        case 42
-          when 42
-            Builtins.y2milestone("M1")
-          when 43
-            Builtins.y2milestone("M2")
-          when 44
-            Builtins.y2milestone("M3")
-          else
-            Builtins.y2milestone("M4")
-        end
-      end
-    end
-  end
+case 42
+  when 42
+    Builtins.y2milestone("M1")
+  when 43
+    Builtins.y2milestone("M2")
+  when 44
+    Builtins.y2milestone("M3")
+  else
+    Builtins.y2milestone("M4")
 end
-YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R translates YCP `switch` statement as Ruby `case` statement also when the
 case/default statements are wrapped a block.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  switch (42) {
-    case 42: {
-      y2milestone("M1");
-      break;
-    }
+switch (42) {
+  case 42: {
+    y2milestone("M1");
+    break;
+  }
 
-    case 43: {
-      y2milestone("M2");
-      break;
-    }
+  case 43: {
+    y2milestone("M2");
+    break;
+  }
 
-    case 44: {
-      y2milestone("M3");
-      break;
-    }
+  case 44: {
+    y2milestone("M3");
+    break;
+  }
 
-    default: {
-      y2milestone("M4");
-      break;
-    }
+  default: {
+    y2milestone("M4");
+    break;
   }
 }
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        case 42
-          when 42
-            Builtins.y2milestone("M1")
-          when 43
-            Builtins.y2milestone("M2")
-          when 44
-            Builtins.y2milestone("M3")
-          else
-            Builtins.y2milestone("M4")
-        end
-      end
-    end
-  end
+case 42
+  when 42
+    Builtins.y2milestone("M1")
+  when 43
+    Builtins.y2milestone("M2")
+  when 44
+    Builtins.y2milestone("M3")
+  else
+    Builtins.y2milestone("M4")
 end
-YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R does not support cases without a break at the end. This is mostly because
 Ruby doesn't have any suitable equivalent construct.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  switch (42) {
-    case 42:
-      y2milestone("M1");
-  }
+switch (42) {
+  case 42:
+    y2milestone("M1");
 }
 ```
 
@@ -1854,14 +1381,12 @@ Case without a break encountered. These are not supported.
 Y2R does not support cases without a break at the end also when the case
 statements are wrapped in a block.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  switch (42) {
-    case 42: {
-      y2milestone("M1");
-    }
+switch (42) {
+  case 42: {
+    y2milestone("M1");
   }
 }
 ```
@@ -1876,74 +1401,46 @@ Case without a break encountered. These are not supported.
 
 Y2R translates YCP `while` statement as Ruby `while` statement.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  while (true)
-    y2milestone("M1");
-}
+while (true)
+  y2milestone("M1");
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        while true
-          Builtins.y2milestone("M1")
-        end
-      end
-    end
-  end
+while true
+  Builtins.y2milestone("M1")
 end
-YCP::Clients::DefaultClient.new.main
 ```
 
 ### `repeat` Statement
 
 Y2R translates YCP `repeat` statement as Ruby `until` statement.
 
-#### YCP Code
+#### YCP (fragment)
 
 ```ycp
-{
-  repeat {
-    y2milestone("M1");
-  } until(true);
-}
+repeat {
+  y2milestone("M1");
+} until(true);
 ```
 
-#### Ruby Code
+#### Ruby (fragment)
 
 ```ruby
-# encoding: utf-8
-
-module YCP
-  module Clients
-    class DefaultClient
-      include YCP
-      def main
-        begin
-          Builtins.y2milestone("M1")
-        end until true
-      end
-    end
-  end
-end
-YCP::Clients::DefaultClient.new.main
+begin
+  Builtins.y2milestone("M1")
+end until true
 ```
 
 ### Clients
 
 Y2R translates YCP clients as Ruby classes that are instantiated.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -1962,7 +1459,7 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -1994,7 +1491,7 @@ YCP::Clients::DefaultClient.new.main
 
 Y2R translates YCP modules as Ruby classes that are instantiated.
 
-#### YCP Code
+#### YCP (complete code)
 
 ```ycp
 {
@@ -2015,7 +1512,7 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 }
 ```
 
-#### Ruby Code
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
