@@ -50,7 +50,9 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines = []
 
           lines << "{"
-          lines << indent(code[0..-2], 1)
+          lines << "  void fragment_wrapper() {"
+          lines << indent(code[0..-2], 2)
+          lines << "  }"
           lines << "}"
 
           @ycp_code = lines.join("\n")
@@ -69,8 +71,9 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "  module Clients"
           lines << "    class DefaultClient"
           lines << "      include YCP"
-          lines << "      def main"
+          lines << "      def fragment_wrapper"
           lines << indent(code[0..-2], 4)
+          lines << "        nil"
           lines << "      end"
           lines << "    end"
           lines << "  end"

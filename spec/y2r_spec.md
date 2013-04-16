@@ -75,7 +75,7 @@ void v = nil;
 #### Ruby (fragment)
 
 ```ruby
-@v = nil
+v = nil
 ```
 
 ### Booleans
@@ -92,8 +92,8 @@ boolean f = false;
 #### Ruby (fragment)
 
 ```ruby
-@t = true
-@f = false
+t = true
+f = false
 ```
 
 ### Integers
@@ -111,7 +111,7 @@ integer i = 42;
 #### Ruby (fragment)
 
 ```ruby
-@i = 42
+i = 42
 ```
 
 ### Floats
@@ -129,8 +129,8 @@ float f2 = 42.1;
 #### Ruby (fragment)
 
 ```ruby
-@f1 = 42.0
-@f2 = 42.1
+f1 = 42.0
+f2 = 42.1
 ```
 
 ### Symbols
@@ -148,7 +148,7 @@ symbol s = `abcd;
 #### Ruby (fragment)
 
 ```ruby
-@s = :abcd
+s = :abcd
 ```
 
 ### Strings
@@ -165,7 +165,7 @@ string s = "abcd";
 #### Ruby (fragment)
 
 ```ruby
-@s = "abcd"
+s = "abcd"
 ```
 
 ### Paths
@@ -184,7 +184,7 @@ path p = .abcd;
 #### Ruby (fragment)
 
 ```ruby
-@p = path(".abcd")
+p = path(".abcd")
 ```
 
 ### Lists
@@ -201,8 +201,8 @@ list l2 = [42, 43, 44];
 #### Ruby (fragment)
 
 ```ruby
-@l1 = []
-@l2 = [42, 43, 44]
+l1 = []
+l2 = [42, 43, 44]
 ```
 
 ### Maps
@@ -219,8 +219,8 @@ map m2 = $[`a: 42, `b: 43, `c: 44];
 #### Ruby (fragment)
 
 ```ruby
-@m1 = {}
-@m2 = { :a => 42, :b => 43, :c => 44 }
+m1 = {}
+m2 = { :a => 42, :b => 43, :c => 44 }
 ```
 
 ### Terms
@@ -238,8 +238,8 @@ term t2 = `a(42, 43, 44);
 #### Ruby (fragment)
 
 ```ruby
-@t1 = term(:a)
-@t2 = term(:a, 42, 43, 44)
+t1 = term(:a)
+t2 = term(:a, 42, 43, 44)
 ```
 
 ### Blocks
@@ -255,7 +255,7 @@ block<void> b = { y2milestone("M1"); };
 #### Ruby (fragment)
 
 ```ruby
-@b = lambda {
+b = lambda {
   Builtins.y2milestone("M1")
 }
 ```
@@ -494,7 +494,7 @@ float f = (float) 42;
 #### Ruby (fragment)
 
 ```ruby
-@f = Convert.convert(42, { :from => "integer", :to => "float" })
+f = Convert.convert(42, { :from => "integer", :to => "float" })
 ```
 
 ### Builtin Calls
@@ -503,28 +503,42 @@ Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`,
 `YCP::SCR` and `YCP::WFM` modules. These reimplement the behavior of all YCP
 builtins in Ruby.
 
-#### YCP (fragment)
+#### YCP (complete code)
 
 ```ycp
-time();
-random(100);
+{
+  time();
+  random(100);
 
-SCR::Dir(.syseditor.section);
-WFM::Args();
+  SCR::Dir(.syseditor.section);
+  WFM::Args();
 
-float f = float::abs(-42.0);
-list  l = list::reverse([42, 43, 44]);
+  float f = float::abs(-42.0);
+  list  l = list::reverse([42, 43, 44]);
+}
 ```
 
-#### Ruby (fragment)
+#### Ruby (complete code)
 
 ```ruby
-Builtins.time
-Builtins.random(100)
-SCR.Dir(path(".syseditor.section"))
-WFM.Args
-@f = Builtins::Float.abs(-42.0)
-@l = Builtins::List.reverse([42, 43, 44])
+# encoding: utf-8
+
+module YCP
+  module Clients
+    class DefaultClient
+      include YCP
+      def main
+        Builtins.time
+        Builtins.random(100)
+        SCR.Dir(path(".syseditor.section"))
+        WFM.Args
+        @f = Builtins::Float.abs(-42.0)
+        @l = Builtins::List.reverse([42, 43, 44])
+      end
+    end
+  end
+end
+YCP::Clients::DefaultClient.new.main
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -723,12 +737,12 @@ boolean b6 = 42 >= 43;
 #### Ruby (fragment)
 
 ```ruby
-@b1 = Ops.equal(42, 43)
-@b2 = Ops.not_equal(42, 43)
-@b3 = Ops.less_than(42, 43)
-@b4 = Ops.greater_than(42, 43)
-@b5 = Ops.less_or_equal(42, 43)
-@b6 = Ops.greater_or_equal(42, 43)
+b1 = Ops.equal(42, 43)
+b2 = Ops.not_equal(42, 43)
+b3 = Ops.less_than(42, 43)
+b4 = Ops.greater_than(42, 43)
+b5 = Ops.less_or_equal(42, 43)
+b6 = Ops.greater_or_equal(42, 43)
 ```
 
 ### Arithmetic Operators
@@ -754,13 +768,13 @@ integer i6 = 42 % 43;
 #### Ruby (fragment)
 
 ```ruby
-@i = 42
-@i1 = Ops.unary_minus(@i)
-@i2 = Ops.add(42, 43)
-@i3 = Ops.subtract(42, 43)
-@i4 = Ops.multiply(42, 43)
-@i5 = Ops.divide(42, 43)
-@i6 = Ops.modulo(42, 43)
+i = 42
+i1 = Ops.unary_minus(i)
+i2 = Ops.add(42, 43)
+i3 = Ops.subtract(42, 43)
+i4 = Ops.multiply(42, 43)
+i5 = Ops.divide(42, 43)
+i6 = Ops.modulo(42, 43)
 ```
 
 ### Bitwise Operators
@@ -783,12 +797,12 @@ integer i6 = 42 >> 43;
 #### Ruby (fragment)
 
 ```ruby
-@i1 = Ops.bitwise_not(42)
-@i2 = Ops.bitwise_and(42, 43)
-@i3 = Ops.bitwise_or(42, 43)
-@i4 = Ops.bitwise_xor(42, 43)
-@i5 = Ops.shift_left(42, 43)
-@i6 = Ops.shift_right(42, 43)
+i1 = Ops.bitwise_not(42)
+i2 = Ops.bitwise_and(42, 43)
+i3 = Ops.bitwise_or(42, 43)
+i4 = Ops.bitwise_xor(42, 43)
+i5 = Ops.shift_left(42, 43)
+i6 = Ops.shift_right(42, 43)
 ```
 
 ### Logical Operators
@@ -811,10 +825,10 @@ boolean b3 = true || false;
 #### Ruby (fragment)
 
 ```ruby
-@b = true
-@b1 = Ops.logical_not(@b)
-@b2 = Ops.logical_and(true, false)
-@b3 = Ops.logical_or(true, false)
+b = true
+b1 = Ops.logical_not(b)
+b2 = Ops.logical_and(true, false)
+b3 = Ops.logical_or(true, false)
 ```
 
 ### Ternary Operator
@@ -832,8 +846,8 @@ integer i = b ? 42 : 43;
 #### Ruby (fragment)
 
 ```ruby
-@b = true
-@i = @b ? 42 : 43
+b = true
+i = b ? 42 : 43
 ```
 
 ### Index Operator
@@ -850,7 +864,7 @@ integer i = [42, 43, 44][1]:0;
 #### Ruby (fragment)
 
 ```ruby
-@i = Ops.index([42, 43, 44], [1], 0)
+i = Ops.index([42, 43, 44], [1], 0)
 ```
 
 ### Double Quote Operator
@@ -866,7 +880,7 @@ block<integer> b = ``(42);
 #### Ruby (fragment)
 
 ```ruby
-@b = lambda {
+b = lambda {
   42
 }
 ```
@@ -937,8 +951,8 @@ i = 43;
 #### Ruby (fragment)
 
 ```ruby
-@i = 42
-@i = 43
+i = 42
+i = 43
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
@@ -956,8 +970,8 @@ l[0] = 45;
 #### Ruby (fragment)
 
 ```ruby
-@l = [42, 43, 44]
-Ops.assign(@l, [0], 45)
+l = [42, 43, 44]
+Ops.assign(l, [0], 45)
 ```
 
 ### `return` Statement
