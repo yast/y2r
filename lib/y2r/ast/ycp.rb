@@ -32,12 +32,6 @@ module Y2R
           toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
         end
 
-        def variables_in_scope
-          index = @blocks.rindex { |b| b.is_a?(DefBlock) }
-          scope_blocks = index ? @blocks[index..-1] : @blocks
-          scope_blocks.reverse.map(&:variables).flatten
-        end
-
         def local_variables
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
           @blocks[index..-1].map(&:variables).flatten
