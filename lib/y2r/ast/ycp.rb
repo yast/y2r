@@ -878,25 +878,28 @@ module Y2R
             when "variable", "reference"
               ruby_var(name, context)
             when "function"
-              parts = name.split("::")
-              ns = parts.size > 1 ? parts.first : nil
-              variable_name = parts.last
+              getter = if context.local_functions.include?(name)
+                Ruby::Variable.new(:name => name)
+              else
+                parts = name.split("::")
+                ns = parts.size > 1 ? parts.first : nil
+                variable_name = parts.last
+
+                Ruby::MethodCall.new(
+                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :name     => "method",
+                  :args     => [
+                    Ruby::Literal.new(:value => variable_name.to_sym)
+                  ],
+                  :block    => nil,
+                  :parens   => true
+                )
+              end
 
               Ruby::MethodCall.new(
                 :receiver => nil,
                 :name     => "reference",
-                :args     => [
-                  Ruby::MethodCall.new(
-                    :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
-                    :name     => "method",
-                    :args     => [
-                      Ruby::Literal.new(:value => variable_name.to_sym)
-                    ],
-                    :block    => nil,
-                    :parens   => true
-                  ),
-                  Ruby::Literal.new(:value => type)
-                ],
+                :args     => [getter, Ruby::Literal.new(:value => type)],
                 :block    => nil,
                 :parens   => true
               )

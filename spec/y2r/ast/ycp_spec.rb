@@ -2914,7 +2914,7 @@ module Y2R::AST
         end
       end
 
-      describe "for calls with category == \"function\"" do
+      describe "for calls to toplevel functions with category == \"function\"" do
         it "returns correct AST node for unqualified variables" do
           ycp_node = YCP::Variable.new(
             :category => "function",
@@ -2967,6 +2967,29 @@ module Y2R::AST
           )
 
           ycp_node.compile(@context_empty).should == ruby_node
+        end
+      end
+
+      describe "for calls to nested functions with category == \"function\"" do
+        it "returns correct AST node" do
+          ycp_node = YCP::Variable.new(
+            :category => "function",
+            :name     => "f",
+            :type     => "integer ()"
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "reference",
+            :args     => [
+              Ruby::Variable.new(:name => "f"),
+              Ruby::Literal.new(:value => "integer ()")
+            ],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_nested).should == ruby_node
         end
       end
     end
