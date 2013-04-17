@@ -611,7 +611,7 @@ YCP::Clients::DefaultClient.new.main
 
 ### Function Calls
 
-Y2R translates YCP function calls as Ruby method calls.
+Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 
 ```ycp
 {
@@ -668,6 +668,75 @@ module YCP
       end
       def f3(a, b, c)
         return 42
+        nil
+      end
+    end
+  end
+end
+YCP::Clients::DefaultClient.new.main
+```
+
+Y2R translates YCP function calls of nested functions as invoking the `call`
+method on them.
+
+```ycp
+{
+  void outer() {
+    integer f1() {
+      return 42;
+    }
+
+    integer f2(string a, string b, string c) {
+      return 42;
+    }
+
+    integer f3(string& a, string& b, string& c) {
+      return 42;
+    }
+
+    f1();
+
+    string a = "a";
+    string b = "b";
+    string c = "c";
+
+    f2(a, b, c);
+    f3(a, b, c);
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+module YCP
+  module Clients
+    class DefaultClient
+      include YCP
+      def outer
+        f1 = lambda {
+          return 42
+          nil
+        }
+        f2 = lambda { |a, b, c|
+          a = copy_arg(a)
+          b = copy_arg(b)
+          c = copy_arg(c)
+          return 42
+          nil
+        }
+        f3 = lambda { |a, b, c|
+          return 42
+          nil
+        }
+        f1.call
+        a = "a"
+        b = "b"
+        c = "c"
+        f2.call(a, b, c)
+        f3.call(a, b, c)
         nil
       end
     end

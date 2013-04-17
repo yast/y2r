@@ -77,6 +77,27 @@ module Y2R::AST
         @ycp_symbol_public_c
       ]
 
+      @ycp_symbol_f = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "f"
+      )
+      @ycp_symbol_g = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "g"
+      )
+      @ycp_symbol_h = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "h"
+      )
+
+      @ycp_symbols_functions = [@ycp_symbol_f, @ycp_symbol_g, @ycp_symbol_h]
+
       @ycp_symbol_regular = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
@@ -387,7 +408,7 @@ module Y2R::AST
       # least some data needed by them.
 
       @context_nested  = YCP::Context.new(
-        :blocks => [YCP::DefBlock.new(:symbols => [])]
+        :blocks => [YCP::DefBlock.new(:symbols => @ycp_symbols_functions)]
       )
     end
   end
@@ -729,7 +750,7 @@ module Y2R::AST
 
   describe YCP::Call, :type => :ycp do
     describe "#compile" do
-      describe "for calls with category == \"function\"" do
+      describe "for calls of toplevel functions with category == \"function\"" do
         it "returns correct AST node for unqualified calls" do
           ycp_node = YCP::Call.new(
             :category => "function",
@@ -804,6 +825,46 @@ module Y2R::AST
           )
 
           ycp_node.compile(@context_empty).should == ruby_node
+        end
+      end
+
+      describe "for calls of nested functions with category == \"function\"" do
+        it "returns correct AST node for calls without arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => []
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "f"),
+            :name     => "call",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_nested).should == ruby_node
+        end
+
+        it "returns correct AST node for calls with arguments" do
+          ycp_node = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          )
+
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "f"),
+            :name     => "call",
+            :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_nested).should == ruby_node
         end
       end
 

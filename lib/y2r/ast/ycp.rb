@@ -47,6 +47,11 @@ module Y2R
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
           @blocks[0..index - 1].map(&:variables).flatten
         end
+
+        def local_functions
+          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          @blocks[index..-1].map(&:functions).flatten
+        end
       end
 
       class Node < OpenStruct
@@ -186,6 +191,10 @@ module Y2R
         def variables
           symbols.select { |s| s.category == :variable }.map(&:name)
         end
+
+        def functions
+          symbols.select { |s| s.category == :function }.map(&:name)
+        end
       end
 
       # Sorted alphabetically.
@@ -265,13 +274,23 @@ module Y2R
         def compile(context)
           case category
             when "function"
-              Ruby::MethodCall.new(
-                :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
-                :name     => name,
-                :args     => args.map { |a| a.compile(context) },
-                :block    => nil,
-                :parens   => true
-              )
+              if context.local_functions.include?(name)
+                Ruby::MethodCall.new(
+                  :receiver => Ruby::Variable.new(:name => name),
+                  :name     => "call",
+                  :args     => args.map { |a| a.compile(context) },
+                  :block    => nil,
+                  :parens   => true
+                )
+              else
+                Ruby::MethodCall.new(
+                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :name     => name,
+                  :args     => args.map { |a| a.compile(context) },
+                  :block    => nil,
+                  :parens   => true
+                )
+              end
             when "variable" # function reference stored in variable
               Ruby::MethodCall.new(
                 :receiver => ruby_var(qualified_name(ns, name), context),
@@ -685,6 +704,10 @@ module Y2R
           []
         end
 
+        def functions
+          []
+        end
+
         def compile(context)
           Ruby::Until.new(
             :condition => self.until.compile(context),
@@ -888,6 +911,10 @@ module Y2R
           []
         end
 
+        def functions
+          []
+        end
+
         def compile(context)
           Ruby::While.new(
             :condition => cond.compile(context),
@@ -899,6 +926,10 @@ module Y2R
       class YCPCode < Node
         def variables
           symbols.select { |s| s.category == :variable }.map(&:name)
+        end
+
+        def functions
+          symbols.select { |s| s.category == :function }.map(&:name)
         end
 
         def compile(context)
@@ -1024,6 +1055,10 @@ module Y2R
       class YEReturn < Node
         def variables
           symbols.select { |s| s.category == :variable }.map(&:name)
+        end
+
+        def functions
+          symbols.select { |s| s.category == :function }.map(&:name)
         end
 
         def compile(context)
