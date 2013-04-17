@@ -1429,15 +1429,12 @@ switch (42) {
     break;
 
   case 43:
+  case 44:
     y2milestone("M2");
     break;
 
-  case 44:
-    y2milestone("M3");
-    break;
-
   default:
-    y2milestone("M4");
+    y2milestone("M3");
     break;
 }
 ```
@@ -1448,12 +1445,10 @@ switch (42) {
 case 42
   when 42
     Builtins.y2milestone("M1")
-  when 43
+  when 43, 44
     Builtins.y2milestone("M2")
-  when 44
-    Builtins.y2milestone("M3")
   else
-    Builtins.y2milestone("M4")
+    Builtins.y2milestone("M3")
 end
 ```
 
