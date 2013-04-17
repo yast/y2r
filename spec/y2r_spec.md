@@ -1269,9 +1269,9 @@ end
 YCP::Clients::DefaultClient.new.main
 ```
 
-Y2R translates nested YCP function definitions as Ruby method definitions. It
-maintains pass-by-value semantics for all types except `boolean`, `integer` and
-`symbol`, (which are all immutable) and parameters passed by reference.
+Y2R translates nested YCP function definitions as Ruby lambdas. It maintains
+pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
+(which are all immutable) and parameters passed by reference.
 
 #### YCP (complete code)
 
