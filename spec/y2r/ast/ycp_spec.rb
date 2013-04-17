@@ -77,57 +77,68 @@ module Y2R::AST
         @ycp_symbol_public_c
       ]
 
-      @ycp_symbol_f = YCP::Symbol.new(
-        :global   => false,
-        :category => :function,
-        :type     => "integer ()",
-        :name     => "f"
-      )
-      @ycp_symbol_g = YCP::Symbol.new(
-        :global   => false,
-        :category => :function,
-        :type     => "integer ()",
-        :name     => "g"
-      )
-      @ycp_symbol_h = YCP::Symbol.new(
-        :global   => false,
-        :category => :function,
-        :type     => "integer ()",
-        :name     => "h"
-      )
-
-      @ycp_symbols_functions = [@ycp_symbol_f, @ycp_symbol_g, @ycp_symbol_h]
-
-      @ycp_symbol_regular = YCP::Symbol.new(
+      @ycp_symbol_var_regular = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
         :name     => "a"
       )
-      @ycp_symbol_capital = YCP::Symbol.new(
+      @ycp_symbol_var_capital = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
         :name     => "A"
       )
-      @ycp_symbol_underscore = YCP::Symbol.new(
+      @ycp_symbol_var_underscore = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
         :name     => "_a"
       )
-      @ycp_symbol_reserved = YCP::Symbol.new(
+      @ycp_symbol_var_reserved = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
         :name     => "end"
       )
 
-      @symbols = [
-        @ycp_symbol_regular,
-        @ycp_symbol_capital,
-        @ycp_symbol_underscore,
-        @ycp_symbol_reserved
+      @symbols_var = [
+        @ycp_symbol_var_regular,
+        @ycp_symbol_var_capital,
+        @ycp_symbol_var_underscore,
+        @ycp_symbol_var_reserved
+      ]
+
+      @ycp_symbol_fun_regular = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "f"
+      )
+      @ycp_symbol_fun_capital = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "F"
+      )
+      @ycp_symbol_fun_underscore = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "_f"
+      )
+      @ycp_symbol_fun_reserved = YCP::Symbol.new(
+        :global   => false,
+        :category => :function,
+        :type     => "integer ()",
+        :name     => "end"
+      )
+
+      @symbols_fun = [
+        @ycp_symbol_fun_regular,
+        @ycp_symbol_fun_capital,
+        @ycp_symbol_fun_underscore,
+        @ycp_symbol_fun_reserved
       ]
 
       @ycp_stmt_block = YCP::StmtBlock.new(
@@ -382,33 +393,39 @@ module Y2R::AST
         :blocks => [YCP::ModuleBlock.new(:name => "M")]
       )
       @context_global = YCP::Context.new(
-        :blocks => [YCP::FileBlock.new(:symbols => @symbols)]
+        :blocks => [YCP::FileBlock.new(:symbols => @symbols_var)]
       )
       @context_local_global_vars = YCP::Context.new(
         :blocks => [
-          YCP::FileBlock.new(:symbols => @symbols),
+          YCP::FileBlock.new(:symbols => @symbols_var),
           YCP::DefBlock.new(:symbols => [])
         ]
       )
       @context_local_local_vars = YCP::Context.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
-          YCP::DefBlock.new(:symbols => @symbols)
+          YCP::DefBlock.new(:symbols => @symbols_var)
         ]
       )
-      @context_local_nested = YCP::Context.new(
+      @context_local_local_funs = YCP::Context.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
-          YCP::DefBlock.new(:symbols => @symbols),
-          YCP::DefBlock.new(:symbols => @symbols)
+          YCP::DefBlock.new(:symbols => @symbols_fun)
         ]
       )
-
-      # The following context is used in nested function tests, so we fill-in at
-      # least some data needed by them.
-
-      @context_nested  = YCP::Context.new(
-        :blocks => [YCP::DefBlock.new(:symbols => @ycp_symbols_functions)]
+      @context_local_nested_vars = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => @symbols_var),
+          YCP::DefBlock.new(:symbols => @symbols_var)
+        ]
+      )
+      @context_local_nested_funs = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => @symbols_fun),
+          YCP::DefBlock.new(:symbols => @symbols_fun)
+        ]
       )
     end
   end
@@ -528,13 +545,13 @@ module Y2R::AST
             ruby_node_underscore = ruby_assignment("__a2")
             ruby_node_reserved   = ruby_assignment("end2")
 
-            @ycp_node_regular.compile(@context_local_nested).should ==
+            @ycp_node_regular.compile(@context_local_nested_vars).should ==
               ruby_node_regular
-            @ycp_node_capital.compile(@context_local_nested).should ==
+            @ycp_node_capital.compile(@context_local_nested_vars).should ==
               ruby_node_capital
-            @ycp_node_underscore.compile(@context_local_nested).should ==
+            @ycp_node_underscore.compile(@context_local_nested_vars).should ==
               ruby_node_underscore
-            @ycp_node_reserved.compile(@context_local_nested).should ==
+            @ycp_node_reserved.compile(@context_local_nested_vars).should ==
               ruby_node_reserved
           end
         end
@@ -829,6 +846,79 @@ module Y2R::AST
       end
 
       describe "for calls of nested functions with category == \"function\"" do
+        def ruby_method_call(name)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => name),
+            :name     => "call",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+        end
+
+        before :each do
+          @ycp_node_regular    = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "f",
+            :args     => []
+          )
+          @ycp_node_capital    = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "F",
+            :args     => []
+          )
+          @ycp_node_underscore = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "_f",
+            :args     => []
+          )
+          @ycp_node_reserved   = YCP::Call.new(
+            :category => "function",
+            :ns       => nil,
+            :name     => "end",
+            :args     => []
+          )
+        end
+
+        describe "in local context that refer to local functions" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_method_call("f")
+            ruby_node_capital    = ruby_method_call("_F")
+            ruby_node_underscore = ruby_method_call("__f")
+            ruby_node_reserved   = ruby_method_call("_end")
+
+            @ycp_node_regular.compile(@context_local_local_funs).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_local_funs).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_local_funs).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_local_funs).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in nested local context that refer to inner functions" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_method_call("f2")
+            ruby_node_capital    = ruby_method_call("_F2")
+            ruby_node_underscore = ruby_method_call("__f2")
+            ruby_node_reserved   = ruby_method_call("end2")
+
+            @ycp_node_regular.compile(@context_local_nested_funs).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_nested_funs).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_nested_funs).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_nested_funs).should ==
+              ruby_node_reserved
+          end
+        end
+
         it "returns correct AST node for calls without arguments" do
           ycp_node = YCP::Call.new(
             :category => "function",
@@ -845,7 +935,7 @@ module Y2R::AST
             :parens   => true
           )
 
-          ycp_node.compile(@context_nested).should == ruby_node
+          ycp_node.compile(@context_local_local_funs).should == ruby_node
         end
 
         it "returns correct AST node for calls with arguments" do
@@ -864,7 +954,7 @@ module Y2R::AST
             :parens   => true
           )
 
-          ycp_node.compile(@context_nested).should == ruby_node
+          ycp_node.compile(@context_local_local_funs).should == ruby_node
         end
       end
 
@@ -987,13 +1077,13 @@ module Y2R::AST
               ruby_node_underscore = ruby_method_call("__a2")
               ruby_node_reserved   = ruby_method_call("end2")
 
-              @ycp_node_regular.compile(@context_local_nested).should ==
+              @ycp_node_regular.compile(@context_local_nested_vars).should ==
                 ruby_node_regular
-              @ycp_node_capital.compile(@context_local_nested).should ==
+              @ycp_node_capital.compile(@context_local_nested_vars).should ==
                 ruby_node_capital
-              @ycp_node_underscore.compile(@context_local_nested).should ==
+              @ycp_node_underscore.compile(@context_local_nested_vars).should ==
                 ruby_node_underscore
-              @ycp_node_reserved.compile(@context_local_nested).should ==
+              @ycp_node_reserved.compile(@context_local_nested_vars).should ==
                 ruby_node_reserved
             end
           end
@@ -1361,13 +1451,13 @@ module Y2R::AST
             ruby_node_underscore = ruby_variable("__a2")
             ruby_node_reserved   = ruby_variable("end2")
 
-            @ycp_node_regular.compile(@context_local_nested).should ==
+            @ycp_node_regular.compile(@context_local_nested_vars).should ==
               ruby_node_regular
-            @ycp_node_capital.compile(@context_local_nested).should ==
+            @ycp_node_capital.compile(@context_local_nested_vars).should ==
               ruby_node_capital
-            @ycp_node_underscore.compile(@context_local_nested).should ==
+            @ycp_node_underscore.compile(@context_local_nested_vars).should ==
               ruby_node_underscore
-            @ycp_node_reserved.compile(@context_local_nested).should ==
+            @ycp_node_reserved.compile(@context_local_nested_vars).should ==
               ruby_node_reserved
           end
         end
@@ -1545,7 +1635,7 @@ module Y2R::AST
         )
       end
 
-      describe "for non-nested function definitions" do
+      describe "for toplevel function definitions" do
         it "returns correct AST node for function definitions without argument" do
           ycp_node = YCP::FunDef.new(
             :name  => "f",
@@ -1610,6 +1700,88 @@ module Y2R::AST
       end
 
       describe "for nested function definitions" do
+        def ruby_def(name)
+          Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => name),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "lambda",
+              :args     => [],
+              :block    => Ruby::Block.new(
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    @ruby_assignment_a_42,
+                    @ruby_assignment_b_43,
+                    @ruby_assignment_c_44,
+                    @ruby_literal_nil
+                  ]
+                )
+              ),
+              :parens   => true
+            )
+          )
+        end
+
+        before :each do
+          @ycp_node_regular    = YCP::FunDef.new(
+            :name  => "f",
+            :args  => [],
+            :block => @ycp_def_block
+          )
+          @ycp_node_capital    = YCP::FunDef.new(
+            :name  => "F",
+            :args  => [],
+            :block => @ycp_def_block
+          )
+          @ycp_node_underscore = YCP::FunDef.new(
+            :name  => "_f",
+            :args  => [],
+            :block => @ycp_def_block
+          )
+          @ycp_node_reserved   = YCP::FunDef.new(
+            :name  => "end",
+            :args  => [],
+            :block => @ycp_def_block
+          )
+        end
+
+        describe "in local context" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_def("f")
+            ruby_node_capital    = ruby_def("_F")
+            ruby_node_underscore = ruby_def("__f")
+            ruby_node_reserved   = ruby_def("_end")
+
+            @ycp_node_regular.compile(@context_local_local_funs).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_local_funs).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_local_funs).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_local_funs).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in nested local context" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_def("f2")
+            ruby_node_capital    = ruby_def("_F2")
+            ruby_node_underscore = ruby_def("__f2")
+            ruby_node_reserved   = ruby_def("end2")
+
+            @ycp_node_regular.compile(@context_local_nested_funs).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_nested_funs).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_nested_funs).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_nested_funs).should ==
+              ruby_node_reserved
+          end
+        end
+
         it "returns correct AST node for function definitions without argument" do
           ycp_node = YCP::FunDef.new(
             :name  => "f",
@@ -1638,7 +1810,7 @@ module Y2R::AST
             )
           )
 
-          ycp_node.compile(@context_nested).should == ruby_node
+          ycp_node.compile(@context_local_local_funs).should == ruby_node
         end
 
         it "returns correct AST node for function definitions with arguments" do
@@ -1689,9 +1861,9 @@ module Y2R::AST
             )
           )
 
-          ycp_node_without_copy.compile(@context_nested).should ==
+          ycp_node_without_copy.compile(@context_local_local_funs).should ==
             ruby_node_without_copy
-          ycp_node_with_copy.compile(@context_nested).should ==
+          ycp_node_with_copy.compile(@context_local_local_funs).should ==
             ruby_node_with_copy
         end
       end
@@ -2777,13 +2949,13 @@ module Y2R::AST
               ruby_node_underscore = ruby_variable("__a2")
               ruby_node_reserved   = ruby_variable("end2")
 
-              @ycp_node_regular.compile(@context_local_nested).should ==
+              @ycp_node_regular.compile(@context_local_nested_vars).should ==
                 ruby_node_regular
-              @ycp_node_capital.compile(@context_local_nested).should ==
+              @ycp_node_capital.compile(@context_local_nested_vars).should ==
                 ruby_node_capital
-              @ycp_node_underscore.compile(@context_local_nested).should ==
+              @ycp_node_underscore.compile(@context_local_nested_vars).should ==
                 ruby_node_underscore
-              @ycp_node_reserved.compile(@context_local_nested).should ==
+              @ycp_node_reserved.compile(@context_local_nested_vars).should ==
                 ruby_node_reserved
             end
           end
@@ -2901,13 +3073,13 @@ module Y2R::AST
               ruby_node_underscore = ruby_variable("__a2")
               ruby_node_reserved   = ruby_variable("end2")
 
-              @ycp_node_regular.compile(@context_local_nested).should ==
+              @ycp_node_regular.compile(@context_local_nested_vars).should ==
                 ruby_node_regular
-              @ycp_node_capital.compile(@context_local_nested).should ==
+              @ycp_node_capital.compile(@context_local_nested_vars).should ==
                 ruby_node_capital
-              @ycp_node_underscore.compile(@context_local_nested).should ==
+              @ycp_node_underscore.compile(@context_local_nested_vars).should ==
                 ruby_node_underscore
-              @ycp_node_reserved.compile(@context_local_nested).should ==
+              @ycp_node_reserved.compile(@context_local_nested_vars).should ==
                 ruby_node_reserved
             end
           end
@@ -2971,25 +3143,76 @@ module Y2R::AST
       end
 
       describe "for calls to nested functions with category == \"function\"" do
-        it "returns correct AST node" do
-          ycp_node = YCP::Variable.new(
-            :category => "function",
-            :name     => "f",
-            :type     => "integer ()"
-          )
-
-          ruby_node = Ruby::MethodCall.new(
+        def ruby_reference_call(name)
+          Ruby::MethodCall.new(
             :receiver => nil,
             :name     => "reference",
             :args     => [
-              Ruby::Variable.new(:name => "f"),
+              Ruby::Variable.new(:name => name),
               Ruby::Literal.new(:value => "integer ()")
             ],
             :block    => nil,
             :parens   => true
           )
+        end
 
-          ycp_node.compile(@context_nested).should == ruby_node
+        before :each do
+          @ycp_node_regular    = YCP::Variable.new(
+            :category => "function",
+            :name     => "a",
+            :type     => "integer ()"
+          )
+          @ycp_node_capital    = YCP::Variable.new(
+            :category => "function",
+            :name     => "A",
+            :type     => "integer ()"
+          )
+          @ycp_node_underscore = YCP::Variable.new(
+            :category => "function",
+            :name     => "_a",
+            :type     => "integer ()"
+          )
+          @ycp_node_reserved   = YCP::Variable.new(
+            :category => "function",
+            :name     => "end",
+            :type     => "integer ()"
+          )
+        end
+
+        describe "in local context that refer to local variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_reference_call("a")
+            ruby_node_capital    = ruby_reference_call("_A")
+            ruby_node_underscore = ruby_reference_call("__a")
+            ruby_node_reserved   = ruby_reference_call("_end")
+
+            @ycp_node_regular.compile(@context_local_local_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_local_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_local_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_local_vars).should ==
+              ruby_node_reserved
+          end
+        end
+
+        describe "in nested local context that refer to inner variables" do
+          it "returns correct AST node" do
+            ruby_node_regular    = ruby_reference_call("a2")
+            ruby_node_capital    = ruby_reference_call("_A2")
+            ruby_node_underscore = ruby_reference_call("__a2")
+            ruby_node_reserved   = ruby_reference_call("end2")
+
+            @ycp_node_regular.compile(@context_local_nested_vars).should ==
+              ruby_node_regular
+            @ycp_node_capital.compile(@context_local_nested_vars).should ==
+              ruby_node_capital
+            @ycp_node_underscore.compile(@context_local_nested_vars).should ==
+              ruby_node_underscore
+            @ycp_node_reserved.compile(@context_local_nested_vars).should ==
+              ruby_node_reserved
+          end
         end
       end
     end

@@ -265,7 +265,7 @@ module Y2R
             when "function"
               if context.locals.include?(name)
                 Ruby::MethodCall.new(
-                  :receiver => Ruby::Variable.new(:name => name),
+                  :receiver => ruby_var(name, context),
                   :name     => "call",
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
@@ -508,7 +508,7 @@ module Y2R
             )
           else
             Ruby::Assignment.new(
-              :lhs => Ruby::Variable.new(:name => name),
+              :lhs => ruby_var(name, context),
               :rhs => Ruby::MethodCall.new(
                 :receiver => nil,
                 :name     => "lambda",
@@ -868,7 +868,7 @@ module Y2R
               ruby_var(name, context)
             when "function"
               getter = if context.locals.include?(name)
-                Ruby::Variable.new(:name => name)
+                ruby_var(name, context)
               else
                 parts = name.split("::")
                 ns = parts.size > 1 ? parts.first : nil
