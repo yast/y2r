@@ -486,22 +486,33 @@ module Y2R
 
       class FunDef < Node
         def compile(context)
-          if context.in?(DefBlock)
-            raise NotImplementedError,
-                 "Nested function enountered: #{name.inspect}. Nested functions are not supported."
-          end
-
           statements = block.compile(context)
           statements.statements = args.select(&:needs_copy?).map do |arg|
             arg.compile_as_copy_arg_call(context)
           end + statements.statements
           statements.statements << Ruby::Literal.new(:value => nil)
 
-          Ruby::Def.new(
-            :name       => name,
-            :args       => args.map { |a| a.compile(context) },
-            :statements => statements
-          )
+          if !context.in?(DefBlock)
+            Ruby::Def.new(
+              :name       => name,
+              :args       => args.map { |a| a.compile(context) },
+              :statements => statements
+            )
+          else
+            Ruby::Assignment.new(
+              :lhs => Ruby::Variable.new(:name => name),
+              :rhs => Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => "lambda",
+                :args     => [],
+                :block    => Ruby::Block.new(
+                  :args       => args.map { |a| a.compile(context) },
+                  :statements => statements
+                ),
+                :parens   => true
+              )
+            )
+          end
         end
       end
 

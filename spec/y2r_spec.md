@@ -1124,9 +1124,9 @@ Builtins.foreach([42, 43, 44]) { |i|
 
 ### Function Definitions
 
-Y2R translates YCP function definitions as Ruby method definitions. It maintains
-pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
-(which are all immutable) and parameters passed by reference.
+Y2R translates toplevel function definitions as Ruby method definitions. It
+maintains pass-by-value semantics for all types except `boolean`, `integer` and
+`symbol`, (which are all immutable) and parameters passed by reference.
 
 #### YCP (complete code)
 
@@ -1200,28 +1200,86 @@ end
 YCP::Clients::DefaultClient.new.main
 ```
 
-Y2R does not support nested functions. This is mostly because Ruby doesn't have
-any suitable equivalent construct.
+Y2R translates nested YCP function definitions as Ruby method definitions. It
+maintains pass-by-value semantics for all types except `boolean`, `integer` and
+`symbol`, (which are all immutable) and parameters passed by reference.
 
 #### YCP (complete code)
 
 ```ycp
 {
-  integer outer() {
-    integer inner() {
+  void outer() {
+    integer f1() {
       return 42;
     }
 
-    return inner();
+    integer f2(boolean a, boolean b, boolean c) {
+      return 42;
+    }
+
+    integer f3(integer a, integer b, integer c) {
+      return 42;
+    }
+
+    integer f4(symbol a, symbol b, symbol c) {
+      return 42;
+    }
+
+    integer f5(string& a, string& b, string& c) {
+      return 42;
+    }
+
+    integer f6(string a, string b, string c) {
+      return 42;
+    }
   }
 
 }
 ```
 
-#### Error Message
+#### Ruby (complete code)
 
-```error
-Nested function enountered: "inner". Nested functions are not supported.
+```ruby
+# encoding: utf-8
+
+module YCP
+  module Clients
+    class DefaultClient
+      include YCP
+      def outer
+        f1 = lambda {
+          return 42
+          nil
+        }
+        f2 = lambda { |a, b, c|
+          return 42
+          nil
+        }
+        f3 = lambda { |a, b, c|
+          return 42
+          nil
+        }
+        f4 = lambda { |a, b, c|
+          return 42
+          nil
+        }
+        f5 = lambda { |a, b, c|
+          return 42
+          nil
+        }
+        f6 = lambda { |a, b, c|
+          a = copy_arg(a)
+          b = copy_arg(b)
+          c = copy_arg(c)
+          return 42
+          nil
+        }
+        nil
+      end
+    end
+  end
+end
+YCP::Clients::DefaultClient.new.main
 ```
 
 ### Statement Blocks

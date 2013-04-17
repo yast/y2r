@@ -382,6 +382,13 @@ module Y2R::AST
           YCP::DefBlock.new(:symbols => @symbols)
         ]
       )
+
+      # The following context is used in nested function tests, so we fill-in at
+      # least some data needed by them.
+
+      @context_nested  = YCP::Context.new(
+        :blocks => [YCP::DefBlock.new(:symbols => [])]
+      )
     end
   end
 
@@ -1477,78 +1484,155 @@ module Y2R::AST
         )
       end
 
-      it "returns correct AST node for function definitions without arguments" do
-        ycp_node = YCP::FunDef.new(
-          :name  => "f",
-          :args  => [],
-          :block => @ycp_def_block
-        )
-
-        ruby_node = Ruby::Def.new(
-          :name => "f",
-          :args => [],
-          :statements => Ruby::Statements.new(
-            :statements => [
-              @ruby_assignment_a_42,
-              @ruby_assignment_b_43,
-              @ruby_assignment_c_44,
-              @ruby_literal_nil
-            ]
+      describe "for non-nested function definitions" do
+        it "returns correct AST node for function definitions without argument" do
+          ycp_node = YCP::FunDef.new(
+            :name  => "f",
+            :args  => [],
+            :block => @ycp_def_block
           )
-        )
 
-        ycp_node.compile(@context_empty).should == ruby_node
+          ruby_node = Ruby::Def.new(
+            :name => "f",
+            :args => [],
+            :statements => Ruby::Statements.new(
+              :statements => [
+                @ruby_assignment_a_42,
+                @ruby_assignment_b_43,
+                @ruby_assignment_c_44,
+                @ruby_literal_nil
+              ]
+            )
+          )
+
+          ycp_node.compile(@context_empty).should == ruby_node
+        end
+
+        it "returns correct AST node for function definitions with arguments" do
+          ycp_node_without_copy = ycp_fundef_with_args("boolean")
+          ycp_node_with_copy    = ycp_fundef_with_args("string")
+
+          ruby_node_without_copy = Ruby::Def.new(
+            :name => "f",
+            :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :statements => Ruby::Statements.new(
+              :statements => [
+                @ruby_assignment_a_42,
+                @ruby_assignment_b_43,
+                @ruby_assignment_c_44,
+                @ruby_literal_nil
+              ]
+            )
+          )
+
+          ruby_node_with_copy = Ruby::Def.new(
+            :name => "f",
+            :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :statements => Ruby::Statements.new(
+              :statements => [
+                ruby_arg_copy("a"),
+                ruby_arg_copy("b"),
+                ruby_arg_copy("c"),
+                @ruby_assignment_a_42,
+                @ruby_assignment_b_43,
+                @ruby_assignment_c_44,
+                @ruby_literal_nil
+              ]
+            )
+          )
+
+          ycp_node_without_copy.compile(@context_empty).should ==
+            ruby_node_without_copy
+          ycp_node_with_copy.compile(@context_empty).should ==
+            ruby_node_with_copy
+        end
       end
 
-      it "returns correct AST node for function definitions with arguments" do
-        ycp_node_without_copy = ycp_fundef_with_args("boolean")
-        ycp_node_with_copy    = ycp_fundef_with_args("string")
-
-        ruby_node_without_copy = Ruby::Def.new(
-          :name => "f",
-          :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
-          :statements => Ruby::Statements.new(
-            :statements => [
-              @ruby_assignment_a_42,
-              @ruby_assignment_b_43,
-              @ruby_assignment_c_44,
-              @ruby_literal_nil
-            ]
+      describe "for nested function definitions" do
+        it "returns correct AST node for function definitions without argument" do
+          ycp_node = YCP::FunDef.new(
+            :name  => "f",
+            :args  => [],
+            :block => @ycp_def_block
           )
-        )
 
-        ruby_node_with_copy = Ruby::Def.new(
-          :name => "f",
-          :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
-          :statements => Ruby::Statements.new(
-            :statements => [
-              ruby_arg_copy("a"),
-              ruby_arg_copy("b"),
-              ruby_arg_copy("c"),
-              @ruby_assignment_a_42,
-              @ruby_assignment_b_43,
-              @ruby_assignment_c_44,
-              @ruby_literal_nil
-            ]
+          ruby_node = Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => "f"),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "lambda",
+              :args     => [],
+              :block    => Ruby::Block.new(
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    @ruby_assignment_a_42,
+                    @ruby_assignment_b_43,
+                    @ruby_assignment_c_44,
+                    @ruby_literal_nil
+                  ]
+                )
+              ),
+              :parens   => true
+            )
           )
-        )
 
-        ycp_node_without_copy.compile(@context_empty).should ==
-          ruby_node_without_copy
-        ycp_node_with_copy.compile(@context_empty).should ==
-          ruby_node_with_copy
-      end
+          ycp_node.compile(@context_nested).should == ruby_node
+        end
 
-      it "raises an exception for nested functions" do
-        ycp_node = YCP::FunDef.new(
-          :name  => "f",
-          :args  => [],
-          :block => @ycp_def_block
-        )
+        it "returns correct AST node for function definitions with arguments" do
+          ycp_node_without_copy = ycp_fundef_with_args("boolean")
+          ycp_node_with_copy    = ycp_fundef_with_args("string")
 
-        lambda {
-          ycp_node.compile(@context_def)
-        }.should raise_error NotImplementedError, "Nested function enountered: \"f\". Nested functions are not supported."
+          ruby_node_without_copy = Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => "f"),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "lambda",
+              :args     => [],
+              :block    => Ruby::Block.new(
+                :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    @ruby_assignment_a_42,
+                    @ruby_assignment_b_43,
+                    @ruby_assignment_c_44,
+                    @ruby_literal_nil
+                  ]
+                )
+              ),
+              :parens   => true
+            )
+          )
+          ruby_node_with_copy = Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => "f"),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "lambda",
+              :args     => [],
+              :block    => Ruby::Block.new(
+                :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+                :statements => Ruby::Statements.new(
+                  :statements => [
+                    ruby_arg_copy("a"),
+                    ruby_arg_copy("b"),
+                    ruby_arg_copy("c"),
+                    @ruby_assignment_a_42,
+                    @ruby_assignment_b_43,
+                    @ruby_assignment_c_44,
+                    @ruby_literal_nil
+                  ]
+                )
+              ),
+              :parens   => true
+            )
+          )
+
+          ycp_node_without_copy.compile(@context_nested).should ==
+            ruby_node_without_copy
+          ycp_node_with_copy.compile(@context_nested).should ==
+            ruby_node_with_copy
+        end
       end
     end
   end
