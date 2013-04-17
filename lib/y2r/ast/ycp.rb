@@ -32,19 +32,14 @@ module Y2R
           toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
         end
 
-        def local_variables
+        def locals
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[index..-1].map(&:variables).flatten
+          @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
         end
 
-        def global_variables
+        def globals
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[0..index - 1].map(&:variables).flatten
-        end
-
-        def local_functions
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[index..-1].map(&:functions).flatten
+          @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
         end
       end
 
@@ -150,11 +145,11 @@ module Y2R
               )
             end
           else
-            is_local = context.local_variables.include?(name)
+            is_local = context.locals.include?(name)
             variables = if is_local
-              context.local_variables
+              context.locals
             else
-              context.global_variables
+              context.globals
             end
 
             # If there already is a variable with given name (coming from some
@@ -268,7 +263,7 @@ module Y2R
         def compile(context)
           case category
             when "function"
-              if context.local_functions.include?(name)
+              if context.locals.include?(name)
                 Ruby::MethodCall.new(
                   :receiver => Ruby::Variable.new(:name => name),
                   :name     => "call",
@@ -872,7 +867,7 @@ module Y2R
             when "variable", "reference"
               ruby_var(name, context)
             when "function"
-              getter = if context.local_functions.include?(name)
+              getter = if context.locals.include?(name)
                 Ruby::Variable.new(:name => name)
               else
                 parts = name.split("::")
