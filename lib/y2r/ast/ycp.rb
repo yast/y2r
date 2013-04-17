@@ -96,13 +96,17 @@ module Y2R
           yield inner_context
         end
 
-        def compile_inner_statements(statements, context)
+        def compile_statements(statements, context)
           if statements
-            inside_block context do |inner_context|
-              statements.compile(inner_context)
-            end
+            statements.compile(context)
           else
             Ruby::Statements.new(:statements => [])
+          end
+        end
+
+        def compile_statements_inside_block(statements, context)
+          inside_block context do |inner_context|
+            compile_statements(statements, inner_context)
           end
         end
 
@@ -526,9 +530,9 @@ module Y2R
 
       class If < Node
         def compile(context)
-          then_compiled = compile_inner_statements(self.then, context)
+          then_compiled = compile_statements(self.then, context)
           else_compiled = if self.else
-            compile_inner_statements(self.else, context)
+            compile_statements(self.else, context)
           else
             nil
           end
@@ -701,7 +705,7 @@ module Y2R
           Ruby::Until.new(
             :condition => self.until.compile(context),
             :body      => Ruby::Begin.new(
-              :statements => compile_inner_statements(self.do, context)
+              :statements => compile_statements_inside_block(self.do, context)
             )
           )
         end
@@ -910,7 +914,7 @@ module Y2R
         def compile(context)
           Ruby::While.new(
             :condition => cond.compile(context),
-            :body      => compile_inner_statements(self.do, context)
+            :body      => compile_statements_inside_block(self.do, context)
           )
         end
       end
