@@ -160,16 +160,16 @@ module Y2R::AST
       )
 
       @ycp_case_42 = YCP::Case.new(
-        :value => @ycp_const_42,
-        :body  => @ycp_stmt_block_break
+        :values => [@ycp_const_42],
+        :body   => @ycp_stmt_block_break
       )
       @ycp_case_43 = YCP::Case.new(
-        :value => @ycp_const_43,
-        :body  => @ycp_stmt_block_break
+        :values => [@ycp_const_43],
+        :body   => @ycp_stmt_block_break
       )
       @ycp_case_44 = YCP::Case.new(
-        :value => @ycp_const_44,
-        :body  => @ycp_stmt_block_break
+        :values => [@ycp_const_44],
+        :body   => @ycp_stmt_block_break
       )
 
       @ycp_default = YCP::Default.new(:body => @ycp_stmt_block)
@@ -288,16 +288,16 @@ module Y2R::AST
       )
 
       @ruby_when_42 = Ruby::When.new(
-        :value => @ruby_literal_42,
-        :body  => @ruby_statements_non_empty
+        :values => [@ruby_literal_42],
+        :body   => @ruby_statements_non_empty
       )
       @ruby_when_43 = Ruby::When.new(
-        :value => @ruby_literal_43,
-        :body  => @ruby_statements_non_empty
+        :values => [@ruby_literal_43],
+        :body   => @ruby_statements_non_empty
       )
       @ruby_when_44 = Ruby::When.new(
-        :value => @ruby_literal_44,
-        :body  => @ruby_statements_non_empty
+        :values => [@ruby_literal_44],
+        :body   => @ruby_statements_non_empty
       )
 
       @ruby_else = Ruby::Else.new(:body => @ruby_statements_non_empty)
@@ -1132,15 +1132,29 @@ module Y2R::AST
 
   describe YCP::Case, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node for cases with one value" do
         ycp_node = YCP::Case.new(
-          :value => @ycp_const_42,
-          :body  => @ycp_stmt_block_break
+          :values => [@ycp_const_42],
+          :body   => @ycp_stmt_block_break
         )
 
         ruby_node = Ruby::When.new(
-          :value => @ruby_literal_42,
-          :body  => @ruby_statements_non_empty
+          :values => [@ruby_literal_42],
+          :body   => @ruby_statements_non_empty
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for cases with multiple values" do
+        ycp_node = YCP::Case.new(
+          :values => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+          :body   => @ycp_stmt_block_break
+        )
+
+        ruby_node = Ruby::When.new(
+          :values => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+          :body   => @ruby_statements_non_empty
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1148,13 +1162,13 @@ module Y2R::AST
 
       it "removes a break statement from the end" do
         ycp_node = YCP::Case.new(
-          :value => @ycp_const_42,
-          :body  => @ycp_stmt_block_break
+          :values => [@ycp_const_42],
+          :body   => @ycp_stmt_block_break
         )
 
         ruby_node = Ruby::When.new(
-          :value => @ruby_literal_42,
-          :body  => @ruby_statements_non_empty
+          :values => [@ruby_literal_42],
+          :body   => @ruby_statements_non_empty
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1162,8 +1176,8 @@ module Y2R::AST
 
       it "raises an exception for cases wihtout break" do
         ycp_node = YCP::Case.new(
-          :value => @ycp_const_42,
-          :body  => @ycp_stmt_block
+          :values => [@ycp_const_42],
+          :body   => @ycp_stmt_block
         )
 
         lambda {

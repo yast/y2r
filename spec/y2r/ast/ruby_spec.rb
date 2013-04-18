@@ -36,9 +36,9 @@ module Y2R::AST::Ruby
 
       @begin = Begin.new(:statements => @statements)
 
-      @when_42 = When.new(:value => @literal_42, :body => @statements)
-      @when_43 = When.new(:value => @literal_43, :body => @statements)
-      @when_44 = When.new(:value => @literal_44, :body => @statements)
+      @when_42 = When.new(:values => [@literal_42], :body => @statements)
+      @when_43 = When.new(:values => [@literal_43], :body => @statements)
+      @when_44 = When.new(:values => [@literal_44], :body => @statements)
 
       @else = Else.new(:body => @statements)
 
@@ -405,11 +405,25 @@ module Y2R::AST::Ruby
 
   describe When, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = When.new(:value => @literal_42, :body => @statements)
+      it "emits correct code for when clauses with one value" do
+        node = When.new(:values => [@literal_42], :body => @statements)
 
         node.to_ruby.should == [
           "when 42",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
+      end
+
+      it "emits correct code for when clauses with multiple values" do
+        node = When.new(
+          :values => [@literal_42, @literal_43, @literal_44],
+          :body   => @statements
+        )
+
+        node.to_ruby.should == [
+          "when 42, 43, 44",
           "  a = 42",
           "  b = 43",
           "  c = 44"

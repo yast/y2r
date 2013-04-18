@@ -145,9 +145,11 @@ module Y2R
           )
 
         when "case"
+          value_elements = element.elements.select { |e| e.name == "value" }
+
           AST::YCP::Case.new(
-            :value => element_to_node(element.at_xpath("./value"), context),
-            :body  => build_body(extract_collection(element, "body", context))
+            :values => value_elements.map { |e| element_to_node(e, context) },
+            :body   => build_body(extract_collection(element, "body", context))
           )
 
         when "compare"

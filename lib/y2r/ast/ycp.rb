@@ -312,8 +312,8 @@ module Y2R
           end
 
           Ruby::When.new(
-            :value => value.compile(context),
-            :body  => body_without_break.compile(context)
+            :values => values.map { |v| v.compile(context) },
+            :body   => body_without_break.compile(context)
           )
         end
       end

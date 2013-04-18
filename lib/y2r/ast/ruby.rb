@@ -141,7 +141,7 @@ module Y2R
       class When < Node
         def to_ruby
           combine do |parts|
-            parts << "when #{value.to_ruby}"
+            parts << "when #{list(values)}"
             parts << indent(self.body.to_ruby)
           end
         end
