@@ -397,11 +397,17 @@ module Y2R
           )
 
         when "yereturn"
-          AST::YCP::YEReturn.new(
-            :args    => [],
-            :symbols => [],
-            :child   => element_to_node(element.elements[0], context)
-          )
+          child = element_to_node(element.elements[0], context)
+
+          if child.is_a?(AST::YCP::UnspecBlock) # ``{ ... }
+            child
+          else                                  # ``( ... )
+            AST::YCP::YEReturn.new(
+              :args    => [],
+              :symbols => [],
+              :child   => element_to_node(element.elements[0], context)
+            )
+          end
 
         when "yeterm"
           AST::YCP::YETerm.new(
