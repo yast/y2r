@@ -1432,7 +1432,7 @@ switch (42) {
   case 43:
   case 44:
     y2milestone("M2");
-    break;
+    return;
 
   default:
     y2milestone("M3");
@@ -1448,6 +1448,7 @@ case 42
     Builtins.y2milestone("M1")
   when 43, 44
     Builtins.y2milestone("M2")
+    return
   else
     Builtins.y2milestone("M3")
 end
@@ -1472,7 +1473,7 @@ switch (42) {
 
   case 44: {
     y2milestone("M3");
-    break;
+    return;
   }
 
   default: {
@@ -1492,13 +1493,14 @@ case 42
     Builtins.y2milestone("M2")
   when 44
     Builtins.y2milestone("M3")
+    return
   else
     Builtins.y2milestone("M4")
 end
 ```
 
-Y2R does not support cases without a break at the end. This is mostly because
-Ruby doesn't have any suitable equivalent construct.
+Y2R does not support cases without a break or return at the end. This is mostly
+because Ruby doesn't have any suitable equivalent construct.
 
 #### YCP (fragment)
 
@@ -1512,11 +1514,11 @@ switch (42) {
 #### Error Message
 
 ```error
-Case without a break encountered. These are not supported.
+Case without a break or return encountered. These are not supported.
 ```
 
-Y2R does not support cases without a break at the end also when the case
-statements are wrapped in a block.
+Y2R does not support cases without a break or return at the end also when the
+case statements are wrapped in a block.
 
 #### YCP (fragment)
 
@@ -1531,7 +1533,7 @@ switch (42) {
 #### Error Message
 
 ```error
-Case without a break encountered. These are not supported.
+Case without a break or return encountered. These are not supported.
 ```
 
 ### `while` Statement

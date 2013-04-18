@@ -154,6 +154,15 @@ module Y2R::AST
           YCP::Break.new
         ]
       )
+      @ycp_stmt_block_return = YCP::StmtBlock.new(
+        :symbols    => [],
+        :statements => [
+          @ycp_assign_a_42,
+          @ycp_assign_b_43,
+          @ycp_assign_c_44,
+          YCP::Return.new(:child => nil)
+        ]
+      )
       @ycp_def_block = YCP::DefBlock.new(
         :symbols    => [],
         :statements => @ycp_statements
@@ -278,12 +287,22 @@ module Y2R::AST
         ]
       )
 
-      @ruby_statements_empty     = Ruby::Statements.new(:statements => [])
-      @ruby_statements_non_empty = Ruby::Statements.new(
+      @ruby_statements_empty            = Ruby::Statements.new(
+        :statements => []
+      )
+      @ruby_statements_non_empty        = Ruby::Statements.new(
         :statements => [
           @ruby_assignment_a_42,
           @ruby_assignment_b_43,
           @ruby_assignment_c_44
+        ]
+      )
+      @ruby_statements_non_empty_return = Ruby::Statements.new(
+        :statements => [
+          @ruby_assignment_a_42,
+          @ruby_assignment_b_43,
+          @ruby_assignment_c_44,
+          Ruby::Return.new(:value => nil)
         ]
       )
 
@@ -1200,7 +1219,21 @@ module Y2R::AST
         ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "raises an exception for cases wihtout break" do
+      it "does not remove a return statement from the end" do
+        ycp_node = YCP::Case.new(
+          :values => [@ycp_const_42],
+          :body   => @ycp_stmt_block_return
+        )
+
+        ruby_node = Ruby::When.new(
+          :values => [@ruby_literal_42],
+          :body   => @ruby_statements_non_empty_return
+        )
+
+        ycp_node.compile(@context_local_global_vars).should == ruby_node
+      end
+
+      it "raises an exception for cases wihtout break or return" do
         ycp_node = YCP::Case.new(
           :values => [@ycp_const_42],
           :body   => @ycp_stmt_block
@@ -1208,7 +1241,7 @@ module Y2R::AST
 
         lambda {
           ycp_node.compile(@context_empty)
-        }.should raise_error NotImplementedError, "Case without a break encountered. These are not supported."
+        }.should raise_error NotImplementedError, "Case without a break or return encountered. These are not supported."
       end
     end
   end

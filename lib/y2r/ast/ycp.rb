@@ -306,9 +306,11 @@ module Y2R
 
             body_without_break = body.dup
             body_without_break.statements = body.statements[0..-2]
+          elsif body.statements.last.is_a?(Return)
+            body_without_break = body
           else
             raise NotImplementedError,
-                  "Case without a break encountered. These are not supported."
+                  "Case without a break or return encountered. These are not supported."
           end
 
           Ruby::When.new(
