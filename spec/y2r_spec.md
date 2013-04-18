@@ -52,6 +52,7 @@ Contents
     * [`if` Statement](#if-statement)
     * [`switch` Statement](#switch-statement)
     * [`while` Statement](#while-statement)
+    * [`do` Statement](#do-statement)
     * [`repeat` Statement](#repeat-statement)
     * [Clients](#clients)
     * [Modules](#modules)
@@ -1550,6 +1551,26 @@ while (true)
 while true
   Builtins.y2milestone("M1")
 end
+```
+
+### `do` Statement
+
+Y2R translates YCP `do` statement as Ruby `while` statement.
+
+#### YCP (fragment)
+
+```ycp
+do {
+  y2milestone("M1");
+} while(true);
+```
+
+#### Ruby (fragment)
+
+```ruby
+begin
+  Builtins.y2milestone("M1")
+end while true
 ```
 
 ### `repeat` Statement

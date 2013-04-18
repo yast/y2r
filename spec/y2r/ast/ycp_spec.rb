@@ -355,6 +355,10 @@ module Y2R::AST
         :blocks => [YCP::UnspecBlock.new, YCP::While.new]
       )
 
+      @context_do               = YCP::Context.new(:blocks => [YCP::Do.new])
+      @context_do_in_unspec     = YCP::Context.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::Do.new]
+      )
       @context_repeat           = YCP::Context.new(:blocks => [YCP::Repeat.new])
       @context_repeat_in_unspec = YCP::Context.new(
         :blocks => [YCP::UnspecBlock.new, YCP::Repeat.new]
@@ -365,6 +369,9 @@ module Y2R::AST
       )
       @context_unspec_in_while  = YCP::Context.new(
         :blocks => [YCP::While.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_do = YCP::Context.new(
+        :blocks => [YCP::Do.new, YCP::UnspecBlock.new]
       )
       @context_unspec_in_repeat = YCP::Context.new(
         :blocks => [YCP::Repeat.new, YCP::UnspecBlock.new]
@@ -606,6 +613,12 @@ module Y2R::AST
         end
       end
 
+      describe "for break statements inside a do statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_do).should == @ruby_node_break
+        end
+      end
+
       describe "for break statements inside a repeat statement" do
         it "returns correct AST node" do
           @ycp_node.compile(@context_repeat).should == @ruby_node_break
@@ -615,6 +628,13 @@ module Y2R::AST
       describe "for break statements inside a while statement which is inside a block expression" do
         it "returns correct AST node" do
           @ycp_node.compile(@context_while_in_unspec).should == @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a do statement which is inside a block expression" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_do_in_unspec).should ==
+            @ruby_node_break
         end
       end
 
@@ -634,6 +654,12 @@ module Y2R::AST
       describe "for break statements inside a block expression which is inside a while statement" do
         it "returns correct AST node" do
           @ycp_node.compile(@context_unspec_in_while).should == @ruby_node_raise
+        end
+      end
+
+      describe "for break statements inside a block expression which is inside a do statement" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec_in_do).should == @ruby_node_raise
         end
       end
 
@@ -1364,6 +1390,34 @@ module Y2R::AST
             @ruby_assignment_b_43,
             @ruby_assignment_c_44
           ]
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
+  describe YCP::Do, :type => :ycp do
+    describe "#compile" do
+      it "returns correct AST node for do statements without do" do
+        ycp_node = YCP::Do.new(:do => nil, :while => @ycp_true)
+
+        ruby_node = Ruby::While.new(
+          :condition => @ruby_literal_true,
+          :body      => Ruby::Begin.new(:statements => @ruby_statements_empty)
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for do statements with do" do
+        ycp_node = YCP::Do.new(:do => @ycp_stmt_block, :while => @ycp_true)
+
+        ruby_node = Ruby::While.new(
+          :condition => @ruby_literal_true,
+          :body      => Ruby::Begin.new(
+            :statements => @ruby_statements_non_empty
+          )
         )
 
         ycp_node.compile(@context_empty).should == ruby_node

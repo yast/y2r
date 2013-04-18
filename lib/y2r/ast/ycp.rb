@@ -219,8 +219,8 @@ module Y2R
 
       class Break < Node
         def compile(context)
-          case context.innermost(While, Repeat, UnspecBlock)
-            when While, Repeat
+          case context.innermost(While, Do, Repeat, UnspecBlock)
+            when While, Do, Repeat
               Ruby::Break.new
             when UnspecBlock
               Ruby::MethodCall.new(
@@ -404,6 +404,25 @@ module Y2R
               :statements => statements.map { |s| s.compile(inner_context) }
             )
           end
+        end
+      end
+
+      class Do < Node
+        def variables
+          []
+        end
+
+        def functions
+          []
+        end
+
+        def compile(context)
+          Ruby::While.new(
+            :condition => self.while.compile(context),
+            :body      => Ruby::Begin.new(
+              :statements => compile_statements_inside_block(self.do, context)
+            )
+          )
         end
       end
 
