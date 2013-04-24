@@ -210,6 +210,18 @@ module Y2R
         end
       end
 
+      class UnaryOperator < Node
+        def to_ruby
+          "#{ops}(#{child.to_ruby})"
+        end
+      end
+
+      class BinaryOperator < Node
+        def to_ruby
+          "(#{lhs.to_ruby}) #{ops} (#{rhs.to_ruby})"
+        end
+      end
+
       class Ternary < Node
         def to_ruby
           "#{condition.to_ruby} ? #{self.then.to_ruby} : #{self.else.to_ruby}"

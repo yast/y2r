@@ -983,19 +983,31 @@ module Y2R
           "|"  => "bitwise_or",
           "^"  => "bitwise_xor",
           "<<" => "shift_left",
-          ">>" => "shift_right",
-          "&&" => "logical_and",
-          "||" => "logical_or"
+          ">>" => "shift_right"
+        }
+        OPS_TO_OPERATOR = {
+          "&&" => "&&",
+          "||" => "||"
         }
 
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => OPS_TO_METHODS[name],
-            :args     => [lhs.compile(context), rhs.compile(context)],
-            :block    => nil,
-            :parens   => true
-          )
+          if OPS_TO_METHODS[name]
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => OPS_TO_METHODS[name],
+              :args     => [lhs.compile(context), rhs.compile(context)],
+              :block    => nil,
+              :parens   => true
+            )
+          elsif OPS_TO_OPERATOR[name]
+            Ruby::BinaryOperator.new(
+              :ops => OPS_TO_OPERATOR[name],
+              :lhs => lhs.compile(context),
+              :rhs => rhs.compile(context)
+            )
+          else
+            raise "Unknown binary operator #{name}."
+          end
         end
       end
 
@@ -1130,17 +1142,28 @@ module Y2R
         OPS_TO_METHODS = {
           "-"  => "unary_minus",
           "~"  => "bitwise_not",
-          "!"  => "logical_not"
+        }
+        OPS_TO_OPERATOR = {
+          "!"  => "!"
         }
 
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => OPS_TO_METHODS[name],
-            :args     => [child.compile(context)],
-            :block    => nil,
-            :parens   => true
-          )
+          if OPS_TO_METHODS[name]
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => OPS_TO_METHODS[name],
+              :args     => [child.compile(context)],
+              :block    => nil,
+              :parens   => true
+            )
+          elsif OPS_TO_OPERATOR[name]
+            Ruby::UnaryOperator.new(
+                :ops   => OPS_TO_OPERATOR[name],
+                :child => child.compile(context)
+            )
+          else
+            raise "Unknown unary operator #{name}."
+          end
         end
       end
     end

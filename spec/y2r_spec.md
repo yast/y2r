@@ -896,9 +896,9 @@ boolean b3 = true || false;
 
 ```ruby
 b = true
-b1 = Ops.logical_not(b)
-b2 = Ops.logical_and(true, false)
-b3 = Ops.logical_or(true, false)
+b1 = !(b)
+b2 = (true) && (false)
+b3 = (true) || (false)
 ```
 
 ### Ternary Operator
