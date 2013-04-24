@@ -555,6 +555,33 @@ module Y2R::AST::Ruby
     end
   end
 
+  describe UnaryOperator, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = UnaryOperator.new(
+          :op         => "+",
+          :expression => @literal_42,
+        )
+
+        node.to_ruby.should == "+(42)"
+      end
+    end
+  end
+
+  describe BinaryOperator, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code" do
+        node = BinaryOperator.new(
+          :op  => "+",
+          :lhs => @literal_42,
+          :rhs => @literal_43
+        )
+
+        node.to_ruby.should == "(42) + (43)"
+      end
+    end
+  end
+
   describe Ternary, :type => :ruby do
     describe "#to_ruby" do
       it "emits correct code" do

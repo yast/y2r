@@ -210,6 +210,20 @@ module Y2R
         end
       end
 
+      # TODO: Use parens only when needed.
+      class UnaryOperator < Node
+        def to_ruby
+          "#{op}(#{expression.to_ruby})"
+        end
+      end
+
+      # TODO: Use parens only when needed.
+      class BinaryOperator < Node
+        def to_ruby
+          "(#{lhs.to_ruby}) #{op} (#{rhs.to_ruby})"
+        end
+      end
+
       class Ternary < Node
         def to_ruby
           "#{condition.to_ruby} ? #{self.then.to_ruby} : #{self.else.to_ruby}"
