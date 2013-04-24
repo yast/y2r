@@ -3422,6 +3422,16 @@ module Y2R::AST
         )
       end
 
+      def ruby_oper_call(name)
+        Ruby::BinaryOperator.new(
+          :ops => name,
+          :lhs => @ruby_literal_42,
+          :rhs => @ruby_literal_43
+        )
+      end
+
+
+
       it "returns correct AST node" do
         ycp_node_add         = ycp_ye_binary("+")
         ycp_node_subtract    = ycp_ye_binary("-")
@@ -3446,8 +3456,8 @@ module Y2R::AST
         ruby_node_bitwise_xor = ruby_ops_call("bitwise_xor")
         ruby_node_shift_left  = ruby_ops_call("shift_left")
         ruby_node_shift_right = ruby_ops_call("shift_right")
-        ruby_node_logical_and = ruby_ops_call("logical_and")
-        ruby_node_logical_or  = ruby_ops_call("logical_or")
+        ruby_node_logical_and = ruby_oper_call("&&")
+        ruby_node_logical_or  = ruby_oper_call("||")
 
         ycp_node_add.compile(@context_empty).should ==
           ruby_node_add
@@ -3741,6 +3751,13 @@ module Y2R::AST
         )
       end
 
+      def ruby_oper_call(name)
+        Ruby::UnaryOperator.new(
+          :ops      => name,
+          :child    => @ruby_literal_42
+        )
+      end
+
       it "returns correct AST node" do
         ycp_node_unary_minus = ycp_ye_unary("-")
         ycp_node_bitwise_not = ycp_ye_unary("~")
@@ -3748,7 +3765,7 @@ module Y2R::AST
 
         ruby_node_unary_minus = ruby_ops_call("unary_minus")
         ruby_node_bitwise_not = ruby_ops_call("bitwise_not")
-        ruby_node_logical_not = ruby_ops_call("logical_not")
+        ruby_node_logical_not = ruby_oper_call("!")
 
         ycp_node_unary_minus.compile(@context_empty).should ==
           ruby_node_unary_minus
