@@ -210,15 +210,31 @@ module Y2R
         end
       end
 
-      class UnaryOperator < Node
-        def to_ruby
-          "#{ops}(#{child.to_ruby})"
+      class Operator < Node
+        def enclose_in_bracket?(value)
+          val = value.dup
+          #remove everything enclosed in brackets
+          while val.gsub!(/\([^()]*\)/,""); end
+          # any space indicate now that it is better to enclose it
+          return val.include? " "
         end
       end
 
-      class BinaryOperator < Node
+      class UnaryOperator < Operator
         def to_ruby
-          "(#{lhs.to_ruby}) #{ops} (#{rhs.to_ruby})"
+          child_val = child.to_ruby
+          child_val = "(" + child_val + ")" if enclose_in_bracket?(child_val)
+          "#{ops}#{child_val}"
+        end
+      end
+
+      class BinaryOperator < Operator
+        def to_ruby
+          lhs_val = lhs.to_ruby
+          rhs_val = rhs.to_ruby
+          lhs_val = "(" + lhs_val + ")" if enclose_in_bracket?(lhs_val)
+          rhs_val = "(" + rhs_val + ")" if enclose_in_bracket?(rhs_val)
+          "#{lhs_val} #{ops} #{rhs_val}"
         end
       end
 
