@@ -33,12 +33,12 @@ module Y2R
         end
 
         def locals
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          index = @blocks.index { |b| b.is_a?(FunDef) || b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
           @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
         end
 
         def globals
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          index = @blocks.index { |b| b.is_a?(FunDef) || b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
           @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
         end
       end
@@ -518,33 +518,43 @@ module Y2R
       end
 
       class FunDef < Node
-        def compile(context)
-          statements = block.compile(context)
-          statements.statements = args.select(&:needs_copy?).map do |arg|
-            arg.compile_as_copy_arg_call(context)
-          end + statements.statements
-          statements.statements << Ruby::Literal.new(:value => nil)
+        def variables
+          args.map(&:name)
+        end
 
-          if !context.in?(DefBlock)
-            Ruby::Def.new(
-              :name       => name,
-              :args       => args.map { |a| a.compile(context) },
-              :statements => statements
-            )
-          else
-            Ruby::Assignment.new(
-              :lhs => ruby_var(name, context),
-              :rhs => Ruby::MethodCall.new(
-                :receiver => nil,
-                :name     => "lambda",
-                :args     => [],
-                :block    => Ruby::Block.new(
-                  :args       => args.map { |a| a.compile(context) },
-                  :statements => statements
-                ),
-                :parens   => true
+        def functions
+          []
+        end
+
+        def compile(context)
+          inside_block context do |inner_context|
+            statements = block.compile(inner_context)
+            statements.statements = args.select(&:needs_copy?).map do |arg|
+              arg.compile_as_copy_arg_call(inner_context)
+            end + statements.statements
+            statements.statements << Ruby::Literal.new(:value => nil)
+
+            if !context.in?(DefBlock)
+              Ruby::Def.new(
+                :name       => name,
+                :args       => args.map { |a| a.compile(inner_context) },
+                :statements => statements
               )
-            )
+            else
+              Ruby::Assignment.new(
+                :lhs => ruby_var(name, context),
+                :rhs => Ruby::MethodCall.new(
+                  :receiver => nil,
+                  :name     => "lambda",
+                  :args     => [],
+                  :block    => Ruby::Block.new(
+                    :args       => args.map { |a| a.compile(inner_context) },
+                    :statements => statements
+                  ),
+                  :parens   => true
+                )
+              )
+            end
           end
         end
       end
@@ -775,7 +785,7 @@ module Y2R
         end
 
         def compile(context)
-          Ruby::Variable.new(:name => ruby_name)
+          ruby_var(name, context)
         end
 
         def compile_as_copy_arg_call(context)

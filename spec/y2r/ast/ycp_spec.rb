@@ -746,7 +746,7 @@ module Y2R::AST
           :args  => [],
           :block =>  YCP::UnspecBlock.new(
             :args       => @ycp_symbols_private,
-            :symbols    => [],
+            :symbols    => @ycp_symbols_private,
             :statements => @ycp_statements
           )
         )
@@ -771,7 +771,7 @@ module Y2R::AST
           :args  => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
           :block =>  YCP::UnspecBlock.new(
             :args       => @ycp_symbols_private,
-            :symbols    => [],
+            :symbols    => @ycp_symbols_private,
             :statements => @ycp_statements
           )
         )
@@ -2633,19 +2633,19 @@ module Y2R::AST
         :global   => false,
         :category => :variable,
         :type     => "integer",
-        :name     => "s"
+        :name     => "a"
       )
       @ycp_node_capital = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
-        :name     => "S"
+        :name     => "A"
       )
       @ycp_node_underscore = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
         :type     => "integer",
-        :name     => "_s"
+        :name     => "_a"
       )
       @ycp_node_reserved = YCP::Symbol.new(
         :global   => false,
@@ -2661,7 +2661,7 @@ module Y2R::AST
           :global   => false,
           :category => :variable,
           :type     => type,
-          :name     => "s"
+          :name     => "a"
         )
       end
 
@@ -2702,7 +2702,7 @@ module Y2R::AST
           :global   => false,
           :category => category,
           :type     => type,
-          :name     => "s"
+          :name     => "a"
         )
       end
 
@@ -2725,22 +2725,45 @@ module Y2R::AST
       end
     end
 
-
     describe "#compile" do
-      it "returns correct AST node" do
-        ruby_node_regular    = Ruby::Variable.new(:name => "s")
-        ruby_node_capital    = Ruby::Variable.new(:name => "_S")
-        ruby_node_underscore = Ruby::Variable.new(:name => "__s")
-        ruby_node_reserved   = Ruby::Variable.new(:name => "_end")
+      def ruby_variable(name)
+        Ruby::Variable.new(:name => name)
+      end
 
-        @ycp_node_regular.compile(@context_empty).should ==
-          ruby_node_regular
-        @ycp_node_capital.compile(@context_empty).should ==
-          ruby_node_capital
-        @ycp_node_underscore.compile(@context_empty).should ==
-          ruby_node_underscore
-        @ycp_node_reserved.compile(@context_empty).should ==
-          ruby_node_reserved
+      describe "in local context that refer to local variables" do
+        it "returns correct AST node" do
+          ruby_node_regular    = ruby_variable("a")
+          ruby_node_capital    = ruby_variable("_A")
+          ruby_node_underscore = ruby_variable("__a")
+          ruby_node_reserved   = ruby_variable("_end")
+
+          @ycp_node_regular.compile(@context_local_local_vars).should ==
+            ruby_node_regular
+          @ycp_node_capital.compile(@context_local_local_vars).should ==
+            ruby_node_capital
+          @ycp_node_underscore.compile(@context_local_local_vars).should ==
+            ruby_node_underscore
+          @ycp_node_reserved.compile(@context_local_local_vars).should ==
+            ruby_node_reserved
+        end
+      end
+
+      describe "in nested local context that refer to inner variables" do
+        it "returns correct AST node" do
+          ruby_node_regular    = ruby_variable("a2")
+          ruby_node_capital    = ruby_variable("_A2")
+          ruby_node_underscore = ruby_variable("__a2")
+          ruby_node_reserved   = ruby_variable("end2")
+
+          @ycp_node_regular.compile(@context_local_nested_vars).should ==
+            ruby_node_regular
+          @ycp_node_capital.compile(@context_local_nested_vars).should ==
+            ruby_node_capital
+          @ycp_node_underscore.compile(@context_local_nested_vars).should ==
+            ruby_node_underscore
+          @ycp_node_reserved.compile(@context_local_nested_vars).should ==
+            ruby_node_reserved
+        end
       end
     end
 
@@ -2759,9 +2782,9 @@ module Y2R::AST
       end
 
       it "returns correct AST node" do
-        ruby_node_regular    = ruby_copy_call("s")
-        ruby_node_capital    = ruby_copy_call("_S")
-        ruby_node_underscore = ruby_copy_call("__s")
+        ruby_node_regular    = ruby_copy_call("a")
+        ruby_node_capital    = ruby_copy_call("_A")
+        ruby_node_underscore = ruby_copy_call("__a")
 
         @ycp_node_regular.compile_as_copy_arg_call(@context_empty).should ==
           ruby_node_regular
@@ -2778,7 +2801,7 @@ module Y2R::AST
           :global   => true,
           :category => :variable,
           :type     => "integer",
-          :name     => "s"
+          :name     => "a"
         )
 
         ruby_node = Ruby::MethodCall.new(
@@ -2789,7 +2812,7 @@ module Y2R::AST
               :entries => [
                 Ruby::HashEntry.new(
                   :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :s)
+                  :value => Ruby::Literal.new(:value => :a)
                 ),
                 Ruby::HashEntry.new(
                   :key   => Ruby::Literal.new(:value => :type),
@@ -2810,7 +2833,7 @@ module Y2R::AST
           :global   => false,
           :category => :variable,
           :type     => "integer",
-          :name     => "s"
+          :name     => "a"
         )
 
         ruby_node = Ruby::MethodCall.new(
@@ -2821,7 +2844,7 @@ module Y2R::AST
               :entries => [
                 Ruby::HashEntry.new(
                   :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :s)
+                  :value => Ruby::Literal.new(:value => :a)
                 ),
                 Ruby::HashEntry.new(
                   :key   => Ruby::Literal.new(:value => :type),
@@ -2925,7 +2948,7 @@ module Y2R::AST
       it "returns correct AST node with arguments" do
         ycp_node = YCP::UnspecBlock.new(
           :args       => @ycp_symbols_private,
-          :symbols    => [],
+          :symbols    => @ycp_symbols_private,
           :statements => @ycp_statements
         )
 

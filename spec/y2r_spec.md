@@ -721,14 +721,14 @@ module YCP
           return 42
           nil
         }
-        f2 = lambda { |a, b, c|
+        f2 = lambda { |a2, b2, c2|
           a = copy_arg(a)
           b = copy_arg(b)
           c = copy_arg(c)
           return 42
           nil
         }
-        f3 = lambda { |a, b, c|
+        f3 = lambda { |a2, b2, c2|
           return 42
           nil
         }
