@@ -68,12 +68,6 @@ module Y2R
         end
       end
 
-      class Arg < Node
-        def to_ruby
-          name
-        end
-      end
-
       class Statements < Node
         def to_ruby
           combine do |parts|

@@ -41,10 +41,6 @@ module Y2R::AST::Ruby
       @when_44 = When.new(:values => [@literal_44], :body => @statements)
 
       @else = Else.new(:body => @statements)
-
-      @arg_a = Arg.new(:name => "a", :default => nil)
-      @arg_b = Arg.new(:name => "b", :default => nil)
-      @arg_c = Arg.new(:name => "c", :default => nil)
     end
   end
 
@@ -113,7 +109,7 @@ module Y2R::AST::Ruby
       it "emits correct code for method definitions with one argument" do
         node = Def.new(
           :name       => "m",
-          :args       => [@arg_a],
+          :args       => [@variable_a],
           :statements => @statements
         )
 
@@ -129,7 +125,7 @@ module Y2R::AST::Ruby
       it "emits correct code for method definitions with multiple arguments" do
         node = Def.new(
           :name       => "m",
-          :args       => [@arg_a, @arg_b, @arg_c],
+          :args       => [@variable_a, @variable_b, @variable_c],
           :statements => @statements
         )
 
@@ -140,14 +136,6 @@ module Y2R::AST::Ruby
           "  c = 44",
           "end"
         ].join("\n")
-      end
-    end
-  end
-
-  describe Arg, :type => :ruby do
-    describe "#to_ruby" do
-      it "emits correct code" do
-        node = Arg.new(:name => "a")
       end
     end
   end
@@ -769,7 +757,7 @@ module Y2R::AST::Ruby
       end
 
       it "emits correct code for blocks with one argument" do
-        node = Block.new(:args => [@arg_a], :statements => @statements)
+        node = Block.new(:args => [@variable_a], :statements => @statements)
 
         node.to_ruby.should == [
           "{ |a|",
@@ -782,7 +770,7 @@ module Y2R::AST::Ruby
 
       it "emits correct code for blocks with multiple arguments" do
         node = Block.new(
-          :args       => [@arg_a, @arg_b, @arg_c],
+          :args       => [@variable_a, @variable_b, @variable_c],
           :statements => @statements
         )
 

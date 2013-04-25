@@ -215,9 +215,15 @@ module Y2R::AST
       @ruby_literal_43 = Ruby::Literal.new(:value => 43)
       @ruby_literal_44 = Ruby::Literal.new(:value => 44)
 
+      @ruby_variable_a = Ruby::Variable.new(:name => "a")
+      @ruby_variable_b = Ruby::Variable.new(:name => "b")
+      @ruby_variable_c = Ruby::Variable.new(:name => "c")
+
       @ruby_variable_i = Ruby::Variable.new(:name => "@i")
       @ruby_variable_j = Ruby::Variable.new(:name => "@j")
       @ruby_variable_k = Ruby::Variable.new(:name => "@k")
+
+      @ruby_variables = [@ruby_variable_a, @ruby_variable_b, @ruby_variable_c]
 
       @ruby_assignment_i_42 = Ruby::Assignment.new(
         :lhs => @ruby_variable_i,
@@ -320,10 +326,6 @@ module Y2R::AST
       )
 
       @ruby_else = Ruby::Else.new(:body => @ruby_statements_non_empty)
-
-      @ruby_arg_a = Ruby::Arg.new(:name => "a", :default => nil)
-      @ruby_arg_b = Ruby::Arg.new(:name => "b", :default => nil)
-      @ruby_arg_c = Ruby::Arg.new(:name => "c", :default => nil)
 
       @ruby_def_f = Ruby::Def.new(
         :name => "f",
@@ -754,7 +756,7 @@ module Y2R::AST
           :name     => "b",
           :args     => [],
           :block    => Ruby::Block.new(
-            :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :args       => @ruby_variables,
             :statements => @ruby_statements_non_empty
           ),
           :parens   => true
@@ -779,7 +781,7 @@ module Y2R::AST
           :name     => "b",
           :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
           :block    => Ruby::Block.new(
-            :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :args       => @ruby_variables,
             :statements => @ruby_statements_non_empty
           ),
           :parens   => true
@@ -1766,7 +1768,7 @@ module Y2R::AST
 
           ruby_node_without_copy = Ruby::Def.new(
             :name => "f",
-            :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :args => @ruby_variables,
             :statements => Ruby::Statements.new(
               :statements => [
                 @ruby_assignment_i_42,
@@ -1779,7 +1781,7 @@ module Y2R::AST
 
           ruby_node_with_copy = Ruby::Def.new(
             :name => "f",
-            :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+            :args => @ruby_variables,
             :statements => Ruby::Statements.new(
               :statements => [
                 ruby_arg_copy("a"),
@@ -1925,7 +1927,7 @@ module Y2R::AST
               :name     => "lambda",
               :args     => [],
               :block    => Ruby::Block.new(
-                :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+                :args       => @ruby_variables,
                 :statements => Ruby::Statements.new(
                   :statements => [
                     @ruby_assignment_i_42,
@@ -1945,7 +1947,7 @@ module Y2R::AST
               :name     => "lambda",
               :args     => [],
               :block    => Ruby::Block.new(
-                :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+                :args       => @ruby_variables,
                 :statements => Ruby::Statements.new(
                   :statements => [
                     ruby_arg_copy("a"),
@@ -2726,10 +2728,10 @@ module Y2R::AST
 
     describe "#compile" do
       it "returns correct AST node" do
-        ruby_node_regular    = Ruby::Arg.new(:name => "s", :default => nil)
-        ruby_node_capital    = Ruby::Arg.new(:name => "_S", :default => nil)
-        ruby_node_underscore = Ruby::Arg.new(:name => "__s", :default => nil)
-        ruby_node_reserved   = Ruby::Arg.new(:name => "_end", :default => nil)
+        ruby_node_regular    = Ruby::Variable.new(:name => "s")
+        ruby_node_capital    = Ruby::Variable.new(:name => "_S")
+        ruby_node_underscore = Ruby::Variable.new(:name => "__s")
+        ruby_node_reserved   = Ruby::Variable.new(:name => "_end")
 
         @ycp_node_regular.compile(@context_empty).should ==
           ruby_node_regular
@@ -2928,7 +2930,7 @@ module Y2R::AST
         )
 
         ruby_node = Ruby::Block.new(
-          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :args       => @ruby_variables,
           :statements => @ruby_statements_non_empty
         )
 
@@ -3393,7 +3395,7 @@ module Y2R::AST
         )
 
         ruby_node = Ruby::Block.new(
-          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :args       => @ruby_variables,
           :statements => @ruby_literal_42
         )
 
@@ -3678,7 +3680,7 @@ module Y2R::AST
         )
 
         ruby_node = Ruby::Block.new(
-          :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
+          :args       => @ruby_variables,
           :statements => @ruby_literal_42
         )
 

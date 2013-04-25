@@ -775,7 +775,7 @@ module Y2R
         end
 
         def compile(context)
-          Ruby::Arg.new(:name => ruby_name, :default => nil)
+          Ruby::Variable.new(:name => ruby_name)
         end
 
         def compile_as_copy_arg_call(context)
