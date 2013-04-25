@@ -17,15 +17,15 @@ module Y2R::AST
       @ycp_const_43 = YCP::Const.new(:type => :int, :value => "43")
       @ycp_const_44 = YCP::Const.new(:type => :int, :value => "44")
 
-      @ycp_assign_a_42 = YCP::Assign.new(:name  => "a", :child => @ycp_const_42)
-      @ycp_assign_b_43 = YCP::Assign.new(:name  => "b", :child => @ycp_const_43)
-      @ycp_assign_c_44 = YCP::Assign.new(:name  => "c", :child => @ycp_const_44)
+      @ycp_assign_i_42 = YCP::Assign.new(:name  => "i", :child => @ycp_const_42)
+      @ycp_assign_j_43 = YCP::Assign.new(:name  => "j", :child => @ycp_const_43)
+      @ycp_assign_k_44 = YCP::Assign.new(:name  => "k", :child => @ycp_const_44)
 
       @ycp_textdomain_d = YCP::Textdomain.new(:name => "d")
       @ycp_textdomain_e = YCP::Textdomain.new(:name => "e")
       @ycp_textdomain_f = YCP::Textdomain.new(:name => "f")
 
-      @ycp_statements = [@ycp_assign_a_42, @ycp_assign_b_43, @ycp_assign_c_44]
+      @ycp_statements = [@ycp_assign_i_42, @ycp_assign_j_43, @ycp_assign_k_44]
 
       @ycp_symbol_private_a = YCP::Symbol.new(
         :global   => false,
@@ -148,18 +148,18 @@ module Y2R::AST
       @ycp_stmt_block_break = YCP::StmtBlock.new(
         :symbols    => [],
         :statements => [
-          @ycp_assign_a_42,
-          @ycp_assign_b_43,
-          @ycp_assign_c_44,
+          @ycp_assign_i_42,
+          @ycp_assign_j_43,
+          @ycp_assign_k_44,
           YCP::Break.new
         ]
       )
       @ycp_stmt_block_return = YCP::StmtBlock.new(
         :symbols    => [],
         :statements => [
-          @ycp_assign_a_42,
-          @ycp_assign_b_43,
-          @ycp_assign_c_44,
+          @ycp_assign_i_42,
+          @ycp_assign_j_43,
+          @ycp_assign_k_44,
           YCP::Return.new(:child => nil)
         ]
       )
@@ -215,20 +215,20 @@ module Y2R::AST
       @ruby_literal_43 = Ruby::Literal.new(:value => 43)
       @ruby_literal_44 = Ruby::Literal.new(:value => 44)
 
-      @ruby_variable_a = Ruby::Variable.new(:name => "@a")
-      @ruby_variable_b = Ruby::Variable.new(:name => "@b")
-      @ruby_variable_c = Ruby::Variable.new(:name => "@c")
+      @ruby_variable_i = Ruby::Variable.new(:name => "@i")
+      @ruby_variable_j = Ruby::Variable.new(:name => "@j")
+      @ruby_variable_k = Ruby::Variable.new(:name => "@k")
 
-      @ruby_assignment_a_42 = Ruby::Assignment.new(
-        :lhs => @ruby_variable_a,
+      @ruby_assignment_i_42 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_i,
         :rhs => @ruby_literal_42
       )
-      @ruby_assignment_b_43 = Ruby::Assignment.new(
-        :lhs => @ruby_variable_b,
+      @ruby_assignment_j_43 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_j,
         :rhs => @ruby_literal_43
       )
-      @ruby_assignment_c_44 = Ruby::Assignment.new(
-        :lhs => @ruby_variable_c,
+      @ruby_assignment_k_44 = Ruby::Assignment.new(
+        :lhs => @ruby_variable_k,
         :rhs => @ruby_literal_44
       )
 
@@ -292,16 +292,16 @@ module Y2R::AST
       )
       @ruby_statements_non_empty        = Ruby::Statements.new(
         :statements => [
-          @ruby_assignment_a_42,
-          @ruby_assignment_b_43,
-          @ruby_assignment_c_44
+          @ruby_assignment_i_42,
+          @ruby_assignment_j_43,
+          @ruby_assignment_k_44
         ]
       )
       @ruby_statements_non_empty_return = Ruby::Statements.new(
         :statements => [
-          @ruby_assignment_a_42,
-          @ruby_assignment_b_43,
-          @ruby_assignment_c_44,
+          @ruby_assignment_i_42,
+          @ruby_assignment_j_43,
+          @ruby_assignment_k_44,
           Ruby::Return.new(:value => nil)
         ]
       )
@@ -330,9 +330,9 @@ module Y2R::AST
         :args => [],
         :statements => Ruby::Statements.new(
           :statements => [
-            @ruby_assignment_a_42,
-            @ruby_assignment_b_43,
-            @ruby_assignment_c_44,
+            @ruby_assignment_i_42,
+            @ruby_assignment_j_43,
+            @ruby_assignment_k_44,
             @ruby_literal_nil
           ]
         )
@@ -342,9 +342,9 @@ module Y2R::AST
         :args => [],
         :statements => Ruby::Statements.new(
           :statements => [
-            @ruby_assignment_a_42,
-            @ruby_assignment_b_43,
-            @ruby_assignment_c_44,
+            @ruby_assignment_i_42,
+            @ruby_assignment_j_43,
+            @ruby_assignment_k_44,
             @ruby_literal_nil
           ]
         )
@@ -354,9 +354,9 @@ module Y2R::AST
         :args => [],
         :statements => Ruby::Statements.new(
           :statements => [
-            @ruby_assignment_a_42,
-            @ruby_assignment_b_43,
-            @ruby_assignment_c_44,
+            @ruby_assignment_i_42,
+            @ruby_assignment_j_43,
+            @ruby_assignment_k_44,
             @ruby_literal_nil
           ]
         )
@@ -1419,9 +1419,9 @@ module Y2R::AST
 
         ruby_node = Ruby::Statements.new(
           :statements => [
-            @ruby_assignment_a_42,
-            @ruby_assignment_b_43,
-            @ruby_assignment_c_44
+            @ruby_assignment_i_42,
+            @ruby_assignment_j_43,
+            @ruby_assignment_k_44
           ]
         )
 
@@ -1749,9 +1749,9 @@ module Y2R::AST
             :args => [],
             :statements => Ruby::Statements.new(
               :statements => [
-                @ruby_assignment_a_42,
-                @ruby_assignment_b_43,
-                @ruby_assignment_c_44,
+                @ruby_assignment_i_42,
+                @ruby_assignment_j_43,
+                @ruby_assignment_k_44,
                 @ruby_literal_nil
               ]
             )
@@ -1769,9 +1769,9 @@ module Y2R::AST
             :args => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
             :statements => Ruby::Statements.new(
               :statements => [
-                @ruby_assignment_a_42,
-                @ruby_assignment_b_43,
-                @ruby_assignment_c_44,
+                @ruby_assignment_i_42,
+                @ruby_assignment_j_43,
+                @ruby_assignment_k_44,
                 @ruby_literal_nil
               ]
             )
@@ -1785,9 +1785,9 @@ module Y2R::AST
                 ruby_arg_copy("a"),
                 ruby_arg_copy("b"),
                 ruby_arg_copy("c"),
-                @ruby_assignment_a_42,
-                @ruby_assignment_b_43,
-                @ruby_assignment_c_44,
+                @ruby_assignment_i_42,
+                @ruby_assignment_j_43,
+                @ruby_assignment_k_44,
                 @ruby_literal_nil
               ]
             )
@@ -1812,9 +1812,9 @@ module Y2R::AST
                 :args       => [],
                 :statements => Ruby::Statements.new(
                   :statements => [
-                    @ruby_assignment_a_42,
-                    @ruby_assignment_b_43,
-                    @ruby_assignment_c_44,
+                    @ruby_assignment_i_42,
+                    @ruby_assignment_j_43,
+                    @ruby_assignment_k_44,
                     @ruby_literal_nil
                   ]
                 )
@@ -1900,9 +1900,9 @@ module Y2R::AST
                 :args       => [],
                 :statements => Ruby::Statements.new(
                   :statements => [
-                    @ruby_assignment_a_42,
-                    @ruby_assignment_b_43,
-                    @ruby_assignment_c_44,
+                    @ruby_assignment_i_42,
+                    @ruby_assignment_j_43,
+                    @ruby_assignment_k_44,
                     @ruby_literal_nil
                   ]
                 )
@@ -1928,9 +1928,9 @@ module Y2R::AST
                 :args       => [@ruby_arg_a, @ruby_arg_b, @ruby_arg_c],
                 :statements => Ruby::Statements.new(
                   :statements => [
-                    @ruby_assignment_a_42,
-                    @ruby_assignment_b_43,
-                    @ruby_assignment_c_44,
+                    @ruby_assignment_i_42,
+                    @ruby_assignment_j_43,
+                    @ruby_assignment_k_44,
                     @ruby_literal_nil
                   ]
                 )
@@ -1951,9 +1951,9 @@ module Y2R::AST
                     ruby_arg_copy("a"),
                     ruby_arg_copy("b"),
                     ruby_arg_copy("c"),
-                    @ruby_assignment_a_42,
-                    @ruby_assignment_b_43,
-                    @ruby_assignment_c_44,
+                    @ruby_assignment_i_42,
+                    @ruby_assignment_j_43,
+                    @ruby_assignment_k_44,
                     @ruby_literal_nil
                   ]
                 )
@@ -2530,9 +2530,9 @@ module Y2R::AST
 
         ruby_node = Ruby::Statements.new(
           :statements => [
-            @ruby_assignment_a_42,
-            @ruby_assignment_b_43,
-            @ruby_assignment_c_44
+            @ruby_assignment_i_42,
+            @ruby_assignment_j_43,
+            @ruby_assignment_k_44
           ]
         )
 
