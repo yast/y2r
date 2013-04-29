@@ -276,8 +276,16 @@ module Y2R
                   :parens   => true
                 )
               else
+                receiver = nil
+                if ns
+                  if context.module_name == ns
+                    receiver = Ruby::Variable.new(:name => "self")
+                  else
+                    receiver = Ruby::Variable.new(:name => ns)
+                  end
+                end
                 Ruby::MethodCall.new(
-                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :receiver => receiver,
                   :name     => name,
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
@@ -908,9 +916,17 @@ module Y2R
                 parts = name.split("::")
                 ns = parts.size > 1 ? parts.first : nil
                 variable_name = parts.last
+                receiver = nil
+                if ns
+                  if context.module_name == ns
+                    receiver = Ruby::Variable.new(:name => "self")
+                  else
+                    receiver = Ruby::Variable.new(:name => ns)
+                  end
+                end
 
                 Ruby::MethodCall.new(
-                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :receiver => receiver,
                   :name     => "method",
                   :args     => [
                     Ruby::Literal.new(:value => variable_name.to_sym)
