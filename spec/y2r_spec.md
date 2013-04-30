@@ -722,9 +722,9 @@ module YCP
           nil
         }
         f2 = lambda { |a2, b2, c2|
-          a = copy_arg(a)
-          b = copy_arg(b)
-          c = copy_arg(c)
+          a2 = copy_arg(a2)
+          b2 = copy_arg(b2)
+          c2 = copy_arg(c2)
           return 42
           nil
         }

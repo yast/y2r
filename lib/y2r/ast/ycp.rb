@@ -790,11 +790,11 @@ module Y2R
 
         def compile_as_copy_arg_call(context)
           Ruby::Assignment.new(
-            :lhs => Ruby::Variable.new(:name => ruby_name),
+            :lhs => ruby_var(name, context),
             :rhs => Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "copy_arg",
-              :args     => [Ruby::Variable.new(:name => ruby_name)],
+              :args     => [ruby_var(name, context)],
               :block    => nil,
               :parens   => true
             )
@@ -827,12 +827,6 @@ module Y2R
             :block    => nil,
             :parens   => true
           )
-        end
-
-        private
-
-        def ruby_name
-          escape_ruby_local_var_name(name)
         end
       end
 

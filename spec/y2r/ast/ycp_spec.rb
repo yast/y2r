@@ -2781,17 +2781,40 @@ module Y2R::AST
         )
       end
 
-      it "returns correct AST node" do
-        ruby_node_regular    = ruby_copy_call("a")
-        ruby_node_capital    = ruby_copy_call("_A")
-        ruby_node_underscore = ruby_copy_call("__a")
+      describe "in local context that refer to local variables" do
+        it "returns correct AST node" do
+          ruby_node_regular    = ruby_copy_call("a")
+          ruby_node_capital    = ruby_copy_call("_A")
+          ruby_node_underscore = ruby_copy_call("__a")
+          ruby_node_reserved   = ruby_copy_call("_end")
 
-        @ycp_node_regular.compile_as_copy_arg_call(@context_empty).should ==
-          ruby_node_regular
-        @ycp_node_capital.compile_as_copy_arg_call(@context_empty).should ==
-          ruby_node_capital
-        @ycp_node_underscore.compile_as_copy_arg_call(@context_empty).should ==
-          ruby_node_underscore
+          @ycp_node_regular.compile_as_copy_arg_call(@context_local_local_vars).should ==
+            ruby_node_regular
+          @ycp_node_capital.compile_as_copy_arg_call(@context_local_local_vars).should ==
+            ruby_node_capital
+          @ycp_node_underscore.compile_as_copy_arg_call(@context_local_local_vars).should ==
+            ruby_node_underscore
+          @ycp_node_reserved.compile_as_copy_arg_call(@context_local_local_vars).should ==
+            ruby_node_reserved
+        end
+      end
+
+      describe "in nested local context that refer to inner variables" do
+        it "returns correct AST node" do
+          ruby_node_regular    = ruby_copy_call("a2")
+          ruby_node_capital    = ruby_copy_call("_A2")
+          ruby_node_underscore = ruby_copy_call("__a2")
+          ruby_node_reserved   = ruby_copy_call("end2")
+
+          @ycp_node_regular.compile_as_copy_arg_call(@context_local_nested_vars).should ==
+            ruby_node_regular
+          @ycp_node_capital.compile_as_copy_arg_call(@context_local_nested_vars).should ==
+            ruby_node_capital
+          @ycp_node_underscore.compile_as_copy_arg_call(@context_local_nested_vars).should ==
+            ruby_node_underscore
+          @ycp_node_reserved.compile_as_copy_arg_call(@context_local_nested_vars).should ==
+            ruby_node_reserved
+        end
       end
     end
 
