@@ -237,7 +237,15 @@ module Y2R
 
           # This will make the code consider arguments as local variables.
           # Which is exactly what we want e.g. for alias detection.
-          block.symbols = args + block.symbols
+          #
+          # Note we make sure not to add arguments that would create duplicate
+          # entries in the symbol table. These can arise e.g. if a variable with
+          # the same name as an argument is defined inside the function (yes,
+          # that's possible to do in YCP).
+          unique_args = args.reject do |arg|
+            block.symbols.find { |s| s.name == arg.name }
+          end
+          block.symbols = unique_args + block.symbols
 
           AST::YCP::FunDef.new(
             :name  => element["name"],
