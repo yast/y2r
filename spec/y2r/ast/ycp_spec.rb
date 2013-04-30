@@ -163,7 +163,12 @@ module Y2R::AST
           YCP::Return.new(:child => nil)
         ]
       )
-      @ycp_def_block = YCP::DefBlock.new(
+
+      @ycp_def_block_args    = YCP::DefBlock.new(
+        :symbols    => @ycp_symbols_private,
+        :statements => @ycp_statements
+      )
+      @ycp_def_block_no_args = YCP::DefBlock.new(
         :symbols    => [],
         :statements => @ycp_statements
       )
@@ -186,17 +191,17 @@ module Y2R::AST
       @ycp_fundef_f = ycp_node = YCP::FunDef.new(
         :name  => "f",
         :args  => [],
-        :block => @ycp_def_block
+        :block => @ycp_def_block_no_args
       )
       @ycp_fundef_g = ycp_node = YCP::FunDef.new(
         :name  => "g",
         :args  => [],
-        :block => @ycp_def_block
+        :block => @ycp_def_block_no_args
       )
       @ycp_fundef_h = ycp_node = YCP::FunDef.new(
         :name  => "h",
         :args  => [],
-        :block => @ycp_def_block
+        :block => @ycp_def_block_no_args
       )
 
       # ----- Ruby AST Nodes -----
@@ -1721,7 +1726,7 @@ module Y2R::AST
             ycp_symbol(type, "b"),
             ycp_symbol(type, "c")
           ],
-          :block => @ycp_def_block
+          :block => @ycp_def_block_args
         )
       end
 
@@ -1743,7 +1748,7 @@ module Y2R::AST
           ycp_node = YCP::FunDef.new(
             :name  => "f",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
 
           ruby_node = Ruby::Def.new(
@@ -1830,22 +1835,22 @@ module Y2R::AST
           @ycp_node_regular    = YCP::FunDef.new(
             :name  => "f",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
           @ycp_node_capital    = YCP::FunDef.new(
             :name  => "F",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
           @ycp_node_underscore = YCP::FunDef.new(
             :name  => "_f",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
           @ycp_node_reserved   = YCP::FunDef.new(
             :name  => "end",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
         end
 
@@ -1889,7 +1894,7 @@ module Y2R::AST
           ycp_node = YCP::FunDef.new(
             :name  => "f",
             :args  => [],
-            :block => @ycp_def_block
+            :block => @ycp_def_block_no_args
           )
 
           ruby_node = Ruby::Assignment.new(

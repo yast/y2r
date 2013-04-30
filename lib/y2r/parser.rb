@@ -233,11 +233,16 @@ module Y2R
           else
             []
           end
+          block = element_to_node(element.at_xpath("./block"), context)
+
+          # This will make the code consider arguments as local variables.
+          # Which is exactly what we want e.g. for alias detection.
+          block.symbols = args + block.symbols
 
           AST::YCP::FunDef.new(
             :name  => element["name"],
             :args  => args,
-            :block => element_to_node(element.at_xpath("./block"), context),
+            :block => block
           )
 
         when "if"
