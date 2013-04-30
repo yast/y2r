@@ -89,9 +89,9 @@ module Y2R
           "yield"
         ]
 
-        def inside_block(context)
+        def inside_block(block, context)
           inner_context = context.dup
-          inner_context.blocks = inner_context.blocks + [self]
+          inner_context.blocks = inner_context.blocks + [block]
 
           yield inner_context
         end
@@ -105,7 +105,7 @@ module Y2R
         end
 
         def compile_statements_inside_block(statements, context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             compile_statements(statements, inner_context)
           end
         end
@@ -401,7 +401,7 @@ module Y2R
 
       class DefBlock < Block
         def compile(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -455,7 +455,7 @@ module Y2R
             )
           ]
 
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             class_statements += textdomains.map { |t| t.compile(inner_context) }
 
             unless other_statements.empty?
@@ -527,7 +527,7 @@ module Y2R
         end
 
         def compile(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             statements = block.compile(inner_context)
             statements.statements = args.select(&:needs_copy?).map do |arg|
               arg.compile_as_copy_arg_call(inner_context)
@@ -659,7 +659,7 @@ module Y2R
             )
           ]
 
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             class_statements += textdomains.map { |t| t.compile(inner_context) }
 
             unless other_statements.empty?
@@ -757,7 +757,7 @@ module Y2R
 
       class StmtBlock < Block
         def compile(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -862,7 +862,7 @@ module Y2R
 
       class UnspecBlock < Block
         def compile(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "lambda",
@@ -879,7 +879,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => Ruby::Statements.new(
@@ -967,7 +967,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => child.compile(inner_context)
@@ -1109,7 +1109,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block context do |inner_context|
+          inside_block self, context do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => child.compile(inner_context)
