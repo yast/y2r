@@ -182,7 +182,7 @@ module Y2R
 
       class Block < Node
         def variables
-          symbols.select { |s| s.category == :variable }.map(&:name)
+          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
         end
 
         def functions
@@ -946,7 +946,7 @@ module Y2R
 
       class YCPCode < Node
         def variables
-          symbols.select { |s| s.category == :variable }.map(&:name)
+          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
         end
 
         def functions
@@ -1088,7 +1088,7 @@ module Y2R
 
       class YEReturn < Node
         def variables
-          symbols.select { |s| s.category == :variable }.map(&:name)
+          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
         end
 
         def functions
