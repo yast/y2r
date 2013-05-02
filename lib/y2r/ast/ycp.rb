@@ -960,7 +960,7 @@ module Y2R
 
               Ruby::MethodCall.new(
                 :receiver => nil,
-                :name     => "reference",
+                :name     => "fun_ref",
                 :args     => [getter, Ruby::Literal.new(:value => type.to_s)],
                 :block    => nil,
                 :parens   => true

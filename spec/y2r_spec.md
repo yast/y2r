@@ -263,8 +263,8 @@ b = lambda {
 
 ### Function References
 
-Y2R translates YCP function references as calls to the `reference` method, which
-creates an instance of the `YCP::Reference` class.
+Y2R translates YCP function references as calls to the `fun_ref` method, which
+creates an instance of the `YCP::FunRef` class.
 
 #### YCP (complete code)
 
@@ -288,7 +288,7 @@ module YCP
     class DefaultClient
       include YCP
       def main
-        @fref = reference(method(:f), "void ()")
+        @fref = fun_ref(method(:f), "void ()")
       end
       def f
         return
@@ -774,7 +774,7 @@ module YCP
     class DefaultClient
       include YCP
       def main
-        @fref = reference(method(:f), "void ()")
+        @fref = fun_ref(method(:f), "void ()")
         @fref.call
       end
       def f

@@ -3266,7 +3266,7 @@ module Y2R::AST
 
           ruby_node = Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "reference",
+            :name     => "fun_ref",
             :args     => [
               Ruby::MethodCall.new(
                 :receiver => nil,
@@ -3298,7 +3298,7 @@ module Y2R::AST
 
           ruby_node_m = Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "reference",
+            :name     => "fun_ref",
             :args     => [
               Ruby::MethodCall.new(
                 :receiver => nil,
@@ -3314,7 +3314,7 @@ module Y2R::AST
           )
           ruby_node_n = Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "reference",
+            :name     => "fun_ref",
             :args     => [
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "N"),
@@ -3338,7 +3338,7 @@ module Y2R::AST
         def ruby_reference_call(name)
           Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "reference",
+            :name     => "fun_ref",
             :args     => [
               Ruby::Variable.new(:name => name),
               Ruby::Literal.new(:value => "integer ()")
