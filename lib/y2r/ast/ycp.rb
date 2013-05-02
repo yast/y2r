@@ -58,6 +58,10 @@ module Y2R
         def to_s
           @type
         end
+
+        def no_const
+          @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
+        end
       end
 
       class Node < OpenStruct
@@ -125,10 +129,6 @@ module Y2R
           inside_block self, context do |inner_context|
             compile_statements(statements, inner_context)
           end
-        end
-
-        def strip_const(type)
-          type.sub(/^const /, "")
         end
 
         def qualified_name(ns, name)
@@ -801,7 +801,7 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          strip_const(type.to_s) !~ /^(boolean|integer|symbol)$|&$/
+          type.no_const.to_s !~ /^(boolean|integer|symbol)$|&$/
         end
 
         def exportable?
@@ -1082,10 +1082,7 @@ module Y2R
 
       class YEPropagate < Node
         def compile(context)
-          from_no_const = strip_const(from.to_s)
-          to_no_const   = strip_const(to.to_s)
-
-          if from_no_const != to_no_const
+          if from.no_const != to.no_const
             Ruby::MethodCall.new(
               :receiver => Ruby::Variable.new(:name => "Convert"),
               :name     => "convert",
@@ -1095,11 +1092,11 @@ module Y2R
                   :entries => [
                     Ruby::HashEntry.new(
                       :key   => Ruby::Literal.new(:value => :from),
-                      :value => Ruby::Literal.new(:value => from_no_const)
+                      :value => Ruby::Literal.new(:value => from.no_const.to_s)
                     ),
                     Ruby::HashEntry.new(
                       :key   => Ruby::Literal.new(:value => :to),
-                      :value => Ruby::Literal.new(:value => to_no_const)
+                      :value => Ruby::Literal.new(:value => to.no_const.to_s)
                     )
                   ]
                 )
