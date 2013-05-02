@@ -66,6 +66,10 @@ module Y2R
         def no_const
           @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
         end
+
+        BOOLEAN = Type.new("boolean")
+        INTEGER = Type.new("integer")
+        SYMBOL  = Type.new("symbol")
       end
 
       class Node < OpenStruct
@@ -805,7 +809,8 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          !type.reference? && type.no_const.to_s !~ /^(boolean|integer|symbol)$/
+          immutable_types = [Type::BOOLEAN, Type::INTEGER, Type::SYMBOL]
+          !immutable_types.include?(type.no_const) && !type.reference?
         end
 
         def exportable?
