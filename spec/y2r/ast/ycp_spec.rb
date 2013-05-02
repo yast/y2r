@@ -3269,18 +3269,39 @@ module Y2R::AST
         end
 
         it "returns correct AST node for qualified variables" do
-          ycp_node = YCP::Variable.new(
+          ycp_node_m = YCP::Variable.new(
             :category => "function",
             :name     => "M::a",
             :type     => "integer ()"
           )
+          ycp_node_n = YCP::Variable.new(
+            :category => "function",
+            :name     => "N::a",
+            :type     => "integer ()"
+          )
 
-          ruby_node = Ruby::MethodCall.new(
+          ruby_node_m = Ruby::MethodCall.new(
             :receiver => nil,
             :name     => "reference",
             :args     => [
               Ruby::MethodCall.new(
-                :receiver => Ruby::Variable.new(:name => "M"),
+                :receiver => nil,
+                :name     => "method",
+                :args     => [Ruby::Literal.new(:value => :a)],
+                :block    => nil,
+                :parens   => true
+              ),
+              Ruby::Literal.new(:value => "integer ()")
+            ],
+            :block    => nil,
+            :parens   => true
+          )
+          ruby_node_n = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "reference",
+            :args     => [
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "N"),
                 :name     => "method",
                 :args     => [Ruby::Literal.new(:value => :a)],
                 :block    => nil,
@@ -3292,7 +3313,8 @@ module Y2R::AST
             :parens   => true
           )
 
-          ycp_node.compile(@context_empty).should == ruby_node
+          ycp_node_m.compile(@context_module).should == ruby_node_m
+          ycp_node_n.compile(@context_module).should == ruby_node_n
         end
       end
 

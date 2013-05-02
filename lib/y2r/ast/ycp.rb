@@ -896,6 +896,15 @@ module Y2R
                 ns = parts.size > 1 ? parts.first : nil
                 variable_name = parts.last
 
+                # In the XML, all global module function references are
+                # qualified (e.g. "M::i"). This includes references to functions
+                # defined in this module. The problem is that in generated Ruby
+                # code, the module namespace may not exist yet (e.g. when the
+                # function is refrenced at module toplvel in YCP), so we have to
+                # omit it (which is OK, because then the |method| call will be
+                # invoked on |self|, whish is always our module).
+                ns = nil if ns == context.module_name
+
                 Ruby::MethodCall.new(
                   :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
                   :name     => "method",
