@@ -535,6 +535,30 @@ module Y2R::AST::Ruby
     end
   end
 
+  describe Expressions, :type => :ruby do
+    describe "#to_ruby" do
+      it "emits correct code for expression lists with no expressions" do
+        node = Expressions.new(:expressions => [])
+
+        node.to_ruby.should == "()"
+      end
+
+      it "emits correct code for expression lists with one expression" do
+        node = Expressions.new(:expressions => [@literal_42])
+
+        node.to_ruby.should == "(42)"
+      end
+
+      it "emits correct code for expression lists with multiple expressions" do
+        node = Expressions.new(
+          :expressions => [@literal_42, @literal_43, @literal_44]
+        )
+
+        node.to_ruby.should == "(42; 43; 44)"
+      end
+    end
+  end
+
   describe Assignment, :type => :ruby do
     describe "#to_ruby" do
       it "emits correct code" do

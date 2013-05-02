@@ -23,8 +23,8 @@ module Y2R
           parts.join("\n")
         end
 
-        def list(items)
-          items.map(&:to_ruby).join(", ")
+        def list(items, separator = ", ")
+          items.map(&:to_ruby).join(separator)
         end
       end
 
@@ -199,6 +199,13 @@ module Y2R
       end
 
       # ===== Expressions =====
+
+      # TODO: Use parens only when needed.
+      class Expressions < Node
+        def to_ruby
+          "(#{list(expressions, "; ")})"
+        end
+      end
 
       class Assignment < Node
         def to_ruby
