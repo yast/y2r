@@ -840,14 +840,27 @@ module Y2R::AST
         end
 
         it "returns correct AST node for qualified calls" do
-          ycp_node = YCP::Call.new(
+          ycp_node_m = YCP::Call.new(
+            :category => "function",
+            :ns       => "M",
+            :name     => "f",
+            :args     => []
+          )
+          ycp_node_n = YCP::Call.new(
             :category => "function",
             :ns       => "N",
             :name     => "f",
             :args     => []
           )
 
-          ruby_node = Ruby::MethodCall.new(
+          ruby_node_m = Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "f",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+          ruby_node_n = Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => "N"),
             :name     => "f",
             :args     => [],
@@ -855,7 +868,8 @@ module Y2R::AST
             :parens   => true
           )
 
-          ycp_node.compile(@context_empty).should == ruby_node
+          ycp_node_m.compile(@context_module).should == ruby_node_m
+          ycp_node_n.compile(@context_module).should == ruby_node_n
         end
 
         it "returns correct AST node for calls without arguments" do

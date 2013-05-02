@@ -276,8 +276,22 @@ module Y2R
                   :parens   => true
                 )
               else
+                # In the XML, all module function calls are qualified (e.g.
+                # "M::i"). This includes call to functions defined in this
+                # module. The problem is that in generated Ruby code, the module
+                # namespace may not exist yet (e.g. when the function is called
+                # at module toplvel in YCP), so we have to omit it (which is OK,
+                # because then the call will be invoked on |self|, whish is
+                # always our module).
+                fixed_ns = ns == context.module_name ? nil : ns
+                receiver = if fixed_ns
+                  Ruby::Variable.new(:name => fixed_ns)
+                else
+                  nil
+                end
+
                 Ruby::MethodCall.new(
-                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :receiver => receiver,
                   :name     => name,
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
