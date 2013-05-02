@@ -59,6 +59,10 @@ module Y2R
           @type
         end
 
+        def reference?
+          @type =~ /&$/
+        end
+
         def no_const
           @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
         end
@@ -801,7 +805,7 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          type.no_const.to_s !~ /^(boolean|integer|symbol)$|&$/
+          !type.reference? && type.no_const.to_s !~ /^(boolean|integer|symbol)$/
         end
 
         def exportable?
