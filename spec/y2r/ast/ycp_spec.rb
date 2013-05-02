@@ -30,19 +30,19 @@ module Y2R::AST
       @ycp_symbol_private_a = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "a"
       )
       @ycp_symbol_private_b = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "b"
       )
       @ycp_symbol_private_c = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "c"
       )
 
@@ -55,19 +55,19 @@ module Y2R::AST
       @ycp_symbol_public_a = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "a"
       )
       @ycp_symbol_public_b = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "b"
       )
       @ycp_symbol_public_c = YCP::Symbol.new(
         :global   => true,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "c"
       )
 
@@ -80,25 +80,25 @@ module Y2R::AST
       @ycp_symbol_var_regular = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "a"
       )
       @ycp_symbol_var_capital = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "A"
       )
       @ycp_symbol_var_underscore = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "_a"
       )
       @ycp_symbol_var_reserved = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "end"
       )
 
@@ -112,25 +112,25 @@ module Y2R::AST
       @ycp_symbol_fun_regular = YCP::Symbol.new(
         :global   => false,
         :category => :function,
-        :type     => "integer ()",
+        :type     => YCP::Type.new("integer ()"),
         :name     => "f"
       )
       @ycp_symbol_fun_capital = YCP::Symbol.new(
         :global   => false,
         :category => :function,
-        :type     => "integer ()",
+        :type     => YCP::Type.new("integer ()"),
         :name     => "F"
       )
       @ycp_symbol_fun_underscore = YCP::Symbol.new(
         :global   => false,
         :category => :function,
-        :type     => "integer ()",
+        :type     => YCP::Type.new("integer ()"),
         :name     => "_f"
       )
       @ycp_symbol_fun_reserved = YCP::Symbol.new(
         :global   => false,
         :category => :function,
-        :type     => "integer ()",
+        :type     => YCP::Type.new("integer ()"),
         :name     => "end"
       )
 
@@ -1727,7 +1727,7 @@ module Y2R::AST
         YCP::Symbol.new(
           :global   => false,
           :category => :variable,
-          :type     => type,
+          :type     => YCP::Type.new(type),
           :name     => name
         )
       end
@@ -2651,25 +2651,25 @@ module Y2R::AST
       @ycp_node_regular = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "a"
       )
       @ycp_node_capital = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "A"
       )
       @ycp_node_underscore = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "_a"
       )
       @ycp_node_reserved = YCP::Symbol.new(
         :global   => false,
         :category => :variable,
-        :type     => "integer",
+        :type     => YCP::Type.new("integer"),
         :name     => "end"
       )
     end
@@ -2679,7 +2679,7 @@ module Y2R::AST
         YCP::Symbol.new(
           :global   => false,
           :category => :variable,
-          :type     => type,
+          :type     => YCP::Type.new(type),
           :name     => "a"
         )
       end
@@ -2720,7 +2720,7 @@ module Y2R::AST
         YCP::Symbol.new(
           :global   => false,
           :category => category,
-          :type     => type,
+          :type     => YCP::Type.new(type),
           :name     => "a"
         )
       end
@@ -2842,7 +2842,7 @@ module Y2R::AST
         ycp_node = YCP::Symbol.new(
           :global   => true,
           :category => :variable,
-          :type     => "integer",
+          :type     => YCP::Type.new("integer"),
           :name     => "a"
         )
 
@@ -2874,7 +2874,7 @@ module Y2R::AST
         ycp_node = YCP::Symbol.new(
           :global   => false,
           :category => :variable,
-          :type     => "integer",
+          :type     => YCP::Type.new("integer"),
           :name     => "a"
         )
 
@@ -3259,7 +3259,7 @@ module Y2R::AST
           ycp_node = YCP::Variable.new(
             :category => "function",
             :name     => "a",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -3286,12 +3286,12 @@ module Y2R::AST
           ycp_node_m = YCP::Variable.new(
             :category => "function",
             :name     => "M::a",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
           ycp_node_n = YCP::Variable.new(
             :category => "function",
             :name     => "N::a",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
 
           ruby_node_m = Ruby::MethodCall.new(
@@ -3350,22 +3350,22 @@ module Y2R::AST
           @ycp_node_regular    = YCP::Variable.new(
             :category => "function",
             :name     => "a",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_capital    = YCP::Variable.new(
             :category => "function",
             :name     => "A",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_underscore = YCP::Variable.new(
             :category => "function",
             :name     => "_a",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_reserved   = YCP::Variable.new(
             :category => "function",
             :name     => "end",
-            :type     => "integer ()"
+            :type     => YCP::Type.new("integer ()")
           )
         end
 
@@ -3611,7 +3611,10 @@ module Y2R::AST
   describe YCP::YEIs, :type => :ycp do
     describe "#compile" do
       it "returns correct AST node" do
-        ycp_node = YCP::YEIs.new(:child => @ycp_const_42, :type  => "integer")
+        ycp_node = YCP::YEIs.new(
+          :child => @ycp_const_42,
+          :type  => YCP::Type.new("integer")
+        )
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
@@ -3633,8 +3636,8 @@ module Y2R::AST
     describe "#compile" do
       def ycp_yepropagate(from, to)
         YCP::YEPropagate.new(
-          :from  => from,
-          :to    => to,
+          :from  => YCP::Type.new(from),
+          :to    => YCP::Type.new(to),
           :child => @ycp_const_42
         )
       end

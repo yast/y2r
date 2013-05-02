@@ -43,6 +43,23 @@ module Y2R
         end
       end
 
+      # Represents a YCP type.
+      class Type
+        attr_reader :type
+
+        def initialize(type)
+          @type = type
+        end
+
+        def ==(other)
+          other.instance_of?(Type) && other.type == @type
+        end
+
+        def to_s
+          @type
+        end
+      end
+
       class Node < OpenStruct
         # Taken from Ruby's parse.y (for 1.9.3).
         RUBY_KEYWORDS = [
@@ -784,7 +801,7 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          strip_const(type) !~ /^(boolean|integer|symbol)$|&$/
+          strip_const(type.to_s) !~ /^(boolean|integer|symbol)$|&$/
         end
 
         def exportable?
@@ -816,7 +833,7 @@ module Y2R
             ),
             Ruby::HashEntry.new(
               :key   => Ruby::Literal.new(:value => :type),
-              :value => Ruby::Literal.new(:value => type)
+              :value => Ruby::Literal.new(:value => type.to_s)
             )
           ]
 
@@ -933,7 +950,7 @@ module Y2R
               Ruby::MethodCall.new(
                 :receiver => nil,
                 :name     => "reference",
-                :args     => [getter, Ruby::Literal.new(:value => type)],
+                :args     => [getter, Ruby::Literal.new(:value => type.to_s)],
                 :block    => nil,
                 :parens   => true
               )
@@ -1055,7 +1072,7 @@ module Y2R
             :name     => "is",
             :args     => [
               child.compile(context),
-              Ruby::Literal.new(:value => type)
+              Ruby::Literal.new(:value => type.to_s)
             ],
             :block    => nil,
             :parens   => true
@@ -1065,8 +1082,8 @@ module Y2R
 
       class YEPropagate < Node
         def compile(context)
-          from_no_const = strip_const(from)
-          to_no_const   = strip_const(to)
+          from_no_const = strip_const(from.to_s)
+          to_no_const   = strip_const(to.to_s)
 
           if from_no_const != to_no_const
             Ruby::MethodCall.new(

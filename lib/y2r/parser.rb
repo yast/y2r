@@ -123,7 +123,7 @@ module Y2R
               AST::YCP::Symbol.new(
                 :global   => false,
                 :category => :variable,
-                :type     => $1,
+                :type     => AST::YCP::Type.new($1),
                 :name     => $3
               )
             end
@@ -331,7 +331,7 @@ module Y2R
           AST::YCP::Symbol.new(
             :global   => element["global"] == "1",
             :category => category,
-            :type     => element["type"],
+            :type     => AST::YCP::Type.new(element["type"]),
             # We don't save names for files mainly because of the specs. They
             # use temporary files with unpredictable names and node equality
             # tests would fail because of that.
@@ -352,7 +352,7 @@ module Y2R
           AST::YCP::Variable.new(
             :name     => element["name"],
             :category => element["category"],
-            :type     => element["type"]
+            :type     => AST::YCP::Type.new(element["type"])
           )
 
         when "while"
@@ -388,14 +388,14 @@ module Y2R
 
         when "yeis"
           AST::YCP::YEIs.new(
-            :type  => element["type"],
+            :type  => AST::YCP::Type.new(element["type"]),
             :child => element_to_node(element.elements[0], context)
           )
 
         when "yepropagate"
           AST::YCP::YEPropagate.new(
-            :from  => element["from"],
-            :to    => element["to"],
+            :from  => AST::YCP::Type.new(element["from"]),
+            :to    => AST::YCP::Type.new(element["to"]),
             :child => element_to_node(element.elements[0], context)
           )
 

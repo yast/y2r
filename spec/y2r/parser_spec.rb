@@ -21,25 +21,25 @@ module Y2R
             AST::YCP::Symbol.new(
               :global   => true,
               :category => :filename,
-              :type     => "<unspec>",
+              :type     => AST::YCP::Type.new("<unspec>"),
               :name     => nil
             ),
             AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
-              :type     => "integer",
+              :type     => AST::YCP::Type.new("integer"),
               :name     => "i"
             ),
             AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
-              :type     => "integer",
+              :type     => AST::YCP::Type.new("integer"),
               :name     => "j"
             ),
             AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
-              :type     => "integer",
+              :type     => AST::YCP::Type.new("integer"),
               :name     => "k"
             )
           ],
