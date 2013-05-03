@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "cheetah"
 require "nokogiri"
 require "tempfile"

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "y2r"
 
 RSpec.configure do |c|

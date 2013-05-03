@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require "redcarpet"
 
 class RSpecRenderer < Redcarpet::Render::Base
@@ -127,6 +129,8 @@ class RSpecRenderer < Redcarpet::Render::Base
 
   def doc_header
     join([
+      "# encoding: utf-8",
+      "",
       "# Generated from spec/y2r_spec.md -- do not change!",
       "",
       "require \"spec_helper\"",
