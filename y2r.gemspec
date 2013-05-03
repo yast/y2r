@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
     "lib/y2r/parser.rb",
     "lib/y2r/version.rb"
   ]
-  s.executables = ["bin/y2r"]
+  s.executables = ["y2r"]
 
   s.add_dependency "cheetah",  "0.3.0"
   s.add_dependency "docopt",   "0.5.0"
