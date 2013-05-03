@@ -21,12 +21,14 @@ Gem::Specification.new do |s|
     "LICENSE",
     "README.md",
     "VERSION",
+    "bin/y2r",
     "lib/y2r.rb",
     "lib/y2r/ast/ruby.rb",
     "lib/y2r/ast/ycp.rb",
     "lib/y2r/parser.rb",
     "lib/y2r/version.rb"
   ]
+  s.executables = ["bin/y2r"]
 
   s.add_dependency "cheetah",  "0.3.0"
   s.add_dependency "docopt",   "0.5.0"
