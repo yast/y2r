@@ -19,6 +19,10 @@ module Y2R::AST
       @ycp_const_43 = YCP::Const.new(:type => :int, :value => "43")
       @ycp_const_44 = YCP::Const.new(:type => :int, :value => "44")
 
+      @ycp_entry_a = YCP::Entry.new(:ns => nil, :name => "a")
+      @ycp_entry_b = YCP::Entry.new(:ns => nil, :name => "b")
+      @ycp_entry_c = YCP::Entry.new(:ns => nil, :name => "c")
+
       @ycp_assign_i_42 = YCP::Assign.new(:name  => "i", :child => @ycp_const_42)
       @ycp_assign_j_43 = YCP::Assign.new(:name  => "j", :child => @ycp_const_43)
       @ycp_assign_k_44 = YCP::Assign.new(:name  => "k", :child => @ycp_const_44)
@@ -229,6 +233,10 @@ module Y2R::AST
       @ruby_variable_i = Ruby::Variable.new(:name => "@i")
       @ruby_variable_j = Ruby::Variable.new(:name => "@j")
       @ruby_variable_k = Ruby::Variable.new(:name => "@k")
+
+      @ruby_variable_a_ref = Ruby::Variable.new(:name => "a_ref")
+      @ruby_variable_b_ref = Ruby::Variable.new(:name => "b_ref")
+      @ruby_variable_c_ref = Ruby::Variable.new(:name => "c_ref")
 
       @ruby_variables = [@ruby_variable_a, @ruby_variable_b, @ruby_variable_c]
 
@@ -460,6 +468,12 @@ module Y2R::AST
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @symbols_fun),
           YCP::DefBlock.new(:symbols => @symbols_fun)
+        ]
+      )
+      @context_for_references = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => @ycp_symbols_private)
         ]
       )
     end
@@ -821,219 +835,318 @@ module Y2R::AST
 
   describe YCP::Call, :type => :ycp do
     describe "#compile" do
-      describe "for calls of toplevel functions with category == \"function\"" do
-        it "returns correct AST node for unqualified calls" do
-          ycp_node = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
+      describe "for calls with category == \"function\"" do
+        describe "of toplevel functions" do
+          it "returns correct AST node for unqualified calls" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
 
-          ruby_node = Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "f",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
 
-          ycp_node.compile(@context_empty).should == ruby_node
-        end
+            ycp_node.compile(@context_empty).should == ruby_node
+          end
 
-        it "returns correct AST node for qualified calls" do
-          ycp_node_m = YCP::Call.new(
-            :category => "function",
-            :ns       => "M",
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
-          ycp_node_n = YCP::Call.new(
-            :category => "function",
-            :ns       => "N",
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
+          it "returns correct AST node for qualified calls" do
+            ycp_node_m = YCP::Call.new(
+              :category => "function",
+              :ns       => "M",
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+            ycp_node_n = YCP::Call.new(
+              :category => "function",
+              :ns       => "N",
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
 
-          ruby_node_m = Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "f",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-          ruby_node_n = Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "N"),
-            :name     => "f",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
+            ruby_node_m = Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+            ruby_node_n = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "N"),
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
 
-          ycp_node_m.compile(@context_module).should == ruby_node_m
-          ycp_node_n.compile(@context_module).should == ruby_node_n
-        end
+            ycp_node_m.compile(@context_module).should == ruby_node_m
+            ycp_node_n.compile(@context_module).should == ruby_node_n
+          end
 
-        it "returns correct AST node for calls without arguments" do
-          ycp_node = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
+          it "returns correct AST node for calls without arguments" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
 
-          ruby_node = Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "f",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
 
-          ycp_node.compile(@context_empty).should == ruby_node
-        end
+            ycp_node.compile(@context_empty).should == ruby_node
+          end
 
-        it "returns correct AST node for calls with arguments" do
-          ycp_node = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
-            :type     => YCP::Type.new("void (integer, integer, integer)")
-          )
+          it "returns correct AST node for calls with arguments" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+              :type     => YCP::Type.new("void (integer, integer, integer)")
+            )
 
-          ruby_node = Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "f",
-            :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
-            :block    => nil,
-            :parens   => true
-          )
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+              :block    => nil,
+              :parens   => true
+            )
 
-          ycp_node.compile(@context_empty).should == ruby_node
-        end
-      end
-
-      describe "for calls of nested functions with category == \"function\"" do
-        def ruby_method_call(name)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => name),
-            :name     => "call",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-        end
-
-        before :each do
-          @ycp_node_regular    = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
-          @ycp_node_capital    = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "F",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
-          @ycp_node_underscore = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "_f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
-          @ycp_node_reserved   = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "end",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
-        end
-
-        describe "in local context that refer to local functions" do
-          it "returns correct AST node" do
-            ruby_node_regular    = ruby_method_call("f")
-            ruby_node_capital    = ruby_method_call("_F")
-            ruby_node_underscore = ruby_method_call("__f")
-            ruby_node_reserved   = ruby_method_call("_end")
-
-            @ycp_node_regular.compile(@context_local_local_funs).should ==
-              ruby_node_regular
-            @ycp_node_capital.compile(@context_local_local_funs).should ==
-              ruby_node_capital
-            @ycp_node_underscore.compile(@context_local_local_funs).should ==
-              ruby_node_underscore
-            @ycp_node_reserved.compile(@context_local_local_funs).should ==
-              ruby_node_reserved
+            ycp_node.compile(@context_empty).should == ruby_node
           end
         end
 
-        describe "in nested local context that refer to inner functions" do
-          it "returns correct AST node" do
-            ruby_node_regular    = ruby_method_call("f2")
-            ruby_node_capital    = ruby_method_call("_F2")
-            ruby_node_underscore = ruby_method_call("__f2")
-            ruby_node_reserved   = ruby_method_call("end2")
+        describe "of nested functions" do
+          def ruby_method_call(name)
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => name),
+              :name     => "call",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          end
 
-            @ycp_node_regular.compile(@context_local_nested_funs).should ==
-              ruby_node_regular
-            @ycp_node_capital.compile(@context_local_nested_funs).should ==
-              ruby_node_capital
-            @ycp_node_underscore.compile(@context_local_nested_funs).should ==
-              ruby_node_underscore
-            @ycp_node_reserved.compile(@context_local_nested_funs).should ==
-              ruby_node_reserved
+          before :each do
+            @ycp_node_regular    = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+            @ycp_node_capital    = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "F",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+            @ycp_node_underscore = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "_f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+            @ycp_node_reserved   = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "end",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+          end
+
+          describe "in local context that refer to local functions" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("f")
+              ruby_node_capital    = ruby_method_call("_F")
+              ruby_node_underscore = ruby_method_call("__f")
+              ruby_node_reserved   = ruby_method_call("_end")
+
+              @ycp_node_regular.compile(@context_local_local_funs).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_local_funs).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_local_funs).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_local_funs).should ==
+                ruby_node_reserved
+            end
+          end
+
+          describe "in nested local context that refer to inner functions" do
+            it "returns correct AST node" do
+              ruby_node_regular    = ruby_method_call("f2")
+              ruby_node_capital    = ruby_method_call("_F2")
+              ruby_node_underscore = ruby_method_call("__f2")
+              ruby_node_reserved   = ruby_method_call("end2")
+
+              @ycp_node_regular.compile(@context_local_nested_funs).should ==
+                ruby_node_regular
+              @ycp_node_capital.compile(@context_local_nested_funs).should ==
+                ruby_node_capital
+              @ycp_node_underscore.compile(@context_local_nested_funs).should ==
+                ruby_node_underscore
+              @ycp_node_reserved.compile(@context_local_nested_funs).should ==
+                ruby_node_reserved
+            end
+          end
+
+          it "returns correct AST node for calls without arguments" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
+            )
+
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "f"),
+              :name     => "call",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node.compile(@context_local_local_funs).should == ruby_node
+          end
+
+          it "returns correct AST node for calls with arguments" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+              :type     => YCP::Type.new("void (integer, integer, integer)")
+            )
+
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "f"),
+              :name     => "call",
+              :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node.compile(@context_local_local_funs).should == ruby_node
           end
         end
 
-        it "returns correct AST node for calls without arguments" do
-          ycp_node = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [],
-            :type     => YCP::Type.new("void ()")
-          )
+        describe "with reference arguments" do
+          it "returns correct AST node" do
+            ycp_node = YCP::Call.new(
+              :category => "function",
+              :ns       => nil,
+              :name     => "f",
+              :args     => [
+                YCP::YEReference.new(:child => @ycp_entry_a),
+                YCP::YEReference.new(:child => @ycp_entry_b),
+                YCP::YEReference.new(:child => @ycp_entry_c),
+              ],
+              :type     => YCP::Type.new("void (integer &, integer &, integer &)")
+            )
 
-          ruby_node = Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "f"),
-            :name     => "call",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
+            ruby_node = Ruby::Expressions.new(
+              :expressions => [
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_a_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_a],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_b_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_b],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_c_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_c],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => Ruby::Variable.new(:name => "f_result"),
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "f",
+                    :args     => [
+                      @ruby_variable_a_ref,
+                      @ruby_variable_b_ref,
+                      @ruby_variable_c_ref],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_a,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_a_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_b,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_b_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_c,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_c_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Variable.new(:name => "f_result")
+              ]
+            )
 
-          ycp_node.compile(@context_local_local_funs).should == ruby_node
-        end
-
-        it "returns correct AST node for calls with arguments" do
-          ycp_node = YCP::Call.new(
-            :category => "function",
-            :ns       => nil,
-            :name     => "f",
-            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
-            :type     => YCP::Type.new("void (integer, integer, integer)")
-          )
-
-          ruby_node = Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "f"),
-            :name     => "call",
-            :args     => [@ruby_literal_42, @ruby_literal_43, @ruby_literal_44],
-            :block    => nil,
-            :parens   => true
-          )
-
-          ycp_node.compile(@context_local_local_funs).should == ruby_node
+            ycp_node.compile(@context_for_references).should == ruby_node
+          end
         end
       end
 
@@ -1601,6 +1714,28 @@ module Y2R::AST
             @ycp_node_reserved.compile(@context_local_nested_vars).should ==
               ruby_node_reserved
           end
+        end
+      end
+    end
+
+    describe "#compile_as_ref" do
+      describe "for qualified entries" do
+        it "returns correct AST node" do
+          ycp_node = YCP::Entry.new(:ns => "M", :name => "a")
+
+          ruby_node = @ruby_variable_a_ref
+
+          ycp_node.compile_as_ref(@context_empty).should == ruby_node
+        end
+      end
+
+      describe "for unqualified entries" do
+        it "returns correct AST node" do
+          ycp_node = YCP::Entry.new(:ns => nil, :name => "a")
+
+          ruby_node = @ruby_variable_a_ref
+
+          ycp_node.compile_as_ref(@context_empty).should == ruby_node
         end
       end
     end
@@ -3730,13 +3865,49 @@ module Y2R::AST
   end
 
   describe YCP::YEReference, :type => :ycp do
+    before :each do
+      @ycp_node = YCP::YEReference.new(:child => @ycp_entry_a)
+    end
+
     describe "#compile" do
       it "returns correct AST node" do
-        ycp_node = YCP::YEReference.new(:child => @ycp_const_42)
+        ruby_node = @ruby_variable_a_ref
 
-        ruby_node = @ruby_literal_42
+        @ycp_node.compile(@context_for_references).should == ruby_node
+      end
+    end
 
-        ycp_node.compile(@context_empty).should == ruby_node
+    describe "#compile_as_setter" do
+      it "returns correct AST node" do
+        ruby_node = Ruby::Assignment.new(
+          :lhs => @ruby_variable_a_ref,
+          :rhs => Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "arg_ref",
+            :args     => [@ruby_variable_a],
+            :block    => nil,
+            :parens   => true
+          )
+        )
+
+        @ycp_node.compile_as_setter(@context_for_references).should == ruby_node
+      end
+    end
+
+    describe "#compile_as_getter" do
+      it "returns correct AST node" do
+        ruby_node = Ruby::Assignment.new(
+          :lhs => @ruby_variable_a,
+          :rhs => Ruby::MethodCall.new(
+            :receiver => @ruby_variable_a_ref,
+            :name     => "value",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+        )
+
+        @ycp_node.compile_as_getter(@context_for_references).should == ruby_node
       end
     end
   end

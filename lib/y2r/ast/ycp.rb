@@ -69,6 +69,39 @@ module Y2R
           @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
         end
 
+        def arg_types
+          types = []
+          type = ""
+          nesting_level = 0
+
+          in_parens = @type.sub(/^[^(]*\((.*)\)[^)]*$/, '\1')
+          in_parens.each_char do |ch|
+            case ch
+              when ","
+                if nesting_level == 0
+                  types << type
+                  type = ""
+                else
+                  type += ch
+                end
+
+              when "(", "<"
+                nesting_level += 1
+                type += ch
+
+              when ")", ">"
+                nesting_level -= 1
+                type += ch
+
+              else
+                type += ch
+            end
+          end
+          types << type unless type.empty?
+
+          types.map { |t| Type.new(t.strip) }
+        end
+
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
@@ -292,7 +325,7 @@ module Y2R
 
       class Call < Node
         def compile(context)
-          case category
+          call = case category
             when "function"
               if context.locals.include?(name)
                 Ruby::MethodCall.new(
@@ -335,6 +368,31 @@ module Y2R
               )
             else
               raise "Unknown call category: #{category.inspect}."
+          end
+
+          reference_args_with_types = args.zip(type.arg_types).select do |arg, type|
+            type.reference?
+          end
+
+          if !reference_args_with_types.empty?
+            setters = reference_args_with_types.map do |arg, type|
+              arg.compile_as_setter(context)
+            end
+            getters = reference_args_with_types.map do |arg, type|
+              arg.compile_as_getter(context)
+            end
+            result_var = Ruby::Variable.new(:name => "#{name}_result")
+
+            Ruby::Expressions.new(
+              :expressions => [
+                *setters,
+                Ruby::Assignment.new(:lhs => result_var, :rhs => call),
+                *getters,
+                result_var
+              ]
+            )
+          else
+            call
           end
         end
       end
@@ -472,6 +530,10 @@ module Y2R
       class Entry < Node
         def compile(context)
           ruby_var(qualified_name(ns, name), context)
+        end
+
+        def compile_as_ref(context)
+          Ruby::Variable.new(:name => "#{name}_ref")
         end
       end
 
@@ -1123,7 +1185,33 @@ module Y2R
 
       class YEReference < Node
         def compile(context)
-          child.compile(context)
+          child.compile_as_ref(context)
+        end
+
+        def compile_as_setter(context)
+          Ruby::Assignment.new(
+            :lhs => compile(context),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "arg_ref",
+              :args     => [child.compile(context)],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+        end
+
+        def compile_as_getter(context)
+          Ruby::Assignment.new(
+            :lhs => child.compile(context),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => compile(context),
+              :name     => "value",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          )
         end
       end
 
