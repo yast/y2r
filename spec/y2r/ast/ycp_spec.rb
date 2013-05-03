@@ -827,7 +827,8 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -846,13 +847,15 @@ module Y2R::AST
             :category => "function",
             :ns       => "M",
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
           ycp_node_n = YCP::Call.new(
             :category => "function",
             :ns       => "N",
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
 
           ruby_node_m = Ruby::MethodCall.new(
@@ -879,7 +882,8 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -898,7 +902,8 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+            :type     => YCP::Type.new("void (integer, integer, integer)")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -929,25 +934,29 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
           @ycp_node_capital    = YCP::Call.new(
             :category => "function",
             :ns       => nil,
             :name     => "F",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
           @ycp_node_underscore = YCP::Call.new(
             :category => "function",
             :ns       => nil,
             :name     => "_f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
           @ycp_node_reserved   = YCP::Call.new(
             :category => "function",
             :ns       => nil,
             :name     => "end",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
         end
 
@@ -992,7 +1001,8 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -1011,7 +1021,8 @@ module Y2R::AST
             :category => "function",
             :ns       => nil,
             :name     => "f",
-            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+            :type     => YCP::Type.new("void (integer, integer, integer)")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -1062,25 +1073,29 @@ module Y2R::AST
               :category => "variable",
               :ns       => nil,
               :name     => "a",
-              :args     => []
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
             )
             @ycp_node_capital    = YCP::Call.new(
               :category => "variable",
               :ns       => nil,
               :name     => "A",
-              :args     => []
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
             )
             @ycp_node_underscore = YCP::Call.new(
               :category => "variable",
               :ns       => nil,
               :name     => "_a",
-              :args     => []
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
             )
             @ycp_node_reserved   = YCP::Call.new(
               :category => "variable",
               :ns       => nil,
               :name     => "end",
-              :args     => []
+              :args     => [],
+              :type     => YCP::Type.new("void ()")
             )
           end
 
@@ -1162,7 +1177,8 @@ module Y2R::AST
             :category => "variable",
             :ns       => nil,
             :name     => "f",
-            :args     => []
+            :args     => [],
+            :type     => YCP::Type.new("void ()")
           )
 
           ruby_node = Ruby::MethodCall.new(
@@ -1181,7 +1197,8 @@ module Y2R::AST
             :category => "variable",
             :ns       => nil,
             :name     => "f",
-            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
+            :type     => YCP::Type.new("void (integer, integer, integer)")
           )
 
           ruby_node = Ruby::MethodCall.new(
