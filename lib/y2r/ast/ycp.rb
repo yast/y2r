@@ -43,6 +43,11 @@ module Y2R
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
           @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
         end
+
+        def symbol_for(name)
+          symbols = @blocks.map { |b| b.symbols }.flatten
+          symbols.reverse.find { |s| s.name == name }
+        end
       end
 
       # Represents a YCP type.
@@ -195,7 +200,7 @@ module Y2R
         # Note that Y2R currently supports only local variables (translated as
         # Ruby local variables) and module-level variables (translated as Ruby
         # instance variables).
-        def ruby_var(name, context)
+        def ruby_var(name, context, mode)
           if name =~ /^([^:]+)::([^:]+)$/
             if $1 == context.module_name
               Ruby::Variable.new(:name => "@#$2")
@@ -235,7 +240,31 @@ module Y2R
               "@#{suffixed_name}"
             end
 
-            Ruby::Variable.new(:name => variable_name)
+            variable = Ruby::Variable.new(:name => variable_name)
+
+            case mode
+              when :in_code
+                symbol = context.symbol_for(name)
+                # The "symbol &&" part is needed only because of tests. The symbol
+                # should be always present in real-world situations.
+                if symbol && symbol.category == :reference
+                  Ruby::MethodCall.new(
+                    :receiver => variable,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                else
+                  variable
+                end
+
+              when :in_arg
+                variable
+
+              else
+                raise "Unknown mode: #{mode.inspect}."
+            end
           end
         end
       end
@@ -255,7 +284,7 @@ module Y2R
       class Assign < Node
         def compile(context)
           Ruby::Assignment.new(
-            :lhs => ruby_var(name, context),
+            :lhs => ruby_var(name, context, :in_code),
             :rhs => child.compile(context)
           )
         end
@@ -329,7 +358,7 @@ module Y2R
             when "function"
               if context.locals.include?(name)
                 Ruby::MethodCall.new(
-                  :receiver => ruby_var(name, context),
+                  :receiver => ruby_var(name, context, :in_code),
                   :name     => "call",
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
@@ -360,7 +389,11 @@ module Y2R
               end
             when "variable" # function reference stored in variable
               Ruby::MethodCall.new(
-                :receiver => ruby_var(qualified_name(ns, name), context),
+                :receiver => ruby_var(
+                  qualified_name(ns, name),
+                  context,
+                  :in_code
+                ),
                 :name     => "call",
                 :args     => args.map { |a| a.compile(context) },
                 :block    => nil,
@@ -509,6 +542,10 @@ module Y2R
       end
 
       class Do < Node
+        def symbols
+          []
+        end
+
         def variables
           []
         end
@@ -529,7 +566,7 @@ module Y2R
 
       class Entry < Node
         def compile(context)
-          ruby_var(qualified_name(ns, name), context)
+          ruby_var(qualified_name(ns, name), context, :in_code)
         end
 
         def compile_as_ref(context)
@@ -638,7 +675,7 @@ module Y2R
               )
             else
               Ruby::Assignment.new(
-                :lhs => ruby_var(name, context),
+                :lhs => ruby_var(name, context, :in_code),
                 :rhs => Ruby::MethodCall.new(
                   :receiver => nil,
                   :name     => "lambda",
@@ -820,6 +857,10 @@ module Y2R
       end
 
       class Repeat < Node
+        def symbols
+          []
+        end
+
         def variables
           []
         end
@@ -882,16 +923,16 @@ module Y2R
         end
 
         def compile(context)
-          ruby_var(name, context)
+          ruby_var(name, context, :in_arg)
         end
 
         def compile_as_copy_arg_call(context)
           Ruby::Assignment.new(
-            :lhs => ruby_var(name, context),
+            :lhs => ruby_var(name, context, :in_code),
             :rhs => Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "copy_arg",
-              :args     => [ruby_var(name, context)],
+              :args     => [ruby_var(name, context, :in_code)],
               :block    => nil,
               :parens   => true
             )
@@ -991,10 +1032,10 @@ module Y2R
         def compile(context)
           case category
             when "variable", "reference"
-              ruby_var(name, context)
+              ruby_var(name, context, :in_code)
             when "function"
               getter = if context.locals.include?(name)
-                ruby_var(name, context)
+                ruby_var(name, context, :in_code)
               else
                 parts = name.split("::")
                 ns = parts.size > 1 ? parts.first : nil
@@ -1034,6 +1075,10 @@ module Y2R
       end
 
       class While < Node
+        def symbols
+          []
+        end
+
         def variables
           []
         end
