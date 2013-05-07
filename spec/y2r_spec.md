@@ -1666,6 +1666,10 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
   global integer g() {
     return 43;
   }
+
+  void M() {
+    y2milestone("M1");
+  }
 }
 ```
 
@@ -1683,6 +1687,7 @@ module YCP
       YCP.import("String")
       @i = 42
       @j = 43
+      M()
     end
     def f
       return 42
@@ -1690,6 +1695,10 @@ module YCP
     end
     def g
       return 43
+      nil
+    end
+    def M
+      Builtins.y2milestone("M1")
       nil
     end
     publish({ :variable => :j, :type => "integer" })

@@ -2507,6 +2507,52 @@ module Y2R::AST
         ycp_node.compile(@context_empty).should == ruby_node
       end
 
+      it "returns correct AST node for blocks with a constructor" do
+        ycp_node = YCP::ModuleBlock.new(
+          :name       => "M",
+          :symbols    => [],
+          :statements => [
+            YCP::FunDef.new(
+              :name  => "M",
+              :args  => [],
+              :block => @ycp_def_block_no_args
+            )
+          ]
+        )
+
+        ruby_node = ruby_module_statements([
+          Ruby::Def.new(
+            :name       => "initialize",
+            :args       => [],
+            :statements => Ruby::Statements.new(
+              :statements => [
+                Ruby::MethodCall.new(
+                  :receiver => nil,
+                  :name     => "M",
+                  :args     => [],
+                  :block    => nil,
+                  :parens   => true
+                )
+              ]
+            )
+          ),
+          Ruby::Def.new(
+            :name       => "M",
+            :args       => [],
+            :statements => Ruby::Statements.new(
+              :statements => [
+                @ruby_assignment_i_42,
+                @ruby_assignment_j_43,
+                @ruby_assignment_k_44,
+                @ruby_literal_nil
+              ]
+            )
+          )
+        ])
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
       it "uppercases the first letter of the module name" do
         ycp_node = YCP::ModuleBlock.new(
           :name       => "m.ycp",

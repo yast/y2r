@@ -775,6 +775,7 @@ module Y2R
             sub(/\.ycp$/, "")
           textdomains = statements.select { |s| s.is_a?(Textdomain) }
           fundefs = statements.select { |s| s.is_a?(FunDef) }
+          constructor = fundefs.find { |f| f.name == real_name }
           other_statements = statements - textdomains - fundefs
 
           class_statements = [
@@ -797,12 +798,23 @@ module Y2R
           inside_block self, context do |inner_context|
             class_statements += textdomains.map { |t| t.compile(inner_context) }
 
-            unless other_statements.empty?
+            unless other_statements.empty? && !constructor
+              initialize_statements = other_statements.map { |s| s.compile(inner_context) }
+              if constructor
+                initialize_statements << Ruby::MethodCall.new(
+                  :receiver => nil,
+                  :name     => real_name,
+                  :args     => [],
+                  :block    => nil,
+                  :parens   => true
+                )
+              end
+
               class_statements << Ruby::Def.new(
                 :name       => "initialize",
                 :args       => [],
                 :statements => Ruby::Statements.new(
-                  :statements => other_statements.map { |s| s.compile(inner_context) }
+                  :statements => initialize_statements
                 )
               )
             end
