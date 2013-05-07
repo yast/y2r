@@ -336,6 +336,8 @@ module Y2R
               "Builtins::Float"
             when /^list::/
               "Builtins::List"
+            when /^multiset::/
+              "Builtins::Multiset"
             else
               "Builtins"
           end

@@ -516,6 +516,7 @@ builtins in Ruby.
 
   float f = float::abs(-42.0);
   list  l = list::reverse([42, 43, 44]);
+  list  s = multiset::union([42, 43, 44], [45, 46, 47]);
 }
 ```
 
@@ -535,6 +536,7 @@ module YCP
         WFM.Args
         @f = Builtins::Float.abs(-42.0)
         @l = Builtins::List.reverse([42, 43, 44])
+        @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
       end
     end
   end

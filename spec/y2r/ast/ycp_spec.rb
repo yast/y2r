@@ -812,23 +812,26 @@ module Y2R::AST
       end
 
       it "returns correct AST node for namespaced builtins" do
-        ycp_node_scr   = ycp_builtin("SCR::b")
-        ycp_node_wfm   = ycp_builtin("WFM::b")
-        ycp_node_float = ycp_builtin("float::b")
-        ycp_node_list  = ycp_builtin("list::b")
-        ycp_node_none  = ycp_builtin("b")
+        ycp_node_scr      = ycp_builtin("SCR::b")
+        ycp_node_wfm      = ycp_builtin("WFM::b")
+        ycp_node_float    = ycp_builtin("float::b")
+        ycp_node_list     = ycp_builtin("list::b")
+        ycp_node_multiset = ycp_builtin("multiset::b")
+        ycp_node_none     = ycp_builtin("b")
 
-        ruby_node_scr   = ruby_builtin_call("SCR", "b")
-        ruby_node_wfm   = ruby_builtin_call("WFM", "b")
-        ruby_node_float = ruby_builtin_call("Builtins::Float", "b")
-        ruby_node_list  = ruby_builtin_call("Builtins::List", "b")
-        ruby_node_none  = ruby_builtin_call("Builtins", "b")
+        ruby_node_scr      = ruby_builtin_call("SCR", "b")
+        ruby_node_wfm      = ruby_builtin_call("WFM", "b")
+        ruby_node_float    = ruby_builtin_call("Builtins::Float", "b")
+        ruby_node_list     = ruby_builtin_call("Builtins::List", "b")
+        ruby_node_multiset = ruby_builtin_call("Builtins::Multiset", "b")
+        ruby_node_none     = ruby_builtin_call("Builtins", "b")
 
-        ycp_node_scr.compile(@context_empty).should   == ruby_node_scr
-        ycp_node_wfm.compile(@context_empty).should   == ruby_node_wfm
-        ycp_node_float.compile(@context_empty).should == ruby_node_float
-        ycp_node_list.compile(@context_empty).should  == ruby_node_list
-        ycp_node_none.compile(@context_empty).should  == ruby_node_none
+        ycp_node_scr.compile(@context_empty).should      == ruby_node_scr
+        ycp_node_wfm.compile(@context_empty).should      == ruby_node_wfm
+        ycp_node_float.compile(@context_empty).should    == ruby_node_float
+        ycp_node_list.compile(@context_empty).should     == ruby_node_list
+        ycp_node_multiset.compile(@context_empty).should == ruby_node_multiset
+        ycp_node_none.compile(@context_empty).should     == ruby_node_none
       end
     end
   end
