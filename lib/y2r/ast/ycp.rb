@@ -414,7 +414,9 @@ module Y2R
             getters = reference_args_with_types.map do |arg, type|
               arg.compile_as_getter(context)
             end
-            result_var = Ruby::Variable.new(:name => "#{name}_result")
+            result_var = Ruby::Variable.new(
+              :name => escape_ruby_local_var_name("#{name}_result")
+            )
 
             Ruby::Expressions.new(
               :expressions => [
