@@ -112,7 +112,8 @@ module Y2R
         SYMBOL  = Type.new("symbol")
       end
 
-      class Node < OpenStruct
+      # Contains utility functions related to Ruby variables.
+      module RubyVar
         # Taken from Ruby's parse.y (for 1.9.3).
         RUBY_KEYWORDS = [
           "BEGIN",
@@ -158,6 +159,94 @@ module Y2R
           "yield"
         ]
 
+        class << self
+          # Escapes a YCP variable name so that it is a valid Ruby local
+          # variable name.
+          #
+          # The escaping is constructed so that it can't create any collision
+          # between names. More precisely, for any distinct strings passed to
+          # this function the results will be also distinct.
+          def escape_local(name)
+            name.sub(/^(#{RUBY_KEYWORDS.join("|")}|[A-Z_].*)$/) { |s| "_#{s}" }
+          end
+
+          # Builds a Ruby AST node for a variable with given name in given
+          # context, doing all necessary escaping, de-aliasing, etc.
+          def for(name, context, mode)
+            # In the XML, all global module variable references are qualified
+            # (e.g. "M::i"). This includes references to variables defined in
+            # this module. All other variable references are unqualified (e.g
+            # "i").
+            if name =~ /^([^:]+)::([^:]+)$/
+              if $1 == context.module_name
+                Ruby::Variable.new(:name => "@#$2")
+              else
+                Ruby::MethodCall.new(
+                  :receiver => Ruby::Variable.new(:name => $1),
+                  :name     => $2,
+                  :args     => [],
+                  :block    => nil,
+                  :parens   => true
+                )
+              end
+            else
+              is_local = context.locals.include?(name)
+              variables = if is_local
+                context.locals
+              else
+                context.globals
+              end
+
+              # If there already is a variable with given name (coming from some
+              # parent scope), suffix the variable name with "2". If there are two
+              # such variables, suffix the name with "3". And so on.
+              #
+              # The loop is needed because we need to do the same check and maybe
+              # additional round(s) of suffixing also for suffixed variable names to
+              # prevent conflicts.
+              suffixed_name = name
+              begin
+                count = variables.select { |v| v == suffixed_name }.size
+                suffixed_name = suffixed_name + count.to_s if count > 1
+              end while count > 1
+
+              variable_name = if is_local
+                RubyVar.escape_local(suffixed_name)
+              else
+                "@#{suffixed_name}"
+              end
+
+              variable = Ruby::Variable.new(:name => variable_name)
+
+              case mode
+                when :in_code
+                  symbol = context.symbol_for(name)
+                  # The "symbol &&" part is needed only because of tests. The symbol
+                  # should be always present in real-world situations.
+                  if symbol && symbol.category == :reference
+                    Ruby::MethodCall.new(
+                      :receiver => variable,
+                      :name     => "value",
+                      :args     => [],
+                      :block    => nil,
+                      :parens   => true
+                    )
+                  else
+                    variable
+                  end
+
+                when :in_arg
+                  variable
+
+                else
+                  raise "Unknown mode: #{mode.inspect}."
+              end
+            end
+          end
+        end
+      end
+
+      class Node < OpenStruct
         def inside_block(block, context)
           inner_context = context.dup
           inner_context.blocks = inner_context.blocks + [block]
@@ -182,91 +271,6 @@ module Y2R
         def qualified_name(ns, name)
           (ns ? "#{ns}::" : "") + name
         end
-
-        # Escapes valid YCP variable names that are not valid Ruby local variable
-        # names.
-        def escape_ruby_local_var_name(name)
-          name.sub(/^(#{RUBY_KEYWORDS.join("|")}|[A-Z_].*)$/) { |s| "_#{s}" }
-        end
-
-        # Builds a Ruby AST node for a variable with given name, doing all
-        # necessary esaping, de-aliasing, etc.
-        #
-        # The biggest issue is that in the XML, all global module variable
-        # references are qualified (e.g. "M::i"). This includes references to
-        # variables defined in this module. All other variable references are
-        # unqualified (e.g "i").
-        #
-        # Note that Y2R currently supports only local variables (translated as
-        # Ruby local variables) and module-level variables (translated as Ruby
-        # instance variables).
-        def ruby_var(name, context, mode)
-          if name =~ /^([^:]+)::([^:]+)$/
-            if $1 == context.module_name
-              Ruby::Variable.new(:name => "@#$2")
-            else
-              Ruby::MethodCall.new(
-                :receiver => Ruby::Variable.new(:name => $1),
-                :name     => $2,
-                :args     => [],
-                :block    => nil,
-                :parens   => true
-              )
-            end
-          else
-            is_local = context.locals.include?(name)
-            variables = if is_local
-              context.locals
-            else
-              context.globals
-            end
-
-            # If there already is a variable with given name (coming from some
-            # parent scope), suffix the variable name with "2". If there are two
-            # such variables, suffix the name with "3". And so on.
-            #
-            # The loop is needed because we need to do the same check and maybe
-            # additional round(s) of suffixing also for suffixed variable names to
-            # prevent conflicts.
-            suffixed_name = name
-            begin
-              count = variables.select { |v| v == suffixed_name }.size
-              suffixed_name = suffixed_name + count.to_s if count > 1
-            end while count > 1
-
-            variable_name = if is_local
-              escape_ruby_local_var_name(suffixed_name)
-            else
-              "@#{suffixed_name}"
-            end
-
-            variable = Ruby::Variable.new(:name => variable_name)
-
-            case mode
-              when :in_code
-                symbol = context.symbol_for(name)
-                # The "symbol &&" part is needed only because of tests. The symbol
-                # should be always present in real-world situations.
-                if symbol && symbol.category == :reference
-                  Ruby::MethodCall.new(
-                    :receiver => variable,
-                    :name     => "value",
-                    :args     => [],
-                    :block    => nil,
-                    :parens   => true
-                  )
-                else
-                  variable
-                end
-
-              when :in_arg
-                variable
-
-              else
-                raise "Unknown mode: #{mode.inspect}."
-            end
-          end
-        end
       end
 
       class Block < Node
@@ -284,7 +288,7 @@ module Y2R
       class Assign < Node
         def compile(context)
           Ruby::Assignment.new(
-            :lhs => ruby_var(name, context, :in_code),
+            :lhs => RubyVar.for(name, context, :in_code),
             :rhs => child.compile(context)
           )
         end
@@ -360,7 +364,7 @@ module Y2R
             when :function
               if context.locals.include?(name)
                 Ruby::MethodCall.new(
-                  :receiver => ruby_var(name, context, :in_code),
+                  :receiver => RubyVar.for(name, context, :in_code),
                   :name     => "call",
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
@@ -391,7 +395,7 @@ module Y2R
               end
             when :variable # function reference stored in variable
               Ruby::MethodCall.new(
-                :receiver => ruby_var(
+                :receiver => RubyVar.for(
                   qualified_name(ns, name),
                   context,
                   :in_code
@@ -417,7 +421,7 @@ module Y2R
               arg.compile_as_getter(context)
             end
             result_var = Ruby::Variable.new(
-              :name => escape_ruby_local_var_name("#{name}_result")
+              :name => RubyVar.escape_local("#{name}_result")
             )
 
             Ruby::Expressions.new(
@@ -570,7 +574,7 @@ module Y2R
 
       class Entry < Node
         def compile(context)
-          ruby_var(qualified_name(ns, name), context, :in_code)
+          RubyVar.for(qualified_name(ns, name), context, :in_code)
         end
 
         def compile_as_ref(context)
@@ -682,7 +686,7 @@ module Y2R
               )
             else
               Ruby::Assignment.new(
-                :lhs => ruby_var(name, context, :in_code),
+                :lhs => RubyVar.for(name, context, :in_code),
                 :rhs => Ruby::MethodCall.new(
                   :receiver => nil,
                   :name     => "lambda",
@@ -943,16 +947,16 @@ module Y2R
         end
 
         def compile(context)
-          ruby_var(name, context, :in_arg)
+          RubyVar.for(name, context, :in_arg)
         end
 
         def compile_as_copy_arg_call(context)
           Ruby::Assignment.new(
-            :lhs => ruby_var(name, context, :in_code),
+            :lhs => RubyVar.for(name, context, :in_code),
             :rhs => Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "copy_arg",
-              :args     => [ruby_var(name, context, :in_code)],
+              :args     => [RubyVar.for(name, context, :in_code)],
               :block    => nil,
               :parens   => true
             )
@@ -1052,10 +1056,10 @@ module Y2R
         def compile(context)
           case category
             when :variable, :reference
-              ruby_var(name, context, :in_code)
+              RubyVar.for(name, context, :in_code)
             when :function
               getter = if context.locals.include?(name)
-                ruby_var(name, context, :in_code)
+                RubyVar.for(name, context, :in_code)
               else
                 parts = name.split("::")
                 ns = parts.size > 1 ? parts.first : nil
