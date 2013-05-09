@@ -842,7 +842,7 @@ module Y2R::AST
         describe "of toplevel functions" do
           it "returns correct AST node for unqualified calls" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [],
@@ -862,14 +862,14 @@ module Y2R::AST
 
           it "returns correct AST node for qualified calls" do
             ycp_node_m = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => "M",
               :name     => "f",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             ycp_node_n = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => "N",
               :name     => "f",
               :args     => [],
@@ -897,7 +897,7 @@ module Y2R::AST
 
           it "returns correct AST node for calls without arguments" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [],
@@ -917,7 +917,7 @@ module Y2R::AST
 
           it "returns correct AST node for calls with arguments" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
@@ -949,28 +949,28 @@ module Y2R::AST
 
           before :each do
             @ycp_node_regular    = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_capital    = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "F",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_underscore = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "_f",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_reserved   = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "end",
               :args     => [],
@@ -1016,7 +1016,7 @@ module Y2R::AST
 
           it "returns correct AST node for calls without arguments" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [],
@@ -1036,7 +1036,7 @@ module Y2R::AST
 
           it "returns correct AST node for calls with arguments" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
@@ -1058,7 +1058,7 @@ module Y2R::AST
         describe "with reference arguments" do
           it "returns correct AST node" do
             ycp_node = YCP::Call.new(
-              :category => "function",
+              :category => :function,
               :ns       => nil,
               :name     => "f",
               :args     => [
@@ -1186,28 +1186,28 @@ module Y2R::AST
 
           before :each do
             @ycp_node_regular    = YCP::Call.new(
-              :category => "variable",
+              :category => :variable,
               :ns       => nil,
               :name     => "a",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_capital    = YCP::Call.new(
-              :category => "variable",
+              :category => :variable,
               :ns       => nil,
               :name     => "A",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_underscore = YCP::Call.new(
-              :category => "variable",
+              :category => :variable,
               :ns       => nil,
               :name     => "_a",
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
             @ycp_node_reserved   = YCP::Call.new(
-              :category => "variable",
+              :category => :variable,
               :ns       => nil,
               :name     => "end",
               :args     => [],
@@ -1290,7 +1290,7 @@ module Y2R::AST
 
         it "returns correct AST node for calls without arguments" do
           ycp_node = YCP::Call.new(
-            :category => "variable",
+            :category => :variable,
             :ns       => nil,
             :name     => "f",
             :args     => [],
@@ -1310,7 +1310,7 @@ module Y2R::AST
 
         it "returns correct AST node for calls with arguments" do
           ycp_node = YCP::Call.new(
-            :category => "variable",
+            :category => :variable,
             :ns       => nil,
             :name     => "f",
             :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],

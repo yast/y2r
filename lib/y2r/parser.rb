@@ -142,7 +142,7 @@ module Y2R
           AST::YCP::Call.new(
             :ns       => element["ns"],
             :name     => element["name"],
-            :category => element["category"],
+            :category => element["category"].to_sym,
             :args     => extract_collection(element, "args", context),
             :type     => AST::YCP::Type.new(element["type"])
           )

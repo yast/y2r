@@ -357,7 +357,7 @@ module Y2R
       class Call < Node
         def compile(context)
           call = case category
-            when "function"
+            when :function
               if context.locals.include?(name)
                 Ruby::MethodCall.new(
                   :receiver => ruby_var(name, context, :in_code),
@@ -389,7 +389,7 @@ module Y2R
                   :parens   => true
                 )
               end
-            when "variable" # function reference stored in variable
+            when :variable # function reference stored in variable
               Ruby::MethodCall.new(
                 :receiver => ruby_var(
                   qualified_name(ns, name),
