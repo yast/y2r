@@ -1051,9 +1051,9 @@ module Y2R
       class Variable < Node
         def compile(context)
           case category
-            when "variable", "reference"
+            when :variable, :reference
               ruby_var(name, context, :in_code)
-            when "function"
+            when :function
               getter = if context.locals.include?(name)
                 ruby_var(name, context, :in_code)
               else

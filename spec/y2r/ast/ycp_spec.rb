@@ -612,7 +612,7 @@ module Y2R::AST
     describe "#compile" do
       it "returns correct AST node" do
         ycp_node = YCP::Bracket.new(
-          :entry => YCP::Variable.new(:category => "variable", :name => "l"),
+          :entry => YCP::Variable.new(:category => :variable, :name => "l"),
           :arg   => YCP::List.new(:children => [@ycp_const_1]),
           :rhs   => @ycp_const_0
         )
@@ -3208,11 +3208,11 @@ module Y2R::AST
         describe "that are qualified" do
           it "returns correct AST node" do
             ycp_node_m = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "M::a"
             )
             ycp_node_n = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "N::a"
             )
 
@@ -3237,19 +3237,19 @@ module Y2R::AST
 
           before :each do
             @ycp_node_regular    = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "a"
             )
             @ycp_node_capital    = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "A"
             )
             @ycp_node_underscore = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "_a"
             )
             @ycp_node_reserved   = YCP::Variable.new(
-              :category => "variable",
+              :category => :variable,
               :name     => "end"
             )
           end
@@ -3332,11 +3332,11 @@ module Y2R::AST
         describe "that are qualified" do
           it "returns correct AST node" do
             ycp_node_m = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "M::a"
             )
             ycp_node_n = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "N::a"
             )
 
@@ -3361,19 +3361,19 @@ module Y2R::AST
 
           before :each do
             @ycp_node_regular    = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "a"
             )
             @ycp_node_capital    = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "A"
             )
             @ycp_node_underscore = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "_a"
             )
             @ycp_node_reserved   = YCP::Variable.new(
-              :category => "reference",
+              :category => :reference,
               :name     => "end"
             )
           end
@@ -3455,7 +3455,7 @@ module Y2R::AST
       describe "for calls to toplevel functions with category == \"function\"" do
         it "returns correct AST node for unqualified variables" do
           ycp_node = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "a",
             :type     => YCP::Type.new("integer ()")
           )
@@ -3482,12 +3482,12 @@ module Y2R::AST
 
         it "returns correct AST node for qualified variables" do
           ycp_node_m = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "M::a",
             :type     => YCP::Type.new("integer ()")
           )
           ycp_node_n = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "N::a",
             :type     => YCP::Type.new("integer ()")
           )
@@ -3546,22 +3546,22 @@ module Y2R::AST
 
         before :each do
           @ycp_node_regular    = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "a",
             :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_capital    = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "A",
             :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_underscore = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "_a",
             :type     => YCP::Type.new("integer ()")
           )
           @ycp_node_reserved   = YCP::Variable.new(
-            :category => "function",
+            :category => :function,
             :name     => "end",
             :type     => YCP::Type.new("integer ()")
           )
