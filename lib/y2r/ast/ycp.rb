@@ -772,12 +772,13 @@ module Y2R
 
       class ModuleBlock < Block
         def compile(context)
-          real_name = name.
-            sub(/^./) { |s| s.upcase }.
-            sub(/\.ycp$/, "")
+         if name !~ /^[A-Z][a-zA-Z0-9_]*$/
+           raise NotImplementedError,
+                 "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
+         end
           textdomains = statements.select { |s| s.is_a?(Textdomain) }
           fundefs = statements.select { |s| s.is_a?(FunDef) }
-          constructor = fundefs.find { |f| f.name == real_name }
+          constructor = fundefs.find { |f| f.name == name }
           other_statements = statements - textdomains - fundefs
 
           class_statements = [
@@ -805,7 +806,7 @@ module Y2R
               if constructor
                 initialize_statements << Ruby::MethodCall.new(
                   :receiver => nil,
-                  :name     => real_name,
+                  :name     => name,
                   :args     => [],
                   :block    => nil,
                   :parens   => true
@@ -848,15 +849,15 @@ module Y2R
                   :statements => Ruby::Statements.new(
                     :statements => [
                       Ruby::Class.new(
-                        :name       => "#{real_name}Class",
+                        :name       => "#{name}Class",
                         :statements => Ruby::Statements.new(
                           :statements => class_statements
                         )
                       ),
                       Ruby::Assignment.new(
-                        :lhs => Ruby::Variable.new(:name => real_name),
+                        :lhs => Ruby::Variable.new(:name => name),
                         :rhs => Ruby::MethodCall.new(
-                          :receiver => Ruby::Variable.new(:name => "#{real_name}Class"),
+                          :receiver => Ruby::Variable.new(:name => "#{name}Class"),
                           :name     => "new",
                           :args     => [],
                           :block    => nil,

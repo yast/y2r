@@ -2556,28 +2556,16 @@ module Y2R::AST
         ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "uppercases the first letter of the module name" do
+      it "raises an exception for blocks whose name isn't a Ruby class name" do
         ycp_node = YCP::ModuleBlock.new(
-          :name       => "m.ycp",
+          :name       => "m",
           :symbols    => [],
           :statements => []
         )
 
-        ruby_node = ruby_module_statements([])
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
-      it "strips the \".ycp\" extension from module name" do
-        ycp_node = YCP::ModuleBlock.new(
-          :name       => "M.ycp",
-          :symbols    => [],
-          :statements => []
-        )
-
-        ruby_node = ruby_module_statements([])
-
-        ycp_node.compile(@context_empty).should == ruby_node
+        lambda {
+          ycp_node.compile(@context_empty)
+        }.should raise_error NotImplementedError, "Invalid module name: \"m\". Module names that are not Ruby class names are not supported."
       end
 
       describe "in context with export_private == false" do
