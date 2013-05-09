@@ -603,11 +603,14 @@ module Y2R
             class_statements += textdomains.map { |t| t.compile(inner_context) }
 
             unless other_statements.empty?
+              main_statements = other_statements.map { |s| s.compile(inner_context) }
+              main_statements << Ruby::Literal.new(:value => nil)
+
               class_statements << Ruby::Def.new(
                 :name       => "main",
                 :args       => [],
                 :statements => Ruby::Statements.new(
-                  :statements => other_statements.map { |s| s.compile(inner_context) }
+                  :statements => main_statements
                 )
               )
             end

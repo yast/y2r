@@ -1819,7 +1819,14 @@ module Y2R::AST
           Ruby::Def.new(
             :name       => "main",
             :args       => [],
-            :statements => @ruby_statements_non_empty
+            :statements => Ruby::Statements.new(
+              :statements => [
+                @ruby_assignment_i_42,
+                @ruby_assignment_j_43,
+                @ruby_assignment_k_44,
+                @ruby_literal_nil
+              ]
+            )
           )
         ])
 

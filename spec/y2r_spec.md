@@ -289,6 +289,7 @@ module YCP
       include YCP
       def main
         @fref = fun_ref(method(:f), "void ()")
+        nil
       end
       def f
         return
@@ -363,6 +364,7 @@ module YCP
       def main
         @i = 42
         @j = @i
+        nil
       end
     end
   end
@@ -537,6 +539,7 @@ module YCP
         @f = Builtins::Float.abs(-42.0)
         @l = Builtins::List.reverse([42, 43, 44])
         @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
+        nil
       end
     end
   end
@@ -605,6 +608,7 @@ module YCP
       textdomain "helloworld"
       def main
         @s = _("Hello, world!")
+        nil
       end
     end
   end
@@ -657,6 +661,7 @@ module YCP
         @c = "c"
         f2(@a, @b, @c)
         (a_ref = arg_ref(@a); b_ref = arg_ref(@b); c_ref = arg_ref(@c); f3_result = f3(a_ref, b_ref, c_ref); @a = a_ref.value; @b = b_ref.value; @c = c_ref.value; f3_result)
+        nil
       end
       def f1
         return 42
@@ -778,6 +783,7 @@ module YCP
       def main
         @fref = fun_ref(method(:f), "void ()")
         @fref.call
+        nil
       end
       def f
         return
@@ -1381,6 +1387,7 @@ module YCP
         Builtins.y2milestone("M1")
         Builtins.y2milestone("M2")
         Builtins.y2milestone("M3")
+        nil
       end
     end
   end
@@ -1631,6 +1638,7 @@ module YCP
         YCP.import("String")
         @i = 42
         @j = 43
+        nil
       end
       def f
         return 42
