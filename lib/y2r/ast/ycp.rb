@@ -362,7 +362,7 @@ module Y2R
         def compile(context)
           call = case category
             when :function
-              if context.locals.include?(name)
+              if !ns && context.locals.include?(name)
                 Ruby::MethodCall.new(
                   :receiver => RubyVar.for(name, context, :in_code),
                   :name     => "call",
@@ -1058,13 +1058,13 @@ module Y2R
             when :variable, :reference
               RubyVar.for(name, context, :in_code)
             when :function
-              getter = if context.locals.include?(name)
+              parts = name.split("::")
+              ns = parts.size > 1 ? parts.first : nil
+              variable_name = parts.last
+
+              getter = if !ns && context.locals.include?(name)
                 RubyVar.for(name, context, :in_code)
               else
-                parts = name.split("::")
-                ns = parts.size > 1 ? parts.first : nil
-                variable_name = parts.last
-
                 # In the XML, all global module function references are
                 # qualified (e.g. "M::i"). This includes references to functions
                 # defined in this module. The problem is that in generated Ruby
