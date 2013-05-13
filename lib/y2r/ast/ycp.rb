@@ -657,7 +657,8 @@ module Y2R
                   :parens   => true
                 )
               ]
-            )
+            ),
+            :comment    => comment
           )
         end
       end
@@ -875,7 +876,8 @@ module Y2R
                   )
                 )
               ]
-            )
+            ),
+            :comment    => comment
           )
         end
       end

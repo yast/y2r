@@ -59,6 +59,19 @@ module Y2R::AST::Ruby
           "c = 44"
         ].join("\n")
       end
+
+      it "emits correct code with a comment" do
+        node = Program.new(:statements => @statements, :comment => "comment")
+
+        node.to_ruby.should == [
+          "# encoding: utf-8",
+          "# comment",
+          "",
+          "a = 42",
+          "b = 43",
+          "c = 44"
+        ].join("\n")
+      end
     end
   end
 

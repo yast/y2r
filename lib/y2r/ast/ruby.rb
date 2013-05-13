@@ -34,6 +34,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "# encoding: utf-8"
+            parts << "# #{comment}" if comment
             parts << ""
             parts << statements.to_ruby
           end

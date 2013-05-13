@@ -55,13 +55,17 @@ module Y2R
             raise SyntaxError.new(e.stderr)
           end
 
-          File.read(xml_file.path)
+          xml = File.read(xml_file.path)
         ensure
           xml_file.unlink
         end
       ensure
         ycp_file.unlink
       end
+
+      # Short-term hack to make the YaST testsuite run. This will be done in
+      # ycpc in a more generic way later.
+      add_testedfiles(ycp, xml)
     end
 
     def xml_to_ast(xml, options)
@@ -92,7 +96,8 @@ module Y2R
           }[element["kind"].to_sym].new(
             :name       => element["name"],
             :symbols    => extract_collection(element, "symbols", context),
-            :statements => extract_collection(element, "statements", context)
+            :statements => extract_collection(element, "statements", context),
+            :comment    => element["comment"]
           )
 
         when "bracket"
@@ -462,6 +467,14 @@ module Y2R
           :symbols    => [],
           :statements => statements
         )
+      end
+    end
+
+    def add_testedfiles(ycp, xml)
+      if ycp =~ /testedfiles: .*$/
+        xml.sub("<block", "<block comment=\"#$&\"")
+      else
+        xml
       end
     end
   end
