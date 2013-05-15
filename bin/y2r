@@ -15,6 +15,7 @@ Options:
   -I, --include-path <path>  Path where to find included files.
   -M, --module-path <path>   Path where to find modules.
       --export-private       Export also private symbols from translated modules.
+      --as-include-file      Compile as include file.
   -v, --version              Print version information and exit.
   -h, --help                 Print help and exit.
 EOT
@@ -47,10 +48,11 @@ begin
   end
 
   compile_options = {
-    :module_paths   => module_paths,
-    :include_paths  => include_paths,
-    :export_private => options["--export-private"],
-    :filename       => ycp_file
+    :module_paths    => module_paths,
+    :include_paths   => include_paths,
+    :export_private  => options["--export-private"],
+    :as_include_file => options["--as-include-file"],
+    :filename        => ycp_file
   }
 
   output_stream.write(Y2R.compile(input_stream.read, compile_options))

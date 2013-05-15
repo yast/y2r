@@ -17,8 +17,9 @@ module Y2R
         attr_accessor :blocks, :export_private
 
         def initialize(attrs = {})
-          @blocks         = attrs[:blocks] || []
-          @export_private = attrs[:export_private] || false
+          @blocks          = attrs[:blocks] || []
+          @export_private  = attrs[:export_private] || false
+          @as_include_file = attrs[:as_include_file] || false
         end
 
         def in?(klass)
@@ -31,8 +32,9 @@ module Y2R
 
         def inside(block)
           yield Context.new(
-            :blocks         => @blocks + [block],
-            :export_private => @export_private
+            :blocks          => @blocks + [block],
+            :export_private  => @export_private,
+            :as_include_file => @as_include_file
           )
         end
 
