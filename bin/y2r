@@ -12,7 +12,6 @@ Usage: y2r [--include-path <path> ...] [--module-path <path> ...] [options]
            [<ycp_file>] [<ruby_file>]
 
 Options:
-  -y, --ycpc <file>          Location of the ycpc interpreter to use.
   -I, --include-path <path>  Path where to find included files.
   -M, --module-path <path>   Path where to find modules.
       --export-private       Export also private symbols from translated modules.
@@ -48,7 +47,6 @@ begin
   end
 
   compile_options = {
-    :ycpc           => options["--ycpc"] || ENV["Y2R_YCPC"],
     :module_paths   => module_paths,
     :include_paths  => include_paths,
     :export_private => options["--export-private"],

@@ -11,9 +11,7 @@ file "spec/y2r_spec.rb" => "spec/y2r_spec.md" do |t|
 end
 
 rule ".ybc" => ".ycp" do |t|
-  ycpc = ENV["Y2R_YCPC"] || "ycpc"
-
-  sh "#{ycpc} -c #{t.source}"
+  sh "ycpc -c #{t.source}"
 end
 
 RSpec::Core::RakeTask.new

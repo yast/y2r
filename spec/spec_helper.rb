@@ -25,7 +25,6 @@ def compile_options
   end
 
   {
-    :ycpc          => ENV["Y2R_YCPC"],
     :module_paths  => module_paths,
     :include_paths => include_paths
   }

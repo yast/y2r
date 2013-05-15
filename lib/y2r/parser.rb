@@ -32,7 +32,7 @@ module Y2R
         begin
           begin
             cmd = [
-              options[:ycpc] || "ycpc",
+              "ycpc",
               "--no-std-modules",
               "--no-std-includes",
               "-c",
