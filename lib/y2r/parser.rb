@@ -95,7 +95,7 @@ module Y2R
             :unspec => AST::YCP::UnspecBlock
           }[element["kind"].to_sym].new(
             :name       => element["name"],
-            :symbols    => extract_collection(element, "symbols", context),
+            :symbols    => extract_symbols(element, context),
             :statements => extract_collection(element, "statements", context),
             :comment    => element["comment"]
           )
@@ -203,7 +203,7 @@ module Y2R
             :do    => if block_element
               AST::YCP::StmtBlock.new(
                 :name       => nil,
-                :symbols    => extract_collection(block_element, "symbols", context),
+                :symbols    => extract_symbols(block_element, context),
                 :statements => extract_collection(block_element, "statements", context)
               )
             else
@@ -302,7 +302,7 @@ module Y2R
             :do    => if block_element
               AST::YCP::StmtBlock.new(
                 :name       => nil,
-                :symbols    => extract_collection(block_element, "symbols", context),
+                :symbols    => extract_symbols(block_element, context),
                 :statements => extract_collection(block_element, "statements", context)
               )
             else
@@ -456,6 +456,15 @@ module Y2R
     def extract_collection(element, name, context)
       child = element.at_xpath("./#{name}")
       child ? extract_children(child, context) : []
+    end
+
+    def extract_symbols(element, context)
+      # We only want symbols of relevant categories in the AST. This simplifies
+      # the code as it does not need to filter out the irrelevant ones.
+      categories = [:variable, :reference, :function]
+
+      all_symbols = extract_collection(element, "symbols", context)
+      all_symbols.select { |s| categories.include?(s.category) }
     end
 
     def build_body(statements)

@@ -21,12 +21,6 @@ module Y2R
           :name       => nil,
           :symbols    => [
             AST::YCP::Symbol.new(
-              :global   => true,
-              :category => :filename,
-              :type     => AST::YCP::Type.new("<unspec>"),
-              :name     => nil
-            ),
-            AST::YCP::Symbol.new(
               :global   => false,
               :category => :variable,
               :type     => AST::YCP::Type.new("integer"),
