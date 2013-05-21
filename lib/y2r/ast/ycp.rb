@@ -36,12 +36,12 @@ module Y2R
 
         def locals
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
+          @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def globals
           index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
-          @blocks[index..-1].map { |b| b.variables + b.functions }.flatten
+          @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def symbol_for(name)
@@ -274,13 +274,6 @@ module Y2R
       end
 
       class Block < Node
-        def variables
-          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
-        end
-
-        def functions
-          symbols.select { |s| s.category == :function }.map(&:name)
-        end
       end
 
       # Sorted alphabetically.
@@ -551,14 +544,6 @@ module Y2R
 
       class Do < Node
         def symbols
-          []
-        end
-
-        def variables
-          []
-        end
-
-        def functions
           []
         end
 
@@ -887,14 +872,6 @@ module Y2R
           []
         end
 
-        def variables
-          []
-        end
-
-        def functions
-          []
-        end
-
         def compile(context)
           Ruby::Until.new(
             :condition => self.until.compile(context),
@@ -1105,14 +1082,6 @@ module Y2R
           []
         end
 
-        def variables
-          []
-        end
-
-        def functions
-          []
-        end
-
         def compile(context)
           Ruby::While.new(
             :condition => cond.compile(context),
@@ -1122,14 +1091,6 @@ module Y2R
       end
 
       class YCPCode < Node
-        def variables
-          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
-        end
-
-        def functions
-          symbols.select { |s| s.category == :function }.map(&:name)
-        end
-
         def compile(context)
           Ruby::MethodCall.new(
             :receiver => nil,
@@ -1287,14 +1248,6 @@ module Y2R
       end
 
       class YEReturn < Node
-        def variables
-          symbols.select { |s| s.category == :variable || s.category == :reference }.map(&:name)
-        end
-
-        def functions
-          symbols.select { |s| s.category == :function }.map(&:name)
-        end
-
         def compile(context)
           Ruby::MethodCall.new(
             :receiver => nil,
