@@ -577,42 +577,13 @@ module Y2R
         end
 
         def compile(context)
-          client_name = File.basename(filename).sub(/\.[^.]*$/, "")
-          class_name = client_name.
-            gsub(/^./)     { |s| s.upcase    }.
-            gsub(/[_.-]./) { |s| s[1].upcase } + "Client"
-
-          textdomains = statements.select { |s| s.is_a?(Textdomain) }
-          fundefs = statements.select { |s| s.is_a?(FunDef) }
-          other_statements = statements - textdomains - fundefs
-
-          class_statements = [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "include",
-              :args     => [Ruby::Variable.new(:name => "YCP")],
-              :block    => nil,
-              :parens   => false
-            )
-          ]
+          class_statements = []
 
           inside_block self, context do |inner_context|
-            class_statements += textdomains.map { |t| t.compile(inner_context) }
-
-            unless other_statements.empty?
-              main_statements = other_statements.map { |s| s.compile(inner_context) }
-              main_statements << Ruby::Literal.new(:value => nil)
-
-              class_statements << Ruby::Def.new(
-                :name       => "main",
-                :args       => [],
-                :statements => Ruby::Statements.new(
-                  :statements => main_statements
-                )
-              )
-            end
-
-            class_statements += fundefs.map { |f| f.compile(inner_context) }
+            class_statements += build_header
+            class_statements += build_textdomain_setters(inner_context)
+            class_statements += build_main_def(inner_context)
+            class_statements += build_other_defs(inner_context)
           end
 
           Ruby::Program.new(
@@ -653,6 +624,66 @@ module Y2R
             ),
             :comment    => comment
           )
+        end
+
+        private
+
+        def class_name
+          client_name = File.basename(filename).sub(/\.[^.]*$/, "")
+          client_name.
+            gsub(/^./)     { |s| s.upcase    }.
+            gsub(/[_.-]./) { |s| s[1].upcase } + "Client"
+        end
+
+        def textdomain_statements
+          statements.select { |s| s.is_a?(Textdomain) }
+        end
+
+        def fundef_statements
+          statements.select { |s| s.is_a?(FunDef) }
+        end
+
+        def other_statements
+          statements - textdomain_statements - fundef_statements
+        end
+
+        def build_header
+          [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "include",
+              :args     => [Ruby::Variable.new(:name => "YCP")],
+              :block    => nil,
+              :parens   => false
+            )
+          ]
+        end
+
+        def build_textdomain_setters(context)
+          textdomain_statements.map { |t| t.compile(context) }
+        end
+
+        def build_main_def(context)
+          if !other_statements.empty?
+            main_statements = other_statements.map { |s| s.compile(context) }
+            main_statements << Ruby::Literal.new(:value => nil)
+
+            [
+              Ruby::Def.new(
+                :name       => "main",
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => main_statements
+                )
+              )
+            ]
+          else
+            []
+          end
+        end
+
+        def build_other_defs(context)
+          fundef_statements.map { |t| t.compile(context) }
         end
       end
 
