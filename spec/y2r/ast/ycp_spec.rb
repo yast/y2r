@@ -2975,35 +2975,6 @@ module Y2R::AST
       end
     end
 
-    describe "#exportable?" do
-      def ycp_symbol(category, type)
-        YCP::Symbol.new(
-          :global   => false,
-          :category => category,
-          :type     => YCP::Type.new(type),
-          :name     => "a"
-        )
-      end
-
-      it "returns true for variables" do
-        ycp_node = ycp_symbol(:variable, "integer")
-
-        ycp_node.should be_exportable
-      end
-
-      it "returns true for functions" do
-        ycp_node = ycp_symbol(:function, "integer ()")
-
-        ycp_node.should be_exportable
-      end
-
-      it "returns false for other global symbols" do
-        ycp_node = ycp_symbol(:filename, nil)
-
-        ycp_node.should_not be_exportable
-      end
-    end
-
     describe "#compile" do
       def ruby_variable(name)
         Ruby::Variable.new(:name => name)

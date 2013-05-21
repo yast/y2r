@@ -933,9 +933,9 @@ module Y2R
 
         def build_publish_calls(context)
           exported_symbols = if context.export_private
-            symbols.select(&:exportable?)
+            symbols
           else
-            symbols.select { |s| s.exportable? && s.global }
+            symbols.select(&:global)
           end
 
           exported_symbols.map { |s| s.compile_as_publish_call(context) }
@@ -994,10 +994,6 @@ module Y2R
         def needs_copy?
           immutable_types = [Type::BOOLEAN, Type::INTEGER, Type::SYMBOL]
           !immutable_types.include?(type.no_const) && !type.reference?
-        end
-
-        def exportable?
-          category == :variable || category == :function
         end
 
         def compile(context)
