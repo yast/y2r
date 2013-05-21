@@ -276,9 +276,6 @@ module Y2R
         end
       end
 
-      class Block < Node
-      end
-
       # Sorted alphabetically.
 
       class Assign < Node
@@ -535,7 +532,7 @@ module Y2R
         end
       end
 
-      class DefBlock < Block
+      class DefBlock < Node
         def creates_local_scope?
           true
         end
@@ -574,7 +571,7 @@ module Y2R
         end
       end
 
-      class FileBlock < Block
+      class FileBlock < Node
         def name
           nil
         end
@@ -774,7 +771,7 @@ module Y2R
         end
       end
 
-      class ModuleBlock < Block
+      class ModuleBlock < Node
         def compile(context)
          if name !~ /^[A-Z][a-zA-Z0-9_]*$/
            raise NotImplementedError,
@@ -906,7 +903,7 @@ module Y2R
         end
       end
 
-      class StmtBlock < Block
+      class StmtBlock < Node
         def compile(context)
           inside_block self, context do |inner_context|
             Ruby::Statements.new(
@@ -1012,7 +1009,7 @@ module Y2R
         end
       end
 
-      class UnspecBlock < Block
+      class UnspecBlock < Node
         def creates_local_scope?
           true
         end
