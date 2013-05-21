@@ -993,6 +993,7 @@ module Y2R
       class Symbol < Node
         def needs_copy?
           immutable_types = [Type::BOOLEAN, Type::INTEGER, Type::SYMBOL]
+
           !immutable_types.include?(type.no_const) && !type.reference?
         end
 
