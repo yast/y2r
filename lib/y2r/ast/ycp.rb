@@ -30,8 +30,7 @@ module Y2R
         end
 
         def module_name
-          toplevel_block = @blocks.first
-          toplevel_block.is_a?(ModuleBlock) ? toplevel_block.name : nil
+          @blocks.first.name
         end
 
         def locals
@@ -568,6 +567,10 @@ module Y2R
       end
 
       class FileBlock < Block
+        def name
+          nil
+        end
+
         def compile(context)
           client_name = File.basename(filename).sub(/\.[^.]*$/, "")
           class_name = client_name.

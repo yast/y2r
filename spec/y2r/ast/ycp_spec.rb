@@ -864,7 +864,7 @@ module Y2R::AST
               :parens   => true
             )
 
-            ycp_node.compile(@context_empty).should == ruby_node
+            ycp_node.compile(@context_module).should == ruby_node
           end
 
           it "returns correct AST node for qualified calls" do
@@ -919,7 +919,7 @@ module Y2R::AST
               :parens   => true
             )
 
-            ycp_node.compile(@context_empty).should == ruby_node
+            ycp_node.compile(@context_module).should == ruby_node
           end
 
           it "returns correct AST node for calls with arguments" do
@@ -939,7 +939,7 @@ module Y2R::AST
               :parens   => true
             )
 
-            ycp_node.compile(@context_empty).should == ruby_node
+            ycp_node.compile(@context_module).should == ruby_node
           end
         end
 
@@ -3542,7 +3542,7 @@ module Y2R::AST
             :parens   => true
           )
 
-          ycp_node.compile(@context_empty).should == ruby_node
+          ycp_node.compile(@context_module).should == ruby_node
         end
 
         it "returns correct AST node for qualified variables" do
