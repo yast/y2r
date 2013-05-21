@@ -34,12 +34,12 @@ module Y2R
         end
 
         def locals
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          index = @blocks.index(&:creates_local_scope?) || @blocks.length
           @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def globals
-          index = @blocks.index { |b| b.is_a?(DefBlock) || b.is_a?(UnspecBlock) || b.is_a?(YCPCode) || b.is_a?(YEReturn) } || @blocks.length
+          index = @blocks.index(&:creates_local_scope?) || @blocks.length
           @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
         end
 
@@ -246,6 +246,10 @@ module Y2R
       end
 
       class Node < OpenStruct
+        def creates_local_scope?
+          false
+        end
+
         def inside_block(block, context)
           inner_context = context.dup
           inner_context.blocks = inner_context.blocks + [block]
@@ -532,6 +536,10 @@ module Y2R
       end
 
       class DefBlock < Block
+        def creates_local_scope?
+          true
+        end
+
         def compile(context)
           inside_block self, context do |inner_context|
             Ruby::Statements.new(
@@ -1005,6 +1013,10 @@ module Y2R
       end
 
       class UnspecBlock < Block
+        def creates_local_scope?
+          true
+        end
+
         def compile(context)
           inside_block self, context do |inner_context|
             Ruby::MethodCall.new(
@@ -1094,6 +1106,10 @@ module Y2R
       end
 
       class YCPCode < Node
+        def creates_local_scope?
+          true
+        end
+
         def compile(context)
           Ruby::MethodCall.new(
             :receiver => nil,
@@ -1251,6 +1267,10 @@ module Y2R
       end
 
       class YEReturn < Node
+        def creates_local_scope?
+          true
+        end
+
         def compile(context)
           Ruby::MethodCall.new(
             :receiver => nil,
