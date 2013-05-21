@@ -804,66 +804,19 @@ module Y2R
 
       class ModuleBlock < Node
         def compile(context)
-         if name !~ /^[A-Z][a-zA-Z0-9_]*$/
-           raise NotImplementedError,
-                 "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
-         end
-          textdomains = statements.select { |s| s.is_a?(Textdomain) }
-          fundefs = statements.select { |s| s.is_a?(FunDef) }
-          constructor = fundefs.find { |f| f.name == name }
-          other_statements = statements - textdomains - fundefs
+          if name !~ /^[A-Z][a-zA-Z0-9_]*$/
+            raise NotImplementedError,
+                  "Invalid module name: #{name.inspect}. Module names that are not Ruby class names are not supported."
+          end
 
-          class_statements = [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "include",
-              :args     => [Ruby::Variable.new(:name => "YCP")],
-              :block    => nil,
-              :parens   => false
-            ),
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "extend",
-              :args     => [Ruby::Variable.new(:name => "Exportable")],
-              :block    => nil,
-              :parens   => false
-            )
-          ]
+          class_statements = []
 
           inside_block self, context do |inner_context|
-            class_statements += textdomains.map { |t| t.compile(inner_context) }
-
-            unless other_statements.empty? && !constructor
-              initialize_statements = other_statements.map { |s| s.compile(inner_context) }
-              if constructor
-                initialize_statements << Ruby::MethodCall.new(
-                  :receiver => nil,
-                  :name     => name,
-                  :args     => [],
-                  :block    => nil,
-                  :parens   => true
-                )
-              end
-
-              class_statements << Ruby::Def.new(
-                :name       => "initialize",
-                :args       => [],
-                :statements => Ruby::Statements.new(
-                  :statements => initialize_statements
-                )
-              )
-            end
-
-            class_statements += fundefs.map { |f| f.compile(inner_context) }
-
-            exported_symbols = if context.export_private
-              symbols.select(&:exportable?)
-            else
-              symbols.select { |s| s.exportable? && s.global }
-            end
-            class_statements += exported_symbols.map do |symbol|
-              symbol.compile_as_publish_call(inner_context)
-            end
+            class_statements += build_header
+            class_statements += build_textdomain_setters(inner_context)
+            class_statements += build_initialize_def(inner_context)
+            class_statements += build_other_defs(inner_context)
+            class_statements += build_publish_calls(inner_context)
           end
 
           Ruby::Program.new(
@@ -903,6 +856,89 @@ module Y2R
             ),
             :comment    => comment
           )
+        end
+
+        private
+
+        def textdomain_statements
+          statements.select { |s| s.is_a?(Textdomain) }
+        end
+
+        def fundef_statements
+          statements.select { |s| s.is_a?(FunDef) }
+        end
+
+        def other_statements
+          statements - textdomain_statements - fundef_statements
+        end
+
+        def constructor
+          fundef_statements.find { |s| s.name == name }
+        end
+
+        def build_header
+          [
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "include",
+              :args     => [Ruby::Variable.new(:name => "YCP")],
+              :block    => nil,
+              :parens   => false
+            ),
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "extend",
+              :args     => [Ruby::Variable.new(:name => "Exportable")],
+              :block    => nil,
+              :parens   => false
+            )
+          ]
+        end
+
+        def build_textdomain_setters(context)
+          textdomain_statements.map { |t| t.compile(context) }
+        end
+
+        def build_initialize_def(context)
+          if !other_statements.empty? || constructor
+            initialize_statements = other_statements.map { |s| s.compile(context) }
+
+            if constructor
+              initialize_statements << Ruby::MethodCall.new(
+                :receiver => nil,
+                :name     => name,
+                :args     => [],
+                :block    => nil,
+                :parens   => true
+              )
+            end
+
+            [
+              Ruby::Def.new(
+                :name       => "initialize",
+                :args       => [],
+                :statements => Ruby::Statements.new(
+                  :statements => initialize_statements
+                )
+              )
+            ]
+          else
+            []
+          end
+        end
+
+        def build_other_defs(context)
+          fundef_statements.map { |t| t.compile(context) }
+        end
+
+        def build_publish_calls(context)
+          exported_symbols = if context.export_private
+            symbols.select(&:exportable?)
+          else
+            symbols.select { |s| s.exportable? && s.global }
+          end
+
+          exported_symbols.map { |s| s.compile_as_publish_call(context) }
         end
       end
 
