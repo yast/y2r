@@ -40,7 +40,7 @@ module Y2R
 
         def globals
           index = @blocks.index(&:creates_local_scope?) || @blocks.length
-          @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
+          @blocks[0..index].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def symbol_for(name)
