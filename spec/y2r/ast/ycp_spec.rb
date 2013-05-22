@@ -748,8 +748,8 @@ module Y2R::AST
 
   describe YCP::Builtin, :type => :ycp do
     describe "#compile" do
-      def ycp_builtin(name)
-        YCP::Builtin.new(:name => name, :args => [], :block => nil)
+      def ycp_builtin(ns, name)
+        YCP::Builtin.new(:ns => ns, :name => name, :args => [], :block => nil)
       end
 
       def ruby_builtin_call(module_name, method_name)
@@ -763,7 +763,12 @@ module Y2R::AST
       end
 
       it "returns correct AST node for builtins with no arguments and no block" do
-        ycp_node = YCP::Builtin.new(:name  => "b", :args => [], :block => nil)
+        ycp_node = YCP::Builtin.new(
+          :ns    => nil,
+          :name  => "b",
+          :args  => [],
+          :block => nil
+        )
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Builtins"),
@@ -778,6 +783,7 @@ module Y2R::AST
 
       it "returns correct AST node for builtins with arguments and no block" do
         ycp_node = YCP::Builtin.new(
+          :ns      => nil,
           :name    => "b",
           :args    => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
           :block   => nil
@@ -796,6 +802,7 @@ module Y2R::AST
 
       it "returns correct AST node for builtins with no arguments and a block" do
         ycp_node = YCP::Builtin.new(
+          :ns    => nil,
           :name  => "b",
           :args  => [],
           :block =>  YCP::UnspecBlock.new(
@@ -822,6 +829,7 @@ module Y2R::AST
 
       it "returns correct AST node for builtins with arguments and a block" do
         ycp_node = YCP::Builtin.new(
+          :ns    => nil,
           :name  => "b",
           :args  => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
           :block =>  YCP::UnspecBlock.new(
@@ -847,12 +855,12 @@ module Y2R::AST
       end
 
       it "returns correct AST node for namespaced builtins" do
-        ycp_node_scr      = ycp_builtin("SCR::b")
-        ycp_node_wfm      = ycp_builtin("WFM::b")
-        ycp_node_float    = ycp_builtin("float::b")
-        ycp_node_list     = ycp_builtin("list::b")
-        ycp_node_multiset = ycp_builtin("multiset::b")
-        ycp_node_none     = ycp_builtin("b")
+        ycp_node_scr      = ycp_builtin("SCR", "b")
+        ycp_node_wfm      = ycp_builtin("WFM", "b")
+        ycp_node_float    = ycp_builtin("float", "b")
+        ycp_node_list     = ycp_builtin("list", "b")
+        ycp_node_multiset = ycp_builtin("multiset", "b")
+        ycp_node_none     = ycp_builtin(nil, "b")
 
         ruby_node_scr      = ruby_builtin_call("SCR", "b")
         ruby_node_wfm      = ruby_builtin_call("WFM", "b")

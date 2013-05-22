@@ -139,6 +139,7 @@ module Y2R
           end
 
           AST::YCP::Builtin.new(
+            :ns      => element["ns"],
             :name    => element["name"],
             :args    => args,
             :block   => block

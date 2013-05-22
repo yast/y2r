@@ -324,26 +324,24 @@ module Y2R
 
       class Builtin < Node
         def compile(context)
-          module_name = case name
-            when /^SCR::/
+          module_name = case ns
+            when "SCR"
               "SCR"
-            when /^WFM::/
+            when "WFM"
               "WFM"
-            when /^float::/
+            when "float"
               "Builtins::Float"
-            when /^list::/
+            when "list"
               "Builtins::List"
-            when /^multiset::/
+            when "multiset"
               "Builtins::Multiset"
             else
               "Builtins"
           end
 
-          method_name = name.split("::").last
-
           Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => module_name),
-            :name     => method_name,
+            :name     => name,
             :args     => args.map { |a| a.compile(context) },
             :block    => block ? block.compile_as_block(context) : nil,
             :parens   => true
