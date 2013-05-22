@@ -171,18 +171,18 @@ module Y2R
 
           # Builds a Ruby AST node for a variable with given name in given
           # context, doing all necessary escaping, de-aliasing, etc.
-          def for(name, context, mode)
+          def for(ns, name, context, mode)
             # In the XML, all global module variable references are qualified
             # (e.g. "M::i"). This includes references to variables defined in
             # this module. All other variable references are unqualified (e.g
             # "i").
-            if name =~ /^([^:]+)::([^:]+)$/
-              if $1 == context.module_name
-                Ruby::Variable.new(:name => "@#$2")
+            if ns
+              if ns == context.module_name
+                Ruby::Variable.new(:name => "@#{name}")
               else
                 Ruby::MethodCall.new(
-                  :receiver => Ruby::Variable.new(:name => $1),
-                  :name     => $2,
+                  :receiver => Ruby::Variable.new(:name => ns),
+                  :name     => name,
                   :args     => [],
                   :block    => nil,
                   :parens   => true
@@ -270,10 +270,6 @@ module Y2R
             compile_statements(statements, inner_context)
           end
         end
-
-        def qualified_name(ns, name)
-          (ns ? "#{ns}::" : "") + name
-        end
       end
 
       # Sorted alphabetically.
@@ -281,7 +277,7 @@ module Y2R
       class Assign < Node
         def compile(context)
           Ruby::Assignment.new(
-            :lhs => RubyVar.for(qualified_name(ns, name), context, :in_code),
+            :lhs => RubyVar.for(ns, name, context, :in_code),
             :rhs => child.compile(context)
           )
         end
@@ -355,7 +351,7 @@ module Y2R
             when :function
               if !ns && context.locals.include?(name)
                 Ruby::MethodCall.new(
-                  :receiver => RubyVar.for(name, context, :in_code),
+                  :receiver => RubyVar.for(nil, name, context, :in_code),
                   :name     => "call",
                   :args     => args.map { |a| a.compile(context) },
                   :block    => nil,
@@ -386,11 +382,7 @@ module Y2R
               end
             when :variable # function reference stored in variable
               Ruby::MethodCall.new(
-                :receiver => RubyVar.for(
-                  qualified_name(ns, name),
-                  context,
-                  :in_code
-                ),
+                :receiver => RubyVar.for(ns, name, context, :in_code),
                 :name     => "call",
                 :args     => args.map { |a| a.compile(context) },
                 :block    => nil,
@@ -561,7 +553,7 @@ module Y2R
 
       class Entry < Node
         def compile(context)
-          RubyVar.for(qualified_name(ns, name), context, :in_code)
+          RubyVar.for(ns, name, context, :in_code)
         end
 
         def compile_as_ref(context)
@@ -709,7 +701,7 @@ module Y2R
               )
             else
               Ruby::Assignment.new(
-                :lhs => RubyVar.for(name, context, :in_code),
+                :lhs => RubyVar.for(nil, name, context, :in_code),
                 :rhs => Ruby::MethodCall.new(
                   :receiver => nil,
                   :name     => "lambda",
@@ -996,16 +988,16 @@ module Y2R
         end
 
         def compile(context)
-          RubyVar.for(name, context, :in_arg)
+          RubyVar.for(nil, name, context, :in_arg)
         end
 
         def compile_as_copy_arg_call(context)
           Ruby::Assignment.new(
-            :lhs => RubyVar.for(name, context, :in_code),
+            :lhs => RubyVar.for(nil, name, context, :in_code),
             :rhs => Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "copy_arg",
-              :args     => [RubyVar.for(name, context, :in_code)],
+              :args     => [RubyVar.for(nil, name, context, :in_code)],
               :block    => nil,
               :parens   => true
             )
@@ -1109,10 +1101,10 @@ module Y2R
         def compile(context)
           case category
             when :variable, :reference
-              RubyVar.for(qualified_name(ns, name), context, :in_code)
+              RubyVar.for(ns, name, context, :in_code)
             when :function
               getter = if !ns && context.locals.include?(name)
-                RubyVar.for(name, context, :in_code)
+                RubyVar.for(nil, name, context, :in_code)
               else
                 # In the XML, all global module function references are
                 # qualified (e.g. "M::i"). This includes references to functions
