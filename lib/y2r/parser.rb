@@ -358,6 +358,7 @@ module Y2R
 
         when "variable"
           AST::YCP::Variable.new(
+            :ns       => element["ns"],
             :name     => element["name"],
             :category => element["category"].to_sym,
             :type     => AST::YCP::Type.new(element["type"])

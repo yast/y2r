@@ -1111,12 +1111,8 @@ module Y2R
         def compile(context)
           case category
             when :variable, :reference
-              RubyVar.for(name, context, :in_code)
+              RubyVar.for(qualified_name(ns, name), context, :in_code)
             when :function
-              parts = name.split("::")
-              ns = parts.size > 1 ? parts.first : nil
-              variable_name = parts.last
-
               getter = if !ns && context.locals.include?(name)
                 RubyVar.for(name, context, :in_code)
               else
@@ -1127,13 +1123,13 @@ module Y2R
                 # function is refrenced at module toplvel in YCP), so we have to
                 # omit it (which is OK, because then the |method| call will be
                 # invoked on |self|, whish is always our module).
-                ns = nil if ns == context.module_name
+                real_ns = ns == context.module_name ? nil : ns
 
                 Ruby::MethodCall.new(
-                  :receiver => ns ? Ruby::Variable.new(:name => ns) : nil,
+                  :receiver => real_ns ? Ruby::Variable.new(:name => real_ns) : nil,
                   :name     => "method",
                   :args     => [
-                    Ruby::Literal.new(:value => variable_name.to_sym)
+                    Ruby::Literal.new(:value => name.to_sym)
                   ],
                   :block    => nil,
                   :parens   => true
