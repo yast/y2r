@@ -82,6 +82,7 @@ module Y2R
 
         when "assign"
           AST::YCP::Assign.new(
+            :ns    => element["ns"],
             :name  => element["name"],
             :child => element_to_node(element.elements[0], context)
           )

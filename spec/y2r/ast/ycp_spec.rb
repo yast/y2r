@@ -23,9 +23,21 @@ module Y2R::AST
       @ycp_entry_b = YCP::Entry.new(:ns => nil, :name => "b")
       @ycp_entry_c = YCP::Entry.new(:ns => nil, :name => "c")
 
-      @ycp_assign_i_42 = YCP::Assign.new(:name  => "i", :child => @ycp_const_42)
-      @ycp_assign_j_43 = YCP::Assign.new(:name  => "j", :child => @ycp_const_43)
-      @ycp_assign_k_44 = YCP::Assign.new(:name  => "k", :child => @ycp_const_44)
+      @ycp_assign_i_42 = YCP::Assign.new(
+        :ns    => nil,
+        :name  => "i",
+        :child => @ycp_const_42
+      )
+      @ycp_assign_j_43 = YCP::Assign.new(
+        :ns    => nil,
+        :name  => "j",
+        :child => @ycp_const_43
+      )
+      @ycp_assign_k_44 = YCP::Assign.new(
+        :ns    => nil,
+        :name  => "k",
+        :child => @ycp_const_44
+      )
 
       @ycp_textdomain_d = YCP::Textdomain.new(:name => "d")
       @ycp_textdomain_e = YCP::Textdomain.new(:name => "e")
@@ -488,8 +500,16 @@ module Y2R::AST
     describe "#compile" do
       describe "for qualified assignments" do
         it "returns correct AST node" do
-          ycp_node_m = YCP::Assign.new(:name => "M::a", :child => @ycp_const_42)
-          ycp_node_n = YCP::Assign.new(:name => "N::a", :child => @ycp_const_42)
+          ycp_node_m = YCP::Assign.new(
+            :ns    => "M",
+            :name  => "a",
+            :child => @ycp_const_42
+          )
+          ycp_node_n = YCP::Assign.new(
+            :ns    => "N",
+            :name  => "a",
+            :child => @ycp_const_42
+          )
 
           ruby_node_m = Ruby::Assignment.new(
             :lhs => Ruby::Variable.new(:name => "@a"),
@@ -521,18 +541,22 @@ module Y2R::AST
 
         before :each do
           @ycp_node_regular    = YCP::Assign.new(
+            :ns    => nil,
             :name  => "a",
             :child => @ycp_const_42
           )
           @ycp_node_capital    = YCP::Assign.new(
+            :ns    => nil,
             :name  => "A",
             :child => @ycp_const_42
           )
           @ycp_node_underscore = YCP::Assign.new(
+            :ns    => nil,
             :name  => "_a",
             :child => @ycp_const_42
           )
           @ycp_node_reserved   = YCP::Assign.new(
+            :ns    => nil,
             :name  => "end",
             :child => @ycp_const_42
           )

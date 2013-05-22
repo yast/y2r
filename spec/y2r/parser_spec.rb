@@ -41,14 +41,17 @@ module Y2R
           ],
           :statements => [
             AST::YCP::Assign.new(
+              :ns    => nil,
               :name  => "i",
               :child => AST::YCP::Const.new(:type => :int, :value => "42")
             ),
             AST::YCP::Assign.new(
+              :ns    => nil,
               :name  => "j",
               :child => AST::YCP::Const.new(:type => :int, :value => "43")
             ),
             AST::YCP::Assign.new(
+              :ns    => nil,
               :name  => "k",
               :child => AST::YCP::Const.new(:type => :int, :value => "44")
             )

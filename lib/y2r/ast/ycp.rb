@@ -281,7 +281,7 @@ module Y2R
       class Assign < Node
         def compile(context)
           Ruby::Assignment.new(
-            :lhs => RubyVar.for(name, context, :in_code),
+            :lhs => RubyVar.for(qualified_name(ns, name), context, :in_code),
             :rhs => child.compile(context)
           )
         end
