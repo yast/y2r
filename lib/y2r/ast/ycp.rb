@@ -29,6 +29,13 @@ module Y2R
           @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
         end
 
+        def inside(block)
+          yield Context.new(
+            :blocks         => @blocks + [block],
+            :export_private => @export_private
+          )
+        end
+
         def module_name
           @blocks.first.name
         end
@@ -250,13 +257,6 @@ module Y2R
           false
         end
 
-        def inside_block(block, context)
-          inner_context = context.dup
-          inner_context.blocks = inner_context.blocks + [block]
-
-          yield inner_context
-        end
-
         def compile_statements(statements, context)
           if statements
             statements.compile(context)
@@ -266,7 +266,7 @@ module Y2R
         end
 
         def compile_statements_inside_block(statements, context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             compile_statements(statements, inner_context)
           end
         end
@@ -528,7 +528,7 @@ module Y2R
         end
 
         def compile(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -569,7 +569,7 @@ module Y2R
         def compile(context)
           class_statements = []
 
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             class_statements += build_header
             class_statements += build_textdomain_setters(inner_context)
             class_statements += build_main_def(inner_context)
@@ -687,7 +687,7 @@ module Y2R
         def compile(context)
           statements = block.compile(context)
 
-          inside_block block, context do |inner_context|
+          context.inside block do |inner_context|
             statements.statements = args.select(&:needs_copy?).map do |arg|
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
@@ -801,7 +801,7 @@ module Y2R
 
           class_statements = []
 
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             class_statements += build_header
             class_statements += build_textdomain_setters(inner_context)
             class_statements += build_initialize_def(inner_context)
@@ -962,7 +962,7 @@ module Y2R
 
       class StmtBlock < Node
         def compile(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -1069,7 +1069,7 @@ module Y2R
         end
 
         def compile(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::MethodCall.new(
               :receiver => nil,
               :name     => "lambda",
@@ -1086,7 +1086,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => Ruby::Statements.new(
@@ -1171,7 +1171,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => child.compile(inner_context)
@@ -1332,7 +1332,7 @@ module Y2R
         end
 
         def compile_as_block(context)
-          inside_block self, context do |inner_context|
+          context.inside self do |inner_context|
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => child.compile(inner_context)
