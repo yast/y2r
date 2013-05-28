@@ -9,6 +9,23 @@ module Y2R
     class SyntaxError < StandardError
     end
 
+    # AST building context passed to |element_to_node| and related methods.
+    class Context
+      attr_reader :element
+
+      def initialize(attrs = {})
+        @element = attrs[:element] || nil
+      end
+
+      def in?(element)
+        element == @element
+      end
+
+      def inside(element)
+        Context.new(:element => element)
+      end
+    end
+
     def parse(input, options = {})
       xml_to_ast(ycp_to_xml(input, options), options)
     end
@@ -69,12 +86,12 @@ module Y2R
     end
 
     def xml_to_ast(xml, options)
-      ast = element_to_node(Nokogiri::XML(xml).root)
+      ast = element_to_node(Nokogiri::XML(xml).root, Context.new)
       ast.filename = options[:filename] || "default.ycp"
       ast
     end
 
-    def element_to_node(element, context = nil)
+    def element_to_node(element, context)
       case element.name
         when "arg", "cond", "else", "expr", "false", "key", "lhs", "rhs",
              "stmt","then", "true", "until", "value", "ycp"
@@ -116,7 +133,7 @@ module Y2R
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
           symbol_values = symbol_attrs.values.map(&:value)
-          children = extract_children(element, :builtin)
+          children = extract_children(element, context.inside(:builtin))
 
           if symbol_values.empty?
             args  = children
@@ -182,7 +199,11 @@ module Y2R
           else
             AST::YCP::YETerm.new(
               :name     => element["name"],
-              :children => extract_collection(element, "list", :yeterm)
+              :children => extract_collection(
+                element,
+                "list",
+                context.inside(:yeterm)
+              )
             )
           end
 
@@ -215,7 +236,7 @@ module Y2R
           )
 
         when "element"
-          if context != :map
+          if !context.in?(:map)
             element_to_node(element.elements[0], context)
           else
             AST::YCP::MapElement.new(
@@ -285,13 +306,17 @@ module Y2R
           AST::YCP::Include.new
 
         when "list"
-          AST::YCP::List.new(:children => extract_children(element, :list))
+          AST::YCP::List.new(
+            :children => extract_children(element, context.inside(:list))
+          )
 
         when "locale"
           AST::YCP::Locale.new(:text => element["text"])
 
         when "map"
-          AST::YCP::Map.new(:children => extract_children(element, :map))
+          AST::YCP::Map.new(
+            :children => extract_children(element, context.inside(:map))
+          )
 
         when "repeat"
           # For some reason, blocks in |repeat| statements are of kind "unspec"
@@ -431,7 +456,7 @@ module Y2R
         when "yeterm"
           AST::YCP::YETerm.new(
             :name     => element["name"],
-            :children => extract_children(element, :yeterm)
+            :children => extract_children(element, context.inside(:yeterm))
           )
 
         when "yetriple"
