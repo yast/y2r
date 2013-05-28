@@ -11,10 +11,11 @@ module Y2R
 
     # AST building context passed to |element_to_node| and related methods.
     class Context
-      attr_reader :element
+      attr_reader :element, :extracted_file
 
       def initialize(attrs = {})
-        @element = attrs[:element] || nil
+        @element        = attrs[:element] || nil
+        @extracted_file = attrs[:extracted_file] || nil
       end
 
       def in?(element)
@@ -22,7 +23,10 @@ module Y2R
       end
 
       def inside(element)
-        Context.new(:element => element)
+        Context.new(
+          :element        => element,
+          :extracted_file => @extracted_file
+        )
       end
     end
 
@@ -86,7 +90,8 @@ module Y2R
     end
 
     def xml_to_ast(xml, options)
-      ast = element_to_node(Nokogiri::XML(xml).root, Context.new)
+      context = Context.new(:extracted_file => options[:extracted_file])
+      ast = element_to_node(Nokogiri::XML(xml).root, context)
       ast.filename = options[:filename] || "default.ycp"
       ast
     end
@@ -105,6 +110,14 @@ module Y2R
           )
 
         when "block"
+          all_statements = extract_collection(element, "statements", context)
+
+          statements = if context.extracted_file
+            extract_file_statements(all_statements, context.extracted_file)
+          else
+            all_statements
+          end
+
           {
             :def    => AST::YCP::DefBlock,
             :file   => AST::YCP::FileBlock,
@@ -114,7 +127,7 @@ module Y2R
           }[element["kind"].to_sym].new(
             :name       => element["name"],
             :symbols    => extract_symbols(element, context),
-            :statements => extract_collection(element, "statements", context),
+            :statements => statements,
             :comment    => element["comment"]
           )
 
@@ -303,7 +316,7 @@ module Y2R
           AST::YCP::Import.new(:name => element["name"])
 
         when "include"
-          AST::YCP::Include.new
+          AST::YCP::Include.new(:name => element["name"])
 
         when "list"
           AST::YCP::List.new(
@@ -505,6 +518,32 @@ module Y2R
           :statements => statements
         )
       end
+    end
+
+    def extract_file_statements(statements, file)
+      extracted = []
+      do_extract = false
+      nesting_level = 0
+      threshhold_level = nil
+
+      statements.each do |statement|
+        if statement.is_a?(AST::YCP::Include)
+          nesting_level += 1
+          if statement.name == file
+            do_extract = true
+            threshhold_level = nesting_level
+          end
+        elsif statement.is_a?(AST::YCP::Filename)
+          nesting_level -= 1
+          if do_extract && nesting_level < threshhold_level
+            do_extract = false
+          end
+        else
+          extracted << statement if do_extract
+        end
+      end
+
+      extracted
     end
 
     def add_testedfiles(ycp, xml)
