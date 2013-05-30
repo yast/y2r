@@ -595,7 +595,7 @@ module Y2R::AST::Ruby
           :expression => @literal_42,
         )
 
-        node.to_ruby.should == "+(42)"
+        node.to_ruby.should == "+42"
       end
     end
   end
@@ -609,7 +609,7 @@ module Y2R::AST::Ruby
           :rhs => @literal_43
         )
 
-        node.to_ruby.should == "(42) + (43)"
+        node.to_ruby.should == "42 + 43"
       end
     end
   end
