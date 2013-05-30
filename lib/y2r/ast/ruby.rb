@@ -26,6 +26,10 @@ module Y2R
         def list(items, separator = ", ")
           items.map(&:to_ruby).join(separator)
         end
+
+        def enclose?
+          return true
+        end
       end
 
       # ===== Statements =====
@@ -206,6 +210,12 @@ module Y2R
         def to_ruby
           "(#{list(expressions, "; ")})"
         end
+
+        protected
+
+        def enclose?
+          return false
+        end
       end
 
       class Assignment < Node
@@ -214,23 +224,37 @@ module Y2R
         end
       end
 
-      # TODO: Use parens only when needed.
-      class UnaryOperator < Node
-        def to_ruby
-          "#{op}(#{expression.to_ruby})"
+      # TODO: Use parens when needed also in non-trivial code like a && b && c
+      class Operator < Node
+        protected
+
+        def enclosed_value val
+          ruby_val = val.to_ruby
+          val.enclose? ? "(#{ruby_val})" : ruby_val
         end
       end
 
-      # TODO: Use parens only when needed.
-      class BinaryOperator < Node
+      class UnaryOperator < Operator
         def to_ruby
-          "(#{lhs.to_ruby}) #{op} (#{rhs.to_ruby})"
+          "#{op}#{enclosed_value(expression)}"
+        end
+
+        protected
+
+        def enclose?
+          return false
         end
       end
 
-      class Ternary < Node
+      class BinaryOperator < Operator
         def to_ruby
-          "#{condition.to_ruby} ? #{self.then.to_ruby} : #{self.else.to_ruby}"
+          "#{enclosed_value(lhs)} #{op} #{enclosed_value(rhs)}"
+        end
+      end
+
+      class Ternary < Operator
+        def to_ruby
+          "#{enclosed_value(condition)} ? #{enclosed_value(self.then)} : #{enclosed_value(self.else)}"
         end
       end
 
@@ -251,6 +275,12 @@ module Y2R
 
           "#{receiver_code}#{name}#{args_code}#{block_code}"
         end
+
+        protected
+
+        def enclose?
+          return !parens
+        end
       end
 
       # TODO: Emit one-line blocks for one-line block bodies.
@@ -268,17 +298,35 @@ module Y2R
         def to_ruby
           (receiver ? "#{receiver.to_ruby}::" : "") + name
         end
+
+        protected
+
+        def enclose?
+          return false
+        end
       end
 
       class Variable < Node
         def to_ruby
           name
         end
+
+        protected
+
+        def enclose?
+          return false
+        end
       end
 
       class Self < Node
         def to_ruby
           "self"
+        end
+
+        protected
+
+        def enclose?
+          return false
         end
       end
 
@@ -288,6 +336,12 @@ module Y2R
         def to_ruby
           value.inspect
         end
+
+        protected
+
+        def enclose?
+          return false
+        end
       end
 
       class Array < Node
@@ -296,6 +350,12 @@ module Y2R
         def to_ruby
           "[#{list(elements)}]"
         end
+
+        protected
+
+        def enclose?
+          return false
+        end
       end
 
       class Hash < Node
@@ -303,6 +363,12 @@ module Y2R
         # TODO: Split to multiple lines if the result is too long.
         def to_ruby
           !entries.empty? ? "{ #{list(entries)} }" : "{}"
+        end
+
+        protected
+
+        def enclose?
+          return false
         end
       end
 
