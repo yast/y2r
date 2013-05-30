@@ -4121,7 +4121,7 @@ module Y2R::AST
 
   describe YCP::YETerm, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node for non-UI terms" do
         ycp_node = YCP::YETerm.new(
           :name     => "t",
           :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
@@ -4142,6 +4142,28 @@ module Y2R::AST
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
+
+      it "returns correct AST node for UI terms" do
+        ycp_node = YCP::YETerm.new(
+          :name     => "HBox",
+          :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "HBox",
+          :args     => [
+            @ruby_literal_42,
+            @ruby_literal_43,
+            @ruby_literal_44
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
     end
   end
 
