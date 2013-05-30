@@ -1344,17 +1344,93 @@ module Y2R
       end
 
       class YETerm < Node
-        def compile(context)
-          name_compiled     = Ruby::Literal.new(:value => name.to_sym)
-          children_compiled = children.map { |ch| ch.compile(context) }
+        UI_TERMS = [
+          :BarGraph,
+          :Bottom,
+          :CheckBox,
+          :ColoredLabel,
+          :ComboBox,
+          :Date,
+          :DownloadProgress,
+          :DumbTab,
+          :DummySpecialWidget,
+          :Empty,
+          :Frame,
+          :HBox,
+          :HBoxvHCenter,
+          :HMultiProgressMeter,
+          :HSpacing,
+          :HSquash,
+          :HStretch,
+          :HVCenter,
+          :HVSquash,
+          :HVStretch,
+          :HWeight,
+          :Heading,
+          :IconButton,
+          :Image,
+          :IntField,
+          :Label,
+          :Left,
+          :LogView,
+          :MarginBox,
+          :MenuButton,
+          :MinHeight,
+          :MinSize,
+          :MinWidth,
+          :MultiLineEdit,
+          :MultiSelectionBox,
+          :PackageSelector,
+          :PatternSelector,
+          :PartitionSplitter,
+          :Password,
+          :PkgSpecial,
+          :ProgressBar,
+          :PushButton,
+          :RadioButton,
+          :RadioButtonGroup,
+          :ReplacePoint,
+          :RichText,
+          :Right,
+          :SelectionBox,
+          :Slider,
+          :Table,
+          :TextEntry,
+          :Time,
+          :Top,
+          :Tree,
+          :VBox,
+          :VCenter,
+          :VMultiProgressMeter,
+          :VSpacing,
+          :VSquash,
+          :VStretch,
+          :VWeight,
+          :Wizard
+        ]
 
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "term",
-            :args     => [name_compiled] + children_compiled,
-            :block    => nil,
-            :parens   => true
-          )
+        def compile(context)
+          name_symbol = name.to_sym
+          children_compiled = children.map { |ch| ch.compile(context) }
+          if UI_TERMS.include?(name_symbol)
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => name,
+              :args     => children_compiled,
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            name_compiled     = Ruby::Literal.new(:value => name_symbol)
+
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "term",
+              :args     => [name_compiled] + children_compiled,
+              :block    => nil,
+              :parens   => true
+            )
+          end
         end
       end
 
