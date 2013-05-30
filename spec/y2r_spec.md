@@ -396,8 +396,6 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 require "ycp"
 module YCP
   class MClass < Module
-    include YCP
-    extend Exportable
     def initialize
       @i = 42
       @j = @i
@@ -1682,8 +1680,6 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 require "ycp"
 module YCP
   class MClass < Module
-    include YCP
-    extend Exportable
     def initialize
       YCP.import("String")
       @i = 42

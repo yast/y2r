@@ -783,7 +783,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            class_statements += build_header
             class_statements += build_initialize_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
@@ -841,25 +840,6 @@ module Y2R
 
         def constructor
           fundef_statements.find { |s| s.name == name }
-        end
-
-        def build_header
-          [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "include",
-              :args     => [Ruby::Variable.new(:name => "YCP")],
-              :block    => nil,
-              :parens   => false
-            ),
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "extend",
-              :args     => [Ruby::Variable.new(:name => "Exportable")],
-              :block    => nil,
-              :parens   => false
-            )
-          ]
         end
 
         def build_initialize_def(context)
