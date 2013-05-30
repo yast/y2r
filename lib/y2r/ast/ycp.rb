@@ -952,7 +952,7 @@ module Y2R
             :lhs => RubyVar.for(nil, name, context, :in_code),
             :rhs => Ruby::MethodCall.new(
               :receiver => nil,
-              :name     => "copy_arg",
+              :name     => "deep_copy",
               :args     => [RubyVar.for(nil, name, context, :in_code)],
               :block    => nil,
               :parens   => true
