@@ -227,13 +227,15 @@ m2 = { :a => 42, :b => 43, :c => 44 }
 ### Terms
 
 Y2R translates YCP terms as calls to the `YCP.term` method, which creates an
-instance of the `YCP::Term` class
+instance of the `YCP::Term` class. If term is from list of known UI terms, then
+its shortcut is created.
 
 #### YCP (fragment)
 
 ```ycp
 term t1 = `a();
 term t2 = `a(42, 43, 44);
+term ui = `HBox(`Empty());
 ```
 
 #### Ruby (fragment)
@@ -241,6 +243,7 @@ term t2 = `a(42, 43, 44);
 ```ruby
 t1 = term(:a)
 t2 = term(:a, 42, 43, 44)
+ui = HBox(Empty())
 ```
 
 ### Blocks
