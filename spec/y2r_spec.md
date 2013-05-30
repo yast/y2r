@@ -332,7 +332,7 @@ module YCP
     class DefaultClient < Client
       def f
         i = 42
-        j = i
+        j = deep_copy(i)
         nil
       end
     end
@@ -362,7 +362,7 @@ module YCP
     class DefaultClient < Client
       def main
         @i = 42
-        @j = @i
+        @j = deep_copy(@i)
         nil
       end
     end
@@ -397,9 +397,9 @@ module YCP
   class MClass < Module
     def initialize
       @i = 42
-      @j = @i
+      @j = deep_copy(@i)
       @k = 42
-      @l = @i
+      @l = deep_copy(@i)
     end
     publish({ :variable => :k, :type => "integer" })
     publish({ :variable => :l, :type => "integer" })

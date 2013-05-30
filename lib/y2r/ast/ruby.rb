@@ -210,7 +210,12 @@ module Y2R
 
       class Assignment < Node
         def to_ruby
-          "#{lhs.to_ruby} = #{rhs.to_ruby}"
+          # YCP makes always copy when assign
+          if rhs.is_a? Variable
+            "#{lhs.to_ruby} = deep_copy(#{rhs.to_ruby})"
+          else
+            "#{lhs.to_ruby} = #{rhs.to_ruby}"
+          end
         end
       end
 

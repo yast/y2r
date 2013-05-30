@@ -584,6 +584,13 @@ module Y2R::AST::Ruby
 
         node.to_ruby.should == "a = 42"
       end
+
+      it "emits correct code for variable" do
+        node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
+
+        node.to_ruby.should == "a = deep_copy(b)"
+      end
+
     end
   end
 
