@@ -573,7 +573,6 @@ module Y2R
 
           context.inside self do |inner_context|
             class_statements += build_header
-            class_statements += build_textdomain_setters(inner_context)
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -628,16 +627,12 @@ module Y2R
             gsub(/[_.-]./) { |s| s[1].upcase } + "Client"
         end
 
-        def textdomain_statements
-          statements.select { |s| s.is_a?(Textdomain) }
-        end
-
         def fundef_statements
           statements.select { |s| s.is_a?(FunDef) }
         end
 
         def other_statements
-          statements - textdomain_statements - fundef_statements
+          statements - fundef_statements
         end
 
         def build_header
@@ -650,10 +645,6 @@ module Y2R
               :parens   => false
             )
           ]
-        end
-
-        def build_textdomain_setters(context)
-          textdomain_statements.map { |t| t.compile(context) }
         end
 
         def build_main_def(context)
@@ -806,7 +797,6 @@ module Y2R
 
           context.inside self do |inner_context|
             class_statements += build_header
-            class_statements += build_textdomain_setters(inner_context)
             class_statements += build_initialize_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
@@ -854,16 +844,12 @@ module Y2R
 
         private
 
-        def textdomain_statements
-          statements.select { |s| s.is_a?(Textdomain) }
-        end
-
         def fundef_statements
           statements.select { |s| s.is_a?(FunDef) }
         end
 
         def other_statements
-          statements - textdomain_statements - fundef_statements
+          statements - fundef_statements
         end
 
         def constructor
@@ -887,10 +873,6 @@ module Y2R
               :parens   => false
             )
           ]
-        end
-
-        def build_textdomain_setters(context)
-          textdomain_statements.map { |t| t.compile(context) }
         end
 
         def build_initialize_def(context)

@@ -611,8 +611,8 @@ module YCP
   module Clients
     class DefaultClient < Client
       include YCP
-      textdomain "helloworld"
       def main
+        textdomain "helloworld"
         @s = _("Hello, world!")
         nil
       end
@@ -1009,7 +1009,10 @@ module YCP
   module Clients
     class DefaultClient < Client
       include YCP
-      textdomain "users"
+      def main
+        textdomain "users"
+        nil
+      end
     end
   end
 end

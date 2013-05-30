@@ -39,10 +39,6 @@ module Y2R::AST
         :child => @ycp_const_44
       )
 
-      @ycp_textdomain_d = YCP::Textdomain.new(:name => "d")
-      @ycp_textdomain_e = YCP::Textdomain.new(:name => "e")
-      @ycp_textdomain_f = YCP::Textdomain.new(:name => "f")
-
       @ycp_statements = [@ycp_assign_i_42, @ycp_assign_j_43, @ycp_assign_k_44]
 
       @ycp_symbol_private_a = YCP::Symbol.new(
@@ -268,28 +264,6 @@ module Y2R::AST
       @ruby_assignment_k_44 = Ruby::Assignment.new(
         :lhs => @ruby_variable_k,
         :rhs => @ruby_literal_44
-      )
-
-      @ruby_textdomain_d = Ruby::MethodCall.new(
-        :receiver => nil,
-        :name     => "textdomain",
-        :args     => [Ruby::Literal.new(:value => "d")],
-        :block    => nil,
-        :parens   => false
-      )
-      @ruby_textdomain_e = Ruby::MethodCall.new(
-        :receiver => nil,
-        :name     => "textdomain",
-        :args     => [Ruby::Literal.new(:value => "e")],
-        :block    => nil,
-        :parens   => false
-      )
-      @ruby_textdomain_f = Ruby::MethodCall.new(
-        :receiver => nil,
-        :name     => "textdomain",
-        :args     => [Ruby::Literal.new(:value => "f")],
-        :block    => nil,
-        :parens   => false
       )
 
       @ruby_statements_empty            = Ruby::Statements.new(
@@ -1851,26 +1825,6 @@ module Y2R::AST
         ycp_node.compile(@context_empty).should == ruby_node
       end
 
-      it "returns correct AST node for blocks with textdomain statements" do
-        ycp_node = YCP::FileBlock.new(
-          :filename   => "c.ycp",
-          :symbols    => [],
-          :statements => [
-            @ycp_textdomain_d,
-            @ycp_textdomain_e,
-            @ycp_textdomain_f
-          ],
-          :comment    => nil
-        )
-
-        ruby_node = ruby_client_statements(
-          [@ruby_textdomain_d, @ruby_textdomain_e, @ruby_textdomain_f],
-          nil
-        )
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
       it "returns correct AST node for blocks with function definitions" do
         ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
@@ -2513,26 +2467,6 @@ module Y2R::AST
               :statements => @ruby_statements_non_empty
             )
           ],
-          nil
-        )
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
-      it "returns correct AST node for blocks with textdomain statements" do
-        ycp_node = YCP::ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [],
-          :statements => [
-            @ycp_textdomain_d,
-            @ycp_textdomain_e,
-            @ycp_textdomain_f
-          ],
-          :comment    => nil
-        )
-
-        ruby_node = ruby_module_statements(
-          [@ruby_textdomain_d, @ruby_textdomain_e, @ruby_textdomain_f],
           nil
         )
 
