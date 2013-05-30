@@ -1406,6 +1406,14 @@ module Y2R::AST
         )
       end
 
+      def ruby_operator(name)
+        Ruby::BinaryOperator.new(
+          :op  => name,
+          :lhs => @ruby_literal_42,
+          :rhs => @ruby_literal_43
+        )
+      end
+
       it "returns correct AST node" do
         ycp_node_equal            = ycp_compare("==")
         ycp_node_not_equal        = ycp_compare("!=")
@@ -1414,8 +1422,8 @@ module Y2R::AST
         ycp_node_less_or_equal    = ycp_compare("<=")
         ycp_node_greater_or_equal = ycp_compare(">=")
 
-        ruby_node_equal            = ruby_ops_call("equal")
-        ruby_node_not_equal        = ruby_ops_call("not_equal")
+        ruby_node_equal            = ruby_operator("==")
+        ruby_node_not_equal        = ruby_operator("!=")
         ruby_node_less_than        = ruby_ops_call("less_than")
         ruby_node_greater_than     = ruby_ops_call("greater_than")
         ruby_node_less_or_equal    = ruby_ops_call("less_or_equal")
