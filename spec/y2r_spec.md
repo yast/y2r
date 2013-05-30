@@ -611,7 +611,6 @@ module YCP
   module Clients
     class DefaultClient < Client
       include YCP
-      include I18n
       textdomain "helloworld"
       def main
         @s = _("Hello, world!")
@@ -991,8 +990,7 @@ YCP.import("String")
 
 ### `textdomain` Statement
 
-Y2R translates YCP `textdomain` statement as an include of the `I18n` module and
-call to set the text domain.
+Y2R translates YCP `textdomain` statement as a call to set the text domain.
 
 #### YCP (complete code)
 
@@ -1011,7 +1009,6 @@ module YCP
   module Clients
     class DefaultClient < Client
       include YCP
-      include I18n
       textdomain "users"
     end
   end

@@ -1039,23 +1039,12 @@ module Y2R
 
       class Textdomain < Node
         def compile(context)
-          Ruby::Statements.new(
-            :statements => [
-              Ruby::MethodCall.new(
-                :receiver => nil,
-                :name     => "include",
-                :args     => [Ruby::Variable.new(:name => "I18n")],
-                :block    => nil,
-                :parens   => false
-              ),
-              Ruby::MethodCall.new(
-                :receiver => nil,
-                :name     => "textdomain",
-                :args     => [Ruby::Literal.new(:value => name)],
-                :block    => nil,
-                :parens   => false
-              )
-            ]
+          Ruby::MethodCall.new(
+            :receiver => nil,
+            :name     => "textdomain",
+            :args     => [Ruby::Literal.new(:value => name)],
+            :block    => nil,
+            :parens   => false
           )
         end
       end

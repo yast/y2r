@@ -270,59 +270,26 @@ module Y2R::AST
         :rhs => @ruby_literal_44
       )
 
-      @ruby_textdomain_d = Ruby::Statements.new(
-        :statements => [
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "include",
-            :args     => [Ruby::Variable.new(:name => "I18n")],
-            :block    => nil,
-            :parens   => false
-          ),
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "textdomain",
-            :args     => [Ruby::Literal.new(:value => "d")],
-            :block    => nil,
-            :parens   => false
-          )
-        ]
+      @ruby_textdomain_d = Ruby::MethodCall.new(
+        :receiver => nil,
+        :name     => "textdomain",
+        :args     => [Ruby::Literal.new(:value => "d")],
+        :block    => nil,
+        :parens   => false
       )
-      @ruby_textdomain_e = Ruby::Statements.new(
-        :statements => [
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "include",
-            :args     => [Ruby::Variable.new(:name => "I18n")],
-            :block    => nil,
-            :parens   => false
-          ),
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "textdomain",
-            :args     => [Ruby::Literal.new(:value => "e")],
-            :block    => nil,
-            :parens   => false
-          )
-        ]
+      @ruby_textdomain_e = Ruby::MethodCall.new(
+        :receiver => nil,
+        :name     => "textdomain",
+        :args     => [Ruby::Literal.new(:value => "e")],
+        :block    => nil,
+        :parens   => false
       )
-      @ruby_textdomain_f = Ruby::Statements.new(
-        :statements => [
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "include",
-            :args     => [Ruby::Variable.new(:name => "I18n")],
-            :block    => nil,
-            :parens   => false
-          ),
-          Ruby::MethodCall.new(
-            :receiver => nil,
-            :name     => "textdomain",
-            :args     => [Ruby::Literal.new(:value => "f")],
-            :block    => nil,
-            :parens   => false
-          )
-        ]
+      @ruby_textdomain_f = Ruby::MethodCall.new(
+        :receiver => nil,
+        :name     => "textdomain",
+        :args     => [Ruby::Literal.new(:value => "f")],
+        :block    => nil,
+        :parens   => false
       )
 
       @ruby_statements_empty            = Ruby::Statements.new(
@@ -3182,23 +3149,12 @@ module Y2R::AST
       it "returns correct AST node" do
         ycp_node = YCP::Textdomain.new(:name => "d")
 
-        ruby_node = Ruby::Statements.new(
-          :statements => [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "include",
-              :args     => [Ruby::Variable.new(:name => "I18n")],
-              :block    => nil,
-              :parens   => false
-            ),
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "textdomain",
-              :args     => [Ruby::Literal.new(:value => "d")],
-              :block    => nil,
-              :parens   => false
-            )
-          ]
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "textdomain",
+          :args     => [Ruby::Literal.new(:value => "d")],
+          :block    => nil,
+          :parens   => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
