@@ -1810,6 +1810,7 @@ module Y2R::AST
                   :name       => "Clients",
                   :statements => Ruby::Class.new(
                     :name       => "CClient",
+                    :superclass => Ruby::Variable.new(:name => "Client"),
                     :statements => Ruby::Statements.new(
                       :statements => class_statements
                     )
@@ -2444,6 +2445,7 @@ module Y2R::AST
                   :statements => [
                     Ruby::Class.new(
                       :name       => "MClass",
+                      :superclass => Ruby::Variable.new(:name => "Module"),
                       :statements => Ruby::Statements.new(
                         :statements => class_statements
                       )

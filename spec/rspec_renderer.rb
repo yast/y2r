@@ -71,7 +71,7 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << ""
           lines << "module YCP"
           lines << "  module Clients"
-          lines << "    class DefaultClient"
+          lines << "    class DefaultClient < Client"
           lines << "      include YCP"
           lines << "      def fragment_wrapper"
           lines << indent(code[0..-2], 4)

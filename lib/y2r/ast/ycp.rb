@@ -587,6 +587,7 @@ module Y2R
                     :name       => "Clients",
                     :statements => Ruby::Class.new(
                       :name       => class_name,
+                      :superclass => Ruby::Variable.new(:name => "Client"),
                       :statements => Ruby::Statements.new(
                         :statements => class_statements
                       )
@@ -827,6 +828,7 @@ module Y2R
                     :statements => [
                       Ruby::Class.new(
                         :name       => "#{name}Class",
+                        :superclass => Ruby::Variable.new(:name => "Module"),
                         :statements => Ruby::Statements.new(
                           :statements => class_statements
                         )

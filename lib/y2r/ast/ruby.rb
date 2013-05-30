@@ -44,7 +44,7 @@ module Y2R
       class Class < Node
         def to_ruby
           combine do |parts|
-            parts << "class #{name}"
+            parts << "class #{name} < #{superclass.to_ruby}"
             parts << indent(statements.to_ruby)
             parts << "end"
           end

@@ -18,6 +18,7 @@ module Y2R::AST::Ruby
       @variable_a = Variable.new(:name => "a")
       @variable_b = Variable.new(:name => "b")
       @variable_c = Variable.new(:name => "c")
+      @variable_S = Variable.new(:name => "S")
 
       @assignment_a_42 = Assignment.new(
         :lhs => @variable_a,
@@ -78,10 +79,14 @@ module Y2R::AST::Ruby
   describe Class, :type => :ruby do
     describe "#to_ruby" do
       it "emits correct code" do
-        node = Class.new(:name => "C", :statements => @statements)
+        node = Class.new(
+          :name       => "C",
+          :superclass => @variable_S,
+          :statements => @statements
+        )
 
         node.to_ruby.should == [
-          "class C",
+          "class C < S",
           "  a = 42",
           "  b = 43",
           "  c = 44",
