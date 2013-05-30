@@ -572,7 +572,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            class_statements += build_header
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -633,18 +632,6 @@ module Y2R
 
         def other_statements
           statements - fundef_statements
-        end
-
-        def build_header
-          [
-            Ruby::MethodCall.new(
-              :receiver => nil,
-              :name     => "include",
-              :args     => [Ruby::Variable.new(:name => "YCP")],
-              :block    => nil,
-              :parens   => false
-            )
-          ]
         end
 
         def build_main_def(context)

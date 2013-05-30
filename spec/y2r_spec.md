@@ -289,7 +289,6 @@ creates an instance of the `YCP::FunRef` class.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         @fref = fun_ref(method(:f), "void ()")
         nil
@@ -332,7 +331,6 @@ Y2R translates YCP local variables as Ruby local variables.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def f
         i = 42
         j = i
@@ -363,7 +361,6 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         @i = 42
         @j = @i
@@ -436,7 +433,6 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def f
         i = 42
         b = lambda {
@@ -473,7 +469,6 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def f
         i = 42
         i2 = 43
@@ -537,7 +532,6 @@ builtins in Ruby.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         Builtins.time
         Builtins.random(100)
@@ -610,7 +604,6 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         textdomain "helloworld"
         @s = _("Hello, world!")
@@ -659,7 +652,6 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         f1
         @a = "a"
@@ -728,7 +720,6 @@ method on them.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def outer
         f1 = lambda {
           return 42
@@ -785,7 +776,6 @@ on them.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         @fref = fun_ref(method(:f), "void ()")
         @fref.call
@@ -1008,7 +998,6 @@ Y2R translates YCP `textdomain` statement as a call to set the text domain.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         textdomain "users"
         nil
@@ -1084,7 +1073,6 @@ statement.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def f1
         return
         nil
@@ -1249,7 +1237,6 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def f1
         return 42
         nil
@@ -1328,7 +1315,6 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def outer
         f1 = lambda {
           return 42
@@ -1389,7 +1375,6 @@ Y2R translates YCP statement blocks as Ruby statements.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         Builtins.y2milestone("M1")
         Builtins.y2milestone("M2")
@@ -1640,7 +1625,6 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 module YCP
   module Clients
     class DefaultClient < Client
-      include YCP
       def main
         YCP.import("String")
         @i = 42
