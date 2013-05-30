@@ -295,7 +295,6 @@ module YCP
       end
       def f
         return
-        nil
       end
     end
   end
@@ -661,18 +660,15 @@ module YCP
       end
       def f1
         return 42
-        nil
       end
       def f2(a, b, c)
         a = copy_arg(a)
         b = copy_arg(b)
         c = copy_arg(c)
         return 42
-        nil
       end
       def f3(a, b, c)
         return 42
-        nil
       end
     end
   end
@@ -721,18 +717,15 @@ module YCP
       def outer
         f1 = lambda {
           return 42
-          nil
         }
         f2 = lambda { |a2, b2, c2|
           a2 = copy_arg(a2)
           b2 = copy_arg(b2)
           c2 = copy_arg(c2)
           return 42
-          nil
         }
         f3 = lambda { |a2, b2, c2|
           return 42
-          nil
         }
         f1.call
         a = "a"
@@ -781,7 +774,6 @@ module YCP
       end
       def f
         return
-        nil
       end
     end
   end
@@ -1073,11 +1065,9 @@ module YCP
     class DefaultClient < Client
       def f1
         return
-        nil
       end
       def f2
         return 42
-        nil
       end
     end
   end
@@ -1237,30 +1227,24 @@ module YCP
     class DefaultClient < Client
       def f1
         return 42
-        nil
       end
       def f2(a, b, c)
         return 42
-        nil
       end
       def f3(a, b, c)
         return 42
-        nil
       end
       def f4(a, b, c)
         return 42
-        nil
       end
       def f5(a, b, c)
         return 42
-        nil
       end
       def f6(a, b, c)
         a = copy_arg(a)
         b = copy_arg(b)
         c = copy_arg(c)
         return 42
-        nil
       end
     end
   end
@@ -1316,30 +1300,24 @@ module YCP
       def outer
         f1 = lambda {
           return 42
-          nil
         }
         f2 = lambda { |a, b, c|
           return 42
-          nil
         }
         f3 = lambda { |a, b, c|
           return 42
-          nil
         }
         f4 = lambda { |a, b, c|
           return 42
-          nil
         }
         f5 = lambda { |a, b, c|
           return 42
-          nil
         }
         f6 = lambda { |a, b, c|
           a = copy_arg(a)
           b = copy_arg(b)
           c = copy_arg(c)
           return 42
-          nil
         }
         nil
       end
@@ -1631,11 +1609,9 @@ module YCP
       end
       def f
         return 42
-        nil
       end
       def g
         return 43
-        nil
       end
     end
   end
@@ -1688,11 +1664,9 @@ module YCP
     end
     def f
       return 42
-      nil
     end
     def g
       return 43
-      nil
     end
     def M
       Builtins.y2milestone("M1")

@@ -672,7 +672,10 @@ module Y2R
             statements.statements = args.select(&:needs_copy?).map do |arg|
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
-            statements.statements << Ruby::Literal.new(:value => nil)
+
+            unless statements.statements.last.is_a? Ruby::Return
+              statements.statements << Ruby::Literal.new(:value => nil)
+            end
 
             if !context.in?(DefBlock)
               Ruby::Def.new(
