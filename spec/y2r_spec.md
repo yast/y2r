@@ -485,19 +485,23 @@ YCP::Clients::DefaultClient.new.main
 ### Type Conversions
 
 Y2R translates YCP type conversions as calls of the `YCP::Convert.convert`
-method.
+method or shortcut `YCP::Convert.to_<type>` if given shortcut exists.
 
 
 #### YCP (fragment)
 
 ```ycp
-float f = (float) 42;
+float f  = (float) 42;
+any a    = "string";
+string s = (string) a;
 ```
 
 #### Ruby (fragment)
 
 ```ruby
 f = Convert.convert(42, { :from => "integer", :to => "float" })
+a = "string"
+s = Convert.to_string(a)
 ```
 
 ### Builtin Calls

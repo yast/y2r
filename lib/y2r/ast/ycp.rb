@@ -1254,29 +1254,52 @@ module Y2R
       end
 
       class YEPropagate < Node
+        # Is identical to list of shortcuts in ruby-bindings ycp/convert.rb
+        TYPES_WITH_SHORTCUT_CONVERSION = [
+          "boolean",
+          "float",
+          "integer",
+          "list",
+          "locale",
+          "map",
+          "path",
+          "string",
+          "symbol",
+          "term",
+        ]
         def compile(context)
           if from.no_const != to.no_const
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Convert"),
-              :name     => "convert",
-              :args     => [
-                child.compile(context),
-                Ruby::Hash.new(
-                  :entries => [
-                    Ruby::HashEntry.new(
-                      :key   => Ruby::Literal.new(:value => :from),
-                      :value => Ruby::Literal.new(:value => from.no_const.to_s)
-                    ),
-                    Ruby::HashEntry.new(
-                      :key   => Ruby::Literal.new(:value => :to),
-                      :value => Ruby::Literal.new(:value => to.no_const.to_s)
-                    )
-                  ]
-                )
-              ],
-              :block    => nil,
-              :parens   => true
-            )
+            if TYPES_WITH_SHORTCUT_CONVERSION.include?(to.to_s) && from.to_s == "any"
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Convert"),
+                :name     => "to_#{to}",
+                :args     => [child.compile(context)],
+                :block    => nil,
+                :parens   => true
+              )
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Convert"),
+                :name     => "convert",
+                :args     => [
+                  child.compile(context),
+                  Ruby::Hash.new(
+                    :entries => [
+                      Ruby::HashEntry.new(
+                        :key   => Ruby::Literal.new(:value => :from),
+                        :value => Ruby::Literal.new(:value => from.no_const.to_s)
+                      ),
+                      Ruby::HashEntry.new(
+                        :key   => Ruby::Literal.new(:value => :to),
+                        :value => Ruby::Literal.new(:value => to.no_const.to_s)
+                      )
+                    ]
+                  )
+                ],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             child.compile(context)
           end
