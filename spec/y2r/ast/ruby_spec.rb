@@ -5,7 +5,8 @@ require "spec_helper"
 module Y2R::AST::Ruby
   RSpec.configure do |c|
     c.before :each, :type => :ruby do
-      @literal_true = Literal.new(:value => true)
+      @literal_true  = Literal.new(:value => true)
+      @literal_false = Literal.new(:value => false)
 
       @literal_a = Literal.new(:value => :a)
       @literal_b = Literal.new(:value => :b)
@@ -14,6 +15,7 @@ module Y2R::AST::Ruby
       @literal_42 = Literal.new(:value => 42)
       @literal_43 = Literal.new(:value => 43)
       @literal_44 = Literal.new(:value => 44)
+      @literal_45 = Literal.new(:value => 45)
 
       @variable_a = Variable.new(:name => "a")
       @variable_b = Variable.new(:name => "b")
@@ -33,6 +35,22 @@ module Y2R::AST::Ruby
         :rhs => @literal_44
       )
 
+      @binary_operator_true_or_false = BinaryOperator.new(
+        :op  => "||",
+        :lhs => @literal_true,
+        :rhs => @literal_false
+      )
+      @binary_operator_42_plus_43 = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @literal_42,
+        :rhs => @literal_43
+      )
+      @binary_operator_44_plus_45 = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @literal_44,
+        :rhs => @literal_45
+      )
+
       @statements = Statements.new(
         :statements => [@assignment_a_42, @assignment_b_43, @assignment_c_44]
       )
@@ -44,6 +62,46 @@ module Y2R::AST::Ruby
       @when_44 = When.new(:values => [@literal_44], :body => @statements)
 
       @else = Else.new(:body => @statements)
+    end
+  end
+
+  describe Node, :type => :ruby do
+    describe "#to_ruby_enclosed" do
+      class NotEnclosedNode < Node
+        def enclose?
+          false
+        end
+
+        def to_ruby
+          "ruby"
+        end
+      end
+
+      class EnclosedNode < Node
+        def enclose?
+          true
+        end
+
+        def to_ruby
+          "ruby"
+        end
+      end
+
+      describe "on nodes where #enclosed? returns false" do
+        it "returns code that is not enclosed in parens" do
+          node = NotEnclosedNode.new
+
+          node.to_ruby_enclosed.should == "ruby"
+        end
+      end
+
+      describe "on nodes where #enclosed? returns true" do
+        it "returns code that is enclosed in parens" do
+          node = EnclosedNode.new
+
+          node.to_ruby_enclosed.should == "(ruby)"
+        end
+      end
     end
   end
 
@@ -595,7 +653,16 @@ module Y2R::AST::Ruby
           :expression => @literal_42,
         )
 
-        node.to_ruby.should == "+(42)"
+        node.to_ruby.should == "+42"
+      end
+
+      it "encloses operand in parens when needed" do
+        node = UnaryOperator.new(
+          :op         => "+",
+          :expression => @binary_operator_42_plus_43,
+        )
+
+        node.to_ruby.should == "+(42 + 43)"
       end
     end
   end
@@ -609,7 +676,17 @@ module Y2R::AST::Ruby
           :rhs => @literal_43
         )
 
-        node.to_ruby.should == "(42) + (43)"
+        node.to_ruby.should == "42 + 43"
+      end
+
+      it "encloses operands in parens when needed" do
+        node = BinaryOperator.new(
+          :op  => "+",
+          :lhs => @binary_operator_42_plus_43,
+          :rhs => @binary_operator_44_plus_45
+        )
+
+        node.to_ruby.should == "(42 + 43) + (44 + 45)"
       end
     end
   end
@@ -624,6 +701,16 @@ module Y2R::AST::Ruby
         )
 
         node.to_ruby.should == "true ? 42 : 43"
+      end
+
+      it "encloses operands in parens when needed" do
+        node = Ternary.new(
+          :condition  => @binary_operator_true_or_false,
+          :then       => @binary_operator_42_plus_43,
+          :else       => @binary_operator_44_plus_45
+        )
+
+        node.to_ruby.should == "(true || false) ? (42 + 43) : (44 + 45)"
       end
     end
   end

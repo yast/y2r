@@ -888,9 +888,9 @@ boolean b3 = true || false;
 
 ```ruby
 b = true
-b1 = !(b)
-b2 = (true) && (false)
-b3 = (true) || (false)
+b1 = !b
+b2 = true && false
+b3 = true || false
 ```
 
 ### Ternary Operator
