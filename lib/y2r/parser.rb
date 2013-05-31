@@ -112,7 +112,7 @@ module Y2R
         when "block"
           all_statements = extract_collection(element, "statements", context)
 
-          statements = if context.extracted_file
+          statements = if toplevel_block?(element) && context.extracted_file
             extract_file_statements(all_statements, context.extracted_file)
           else
             all_statements
@@ -518,6 +518,10 @@ module Y2R
           :statements => statements
         )
       end
+    end
+
+    def toplevel_block?(element)
+      element["kind"] == "file" || element["kind"] == "module"
     end
 
     def extract_file_statements(statements, file)
