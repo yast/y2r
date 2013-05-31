@@ -1888,7 +1888,7 @@ module Y2R::AST
           :lhs => Ruby::Variable.new(:name => name),
           :rhs => Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "copy_arg",
+            :name     => "deep_copy",
             :args     => [Ruby::Variable.new(:name => name)],
             :block    => nil,
             :parens   => true
@@ -2935,7 +2935,7 @@ module Y2R::AST
           :lhs => Ruby::Variable.new(:name => name),
           :rhs => Ruby::MethodCall.new(
             :receiver => nil,
-            :name     => "copy_arg",
+            :name     => "deep_copy",
             :args     => [Ruby::Variable.new(:name => name)],
             :block    => nil,
             :parens   => true

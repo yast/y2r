@@ -662,9 +662,9 @@ module YCP
         return 42
       end
       def f2(a, b, c)
-        a = copy_arg(a)
-        b = copy_arg(b)
-        c = copy_arg(c)
+        a = deep_copy(a)
+        b = deep_copy(b)
+        c = deep_copy(c)
         return 42
       end
       def f3(a, b, c)
@@ -719,9 +719,9 @@ module YCP
           return 42
         }
         f2 = lambda { |a2, b2, c2|
-          a2 = copy_arg(a2)
-          b2 = copy_arg(b2)
-          c2 = copy_arg(c2)
+          a2 = deep_copy(a2)
+          b2 = deep_copy(b2)
+          c2 = deep_copy(c2)
           return 42
         }
         f3 = lambda { |a2, b2, c2|
@@ -1241,9 +1241,9 @@ module YCP
         return 42
       end
       def f6(a, b, c)
-        a = copy_arg(a)
-        b = copy_arg(b)
-        c = copy_arg(c)
+        a = deep_copy(a)
+        b = deep_copy(b)
+        c = deep_copy(c)
         return 42
       end
     end
@@ -1314,9 +1314,9 @@ module YCP
           return 42
         }
         f6 = lambda { |a, b, c|
-          a = copy_arg(a)
-          b = copy_arg(b)
-          c = copy_arg(c)
+          a = deep_copy(a)
+          b = deep_copy(b)
+          c = deep_copy(c)
           return 42
         }
         nil
