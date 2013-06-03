@@ -1376,9 +1376,9 @@ module Y2R
         ]
 
         def compile(context)
-          name_symbol = name.to_sym
           children_compiled = children.map { |ch| ch.compile(context) }
-          if UI_TERMS.include?(name_symbol)
+
+          if UI_TERMS.include?(name.to_sym)
             Ruby::MethodCall.new(
               :receiver => nil,
               :name     => name,
@@ -1387,7 +1387,7 @@ module Y2R
               :parens   => true
             )
           else
-            name_compiled     = Ruby::Literal.new(:value => name_symbol)
+            name_compiled = Ruby::Literal.new(:value => name.to_sym)
 
             Ruby::MethodCall.new(
               :receiver => nil,
