@@ -42,6 +42,10 @@ module Y2R
           @blocks.first.name
         end
 
+        def symbols
+          @blocks.map { |b| b.symbols.map(&:name) }.flatten
+        end
+
         def locals
           index = @blocks.index(&:creates_local_scope?) || @blocks.length
           @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
@@ -1379,8 +1383,14 @@ module Y2R
           children_compiled = children.map { |ch| ch.compile(context) }
 
           if UI_TERMS.include?(name.to_sym)
+            receiver = if context.symbols.include?(name)
+              Ruby::Variable.new(:name => "UIShortcuts")
+            else
+              nil
+            end
+
             Ruby::MethodCall.new(
-              :receiver => nil,
+              :receiver => receiver,
               :name     => name,
               :args     => children_compiled,
               :block    => nil,

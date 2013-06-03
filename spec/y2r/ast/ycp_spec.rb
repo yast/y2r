@@ -155,6 +155,13 @@ module Y2R::AST
         @ycp_symbol_fun_reserved
       ]
 
+      @ycp_symbol_hbox = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => YCP::Type.new("integer"),
+        :name     => "HBox"
+      )
+
       @ycp_stmt_block = YCP::StmtBlock.new(
         :symbols    => [],
         :statements => @ycp_statements,
@@ -433,6 +440,15 @@ module Y2R::AST
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @ycp_symbols_private)
         ]
+      )
+      @context_hbox_global = YCP::Context.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => [@ycp_symbol_hbox])
+        ]
+      )
+      @context_hbox_local = YCP::Context.new(
+        :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_hbox])]
       )
     end
   end
@@ -4014,7 +4030,7 @@ module Y2R::AST
           :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
         )
 
-        ruby_node = Ruby::MethodCall.new(
+        ruby_node_without_receiver = Ruby::MethodCall.new(
           :receiver => nil,
           :name     => "HBox",
           :args     => [
@@ -4025,8 +4041,24 @@ module Y2R::AST
           :block    => nil,
           :parens   => true
         )
+        ruby_node_with_receiver = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "UIShortcuts"),
+          :name     => "HBox",
+          :args     => [
+            @ruby_literal_42,
+            @ruby_literal_43,
+            @ruby_literal_44
+          ],
+          :block    => nil,
+          :parens   => true
+        )
 
-        ycp_node.compile(@context_empty).should == ruby_node
+        ycp_node.compile(@context_empty).should ==
+          ruby_node_without_receiver
+        ycp_node.compile(@context_hbox_global).should  ==
+          ruby_node_with_receiver
+        ycp_node.compile(@context_hbox_local).should ==
+          ruby_node_with_receiver
       end
 
     end
