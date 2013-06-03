@@ -300,13 +300,13 @@ module Y2R
         when "if"
           AST::YCP::If.new(
             :cond => element_to_node(element.elements[0], context),
-            :then => if element.elements[1]
-              element_to_node(element.elements[1], context)
+            :then => if element.at_xpath("./then")
+              element_to_node(element.at_xpath("./then"), context)
             else
               nil
             end,
-            :else => if element.elements[2]
-              element_to_node(element.elements[2], context)
+            :else => if element.at_xpath("./else")
+              element_to_node(element.at_xpath("./else"), context)
             else
               nil
             end
