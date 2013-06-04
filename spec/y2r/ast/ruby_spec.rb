@@ -89,19 +89,21 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "on nodes where #enclosed? returns false" do
-        it "returns code that is not enclosed in parens" do
-          node = NotEnclosedNode.new
+      describe "basics" do
+        describe "on nodes where #enclosed? returns false" do
+          it "returns code that is not enclosed in parens" do
+            node = NotEnclosedNode.new
 
-          node.to_ruby_enclosed(@context_default).should == "ruby"
+            node.to_ruby_enclosed(@context_default).should == "ruby"
+          end
         end
-      end
 
-      describe "on nodes where #enclosed? returns true" do
-        it "returns code that is enclosed in parens" do
-          node = EnclosedNode.new
+        describe "on nodes where #enclosed? returns true" do
+          it "returns code that is enclosed in parens" do
+            node = EnclosedNode.new
 
-          node.to_ruby_enclosed(@context_default).should == "(ruby)"
+            node.to_ruby_enclosed(@context_default).should == "(ruby)"
+          end
         end
       end
     end
@@ -109,700 +111,671 @@ module Y2R::AST::Ruby
 
   describe Program, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Program.new(:statements => @statements)
+      describe "basics" do
+        it "emits correct code" do
+          node = Program.new(:statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "# encoding: utf-8",
-          "",
-          "a = 42",
-          "b = 43",
-          "c = 44"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "# encoding: utf-8",
+            "",
+            "a = 42",
+            "b = 43",
+            "c = 44"
+          ].join("\n")
+        end
 
-      it "emits correct code with a comment" do
-        node = Program.new(:statements => @statements, :comment => "comment")
+        it "emits correct code with a comment" do
+          node = Program.new(:statements => @statements, :comment => "comment")
 
-        node.to_ruby(@context_default).should == [
-          "# encoding: utf-8",
-          "# comment",
-          "",
-          "a = 42",
-          "b = 43",
-          "c = 44"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "# encoding: utf-8",
+            "# comment",
+            "",
+            "a = 42",
+            "b = 43",
+            "c = 44"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Class, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Class.new(
-          :name       => "C",
-          :superclass => @variable_S,
-          :statements => @statements
-        )
+      describe "basics" do
+        it "emits correct code" do
+          node = Class.new(
+            :name       => "C",
+            :superclass => @variable_S,
+            :statements => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "class C < S",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "class C < S",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Module, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Module.new(:name  => "M", :statements => @statements)
+      describe "basics" do
+        it "emits correct code" do
+          node = Module.new(:name  => "M", :statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "module M",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "module M",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Def, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for method definitions with no arguments" do
-        node = Def.new(:name => "m", :args => [], :statements => @statements)
+      describe "basics" do
+        it "emits correct code for method definitions with no arguments" do
+          node = Def.new(:name => "m", :args => [], :statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "def m",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "def m",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for method definitions with one argument" do
-        node = Def.new(
-          :name       => "m",
-          :args       => [@variable_a],
-          :statements => @statements
-        )
+        it "emits correct code for method definitions with one argument" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [@variable_a],
+            :statements => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "def m(a)",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "def m(a)",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for method definitions with multiple arguments" do
-        node = Def.new(
-          :name       => "m",
-          :args       => [@variable_a, @variable_b, @variable_c],
-          :statements => @statements
-        )
+        it "emits correct code for method definitions with multiple arguments" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [@variable_a, @variable_b, @variable_c],
+            :statements => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "def m(a, b, c)",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "def m(a, b, c)",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Statements, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for statement lists with no statements" do
-        node = Statements.new(:statements => [])
+      describe "basics" do
+        it "emits correct code for statement lists with no statements" do
+          node = Statements.new(:statements => [])
 
-        node.to_ruby(@context_default).should == ""
-      end
+          node.to_ruby(@context_default).should == ""
+        end
 
-      it "emits correct code for statement lists with one statement" do
-        node = Statements.new(:statements => [@assignment_a_42])
+        it "emits correct code for statement lists with one statement" do
+          node = Statements.new(:statements => [@assignment_a_42])
 
-        node.to_ruby(@context_default).should == "a = 42"
-      end
+          node.to_ruby(@context_default).should == "a = 42"
+        end
 
-      it "emits correct code for statement lists with multiple statements" do
-        node = Statements.new(
-          :statements => [@assignment_a_42, @assignment_b_43, @assignment_c_44]
-        )
+        it "emits correct code for statement lists with multiple statements" do
+          node = Statements.new(
+            :statements => [
+              @assignment_a_42,
+              @assignment_b_43,
+              @assignment_c_44
+            ]
+          )
 
-        node.to_ruby(@context_default).should == [
-          "a = 42",
-          "b = 43",
-          "c = 44",
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "a = 42",
+            "b = 43",
+            "c = 44",
+          ].join("\n")
+        end
 
-      it "handles nils in the statement list correctly" do
-        node = Statements.new(
-          :statements => [
-            @assignment_a_42,
-            nil,
-            @assignment_b_43,
-            nil,
-            @assignment_c_44
-          ]
-        )
+        it "handles nils in the statement list correctly" do
+          node = Statements.new(
+            :statements => [
+              @assignment_a_42,
+              nil,
+              @assignment_b_43,
+              nil,
+              @assignment_c_44
+            ]
+          )
 
-        node.to_ruby(@context_default).should == [
-          "a = 42",
-          "b = 43",
-          "c = 44",
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "a = 42",
+            "b = 43",
+            "c = 44",
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Begin, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Begin.new(:statements => @statements)
+      describe "basics" do
+        it "emits correct code" do
+          node = Begin.new(:statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "begin",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "begin",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe If, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for if statements without else" do
-        node = If.new(
-          :condition => @literal_true,
-          :then      => @statements,
-          :else      => nil
-        )
+      describe "basics" do
+        it "emits correct code for if statements without else" do
+          node = If.new(
+            :condition => @literal_true,
+            :then      => @statements,
+            :else      => nil
+          )
 
-        node.to_ruby(@context_default).should == [
-          "if true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "if true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for if statements with else" do
-        node = If.new(
-          :condition => @literal_true,
-          :then      => @statements,
-          :else      => @statements
-        )
+        it "emits correct code for if statements with else" do
+          node = If.new(
+            :condition => @literal_true,
+            :then      => @statements,
+            :else      => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "if true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "else",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "if true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "else",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Unless, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for unless statements without else" do
-        node = Unless.new(
-          :condition => @literal_true,
-          :then      => @statements,
-          :else      => nil
-        )
+      describe "basics" do
+        it "emits correct code for unless statements without else" do
+          node = Unless.new(
+            :condition => @literal_true,
+            :then      => @statements,
+            :else      => nil
+          )
 
-        node.to_ruby(@context_default).should == [
-          "unless true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "unless true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for unless statements with else" do
-        node = Unless.new(
-          :condition => @literal_true,
-          :then      => @statements,
-          :else      => @statements
-        )
+        it "emits correct code for unless statements with else" do
+          node = Unless.new(
+            :condition => @literal_true,
+            :then      => @statements,
+            :else      => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "unless true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "else",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "unless true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "else",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Case, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for empty case statements" do
-        node = Case.new(
-          :expression => @literal_42,
-          :whens      => [],
-          :else       => nil
-        )
+      describe "basics" do
+        it "emits correct code for empty case statements" do
+          node = Case.new(
+            :expression => @literal_42,
+            :whens      => [],
+            :else       => nil
+          )
 
-        node.to_ruby(@context_default).should == [
-          "case 42",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "case 42",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for case statements with one when clause and no else clause" do
-        node = Case.new(
-          :expression => @literal_42,
-          :whens      => [@when_42],
-          :else       => nil
-        )
+        it "emits correct code for case statements with one when clause and no else clause" do
+          node = Case.new(
+            :expression => @literal_42,
+            :whens      => [@when_42],
+            :else       => nil
+          )
 
-        node.to_ruby(@context_default).should == [
-          "case 42",
-          "  when 42",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "case 42",
+            "  when 42",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for case statements with one when clause and an else clause" do
-        node = Case.new(
-          :expression => @literal_42,
-          :whens      => [@when_42],
-          :else       => @else
-        )
+        it "emits correct code for case statements with one when clause and an else clause" do
+          node = Case.new(
+            :expression => @literal_42,
+            :whens      => [@when_42],
+            :else       => @else
+          )
 
-        node.to_ruby(@context_default).should == [
-          "case 42",
-          "  when 42",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  else",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "case 42",
+            "  when 42",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  else",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for case statements with multiple when clauses and no else clause" do
-        node = Case.new(
-          :expression => @literal_42,
-          :whens      => [@when_42, @when_43, @when_44],
-          :else       => nil
-        )
+        it "emits correct code for case statements with multiple when clauses and no else clause" do
+          node = Case.new(
+            :expression => @literal_42,
+            :whens      => [@when_42, @when_43, @when_44],
+            :else       => nil
+          )
 
-        node.to_ruby(@context_default).should == [
-          "case 42",
-          "  when 42",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  when 43",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  when 44",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "case 42",
+            "  when 42",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  when 43",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  when 44",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for case statements with multiple when clauses and an else clause" do
-        node = Case.new(
-          :expression => @literal_42,
-          :whens      => [@when_42, @when_43, @when_44],
-          :else       => @else
-        )
+        it "emits correct code for case statements with multiple when clauses and an else clause" do
+          node = Case.new(
+            :expression => @literal_42,
+            :whens      => [@when_42, @when_43, @when_44],
+            :else       => @else
+          )
 
-        node.to_ruby(@context_default).should == [
-          "case 42",
-          "  when 42",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  when 43",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  when 44",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "  else",
-          "    a = 42",
-          "    b = 43",
-          "    c = 44",
-          "end"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "case 42",
+            "  when 42",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  when 43",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  when 44",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "  else",
+            "    a = 42",
+            "    b = 43",
+            "    c = 44",
+            "end"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe When, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for when clauses with one value" do
-        node = When.new(:values => [@literal_42], :body => @statements)
+      describe "basics" do
+        it "emits correct code for when clauses with one value" do
+          node = When.new(:values => [@literal_42], :body => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "when 42",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "when 42",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44"
+          ].join("\n")
+        end
 
-      it "emits correct code for when clauses with multiple values" do
-        node = When.new(
-          :values => [@literal_42, @literal_43, @literal_44],
-          :body   => @statements
-        )
+        it "emits correct code for when clauses with multiple values" do
+          node = When.new(
+            :values => [@literal_42, @literal_43, @literal_44],
+            :body   => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "when 42, 43, 44",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "when 42, 43, 44",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Else, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Else.new(:body => @statements)
+      describe "basics" do
+        it "emits correct code" do
+          node = Else.new(:body => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "else",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "else",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe While, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for common while statements" do
-        node = While.new(:condition => @literal_true, :body => @statements)
+      describe "basics" do
+        it "emits correct code for common while statements" do
+          node = While.new(:condition => @literal_true, :body => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "while true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "while true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for while statements wrapping begin...end" do
-        node = While.new(:condition  => @literal_true, :body => @begin)
+        it "emits correct code for while statements wrapping begin...end" do
+          node = While.new(:condition  => @literal_true, :body => @begin)
 
-        node.to_ruby(@context_default).should == [
-          "begin",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end while true",
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "begin",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end while true",
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Until, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for common until statements" do
-        node = Until.new(:condition => @literal_true, :body => @statements)
+      describe "basics" do
+        it "emits correct code for common until statements" do
+          node = Until.new(:condition => @literal_true, :body => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "until true",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "until true",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
 
-      it "emits correct code for until statements wrapping begin...end" do
-        node = Until.new(:condition  => @literal_true, :body => @begin)
+        it "emits correct code for until statements wrapping begin...end" do
+          node = Until.new(:condition  => @literal_true, :body => @begin)
 
-        node.to_ruby(@context_default).should == [
-          "begin",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end until true",
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "begin",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end until true",
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Break, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Break.new
+      describe "basics" do
+        it "emits correct code" do
+          node = Break.new
 
-        node.to_ruby(@context_default).should == "break"
+          node.to_ruby(@context_default).should == "break"
+        end
       end
     end
   end
 
   describe Next, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for nexts without a value" do
-        node = Next.new(:value => nil)
+      describe "basics" do
+        it "emits correct code for nexts without a value" do
+          node = Next.new(:value => nil)
 
-        node.to_ruby(@context_default).should == "next"
-      end
+          node.to_ruby(@context_default).should == "next"
+        end
 
-      it "emits correct code for nexts with a value" do
-        node = Next.new(:value => @literal_42)
+        it "emits correct code for nexts with a value" do
+          node = Next.new(:value => @literal_42)
 
-        node.to_ruby(@context_default).should == "next 42"
+          node.to_ruby(@context_default).should == "next 42"
+        end
       end
     end
   end
 
   describe Return, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for returns without a value" do
-        node = Return.new(:value => nil)
+      describe "basics" do
+        it "emits correct code for returns without a value" do
+          node = Return.new(:value => nil)
 
-        node.to_ruby(@context_default).should == "return"
-      end
+          node.to_ruby(@context_default).should == "return"
+        end
 
-      it "emits correct code for returns with a value" do
-        node = Return.new(:value => @literal_42)
+        it "emits correct code for returns with a value" do
+          node = Return.new(:value => @literal_42)
 
-        node.to_ruby(@context_default).should == "return 42"
+          node.to_ruby(@context_default).should == "return 42"
+        end
       end
     end
   end
 
   describe Expressions, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for expression lists with no expressions" do
-        node = Expressions.new(:expressions => [])
+      describe "basics" do
+        it "emits correct code for expression lists with no expressions" do
+          node = Expressions.new(:expressions => [])
 
-        node.to_ruby(@context_default).should == "()"
-      end
+          node.to_ruby(@context_default).should == "()"
+        end
 
-      it "emits correct code for expression lists with one expression" do
-        node = Expressions.new(:expressions => [@literal_42])
+        it "emits correct code for expression lists with one expression" do
+          node = Expressions.new(:expressions => [@literal_42])
 
-        node.to_ruby(@context_default).should == "(42)"
-      end
+          node.to_ruby(@context_default).should == "(42)"
+        end
 
-      it "emits correct code for expression lists with multiple expressions" do
-        node = Expressions.new(
-          :expressions => [@literal_42, @literal_43, @literal_44]
-        )
+        it "emits correct code for expression lists with multiple expressions" do
+          node = Expressions.new(
+            :expressions => [@literal_42, @literal_43, @literal_44]
+          )
 
-        node.to_ruby(@context_default).should == "(42; 43; 44)"
+          node.to_ruby(@context_default).should == "(42; 43; 44)"
+        end
       end
     end
   end
 
   describe Assignment, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
+      describe "basics" do
+        it "emits correct code" do
+          node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
 
-        node.to_ruby(@context_default).should == "a = 42"
+          node.to_ruby(@context_default).should == "a = 42"
+        end
+
+        it "emits correct code for variable" do
+          node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
+
+          node.to_ruby(@context_default).should == "a = deep_copy(b)"
+        end
       end
-
-      it "emits correct code for variable" do
-        node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
-
-        node.to_ruby(@context_default).should == "a = deep_copy(b)"
-      end
-
     end
   end
 
   describe UnaryOperator, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = UnaryOperator.new(
-          :op         => "+",
-          :expression => @literal_42,
-        )
+      describe "basics" do
+        it "emits correct code" do
+          node = UnaryOperator.new(
+            :op         => "+",
+            :expression => @literal_42,
+          )
 
-        node.to_ruby(@context_default).should == "+42"
-      end
+          node.to_ruby(@context_default).should == "+42"
+        end
 
-      it "encloses operand in parens when needed" do
-        node = UnaryOperator.new(
-          :op         => "+",
-          :expression => @binary_operator_42_plus_43,
-        )
+        it "encloses operand in parens when needed" do
+          node = UnaryOperator.new(
+            :op         => "+",
+            :expression => @binary_operator_42_plus_43,
+          )
 
-        node.to_ruby(@context_default).should == "+(42 + 43)"
+          node.to_ruby(@context_default).should == "+(42 + 43)"
+        end
       end
     end
   end
 
   describe BinaryOperator, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = BinaryOperator.new(
-          :op  => "+",
-          :lhs => @literal_42,
-          :rhs => @literal_43
-        )
+      describe "basics" do
+        it "emits correct code" do
+          node = BinaryOperator.new(
+            :op  => "+",
+            :lhs => @literal_42,
+            :rhs => @literal_43
+          )
 
-        node.to_ruby(@context_default).should == "42 + 43"
-      end
+          node.to_ruby(@context_default).should == "42 + 43"
+        end
 
-      it "encloses operands in parens when needed" do
-        node = BinaryOperator.new(
-          :op  => "+",
-          :lhs => @binary_operator_42_plus_43,
-          :rhs => @binary_operator_44_plus_45
-        )
+        it "encloses operands in parens when needed" do
+          node = BinaryOperator.new(
+            :op  => "+",
+            :lhs => @binary_operator_42_plus_43,
+            :rhs => @binary_operator_44_plus_45
+          )
 
-        node.to_ruby(@context_default).should == "(42 + 43) + (44 + 45)"
+          node.to_ruby(@context_default).should == "(42 + 43) + (44 + 45)"
+        end
       end
     end
   end
 
   describe Ternary, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Ternary.new(
-          :condition => @literal_true,
-          :then      => @literal_42,
-          :else      => @literal_43
-        )
+      describe "basics" do
+        it "emits correct code" do
+          node = Ternary.new(
+            :condition => @literal_true,
+            :then      => @literal_42,
+            :else      => @literal_43
+          )
 
-        node.to_ruby(@context_default).should == "true ? 42 : 43"
-      end
+          node.to_ruby(@context_default).should == "true ? 42 : 43"
+        end
 
-      it "encloses operands in parens when needed" do
-        node = Ternary.new(
-          :condition  => @binary_operator_true_or_false,
-          :then       => @binary_operator_42_plus_43,
-          :else       => @binary_operator_44_plus_45
-        )
+        it "encloses operands in parens when needed" do
+          node = Ternary.new(
+            :condition  => @binary_operator_true_or_false,
+            :then       => @binary_operator_42_plus_43,
+            :else       => @binary_operator_44_plus_45
+          )
 
-        node.to_ruby(@context_default).should ==
-          "(true || false) ? (42 + 43) : (44 + 45)"
+          node.to_ruby(@context_default).should ==
+            "(true || false) ? (42 + 43) : (44 + 45)"
+        end
       end
     end
   end
 
   describe MethodCall, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for method calls without a receiver" do
-        node = MethodCall.new(
-          :receiver => nil,
-          :name     => "m",
-          :args     => [],
-          :block    => nil,
-          :parens   => false
-        )
-
-        node.to_ruby(@context_default).should == "m"
-      end
-
-      it "emits correct code for method calls with a receiver" do
-        node = MethodCall.new(
-          :receiver => @variable_a,
-          :name     => "m",
-          :args     => [],
-          :block    => nil,
-          :parens   => false
-        )
-
-        node.to_ruby(@context_default).should == "a.m"
-      end
-
-      describe "on method calls with :parens => true" do
-        it "emits correct code for method calls with no arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == "m"
-        end
-
-        it "emits correct code for method calls with one argument" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42],
-            :block    => nil,
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == "m(42)"
-        end
-
-        it "emits correct code for method calls with multiple arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42, @literal_43, @literal_44],
-            :block    => nil,
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == "m(42, 43, 44)"
-        end
-
-        it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "M",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == "M()"
-        end
-      end
-
-      describe "on method calls with :parens => false" do
-        it "emits correct code for method calls with no arguments" do
+      describe "basics" do
+        it "emits correct code for method calls without a receiver" do
           node = MethodCall.new(
             :receiver => nil,
             :name     => "m",
@@ -814,261 +787,355 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "m"
         end
 
-        it "emits correct code for method calls with one argument" do
+        it "emits correct code for method calls with a receiver" do
           node = MethodCall.new(
-            :receiver => nil,
+            :receiver => @variable_a,
             :name     => "m",
-            :args     => [@literal_42],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m 42"
-        end
-
-        it "emits correct code for method calls with multiple arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42, @literal_43, @literal_44],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m 42, 43, 44"
-        end
-
-        it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "M",
             :args     => [],
             :block    => nil,
             :parens   => false
           )
 
-          node.to_ruby(@context_default).should == "M()"
+          node.to_ruby(@context_default).should == "a.m"
         end
-      end
 
-      it "emits correct code for method calls without a block" do
-        node = MethodCall.new(
-          :receiver => nil,
-          :name     => "m",
-          :args     => [],
-          :block    => nil,
-          :parens   => false
-        )
+        describe "on method calls with :parens => true" do
+          it "emits correct code for method calls with no arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
 
-        node.to_ruby(@context_default).should == "m"
-      end
+            node.to_ruby(@context_default).should == "m"
+          end
 
-      it "emits correct code for method calls with a block" do
-        node = MethodCall.new(
-          :receiver => nil,
-          :name     => "m",
-          :args     => [],
-          :block    => Block.new(:args => [], :statements => @statements),
-          :parens   => false
-        )
+          it "emits correct code for method calls with one argument" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [@literal_42],
+              :block    => nil,
+              :parens   => true
+            )
 
-        node.to_ruby(@context_default).should == [
-          "m {",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "}"
-        ].join("\n")
+            node.to_ruby(@context_default).should == "m(42)"
+          end
+
+          it "emits correct code for method calls with multiple arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [@literal_42, @literal_43, @literal_44],
+              :block    => nil,
+              :parens   => true
+            )
+
+            node.to_ruby(@context_default).should == "m(42, 43, 44)"
+          end
+
+          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "M",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+
+            node.to_ruby(@context_default).should == "M()"
+          end
+        end
+
+        describe "on method calls with :parens => false" do
+          it "emits correct code for method calls with no arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [],
+              :block    => nil,
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default).should == "m"
+          end
+
+          it "emits correct code for method calls with one argument" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [@literal_42],
+              :block    => nil,
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default).should == "m 42"
+          end
+
+          it "emits correct code for method calls with multiple arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "m",
+              :args     => [@literal_42, @literal_43, @literal_44],
+              :block    => nil,
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default).should == "m 42, 43, 44"
+          end
+
+          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
+            node = MethodCall.new(
+              :receiver => nil,
+              :name     => "M",
+              :args     => [],
+              :block    => nil,
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default).should == "M()"
+          end
+        end
+
+        it "emits correct code for method calls without a block" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [],
+            :block    => nil,
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default).should == "m"
+        end
+
+        it "emits correct code for method calls with a block" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [],
+            :block    => Block.new(:args => [], :statements => @statements),
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default).should == [
+            "m {",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe Block, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for blocks with no arguments" do
-        node = Block.new(:args => [], :statements => @statements)
+      describe "basics" do
+        it "emits correct code for blocks with no arguments" do
+          node = Block.new(:args => [], :statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "{",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "}"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "{",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+        end
 
-      it "emits correct code for blocks with one argument" do
-        node = Block.new(:args => [@variable_a], :statements => @statements)
+        it "emits correct code for blocks with one argument" do
+          node = Block.new(:args => [@variable_a], :statements => @statements)
 
-        node.to_ruby(@context_default).should == [
-          "{ |a|",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "}"
-        ].join("\n")
-      end
+          node.to_ruby(@context_default).should == [
+            "{ |a|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+        end
 
-      it "emits correct code for blocks with multiple arguments" do
-        node = Block.new(
-          :args       => [@variable_a, @variable_b, @variable_c],
-          :statements => @statements
-        )
+        it "emits correct code for blocks with multiple arguments" do
+          node = Block.new(
+            :args       => [@variable_a, @variable_b, @variable_c],
+            :statements => @statements
+          )
 
-        node.to_ruby(@context_default).should == [
-          "{ |a, b, c|",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "}"
-        ].join("\n")
+          node.to_ruby(@context_default).should == [
+            "{ |a, b, c|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+        end
       end
     end
   end
 
   describe ConstAccess, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for const accesses without a receiver" do
-        node = ConstAccess.new(:receiver => nil, :name => "C")
+      describe "basics" do
+        it "emits correct code for const accesses without a receiver" do
+          node = ConstAccess.new(:receiver => nil, :name => "C")
 
-        node.to_ruby(@context_default).should == "C"
-      end
+          node.to_ruby(@context_default).should == "C"
+        end
 
-      it "emits correct code for const accesses with a receiver" do
-        node = ConstAccess.new(:receiver => @variable_a, :name => "C")
+        it "emits correct code for const accesses with a receiver" do
+          node = ConstAccess.new(:receiver => @variable_a, :name => "C")
 
-        node.to_ruby(@context_default).should == "a::C"
+          node.to_ruby(@context_default).should == "a::C"
+        end
       end
     end
   end
 
   describe Variable, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Variable.new(:name => "a")
+      describe "basics" do
+        it "emits correct code" do
+          node = Variable.new(:name => "a")
 
-        node.to_ruby(@context_default).should == "a"
+          node.to_ruby(@context_default).should == "a"
+        end
       end
     end
   end
 
   describe Self, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = Self.new
+      describe "basics" do
+        it "emits correct code" do
+          node = Self.new
 
-        node.to_ruby(@context_default).should == "self"
+          node.to_ruby(@context_default).should == "self"
+        end
       end
     end
   end
 
   describe Literal, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for nil literals" do
-        node = Literal.new(:value => nil)
+      describe "basics" do
+        it "emits correct code for nil literals" do
+          node = Literal.new(:value => nil)
 
-        node.to_ruby(@context_default).should == "nil"
-      end
+          node.to_ruby(@context_default).should == "nil"
+        end
 
-      it "emits correct code for true literals" do
-        node = Literal.new(:value => true)
+        it "emits correct code for true literals" do
+          node = Literal.new(:value => true)
 
-        node.to_ruby(@context_default).should == "true"
-      end
+          node.to_ruby(@context_default).should == "true"
+        end
 
-      it "emits correct code for false literals" do
-        node = Literal.new(:value => false)
+        it "emits correct code for false literals" do
+          node = Literal.new(:value => false)
 
-        node.to_ruby(@context_default).should == "false"
-      end
+          node.to_ruby(@context_default).should == "false"
+        end
 
-      it "emits correct code for integer literals" do
-        node = Literal.new(:value => 42)
+        it "emits correct code for integer literals" do
+          node = Literal.new(:value => 42)
 
-        node.to_ruby(@context_default).should == "42"
-      end
+          node.to_ruby(@context_default).should == "42"
+        end
 
-      it "emits correct code for float literals" do
-        node = Literal.new(:value => 42.0)
+        it "emits correct code for float literals" do
+          node = Literal.new(:value => 42.0)
 
-        node.to_ruby(@context_default).should == "42.0"
-      end
+          node.to_ruby(@context_default).should == "42.0"
+        end
 
-      it "emits correct code for symbol literals" do
-        node = Literal.new(:value => :abcd)
+        it "emits correct code for symbol literals" do
+          node = Literal.new(:value => :abcd)
 
-        node.to_ruby(@context_default).should == ":abcd"
-      end
+          node.to_ruby(@context_default).should == ":abcd"
+        end
 
-      it "emits correct code for string literals" do
-        node = Literal.new(:value => "abcd")
+        it "emits correct code for string literals" do
+          node = Literal.new(:value => "abcd")
 
-        node.to_ruby(@context_default).should == "\"abcd\""
+          node.to_ruby(@context_default).should == "\"abcd\""
+        end
       end
     end
   end
 
   describe Array, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for empty arrays" do
-        node = Array.new(:elements => [])
+      describe "basics" do
+        it "emits correct code for empty arrays" do
+          node = Array.new(:elements => [])
 
-        node.to_ruby(@context_default).should == "[]"
-      end
+          node.to_ruby(@context_default).should == "[]"
+        end
 
-      it "emits correct code for arrays with one element" do
-        node = Array.new(:elements => [@literal_42])
+        it "emits correct code for arrays with one element" do
+          node = Array.new(:elements => [@literal_42])
 
-        node.to_ruby(@context_default).should == "[42]"
-      end
+          node.to_ruby(@context_default).should == "[42]"
+        end
 
-      it "emits correct code for arrays with multiple elements" do
-        node = Array.new(
-          :elements => [@literal_42, @literal_43, @literal_44]
-        )
+        it "emits correct code for arrays with multiple elements" do
+          node = Array.new(
+            :elements => [@literal_42, @literal_43, @literal_44]
+          )
 
-        node.to_ruby(@context_default).should == "[42, 43, 44]"
+          node.to_ruby(@context_default).should == "[42, 43, 44]"
+        end
       end
     end
   end
 
   describe Hash, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code for empty hashes" do
-        node = Hash.new(:entries => [])
+      describe "basics" do
+        it "emits correct code for empty hashes" do
+          node = Hash.new(:entries => [])
 
-        node.to_ruby(@context_default).should == "{}"
-      end
+          node.to_ruby(@context_default).should == "{}"
+        end
 
-      it "emits correct code for hashes with one entry" do
-        node = Hash.new(
-          :entries => [HashEntry.new(:key => @literal_a, :value => @literal_42)]
-        )
+        it "emits correct code for hashes with one entry" do
+          node = Hash.new(
+            :entries => [
+              HashEntry.new(:key => @literal_a, :value => @literal_42)
+            ]
+          )
 
-        node.to_ruby(@context_default).should == "{ :a => 42 }"
-      end
+          node.to_ruby(@context_default).should == "{ :a => 42 }"
+        end
 
-      it "emits correct code for hashes with multiple entries" do
-        node = Hash.new(
-          :entries => [
-            HashEntry.new(:key => @literal_a, :value => @literal_42),
-            HashEntry.new(:key => @literal_b, :value => @literal_43),
-            HashEntry.new(:key => @literal_c, :value => @literal_44)
-          ]
-        )
+        it "emits correct code for hashes with multiple entries" do
+          node = Hash.new(
+            :entries => [
+              HashEntry.new(:key => @literal_a, :value => @literal_42),
+              HashEntry.new(:key => @literal_b, :value => @literal_43),
+              HashEntry.new(:key => @literal_c, :value => @literal_44)
+            ]
+          )
 
-        node.to_ruby(@context_default).should ==
-          "{ :a => 42, :b => 43, :c => 44 }"
+          node.to_ruby(@context_default).should ==
+            "{ :a => 42, :b => 43, :c => 44 }"
+        end
       end
     end
   end
 
   describe HashEntry, :type => :ruby do
     describe "#to_ruby" do
-      it "emits correct code" do
-        node = HashEntry.new(:key => @literal_a, :value => @literal_42)
+      describe "basics" do
+        it "emits correct code" do
+          node = HashEntry.new(:key => @literal_a, :value => @literal_42)
 
-        node.to_ruby(@context_default).should == ":a => 42"
+          node.to_ruby(@context_default).should == ":a => 42"
+        end
       end
     end
   end
