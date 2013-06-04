@@ -153,7 +153,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "when #{list(values)}"
-            parts << indented(self.body)
+            parts << indented(body)
           end
         end
       end
@@ -162,7 +162,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "else"
-            parts << indented(self.body)
+            parts << indented(body)
           end
         end
       end
