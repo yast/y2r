@@ -19,6 +19,10 @@ module Y2R
 
         protected
 
+        def indented(node)
+          indent(node.to_ruby)
+        end
+
         def indent(s)
           s.gsub(/^(?=.)/, " " * INDENT_STEP)
         end
@@ -55,7 +59,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "class #{name} < #{superclass.to_ruby}"
-            parts << indent(statements.to_ruby)
+            parts << indented(statements)
             parts << "end"
           end
         end
@@ -65,7 +69,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "module #{name}"
-            parts << indent(statements.to_ruby)
+            parts << indented(statements)
             parts << "end"
           end
         end
@@ -75,7 +79,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "def #{name}" + (!args.empty? ? "(#{list(args)})" : "")
-            parts << indent(statements.to_ruby)
+            parts << indented(statements)
             parts << "end"
           end
         end
@@ -96,7 +100,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "begin"
-            parts << indent(statements.to_ruby)
+            parts << indented(statements)
             parts << "end"
           end
         end
@@ -107,10 +111,10 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "if #{condition.to_ruby}"
-            parts << indent(self.then.to_ruby)
+            parts << indented(self.then)
             if self.else
               parts << "else"
-              parts << indent(self.else.to_ruby)
+              parts << indented(self.else)
             end
             parts << "end"
           end
@@ -122,10 +126,10 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "unless #{condition.to_ruby}"
-            parts << indent(self.then.to_ruby)
+            parts << indented(self.then)
             if self.else
               parts << "else"
-              parts << indent(self.else.to_ruby)
+              parts << indented(self.else)
             end
             parts << "end"
           end
@@ -137,9 +141,9 @@ module Y2R
           combine do |parts|
             parts << "case #{expression.to_ruby}"
             whens.each do |whem|
-              parts << indent(whem.to_ruby)
+              parts << indented(whem)
             end
-            parts << indent(self.else.to_ruby) if self.else
+            parts << indented(self.else) if self.else
             parts << "end"
           end
         end
@@ -149,7 +153,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "when #{list(values)}"
-            parts << indent(self.body.to_ruby)
+            parts << indented(self.body)
           end
         end
       end
@@ -158,7 +162,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "else"
-            parts << indent(self.body.to_ruby)
+            parts << indented(self.body)
           end
         end
       end
@@ -168,7 +172,7 @@ module Y2R
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "while #{condition.to_ruby}"
-              parts << indent(body.to_ruby)
+              parts << indented(body)
               parts << "end"
             end
           else
@@ -182,7 +186,7 @@ module Y2R
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "until #{condition.to_ruby}"
-              parts << indent(body.to_ruby)
+              parts << indented(body)
               parts << "end"
             end
           else
@@ -287,7 +291,7 @@ module Y2R
         def to_ruby
           combine do |parts|
             parts << "{" + (!args.empty? ? " |#{list(args)}|" : "")
-            parts << indent(statements.to_ruby)
+            parts << indented(statements)
             parts << "}"
           end
         end
