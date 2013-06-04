@@ -63,7 +63,7 @@ module Y2R::AST::Ruby
 
       @else = Else.new(:body => @statements)
 
-      @context_default = Context.new
+      @context_default = Context.new(:width => 80)
     end
   end
 
