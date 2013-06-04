@@ -1382,15 +1382,9 @@ module Y2R
         def compile(context)
           children_compiled = children.map { |ch| ch.compile(context) }
 
-          if UI_TERMS.include?(name.to_sym)
-            receiver = if context.symbols.include?(name)
-              Ruby::Variable.new(:name => "UIShortcuts")
-            else
-              nil
-            end
-
+          if UI_TERMS.include?(name.to_sym) && !context.symbols.include?(name)
             Ruby::MethodCall.new(
-              :receiver => receiver,
+              :receiver => nil,
               :name     => name,
               :args     => children_compiled,
               :block    => nil,

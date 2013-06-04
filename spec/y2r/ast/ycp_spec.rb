@@ -4030,7 +4030,7 @@ module Y2R::AST
           :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
         )
 
-        ruby_node_without_receiver = Ruby::MethodCall.new(
+        ruby_node_shortcut = Ruby::MethodCall.new(
           :receiver => nil,
           :name     => "HBox",
           :args     => [
@@ -4041,10 +4041,11 @@ module Y2R::AST
           :block    => nil,
           :parens   => true
         )
-        ruby_node_with_receiver = Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "UIShortcuts"),
-          :name     => "HBox",
+        ruby_node_full = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "term",
           :args     => [
+            Ruby::Literal.new(:value => :HBox),
             @ruby_literal_42,
             @ruby_literal_43,
             @ruby_literal_44
@@ -4053,12 +4054,9 @@ module Y2R::AST
           :parens   => true
         )
 
-        ycp_node.compile(@context_empty).should ==
-          ruby_node_without_receiver
-        ycp_node.compile(@context_hbox_global).should  ==
-          ruby_node_with_receiver
-        ycp_node.compile(@context_hbox_local).should ==
-          ruby_node_with_receiver
+        ycp_node.compile(@context_empty).should       == ruby_node_shortcut
+        ycp_node.compile(@context_hbox_global).should == ruby_node_full
+        ycp_node.compile(@context_hbox_local).should  == ruby_node_full
       end
 
     end
