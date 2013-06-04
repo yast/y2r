@@ -12,6 +12,11 @@ module Y2R
     module Ruby
       # Context passed to the #to_ruby and related methods on nodes.
       class Context < OpenStruct
+        def indented(n)
+          context = dup
+          context.width -= n
+          context
+        end
       end
 
       class Node < OpenStruct
@@ -24,7 +29,7 @@ module Y2R
         protected
 
         def indented(node, context)
-          indent(node.to_ruby(context))
+          indent(node.to_ruby(context.indented(INDENT_STEP)))
         end
 
         def indent(s)
