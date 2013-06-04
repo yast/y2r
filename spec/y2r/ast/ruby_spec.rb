@@ -62,6 +62,8 @@ module Y2R::AST::Ruby
       @when_44 = When.new(:values => [@literal_44], :body => @statements)
 
       @else = Else.new(:body => @statements)
+
+      @context_default = Context.new
     end
   end
 
@@ -72,7 +74,7 @@ module Y2R::AST::Ruby
           false
         end
 
-        def to_ruby
+        def to_ruby(context)
           "ruby"
         end
       end
@@ -82,7 +84,7 @@ module Y2R::AST::Ruby
           true
         end
 
-        def to_ruby
+        def to_ruby(context)
           "ruby"
         end
       end
@@ -91,7 +93,7 @@ module Y2R::AST::Ruby
         it "returns code that is not enclosed in parens" do
           node = NotEnclosedNode.new
 
-          node.to_ruby_enclosed.should == "ruby"
+          node.to_ruby_enclosed(@context_default).should == "ruby"
         end
       end
 
@@ -99,7 +101,7 @@ module Y2R::AST::Ruby
         it "returns code that is enclosed in parens" do
           node = EnclosedNode.new
 
-          node.to_ruby_enclosed.should == "(ruby)"
+          node.to_ruby_enclosed(@context_default).should == "(ruby)"
         end
       end
     end
@@ -110,7 +112,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Program.new(:statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "# encoding: utf-8",
           "",
           "a = 42",
@@ -122,7 +124,7 @@ module Y2R::AST::Ruby
       it "emits correct code with a comment" do
         node = Program.new(:statements => @statements, :comment => "comment")
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "# encoding: utf-8",
           "# comment",
           "",
@@ -143,7 +145,7 @@ module Y2R::AST::Ruby
           :statements => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "class C < S",
           "  a = 42",
           "  b = 43",
@@ -159,7 +161,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Module.new(:name  => "M", :statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "module M",
           "  a = 42",
           "  b = 43",
@@ -175,7 +177,7 @@ module Y2R::AST::Ruby
       it "emits correct code for method definitions with no arguments" do
         node = Def.new(:name => "m", :args => [], :statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "def m",
           "  a = 42",
           "  b = 43",
@@ -191,7 +193,7 @@ module Y2R::AST::Ruby
           :statements => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "def m(a)",
           "  a = 42",
           "  b = 43",
@@ -207,7 +209,7 @@ module Y2R::AST::Ruby
           :statements => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "def m(a, b, c)",
           "  a = 42",
           "  b = 43",
@@ -223,13 +225,13 @@ module Y2R::AST::Ruby
       it "emits correct code for statement lists with no statements" do
         node = Statements.new(:statements => [])
 
-        node.to_ruby.should == ""
+        node.to_ruby(@context_default).should == ""
       end
 
       it "emits correct code for statement lists with one statement" do
         node = Statements.new(:statements => [@assignment_a_42])
 
-        node.to_ruby.should == "a = 42"
+        node.to_ruby(@context_default).should == "a = 42"
       end
 
       it "emits correct code for statement lists with multiple statements" do
@@ -237,7 +239,7 @@ module Y2R::AST::Ruby
           :statements => [@assignment_a_42, @assignment_b_43, @assignment_c_44]
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "a = 42",
           "b = 43",
           "c = 44",
@@ -255,7 +257,7 @@ module Y2R::AST::Ruby
           ]
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "a = 42",
           "b = 43",
           "c = 44",
@@ -269,7 +271,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Begin.new(:statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "begin",
           "  a = 42",
           "  b = 43",
@@ -289,7 +291,7 @@ module Y2R::AST::Ruby
           :else      => nil
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "if true",
           "  a = 42",
           "  b = 43",
@@ -305,7 +307,7 @@ module Y2R::AST::Ruby
           :else      => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "if true",
           "  a = 42",
           "  b = 43",
@@ -329,7 +331,7 @@ module Y2R::AST::Ruby
           :else      => nil
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "unless true",
           "  a = 42",
           "  b = 43",
@@ -345,7 +347,7 @@ module Y2R::AST::Ruby
           :else      => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "unless true",
           "  a = 42",
           "  b = 43",
@@ -369,7 +371,7 @@ module Y2R::AST::Ruby
           :else       => nil
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "case 42",
           "end"
         ].join("\n")
@@ -382,7 +384,7 @@ module Y2R::AST::Ruby
           :else       => nil
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "case 42",
           "  when 42",
           "    a = 42",
@@ -399,7 +401,7 @@ module Y2R::AST::Ruby
           :else       => @else
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "case 42",
           "  when 42",
           "    a = 42",
@@ -420,7 +422,7 @@ module Y2R::AST::Ruby
           :else       => nil
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "case 42",
           "  when 42",
           "    a = 42",
@@ -445,7 +447,7 @@ module Y2R::AST::Ruby
           :else       => @else
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "case 42",
           "  when 42",
           "    a = 42",
@@ -474,7 +476,7 @@ module Y2R::AST::Ruby
       it "emits correct code for when clauses with one value" do
         node = When.new(:values => [@literal_42], :body => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "when 42",
           "  a = 42",
           "  b = 43",
@@ -488,7 +490,7 @@ module Y2R::AST::Ruby
           :body   => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "when 42, 43, 44",
           "  a = 42",
           "  b = 43",
@@ -503,7 +505,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Else.new(:body => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "else",
           "  a = 42",
           "  b = 43",
@@ -518,7 +520,7 @@ module Y2R::AST::Ruby
       it "emits correct code for common while statements" do
         node = While.new(:condition => @literal_true, :body => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "while true",
           "  a = 42",
           "  b = 43",
@@ -530,7 +532,7 @@ module Y2R::AST::Ruby
       it "emits correct code for while statements wrapping begin...end" do
         node = While.new(:condition  => @literal_true, :body => @begin)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "begin",
           "  a = 42",
           "  b = 43",
@@ -546,7 +548,7 @@ module Y2R::AST::Ruby
       it "emits correct code for common until statements" do
         node = Until.new(:condition => @literal_true, :body => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "until true",
           "  a = 42",
           "  b = 43",
@@ -558,7 +560,7 @@ module Y2R::AST::Ruby
       it "emits correct code for until statements wrapping begin...end" do
         node = Until.new(:condition  => @literal_true, :body => @begin)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "begin",
           "  a = 42",
           "  b = 43",
@@ -574,7 +576,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Break.new
 
-        node.to_ruby.should == "break"
+        node.to_ruby(@context_default).should == "break"
       end
     end
   end
@@ -584,13 +586,13 @@ module Y2R::AST::Ruby
       it "emits correct code for nexts without a value" do
         node = Next.new(:value => nil)
 
-        node.to_ruby.should == "next"
+        node.to_ruby(@context_default).should == "next"
       end
 
       it "emits correct code for nexts with a value" do
         node = Next.new(:value => @literal_42)
 
-        node.to_ruby.should == "next 42"
+        node.to_ruby(@context_default).should == "next 42"
       end
     end
   end
@@ -600,13 +602,13 @@ module Y2R::AST::Ruby
       it "emits correct code for returns without a value" do
         node = Return.new(:value => nil)
 
-        node.to_ruby.should == "return"
+        node.to_ruby(@context_default).should == "return"
       end
 
       it "emits correct code for returns with a value" do
         node = Return.new(:value => @literal_42)
 
-        node.to_ruby.should == "return 42"
+        node.to_ruby(@context_default).should == "return 42"
       end
     end
   end
@@ -616,13 +618,13 @@ module Y2R::AST::Ruby
       it "emits correct code for expression lists with no expressions" do
         node = Expressions.new(:expressions => [])
 
-        node.to_ruby.should == "()"
+        node.to_ruby(@context_default).should == "()"
       end
 
       it "emits correct code for expression lists with one expression" do
         node = Expressions.new(:expressions => [@literal_42])
 
-        node.to_ruby.should == "(42)"
+        node.to_ruby(@context_default).should == "(42)"
       end
 
       it "emits correct code for expression lists with multiple expressions" do
@@ -630,7 +632,7 @@ module Y2R::AST::Ruby
           :expressions => [@literal_42, @literal_43, @literal_44]
         )
 
-        node.to_ruby.should == "(42; 43; 44)"
+        node.to_ruby(@context_default).should == "(42; 43; 44)"
       end
     end
   end
@@ -640,13 +642,13 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
 
-        node.to_ruby.should == "a = 42"
+        node.to_ruby(@context_default).should == "a = 42"
       end
 
       it "emits correct code for variable" do
         node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
 
-        node.to_ruby.should == "a = deep_copy(b)"
+        node.to_ruby(@context_default).should == "a = deep_copy(b)"
       end
 
     end
@@ -660,7 +662,7 @@ module Y2R::AST::Ruby
           :expression => @literal_42,
         )
 
-        node.to_ruby.should == "+42"
+        node.to_ruby(@context_default).should == "+42"
       end
 
       it "encloses operand in parens when needed" do
@@ -669,7 +671,7 @@ module Y2R::AST::Ruby
           :expression => @binary_operator_42_plus_43,
         )
 
-        node.to_ruby.should == "+(42 + 43)"
+        node.to_ruby(@context_default).should == "+(42 + 43)"
       end
     end
   end
@@ -683,7 +685,7 @@ module Y2R::AST::Ruby
           :rhs => @literal_43
         )
 
-        node.to_ruby.should == "42 + 43"
+        node.to_ruby(@context_default).should == "42 + 43"
       end
 
       it "encloses operands in parens when needed" do
@@ -693,7 +695,7 @@ module Y2R::AST::Ruby
           :rhs => @binary_operator_44_plus_45
         )
 
-        node.to_ruby.should == "(42 + 43) + (44 + 45)"
+        node.to_ruby(@context_default).should == "(42 + 43) + (44 + 45)"
       end
     end
   end
@@ -707,7 +709,7 @@ module Y2R::AST::Ruby
           :else      => @literal_43
         )
 
-        node.to_ruby.should == "true ? 42 : 43"
+        node.to_ruby(@context_default).should == "true ? 42 : 43"
       end
 
       it "encloses operands in parens when needed" do
@@ -717,7 +719,8 @@ module Y2R::AST::Ruby
           :else       => @binary_operator_44_plus_45
         )
 
-        node.to_ruby.should == "(true || false) ? (42 + 43) : (44 + 45)"
+        node.to_ruby(@context_default).should ==
+          "(true || false) ? (42 + 43) : (44 + 45)"
       end
     end
   end
@@ -733,7 +736,7 @@ module Y2R::AST::Ruby
           :parens   => false
         )
 
-        node.to_ruby.should == "m"
+        node.to_ruby(@context_default).should == "m"
       end
 
       it "emits correct code for method calls with a receiver" do
@@ -745,7 +748,7 @@ module Y2R::AST::Ruby
           :parens   => false
         )
 
-        node.to_ruby.should == "a.m"
+        node.to_ruby(@context_default).should == "a.m"
       end
 
       describe "on method calls with :parens => true" do
@@ -758,7 +761,7 @@ module Y2R::AST::Ruby
             :parens   => true
           )
 
-          node.to_ruby.should == "m"
+          node.to_ruby(@context_default).should == "m"
         end
 
         it "emits correct code for method calls with one argument" do
@@ -770,7 +773,7 @@ module Y2R::AST::Ruby
             :parens   => true
           )
 
-          node.to_ruby.should == "m(42)"
+          node.to_ruby(@context_default).should == "m(42)"
         end
 
         it "emits correct code for method calls with multiple arguments" do
@@ -782,7 +785,7 @@ module Y2R::AST::Ruby
             :parens   => true
           )
 
-          node.to_ruby.should == "m(42, 43, 44)"
+          node.to_ruby(@context_default).should == "m(42, 43, 44)"
         end
 
         it "emits correct code for method calls with no receiver, const-like name and no arguments" do
@@ -794,7 +797,7 @@ module Y2R::AST::Ruby
             :parens   => true
           )
 
-          node.to_ruby.should == "M()"
+          node.to_ruby(@context_default).should == "M()"
         end
       end
 
@@ -808,7 +811,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby.should == "m"
+          node.to_ruby(@context_default).should == "m"
         end
 
         it "emits correct code for method calls with one argument" do
@@ -820,7 +823,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby.should == "m 42"
+          node.to_ruby(@context_default).should == "m 42"
         end
 
         it "emits correct code for method calls with multiple arguments" do
@@ -832,7 +835,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby.should == "m 42, 43, 44"
+          node.to_ruby(@context_default).should == "m 42, 43, 44"
         end
 
         it "emits correct code for method calls with no receiver, const-like name and no arguments" do
@@ -844,7 +847,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby.should == "M()"
+          node.to_ruby(@context_default).should == "M()"
         end
       end
 
@@ -857,7 +860,7 @@ module Y2R::AST::Ruby
           :parens   => false
         )
 
-        node.to_ruby.should == "m"
+        node.to_ruby(@context_default).should == "m"
       end
 
       it "emits correct code for method calls with a block" do
@@ -869,7 +872,7 @@ module Y2R::AST::Ruby
           :parens   => false
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "m {",
           "  a = 42",
           "  b = 43",
@@ -885,7 +888,7 @@ module Y2R::AST::Ruby
       it "emits correct code for blocks with no arguments" do
         node = Block.new(:args => [], :statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "{",
           "  a = 42",
           "  b = 43",
@@ -897,7 +900,7 @@ module Y2R::AST::Ruby
       it "emits correct code for blocks with one argument" do
         node = Block.new(:args => [@variable_a], :statements => @statements)
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "{ |a|",
           "  a = 42",
           "  b = 43",
@@ -912,7 +915,7 @@ module Y2R::AST::Ruby
           :statements => @statements
         )
 
-        node.to_ruby.should == [
+        node.to_ruby(@context_default).should == [
           "{ |a, b, c|",
           "  a = 42",
           "  b = 43",
@@ -928,13 +931,13 @@ module Y2R::AST::Ruby
       it "emits correct code for const accesses without a receiver" do
         node = ConstAccess.new(:receiver => nil, :name => "C")
 
-        node.to_ruby.should == "C"
+        node.to_ruby(@context_default).should == "C"
       end
 
       it "emits correct code for const accesses with a receiver" do
         node = ConstAccess.new(:receiver => @variable_a, :name => "C")
 
-        node.to_ruby.should == "a::C"
+        node.to_ruby(@context_default).should == "a::C"
       end
     end
   end
@@ -944,7 +947,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Variable.new(:name => "a")
 
-        node.to_ruby.should == "a"
+        node.to_ruby(@context_default).should == "a"
       end
     end
   end
@@ -954,7 +957,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = Self.new
 
-        node.to_ruby.should == "self"
+        node.to_ruby(@context_default).should == "self"
       end
     end
   end
@@ -964,43 +967,43 @@ module Y2R::AST::Ruby
       it "emits correct code for nil literals" do
         node = Literal.new(:value => nil)
 
-        node.to_ruby.should == "nil"
+        node.to_ruby(@context_default).should == "nil"
       end
 
       it "emits correct code for true literals" do
         node = Literal.new(:value => true)
 
-        node.to_ruby.should == "true"
+        node.to_ruby(@context_default).should == "true"
       end
 
       it "emits correct code for false literals" do
         node = Literal.new(:value => false)
 
-        node.to_ruby.should == "false"
+        node.to_ruby(@context_default).should == "false"
       end
 
       it "emits correct code for integer literals" do
         node = Literal.new(:value => 42)
 
-        node.to_ruby.should == "42"
+        node.to_ruby(@context_default).should == "42"
       end
 
       it "emits correct code for float literals" do
         node = Literal.new(:value => 42.0)
 
-        node.to_ruby.should == "42.0"
+        node.to_ruby(@context_default).should == "42.0"
       end
 
       it "emits correct code for symbol literals" do
         node = Literal.new(:value => :abcd)
 
-        node.to_ruby.should == ":abcd"
+        node.to_ruby(@context_default).should == ":abcd"
       end
 
       it "emits correct code for string literals" do
         node = Literal.new(:value => "abcd")
 
-        node.to_ruby.should == "\"abcd\""
+        node.to_ruby(@context_default).should == "\"abcd\""
       end
     end
   end
@@ -1010,13 +1013,13 @@ module Y2R::AST::Ruby
       it "emits correct code for empty arrays" do
         node = Array.new(:elements => [])
 
-        node.to_ruby.should == "[]"
+        node.to_ruby(@context_default).should == "[]"
       end
 
       it "emits correct code for arrays with one element" do
         node = Array.new(:elements => [@literal_42])
 
-        node.to_ruby.should == "[42]"
+        node.to_ruby(@context_default).should == "[42]"
       end
 
       it "emits correct code for arrays with multiple elements" do
@@ -1024,7 +1027,7 @@ module Y2R::AST::Ruby
           :elements => [@literal_42, @literal_43, @literal_44]
         )
 
-        node.to_ruby.should == "[42, 43, 44]"
+        node.to_ruby(@context_default).should == "[42, 43, 44]"
       end
     end
   end
@@ -1034,7 +1037,7 @@ module Y2R::AST::Ruby
       it "emits correct code for empty hashes" do
         node = Hash.new(:entries => [])
 
-        node.to_ruby.should == "{}"
+        node.to_ruby(@context_default).should == "{}"
       end
 
       it "emits correct code for hashes with one entry" do
@@ -1042,7 +1045,7 @@ module Y2R::AST::Ruby
           :entries => [HashEntry.new(:key => @literal_a, :value => @literal_42)]
         )
 
-        node.to_ruby.should == "{ :a => 42 }"
+        node.to_ruby(@context_default).should == "{ :a => 42 }"
       end
 
       it "emits correct code for hashes with multiple entries" do
@@ -1054,7 +1057,8 @@ module Y2R::AST::Ruby
           ]
         )
 
-        node.to_ruby.should == "{ :a => 42, :b => 43, :c => 44 }"
+        node.to_ruby(@context_default).should ==
+          "{ :a => 42, :b => 43, :c => 44 }"
       end
     end
   end
@@ -1064,7 +1068,7 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         node = HashEntry.new(:key => @literal_a, :value => @literal_42)
 
-        node.to_ruby.should == ":a => 42"
+        node.to_ruby(@context_default).should == ":a => 42"
       end
     end
   end
