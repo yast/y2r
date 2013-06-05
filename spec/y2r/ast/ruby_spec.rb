@@ -912,6 +912,14 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "return 42"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to value" do
+          node = Return.new(:value => node_width_mock(73))
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 

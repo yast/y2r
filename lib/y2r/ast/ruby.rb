@@ -223,7 +223,7 @@ module Y2R
 
       class Return < Node
         def to_ruby(context)
-          "return" + (value ? " #{value.to_ruby(context)}" : "")
+          "return" + (value ? " #{value.to_ruby(context.indented(7))}" : "")
         end
       end
 
