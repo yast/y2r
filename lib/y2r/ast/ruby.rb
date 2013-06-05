@@ -217,7 +217,7 @@ module Y2R
 
       class Next < Node
         def to_ruby(context)
-          "next" + (value ? " #{value.to_ruby(context)}" : "")
+          "next" + (value ? " #{value.to_ruby(context.indented(5))}" : "")
         end
       end
 
