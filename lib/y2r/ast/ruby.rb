@@ -66,8 +66,11 @@ module Y2R
 
       class Class < Node
         def to_ruby(context)
+          header_width    = 6 + name.size + 3
+          superclass_code = superclass.to_ruby(context.indented(header_width))
+
           combine do |parts|
-            parts << "class #{name} < #{superclass.to_ruby(context)}"
+            parts << "class #{name} < #{superclass_code}"
             parts << indented(statements, context)
             parts << "end"
           end

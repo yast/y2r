@@ -204,6 +204,16 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to superclass" do
+          node = Class.new(
+            :name       => "C",
+            :superclass => node_width_mock(70),
+            :statements => @statements
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to statements" do
           node = Class.new(
             :name       => "C",
