@@ -139,7 +139,7 @@ module Y2R
       class Unless < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "unless #{condition.to_ruby(context)}"
+            parts << "unless #{condition.to_ruby(context.indented(7))}"
             parts << indented(self.then, context)
             if self.else
               parts << "else"

@@ -516,6 +516,16 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to condition" do
+          node = Unless.new(
+            :condition => node_width_mock(73),
+            :then      => @statements,
+            :else      => @statements
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to then" do
           node = Unless.new(
             :condition => @literal_true,
