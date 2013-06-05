@@ -153,7 +153,7 @@ module Y2R
       class Case < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "case #{expression.to_ruby(context)}"
+            parts << "case #{expression.to_ruby(context.indented(5))}"
             whens.each do |whem|
               parts << indented(whem, context)
             end

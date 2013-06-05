@@ -659,6 +659,16 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to expression" do
+          node = Case.new(
+            :expression => node_width_mock(75),
+            :whens      => [],
+            :else       => nil
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to whens" do
           node = Case.new(
             :expression => @literal_42,
