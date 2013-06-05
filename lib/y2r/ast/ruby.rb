@@ -185,7 +185,7 @@ module Y2R
         def to_ruby(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "while #{condition.to_ruby(context)}"
+              parts << "while #{condition.to_ruby(context.indented(6))}"
               parts << indented(body, context)
               parts << "end"
             end
