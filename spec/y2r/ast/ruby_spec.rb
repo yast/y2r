@@ -952,16 +952,20 @@ module Y2R::AST::Ruby
   describe Assignment, :type => :ruby do
     describe "#to_ruby" do
       describe "basics" do
-        it "emits correct code" do
-          node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
+        describe "when assigning from a non-variable" do
+          it "emits correct code" do
+            node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
 
-          node.to_ruby(@context_default).should == "a = 42"
+            node.to_ruby(@context_default).should == "a = 42"
+          end
         end
 
-        it "emits correct code for variable" do
-          node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
+        describe "when assigning from a variable" do
+          it "emits correct code" do
+            node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
 
-          node.to_ruby(@context_default).should == "a = deep_copy(b)"
+            node.to_ruby(@context_default).should == "a = deep_copy(b)"
+          end
         end
       end
     end
