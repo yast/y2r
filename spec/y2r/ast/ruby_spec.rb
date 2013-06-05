@@ -1198,6 +1198,17 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "a::C"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to statements" do
+          node = ConstAccess.new(
+            :receiver => node_width_mock(80),
+            :name     => "C"
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
