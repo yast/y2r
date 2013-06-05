@@ -66,8 +66,9 @@ module Y2R
 
       class Class < Node
         def to_ruby(context)
-          header_width    = 6 + name.size + 3
-          superclass_code = superclass.to_ruby(context.indented(header_width))
+          superclass_indent  = 6 + name.size + 3
+          superclass_context = context.indented(superclass_indent)
+          superclass_code    = superclass.to_ruby(superclass_context)
 
           combine do |parts|
             parts << "class #{name} < #{superclass_code}"
@@ -241,11 +242,13 @@ module Y2R
           lhs_code   = lhs.to_ruby(context)
           # YCP always makes a copy when assigning.
           if rhs.is_a?(Variable)
-            rhs_indent = lhs_code.size + 13
-            rhs_code   = "deep_copy(#{rhs.to_ruby(context.indented(rhs_indent))})"
+            rhs_indent  = lhs_code.size + 13
+            rhs_context = context.indented(rhs_indent)
+            rhs_code    = "deep_copy(#{rhs.to_ruby(rhs_context)})"
           else
-            rhs_indent = lhs_code.size + 3
-            rhs_code   = rhs.to_ruby(context.indented(rhs_indent))
+            rhs_indent  = lhs_code.size + 3
+            rhs_context = context.indented(rhs_indent)
+            rhs_code    = rhs.to_ruby(rhs_context)
           end
 
           "#{lhs_code} = #{rhs_code}"
