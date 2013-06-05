@@ -23,7 +23,7 @@ module Y2R
         INDENT_STEP = 2
 
         def to_ruby_enclosed(context)
-          enclose? ? "(#{to_ruby(context)})" : to_ruby(context)
+          enclose? ? "(#{to_ruby(context.indented(1))})" : to_ruby(context)
         end
 
         protected

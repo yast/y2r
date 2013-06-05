@@ -115,6 +115,32 @@ module Y2R::AST::Ruby
           end
         end
       end
+
+      describe "formatting" do
+        describe "on nodes where #enclosed? returns false" do
+          it "passes correct available width to #to_ruby" do
+            node = NotEnclosedNode.new
+            node.should_receive(:to_ruby) do |context|
+              context.width.should == 80
+              "ruby"
+            end
+
+            node.to_ruby_enclosed(@context_default)
+          end
+        end
+
+        describe "on nodes where #enclosed? returns true" do
+          it "passes correct available width to #to_ruby" do
+            node = EnclosedNode.new
+            node.should_receive(:to_ruby) do |context|
+              context.width.should == 79
+              "ruby"
+            end
+
+            node.to_ruby_enclosed(@context_default)
+          end
+        end
+      end
     end
   end
 
