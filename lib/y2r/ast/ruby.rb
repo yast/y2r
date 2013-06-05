@@ -255,7 +255,7 @@ module Y2R
       # TODO: Use parens only when needed.
       class UnaryOperator < Node
         def to_ruby(context)
-          "#{op}#{expression.to_ruby_enclosed(context)}"
+          "#{op}#{expression.to_ruby_enclosed(context.indented(op.size))}"
         end
 
         protected

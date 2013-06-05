@@ -11,6 +11,15 @@ def node_width_mock(width)
   mock
 end
 
+def node_width_mock_enclosed(width)
+  mock = double
+  mock.should_receive(:to_ruby_enclosed) do |context|
+    context.width.should == width
+    ""
+  end
+  mock
+end
+
 module Y2R::AST::Ruby
   RSpec.configure do |c|
     c.before :each, :type => :ruby do
@@ -1026,6 +1035,17 @@ module Y2R::AST::Ruby
           )
 
           node.to_ruby(@context_default).should == "+(42 + 43)"
+        end
+      end
+
+      describe "formatting" do
+        it "passes correct available width to expression" do
+          node = UnaryOperator.new(
+            :op         => "+",
+            :expression => node_width_mock_enclosed(79),
+          )
+
+          node.to_ruby(@context_default)
         end
       end
     end
