@@ -199,7 +199,7 @@ module Y2R
         def to_ruby(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "until #{condition.to_ruby(context)}"
+              parts << "until #{condition.to_ruby(context.indented(6))}"
               parts << indented(body, context)
               parts << "end"
             end
