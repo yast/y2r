@@ -1074,6 +1074,28 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "(42 + 43) + (44 + 45)"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to lhs" do
+          node = BinaryOperator.new(
+            :op  => "+",
+            :lhs => node_width_mock_enclosed(80),
+            :rhs => @literal_43
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available width to rhs" do
+          node = BinaryOperator.new(
+            :op  => "+",
+            :lhs => @literal_42,
+            :rhs => node_width_mock_enclosed(75)
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 

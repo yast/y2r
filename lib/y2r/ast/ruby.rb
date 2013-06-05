@@ -271,8 +271,10 @@ module Y2R
       # TODO: Use parens only when needed.
       class BinaryOperator < Node
         def to_ruby(context)
-          lhs_code = lhs.to_ruby_enclosed(context)
-          rhs_code = rhs.to_ruby_enclosed(context)
+          lhs_code    = lhs.to_ruby_enclosed(context)
+          rhs_indent  = lhs_code.size + 1 + op.size + 1
+          rhs_context = context.indented(rhs_indent)
+          rhs_code    = rhs.to_ruby_enclosed(rhs_context)
 
           "#{lhs_code} #{op} #{rhs_code}"
         end
