@@ -238,12 +238,17 @@ module Y2R
 
       class Assignment < Node
         def to_ruby(context)
+          lhs_code   = lhs.to_ruby(context)
           # YCP always makes a copy when assigning.
           if rhs.is_a?(Variable)
-            "#{lhs.to_ruby(context)} = deep_copy(#{rhs.to_ruby(context)})"
+            rhs_indent = lhs_code.size + 13
+            rhs_code   = "deep_copy(#{rhs.to_ruby(context.indented(rhs_indent))})"
           else
-            "#{lhs.to_ruby(context)} = #{rhs.to_ruby(context)}"
+            rhs_indent = lhs_code.size + 3
+            rhs_code   = rhs.to_ruby(context.indented(rhs_indent))
           end
+
+          "#{lhs_code} = #{rhs_code}"
         end
       end
 

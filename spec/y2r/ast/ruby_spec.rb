@@ -968,6 +968,42 @@ module Y2R::AST::Ruby
           end
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to lhs" do
+          node = Assignment.new(
+            :lhs => node_width_mock(80),
+            :rhs => @literal_42
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        describe "when assigning from a variable" do
+          it "passes correct available width to rhs" do
+            rhs = Variable.new(:name => "a")
+            rhs.should_receive(:to_ruby) do |context|
+              context.width.should == 66
+              ""
+            end
+
+            node = Assignment.new(:lhs => @variable_a, :rhs => rhs)
+
+            node.to_ruby(@context_default)
+          end
+        end
+
+        describe "when assigning from a non-variable" do
+          it "passes correct available width to rhs" do
+            node = Assignment.new(
+              :lhs => @variable_a,
+              :rhs => node_width_mock(76)
+            )
+
+            node.to_ruby(@context_default)
+          end
+        end
+      end
     end
   end
 
