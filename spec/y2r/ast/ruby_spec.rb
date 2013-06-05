@@ -354,6 +354,14 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to statements" do
+          node = Statements.new(:statements => [node_width_mock(80)])
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
