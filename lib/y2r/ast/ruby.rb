@@ -318,17 +318,21 @@ module Y2R
         def to_ruby(context)
           receiver_code = receiver ? "#{receiver.to_ruby(context)}." : ""
 
-          args_code = if !args.empty?
+          args_indent  = receiver_code.size + name.size
+          args_context = context.indented(args_indent)
+          args_code    = if !args.empty?
             if parens
-              "(#{list(args, ", ", context)})"
+              "(#{list(args, ", ", args_context)})"
             else
-              " #{list(args, ", ", context)}"
+              " #{list(args, ", ", args_context)}"
             end
           else
             !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
           end
 
-          block_code = block ? " #{block.to_ruby(context)}" : ""
+          block_indent  = args_indent + args_code.size
+          block_context = context.indented(block_indent)
+          block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
           "#{receiver_code}#{name}#{args_code}#{block_code}"
         end

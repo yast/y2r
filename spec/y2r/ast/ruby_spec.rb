@@ -1359,6 +1359,48 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to receiver" do
+          node = MethodCall.new(
+            :receiver => node_width_mock(80),
+            :name     => "m",
+            :args     => [],
+            :block    => nil,
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available width to args" do
+          node = MethodCall.new(
+            :receiver => @variable_a,
+            :name     => "m",
+            :args     => [
+              node_width_mock(77),
+              node_width_mock(75),
+              node_width_mock(73)
+            ],
+            :block    => nil,
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available width to block" do
+          node = MethodCall.new(
+            :receiver => @variable_a,
+            :name     => "m",
+            :args     => [],
+            :block    => node_width_mock(77),
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
