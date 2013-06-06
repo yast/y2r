@@ -156,8 +156,8 @@ module Y2R::AST::Ruby
   describe Program, :type => :ruby do
     describe "#to_ruby" do
       describe "basics" do
-        it "emits correct code" do
-          node = Program.new(:statements => @statements)
+        it "emits correct code without a comment" do
+          node = Program.new(:statements => @statements, :comment => nil)
 
           node.to_ruby(@context_default).should == [
             "# encoding: utf-8",
@@ -184,7 +184,10 @@ module Y2R::AST::Ruby
 
       describe "formatting" do
         it "passes correct available width to statements" do
-          node = Program.new(:statements => node_width_mock(80))
+          node = Program.new(
+            :statements => node_width_mock(80),
+            :comment    => nil
+          )
 
           node.to_ruby(@context_default)
         end
