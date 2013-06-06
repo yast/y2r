@@ -430,7 +430,10 @@ module Y2R
         # TODO: Split to multiple lines if any value is multiline.
         # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          !entries.empty? ? "{ #{list(entries, ", ", context)} }" : "{}"
+          entries_indent  = 2
+          entries_context = context.indented(entries_indent)
+
+          !entries.empty? ? "{ #{list(entries, ", ", entries_context)} }" : "{}"
         end
 
         protected

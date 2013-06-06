@@ -1601,6 +1601,20 @@ module Y2R::AST::Ruby
             "{ :a => 42, :b => 43, :c => 44 }"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to entries" do
+          node = Hash.new(
+            :entries => [
+              node_width_mock(78),
+              node_width_mock(76),
+              node_width_mock(74)
+            ]
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
