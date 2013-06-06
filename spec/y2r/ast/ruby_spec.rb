@@ -1406,6 +1406,19 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to args" do
+          node = Block.new(
+            :args       => [
+              node_width_mock(77),
+              node_width_mock(75),
+              node_width_mock(73)
+            ],
+            :statements => @statements
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to statements" do
           node = Block.new(:args => [], :statements => node_width_mock(78))
 

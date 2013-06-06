@@ -343,7 +343,13 @@ module Y2R
       # TODO: Emit one-line blocks for one-line block bodies.
       class Block < Node
         def to_ruby(context)
-          args_code = !args.empty? ? " |#{list(args, ", ", context)}|" : ""
+          args_indent  = 3
+          args_context = context.indented(args_indent)
+          args_code    = if !args.empty?
+            " |#{list(args, ", ", args_context)}|"
+          else
+            ""
+          end
 
           combine do |parts|
             parts << "{#{args_code}"
