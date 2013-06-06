@@ -177,8 +177,11 @@ module Y2R
 
       class When < Node
         def to_ruby(context)
+          values_indent  = 5
+          values_context = context.indented(values_indent)
+
           combine do |parts|
-            parts << "when #{list(values, ", ", context)}"
+            parts << "when #{list(values, ", ", values_context)}"
             parts << indented(body, context)
           end
         end

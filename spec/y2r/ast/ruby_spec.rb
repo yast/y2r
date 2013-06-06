@@ -748,6 +748,19 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to values" do
+          node = When.new(
+            :values => [
+              node_width_mock(75),
+              node_width_mock(73),
+              node_width_mock(71)
+            ],
+            :body   => @statements
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to body" do
           node = When.new(
             :values => [@literal_42],
