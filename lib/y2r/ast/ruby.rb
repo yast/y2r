@@ -45,7 +45,8 @@ module Y2R
         def list(items, separator, context)
           item_indent = 0
           items.map do |item|
-            item_code = item.to_ruby(context.indented(item_indent))
+            item_context = context.indented(item_indent)
+            item_code    = item.to_ruby(item_context)
             item_indent += item_code.size + separator.size
             item_code
           end.join(separator)
