@@ -251,7 +251,8 @@ module Y2R
 
       class Assignment < Node
         def to_ruby(context)
-          lhs_code   = lhs.to_ruby(context)
+          lhs_code = lhs.to_ruby(context)
+
           # YCP always makes a copy when assigning.
           if rhs.is_a?(Variable)
             rhs_indent  = lhs_code.size + 13
@@ -283,7 +284,8 @@ module Y2R
       # TODO: Use parens only when needed.
       class BinaryOperator < Node
         def to_ruby(context)
-          lhs_code    = lhs.to_ruby_enclosed(context)
+          lhs_code = lhs.to_ruby_enclosed(context)
+
           rhs_indent  = lhs_code.size + 1 + op.size + 1
           rhs_context = context.indented(rhs_indent)
           rhs_code    = rhs.to_ruby_enclosed(rhs_context)
@@ -295,12 +297,14 @@ module Y2R
       class TernaryOperator < Node
         def to_ruby(context)
           condition_code = condition.to_ruby_enclosed(context)
-          then_indent    = condition_code.size + 3
-          then_context   = context.indented(then_indent)
-          then_code      = self.then.to_ruby_enclosed(then_context)
-          else_indent    = then_indent + then_code.size + 3
-          else_context   = context.indented(else_indent)
-          else_code      = self.else.to_ruby_enclosed(else_context)
+
+          then_indent  = condition_code.size + 3
+          then_context = context.indented(then_indent)
+          then_code    = self.then.to_ruby_enclosed(then_context)
+
+          else_indent  = then_indent + then_code.size + 3
+          else_context = context.indented(else_indent)
+          else_code    = self.else.to_ruby_enclosed(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
@@ -440,7 +444,8 @@ module Y2R
 
       class HashEntry < Node
         def to_ruby(context)
-          key_code      = key.to_ruby_enclosed(context)
+          key_code = key.to_ruby_enclosed(context)
+
           value_indent  = key_code.size + 4
           value_context = context.indented(value_indent)
           value_code    = value.to_ruby_enclosed(value_context)
