@@ -314,6 +314,20 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
+        it "passes correct available width to args" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [
+              node_width_mock(74),
+              node_width_mock(72),
+              node_width_mock(70)
+            ],
+            :statements => @statements
+          )
+
+          node.to_ruby(@context_default)
+        end
+
         it "passes correct available width to statements" do
           node = Def.new(
             :name       => "m",

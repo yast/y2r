@@ -43,7 +43,12 @@ module Y2R
         end
 
         def list(items, separator, context)
-          items.map { |i| i.to_ruby(context) }.join(separator)
+          item_indent = 0
+          items.map do |item|
+            item_code = item.to_ruby(context.indented(item_indent))
+            item_indent += item_code.size + separator.size
+            item_code
+          end.join(separator)
         end
 
         def enclose?
@@ -90,7 +95,13 @@ module Y2R
 
       class Def < Node
         def to_ruby(context)
-          args_code = !args.empty? ? "(#{list(args, ", ", context)})" : ""
+          args_indent  = 4 + name.size + 1
+          args_context = context.indented(args_indent)
+          args_code    = if !args.empty?
+            "(#{list(args, ", ", args_context)})"
+          else
+            ""
+          end
 
           combine do |parts|
             parts << "def #{name}#{args_code}"
