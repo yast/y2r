@@ -28,6 +28,10 @@ module Y2R
 
         protected
 
+        def multi_line?(code)
+          !code.index("\n").nil?
+        end
+
         def indented(node, context)
           indent(node.to_ruby(context.indented(INDENT_STEP)))
         end
@@ -411,16 +415,36 @@ module Y2R
       end
 
       class Array < Node
-        # TODO: Split to multiple lines if any element is multiline.
-        # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          "[#{list(elements, ", ", context.indented(1))}]"
+          code = to_ruby_single_line(context)
+
+          if code.size > context.width || multi_line?(code)
+            to_ruby_multi_line(context)
+          else
+            code
+          end
         end
 
         protected
 
         def enclose?
           false
+        end
+
+        private
+
+        def to_ruby_single_line(context)
+          "[#{list(elements, ", ", context.indented(1))}]"
+        end
+
+        def to_ruby_multi_line(context)
+          combine do |parts|
+            parts << "["
+            elements.each do |element|
+              parts << "#{indented(element, context)},"
+            end
+            parts << "]"
+          end
         end
       end
 

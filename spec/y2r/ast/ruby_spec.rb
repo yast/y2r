@@ -2,20 +2,24 @@
 
 require "spec_helper"
 
-def node_width_mock(width)
+def node_width_mock(*widths)
   mock = double
-  mock.should_receive(:to_ruby) do |context|
-    context.width.should == width
-    ""
+  widths.each do |width|
+    mock.should_receive(:to_ruby) do |context|
+      context.width.should == width
+      ""
+    end
   end
   mock
 end
 
-def node_width_mock_enclosed(width)
+def node_width_mock_enclosed(*widths)
   mock = double
-  mock.should_receive(:to_ruby_enclosed) do |context|
-    context.width.should == width
-    ""
+  widths.each do |width|
+    mock.should_receive(:to_ruby_enclosed) do |context|
+      context.width.should == width
+      ""
+    end
   end
   mock
 end
@@ -82,6 +86,7 @@ module Y2R::AST::Ruby
       @else = Else.new(:body => @statements)
 
       @context_default = Context.new(:width => 80)
+      @context_narrow  = Context.new(:width => 0)
     end
   end
 
@@ -1573,29 +1578,77 @@ module Y2R::AST::Ruby
 
   describe Array, :type => :ruby do
     describe "#to_ruby" do
-      describe "basics" do
-        it "emits correct code for empty arrays" do
-          node = Array.new(:elements => [])
+      before :each do
+        @node_empty    = Array.new(:elements => [])
+        @node_one      = Array.new(:elements => [@literal_42])
+        @node_multiple = Array.new(
+          :elements => [@literal_42, @literal_43, @literal_44]
+        )
+      end
 
-          node.to_ruby(@context_default).should == "[]"
+      it "emits a single-line array when the array fits available width and all elements are single-line" do
+        @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
+      end
+
+      it "emits a multi-line array when the array doesn't fit available width" do
+        @node_multiple.to_ruby(@context_narrow).should == [
+          "[",
+          "  42,",
+          "  43,",
+          "  44,",
+          "]"
+        ].join("\n")
+      end
+
+      it "emits a multi-line array when any element is multi-line" do
+        # Using @statements is nonsense semantically, but it is a convenient
+        # multi-line node.
+        node1 = Array.new(:elements => [@statements, @literal_43, @literal_44])
+        node2 = Array.new(:elements => [@literal_42, @statements, @literal_44])
+        node3 = Array.new(:elements => [@literal_42, @literal_43, @statements])
+
+        node1.to_ruby(@context_default).should == [
+          "[",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "  43,",
+          "  44,",
+          "]"
+        ].join("\n")
+        node2.to_ruby(@context_default).should == [
+          "[",
+          "  42,",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "  44,",
+          "]"
+        ].join("\n")
+        node3.to_ruby(@context_default).should == [
+          "[",
+          "  42,",
+          "  43,",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "]"
+        ].join("\n")
+      end
+
+      describe "for single-line arrays" do
+        it "emits correct code for empty arrays" do
+          @node_empty.to_ruby(@context_default).should == "[]"
         end
 
         it "emits correct code for arrays with one element" do
-          node = Array.new(:elements => [@literal_42])
-
-          node.to_ruby(@context_default).should == "[42]"
+          @node_one.to_ruby(@context_default).should == "[42]"
         end
 
         it "emits correct code for arrays with multiple elements" do
-          node = Array.new(
-            :elements => [@literal_42, @literal_43, @literal_44]
-          )
-
-          node.to_ruby(@context_default).should == "[42, 43, 44]"
+          @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
         end
-      end
 
-      describe "formatting" do
         it "passes correct available width to elements" do
           node = Array.new(
             :elements => [
@@ -1606,6 +1659,45 @@ module Y2R::AST::Ruby
           )
 
           node.to_ruby(@context_default)
+        end
+      end
+
+      describe "for multi-line arrays" do
+        it "emits correct code for empty arrays" do
+          @node_empty.to_ruby(@context_narrow).should == [
+           "[",
+           "]"
+          ].join("\n")
+        end
+
+        it "emits correct code for arrays with one element" do
+          @node_one.to_ruby(@context_narrow).should == [
+           "[",
+           "  42,",
+           "]"
+          ].join("\n")
+        end
+
+        it "emits correct code for arrays with multiple elements" do
+          @node_multiple.to_ruby(@context_narrow).should == [
+           "[",
+           "  42,",
+           "  43,",
+           "  44,",
+           "]"
+          ].join("\n")
+        end
+
+        it "passes correct available widths to elements" do
+          node = Array.new(
+            :elements => [
+              node_width_mock(-1, -2),
+              node_width_mock(-3, -2),
+              node_width_mock(-5, -2)
+            ]
+          )
+
+          node.to_ruby(@context_narrow)
         end
       end
     end
