@@ -413,7 +413,10 @@ module Y2R
         # TODO: Split to multiple lines if any element is multiline.
         # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          "[#{list(elements, ", ", context)}]"
+          elements_indent  = 1
+          elements_context = context.indented(elements_indent)
+
+          "[#{list(elements, ", ", elements_context)}]"
         end
 
         protected
