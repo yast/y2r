@@ -497,10 +497,17 @@ module Y2R
 
       class HashEntry < Node
         def to_ruby(context)
+          max_key_width = context.max_key_width
+
+          # We don't want to pass context.max_key_width to the key or value.
+          # There can be a hash there for which it could cause problems.
+          context = context.dup
+          context.max_key_width = nil
+
           key_code = key.to_ruby(context)
 
-          spacing_code = if context.max_key_width
-            " " * (context.max_key_width - key_code.size)
+          spacing_code = if max_key_width
+            " " * (max_key_width - key_code.size)
           else
             ""
           end
