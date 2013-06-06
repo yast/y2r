@@ -444,11 +444,11 @@ module Y2R
 
       class HashEntry < Node
         def to_ruby(context)
-          key_code = key.to_ruby_enclosed(context)
+          key_code = key.to_ruby(context)
 
           value_indent  = key_code.size + 4
           value_context = context.indented(value_indent)
-          value_code    = value.to_ruby_enclosed(value_context)
+          value_code    = value.to_ruby(value_context)
 
           "#{key_code} => #{value_code}"
         end

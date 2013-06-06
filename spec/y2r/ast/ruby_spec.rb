@@ -1673,7 +1673,7 @@ module Y2R::AST::Ruby
       describe "formatting" do
         it "passes correct available width to key" do
           node = HashEntry.new(
-            :key   => node_width_mock_enclosed(80),
+            :key   => node_width_mock(80),
             :value => @literal_42
           )
 
@@ -1683,7 +1683,7 @@ module Y2R::AST::Ruby
         it "passes correct available width to value" do
           node = HashEntry.new(
             :key   => @literal_a,
-            :value => node_width_mock_enclosed(74)
+            :value => node_width_mock(74)
           )
 
           node.to_ruby(@context_default)
