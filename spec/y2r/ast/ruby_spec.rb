@@ -39,6 +39,19 @@ module Y2R::AST::Ruby
       @literal_44 = Literal.new(:value => 44)
       @literal_45 = Literal.new(:value => 45)
 
+      @hash_entry_a_42 = HashEntry.new(
+        :key   => @literal_a,
+        :value => @literal_42
+      )
+      @hash_entry_b_43 = HashEntry.new(
+        :key   => @literal_b,
+        :value => @literal_43
+      )
+      @hash_entry_c_44 = HashEntry.new(
+        :key   => @literal_c,
+        :value => @literal_44
+      )
+
       @variable_a = Variable.new(:name => "a")
       @variable_b = Variable.new(:name => "b")
       @variable_c = Variable.new(:name => "c")
@@ -1705,38 +1718,85 @@ module Y2R::AST::Ruby
 
   describe Hash, :type => :ruby do
     describe "#to_ruby" do
-      describe "basics" do
-        it "emits correct code for empty hashes" do
-          node = Hash.new(:entries => [])
+      before :each do
+        @node_empty = Hash.new(:entries => [])
+        @node_one   = Hash.new(:entries => [@hash_entry_a_42])
+        @node_multiple = Hash.new(
+          :entries => [@hash_entry_a_42, @hash_entry_b_43, @hash_entry_c_44]
+        )
+      end
 
-          node.to_ruby(@context_default).should == "{}"
+      it "emits a single-line hash when the hash fits available width and all entries are single-line" do
+        @node_multiple.to_ruby(@context_default).should ==
+          "{ :a => 42, :b => 43, :c => 44 }"
+      end
+
+      it "emits a multi-line hash when the hash doesn't fit available width" do
+        @node_multiple.to_ruby(@context_narrow).should == [
+          "{",
+          "  :a => 42,",
+          "  :b => 43,",
+          "  :c => 44,",
+          "}"
+        ].join("\n")
+      end
+
+      it "emits a multi-line hash when any entry is multi-line" do
+        # Using @statements is nonsense semantically, but it is a convenient
+        # multi-line node.
+        node1 = Hash.new(
+          :entries => [@statements, @hash_entry_b_43, @hash_entry_c_44]
+        )
+        node2 = Hash.new(
+          :entries => [@hash_entry_a_42, @statements, @hash_entry_c_44]
+        )
+        node3 = Hash.new(
+          :entries => [@hash_entry_a_42, @hash_entry_b_43, @statements]
+        )
+
+        node1.to_ruby(@context_default).should == [
+          "{",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "  :b => 43,",
+          "  :c => 44,",
+          "}"
+        ].join("\n")
+        node2.to_ruby(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "  :c => 44,",
+          "}"
+        ].join("\n")
+        node3.to_ruby(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  :b => 43,",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44,",
+          "}"
+        ].join("\n")
+      end
+
+      describe "for single-line hashes" do
+        it "emits correct code for empty hashes" do
+          @node_empty.to_ruby(@context_default).should == "{}"
         end
 
         it "emits correct code for hashes with one entry" do
-          node = Hash.new(
-            :entries => [
-              HashEntry.new(:key => @literal_a, :value => @literal_42)
-            ]
-          )
-
-          node.to_ruby(@context_default).should == "{ :a => 42 }"
+          @node_one.to_ruby(@context_default).should == "{ :a => 42 }"
         end
 
         it "emits correct code for hashes with multiple entries" do
-          node = Hash.new(
-            :entries => [
-              HashEntry.new(:key => @literal_a, :value => @literal_42),
-              HashEntry.new(:key => @literal_b, :value => @literal_43),
-              HashEntry.new(:key => @literal_c, :value => @literal_44)
-            ]
-          )
-
-          node.to_ruby(@context_default).should ==
+          @node_multiple.to_ruby(@context_default).should ==
             "{ :a => 42, :b => 43, :c => 44 }"
         end
-      end
 
-      describe "formatting" do
         it "passes correct available width to entries" do
           node = Hash.new(
             :entries => [
@@ -1747,6 +1807,45 @@ module Y2R::AST::Ruby
           )
 
           node.to_ruby(@context_default)
+        end
+      end
+
+      describe "for multi-line hashes" do
+        it "emits correct code for empty hashes" do
+          @node_empty.to_ruby(@context_narrow).should == [
+           "{",
+           "}"
+          ].join("\n")
+        end
+
+        it "emits correct code for hashes with one entry" do
+          @node_one.to_ruby(@context_narrow).should == [
+           "{",
+           "  :a => 42,",
+           "}"
+          ].join("\n")
+        end
+
+        it "emits correct code for hashes with multiple entries" do
+          @node_multiple.to_ruby(@context_narrow).should == [
+           "{",
+           "  :a => 42,",
+           "  :b => 43,",
+           "  :c => 44,",
+           "}"
+          ].join("\n")
+        end
+
+        it "passes correct available widths to entries" do
+          node = Hash.new(
+            :entries => [
+              node_width_mock(-2, -2),
+              node_width_mock(-4, -2),
+              node_width_mock(-6, -2)
+            ]
+          )
+
+          node.to_ruby(@context_narrow)
         end
       end
     end

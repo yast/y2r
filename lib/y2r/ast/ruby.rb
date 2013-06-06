@@ -449,13 +449,13 @@ module Y2R
       end
 
       class Hash < Node
-        # TODO: Split to multiple lines if any value is multiline.
-        # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          if !entries.empty?
-            "{ #{list(entries, ", ", context.indented(2))} }"
+          code = to_ruby_single_line(context)
+
+          if code.size > context.width || multi_line?(code)
+            to_ruby_multi_line(context)
           else
-            "{}"
+            code
           end
         end
 
@@ -464,6 +464,27 @@ module Y2R
         def enclose?
           false
         end
+
+        private
+
+        def to_ruby_single_line(context)
+          if !entries.empty?
+            "{ #{list(entries, ", ", context.indented(2))} }"
+          else
+            "{}"
+          end
+        end
+
+        def to_ruby_multi_line(context)
+          combine do |parts|
+            parts << "{"
+            entries.each do |entry|
+              parts << "#{indented(entry, context)},"
+            end
+            parts << "}"
+          end
+        end
+
       end
 
       class HashEntry < Node
