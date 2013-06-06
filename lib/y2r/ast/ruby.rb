@@ -177,11 +177,8 @@ module Y2R
 
       class When < Node
         def to_ruby(context)
-          values_indent  = 5
-          values_context = context.indented(values_indent)
-
           combine do |parts|
-            parts << "when #{list(values, ", ", values_context)}"
+            parts << "when #{list(values, ", ", context.indented(5))}"
             parts << indented(body, context)
           end
         end
@@ -247,10 +244,7 @@ module Y2R
       # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
-          expressions_indent  = 1
-          expressions_context = context.indented(expressions_indent)
-
-          "(#{list(expressions, "; ", expressions_context)})"
+          "(#{list(expressions, "; ", context.indented(1))})"
         end
       end
 
@@ -347,10 +341,8 @@ module Y2R
       # TODO: Emit one-line blocks for one-line block bodies.
       class Block < Node
         def to_ruby(context)
-          args_indent  = 3
-          args_context = context.indented(args_indent)
-          args_code    = if !args.empty?
-            " |#{list(args, ", ", args_context)}|"
+          args_code = if !args.empty?
+            " |#{list(args, ", ", context.indented(3))}|"
           else
             ""
           end
@@ -417,10 +409,7 @@ module Y2R
         # TODO: Split to multiple lines if any element is multiline.
         # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          elements_indent  = 1
-          elements_context = context.indented(elements_indent)
-
-          "[#{list(elements, ", ", elements_context)}]"
+          "[#{list(elements, ", ", context.indented(1))}]"
         end
 
         protected
@@ -434,10 +423,11 @@ module Y2R
         # TODO: Split to multiple lines if any value is multiline.
         # TODO: Split to multiple lines if the result is too long.
         def to_ruby(context)
-          entries_indent  = 2
-          entries_context = context.indented(entries_indent)
-
-          !entries.empty? ? "{ #{list(entries, ", ", entries_context)} }" : "{}"
+          if !entries.empty?
+            "{ #{list(entries, ", ", context.indented(2))} }"
+          else
+            "{}"
+          end
         end
 
         protected
