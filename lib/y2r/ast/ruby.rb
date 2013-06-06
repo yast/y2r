@@ -283,8 +283,12 @@ module Y2R
       class Ternary < Node
         def to_ruby(context)
           condition_code = condition.to_ruby_enclosed(context)
-          then_code      = self.then.to_ruby_enclosed(context)
-          else_code      = self.else.to_ruby_enclosed(context)
+          then_indent    = condition_code.size + 3
+          then_context   = context.indented(then_indent)
+          then_code      = self.then.to_ruby_enclosed(then_context)
+          else_indent    = then_indent + then_code.size + 3
+          else_context   = context.indented(else_indent)
+          else_code      = self.else.to_ruby_enclosed(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
         end

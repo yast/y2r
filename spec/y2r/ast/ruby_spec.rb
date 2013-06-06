@@ -1123,6 +1123,38 @@ module Y2R::AST::Ruby
             "(true || false) ? (42 + 43) : (44 + 45)"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to condition" do
+          node = Ternary.new(
+            :condition => node_width_mock_enclosed(80),
+            :then      => @literal_42,
+            :else      => @literal_43
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available width to then" do
+          node = Ternary.new(
+            :condition => @literal_true,
+            :then      => node_width_mock_enclosed(73),
+            :else      => @literal_43
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available width to else" do
+          node = Ternary.new(
+            :condition => @literal_true,
+            :then      => @literal_42,
+            :else      => node_width_mock_enclosed(68)
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
