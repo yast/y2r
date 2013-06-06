@@ -247,7 +247,10 @@ module Y2R
       # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
-          "(#{list(expressions, "; ", context)})"
+          expressions_indent  = 1
+          expressions_context = context.indented(expressions_indent)
+
+          "(#{list(expressions, "; ", expressions_context)})"
         end
       end
 

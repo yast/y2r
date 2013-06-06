@@ -985,6 +985,20 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "(42; 43; 44)"
         end
       end
+
+      describe "formatting" do
+        it "passes correct available width to expressions" do
+          node = Expressions.new(
+            :expressions => [
+              node_width_mock(79),
+              node_width_mock(77),
+              node_width_mock(75)
+            ]
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
     end
   end
 
