@@ -30,27 +30,16 @@ module Y2R::AST::Ruby
       @literal_true  = Literal.new(:value => true)
       @literal_false = Literal.new(:value => false)
 
-      @literal_a = Literal.new(:value => :a)
-      @literal_b = Literal.new(:value => :b)
-      @literal_c = Literal.new(:value => :c)
+      @literal_a   = Literal.new(:value => :a)
+      @literal_aa  = Literal.new(:value => :aa)
+      @literal_aaa = Literal.new(:value => :aaa)
+      @literal_b   = Literal.new(:value => :b)
+      @literal_c   = Literal.new(:value => :c)
 
       @literal_42 = Literal.new(:value => 42)
       @literal_43 = Literal.new(:value => 43)
       @literal_44 = Literal.new(:value => 44)
       @literal_45 = Literal.new(:value => 45)
-
-      @hash_entry_a_42 = HashEntry.new(
-        :key   => @literal_a,
-        :value => @literal_42
-      )
-      @hash_entry_b_43 = HashEntry.new(
-        :key   => @literal_b,
-        :value => @literal_43
-      )
-      @hash_entry_c_44 = HashEntry.new(
-        :key   => @literal_c,
-        :value => @literal_44
-      )
 
       @variable_a = Variable.new(:name => "a")
       @variable_b = Variable.new(:name => "b")
@@ -90,6 +79,39 @@ module Y2R::AST::Ruby
         :statements => [@assignment_a_42, @assignment_b_43, @assignment_c_44]
       )
 
+      @hash_entry_a_42 = HashEntry.new(
+        :key   => @literal_a,
+        :value => @literal_42
+      )
+      @hash_entry_a_statements = HashEntry.new(
+        :key   => @literal_a,
+        :value => @statements
+      )
+      @hash_entry_aa_43 = HashEntry.new(
+        :key   => @literal_aa,
+        :value => @literal_43
+      )
+      @hash_entry_aaa_44 = HashEntry.new(
+        :key   => @literal_aaa,
+        :value => @literal_44
+      )
+      @hash_entry_b_43 = HashEntry.new(
+        :key   => @literal_b,
+        :value => @literal_43
+      )
+      @hash_entry_b_statements = HashEntry.new(
+        :key   => @literal_b,
+        :value => @statements
+      )
+      @hash_entry_c_44 = HashEntry.new(
+        :key   => @literal_c,
+        :value => @literal_44
+      )
+      @hash_entry_c_statements = HashEntry.new(
+        :key   => @literal_c,
+        :value => @statements
+      )
+
       @begin = Begin.new(:statements => @statements)
 
       @when_42 = When.new(:values => [@literal_42], :body => @statements)
@@ -98,8 +120,9 @@ module Y2R::AST::Ruby
 
       @else = Else.new(:body => @statements)
 
-      @context_default = Context.new(:width => 80)
-      @context_narrow  = Context.new(:width => 0)
+      @context_default       = Context.new(:width => 80)
+      @context_narrow        = Context.new(:width => 0)
+      @context_max_key_width = Context.new(:width => 0, :max_key_width => 4)
     end
   end
 
@@ -1745,18 +1768,30 @@ module Y2R::AST::Ruby
         # Using @statements is nonsense semantically, but it is a convenient
         # multi-line node.
         node1 = Hash.new(
-          :entries => [@statements, @hash_entry_b_43, @hash_entry_c_44]
+          :entries => [
+            @hash_entry_a_statements,
+            @hash_entry_b_43,
+            @hash_entry_c_44
+          ]
         )
         node2 = Hash.new(
-          :entries => [@hash_entry_a_42, @statements, @hash_entry_c_44]
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_statements,
+            @hash_entry_c_44
+          ]
         )
         node3 = Hash.new(
-          :entries => [@hash_entry_a_42, @hash_entry_b_43, @statements]
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_43,
+            @hash_entry_c_statements
+          ]
         )
 
         node1.to_ruby(@context_default).should == [
           "{",
-          "  a = 42",
+          "  :a => a = 42",
           "  b = 43",
           "  c = 44,",
           "  :b => 43,",
@@ -1766,7 +1801,7 @@ module Y2R::AST::Ruby
         node2.to_ruby(@context_default).should == [
           "{",
           "  :a => 42,",
-          "  a = 42",
+          "  :b => a = 42",
           "  b = 43",
           "  c = 44,",
           "  :c => 44,",
@@ -1776,7 +1811,7 @@ module Y2R::AST::Ruby
           "{",
           "  :a => 42,",
           "  :b => 43,",
-          "  a = 42",
+          "  :c => a = 42",
           "  b = 43",
           "  c = 44,",
           "}"
@@ -1836,14 +1871,43 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available widths to entries" do
+        it "aligns arrows" do
           node = Hash.new(
             :entries => [
-              node_width_mock(-2, -2),
-              node_width_mock(-4, -2),
-              node_width_mock(-6, -2)
+              @hash_entry_a_42,
+              @hash_entry_aa_43,
+              @hash_entry_aaa_44
             ]
           )
+
+          node.to_ruby(@context_narrow).should == [
+           "{",
+           "  :a   => 42,",
+           "  :aa  => 43,",
+           "  :aaa => 44,",
+           "}"
+          ].join("\n")
+        end
+
+        it "passes correct available widths to entries" do
+          node1 = node_width_mock(-2, -2)
+          node2 = node_width_mock(-4, -2)
+          node3 = node_width_mock(-6, -2)
+
+          node1.should_receive(:key_width) do |context|
+            context.width.should == -2
+            0
+          end
+          node2.should_receive(:key_width) do |context|
+            context.width.should == -2
+            0
+          end
+          node3.should_receive(:key_width) do |context|
+            context.width.should == -2
+            0
+          end
+
+          node = Hash.new(:entries => [node1, node2, node3])
 
           node.to_ruby(@context_narrow)
         end
@@ -1854,10 +1918,16 @@ module Y2R::AST::Ruby
   describe HashEntry, :type => :ruby do
     describe "#to_ruby" do
       describe "basics" do
-        it "emits correct code" do
+        it "emits correct code with no max_key_width set" do
           node = HashEntry.new(:key => @literal_a, :value => @literal_42)
 
           node.to_ruby(@context_default).should == ":a => 42"
+        end
+
+        it "emits correct code with max_key_width set" do
+          node = HashEntry.new(:key => @literal_a, :value => @literal_42)
+
+          node.to_ruby(@context_max_key_width).should == ":a   => 42"
         end
       end
 

@@ -476,26 +476,44 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
+          if !entries.empty?
+            max_key_width = entries.map do |entry|
+              entry.key_width(context.indented(INDENT_STEP))
+            end.max
+
+            entry_context = context.dup
+            entry_context.max_key_width = max_key_width
+          end
+
           combine do |parts|
             parts << "{"
             entries.each do |entry|
-              parts << "#{indented(entry, context)},"
+              parts << "#{indented(entry, entry_context)},"
             end
             parts << "}"
           end
         end
-
       end
 
       class HashEntry < Node
         def to_ruby(context)
           key_code = key.to_ruby(context)
 
-          value_indent  = key_code.size + 4
+          spacing_code = if context.max_key_width
+            " " * (context.max_key_width - key_code.size)
+          else
+            ""
+          end
+
+          value_indent  = key_code.size + spacing_code.size + 4
           value_context = context.indented(value_indent)
           value_code    = value.to_ruby(value_context)
 
-          "#{key_code} => #{value_code}"
+          "#{key_code}#{spacing_code} => #{value_code}"
+        end
+
+        def key_width(context)
+          key.to_ruby(context).size
         end
 
         protected
