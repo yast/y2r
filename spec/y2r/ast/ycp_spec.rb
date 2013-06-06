@@ -4071,7 +4071,7 @@ module Y2R::AST
           :false => @ycp_const_43
         )
 
-        ruby_node = Ruby::Ternary.new(
+        ruby_node = Ruby::TernaryOperator.new(
           :condition => @ruby_literal_true,
           :then      => @ruby_literal_42,
           :else      => @ruby_literal_43

@@ -1099,11 +1099,11 @@ module Y2R::AST::Ruby
     end
   end
 
-  describe Ternary, :type => :ruby do
+  describe TernaryOperator, :type => :ruby do
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Ternary.new(
+          node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @literal_42,
             :else      => @literal_43
@@ -1113,7 +1113,7 @@ module Y2R::AST::Ruby
         end
 
         it "encloses operands in parens when needed" do
-          node = Ternary.new(
+          node = TernaryOperator.new(
             :condition  => @binary_operator_true_or_false,
             :then       => @binary_operator_42_plus_43,
             :else       => @binary_operator_44_plus_45
@@ -1126,7 +1126,7 @@ module Y2R::AST::Ruby
 
       describe "formatting" do
         it "passes correct available width to condition" do
-          node = Ternary.new(
+          node = TernaryOperator.new(
             :condition => node_width_mock_enclosed(80),
             :then      => @literal_42,
             :else      => @literal_43
@@ -1136,7 +1136,7 @@ module Y2R::AST::Ruby
         end
 
         it "passes correct available width to then" do
-          node = Ternary.new(
+          node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => node_width_mock_enclosed(73),
             :else      => @literal_43
@@ -1146,7 +1146,7 @@ module Y2R::AST::Ruby
         end
 
         it "passes correct available width to else" do
-          node = Ternary.new(
+          node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @literal_42,
             :else      => node_width_mock_enclosed(68)

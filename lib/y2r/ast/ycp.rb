@@ -1406,7 +1406,7 @@ module Y2R
 
       class YETriple < Node
         def compile(context)
-          Ruby::Ternary.new(
+          Ruby::TernaryOperator.new(
             :condition => cond.compile(context),
             :then      => self.true.compile(context),
             :else      => self.false.compile(context)

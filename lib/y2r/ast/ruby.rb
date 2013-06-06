@@ -280,7 +280,7 @@ module Y2R
         end
       end
 
-      class Ternary < Node
+      class TernaryOperator < Node
         def to_ruby(context)
           condition_code = condition.to_ruby_enclosed(context)
           then_indent    = condition_code.size + 3
