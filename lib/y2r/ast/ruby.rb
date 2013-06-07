@@ -72,6 +72,16 @@ module Y2R
           end.join(separator)
         end
 
+        def wrapped_line_list(items, opener, separator, closer, context)
+          combine do |parts|
+            parts << opener
+            items.each do |item|
+              parts << "#{indented(item, context)}#{separator}"
+            end
+            parts << closer
+          end
+        end
+
         def enclose?
           true
         end
@@ -479,13 +489,7 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          combine do |parts|
-            parts << "["
-            elements.each do |element|
-              parts << "#{indented(element, context)},"
-            end
-            parts << "]"
-          end
+          wrapped_line_list(elements, "[", ",", "]", context)
         end
       end
 
@@ -526,13 +530,7 @@ module Y2R
             entry_context.max_key_width = max_key_width
           end
 
-          combine do |parts|
-            parts << "{"
-            entries.each do |entry|
-              parts << "#{indented(entry, entry_context)},"
-            end
-            parts << "}"
-          end
+          wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
       end
 
