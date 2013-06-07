@@ -291,6 +291,7 @@ module YCP
         @fref = fun_ref(method(:f), "void ()")
         nil
       end
+
       def f
         return
       end
@@ -399,6 +400,7 @@ module YCP
       @k = 42
       @l = deep_copy(@i)
     end
+
     publish({ :variable => :k, :type => "integer" })
     publish({ :variable => :l, :type => "integer" })
   end
@@ -659,15 +661,18 @@ module YCP
         )
         nil
       end
+
       def f1
         return 42
       end
+
       def f2(a, b, c)
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)
         return 42
       end
+
       def f3(a, b, c)
         return 42
       end
@@ -778,6 +783,7 @@ module YCP
         @fref.call
         nil
       end
+
       def f
         return
       end
@@ -1070,6 +1076,7 @@ module YCP
       def f1
         return
       end
+
       def f2
         return 42
       end
@@ -1228,18 +1235,23 @@ module YCP
       def f1
         return 42
       end
+
       def f2(a, b, c)
         return 42
       end
+
       def f3(a, b, c)
         return 42
       end
+
       def f4(a, b, c)
         return 42
       end
+
       def f5(a, b, c)
         return 42
       end
+
       def f6(a, b, c)
         a = deep_copy(a)
         b = deep_copy(b)
@@ -1597,9 +1609,11 @@ module YCP
         @j = 43
         nil
       end
+
       def f
         return 42
       end
+
       def g
         return 43
       end
@@ -1652,16 +1666,20 @@ module YCP
       @j = 43
       M()
     end
+
     def f
       return 42
     end
+
     def g
       return 43
     end
+
     def M
       Builtins.y2milestone("M1")
       nil
     end
+
     publish({ :variable => :j, :type => "integer" })
     publish({ :function => :g, :type => "integer ()" })
   end
