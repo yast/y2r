@@ -75,9 +75,10 @@ module Y2R
         def wrapped_line_list(items, opener, separator, closer, context)
           combine do |parts|
             parts << opener
-            items.each do |item|
+            items[0..-2].each do |item|
               parts << "#{indented(item, context)}#{separator}"
             end
+            parts << "#{indented(items.last, context)}" unless items.empty?
             parts << closer
           end
         end

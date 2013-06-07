@@ -1752,7 +1752,7 @@ module Y2R::AST::Ruby
           "[",
           "  42,",
           "  43,",
-          "  44,",
+          "  44",
           "]"
         ].join("\n")
       end
@@ -1770,7 +1770,7 @@ module Y2R::AST::Ruby
           "  b = 43",
           "  c = 44,",
           "  43,",
-          "  44,",
+          "  44",
           "]"
         ].join("\n")
         node2.to_ruby(@context_default).should == [
@@ -1779,7 +1779,7 @@ module Y2R::AST::Ruby
           "  a = 42",
           "  b = 43",
           "  c = 44,",
-          "  44,",
+          "  44",
           "]"
         ].join("\n")
         node3.to_ruby(@context_default).should == [
@@ -1788,7 +1788,7 @@ module Y2R::AST::Ruby
           "  43,",
           "  a = 42",
           "  b = 43",
-          "  c = 44,",
+          "  c = 44",
           "]"
         ].join("\n")
       end
@@ -1830,7 +1830,7 @@ module Y2R::AST::Ruby
         it "emits correct code for arrays with one element" do
           @node_one.to_ruby(@context_narrow).should == [
            "[",
-           "  42,",
+           "  42",
            "]"
           ].join("\n")
         end
@@ -1840,7 +1840,7 @@ module Y2R::AST::Ruby
            "[",
            "  42,",
            "  43,",
-           "  44,",
+           "  44",
            "]"
           ].join("\n")
         end
@@ -1889,7 +1889,7 @@ module Y2R::AST::Ruby
           "{",
           "  :a => 42,",
           "  :b => 43,",
-          "  :c => 44,",
+          "  :c => 44",
           "}"
         ].join("\n")
       end
@@ -1925,7 +1925,7 @@ module Y2R::AST::Ruby
           "  b = 43",
           "  c = 44,",
           "  :b => 43,",
-          "  :c => 44,",
+          "  :c => 44",
           "}"
         ].join("\n")
         node2.to_ruby(@context_default).should == [
@@ -1934,7 +1934,7 @@ module Y2R::AST::Ruby
           "  :b => a = 42",
           "  b = 43",
           "  c = 44,",
-          "  :c => 44,",
+          "  :c => 44",
           "}"
         ].join("\n")
         node3.to_ruby(@context_default).should == [
@@ -1943,7 +1943,7 @@ module Y2R::AST::Ruby
           "  :b => 43,",
           "  :c => a = 42",
           "  b = 43",
-          "  c = 44,",
+          "  c = 44",
           "}"
         ].join("\n")
       end
@@ -1986,7 +1986,7 @@ module Y2R::AST::Ruby
         it "emits correct code for hashes with one entry" do
           @node_one.to_ruby(@context_narrow).should == [
            "{",
-           "  :a => 42,",
+           "  :a => 42",
            "}"
           ].join("\n")
         end
@@ -1996,7 +1996,7 @@ module Y2R::AST::Ruby
            "{",
            "  :a => 42,",
            "  :b => 43,",
-           "  :c => 44,",
+           "  :c => 44",
            "}"
           ].join("\n")
         end
@@ -2014,7 +2014,7 @@ module Y2R::AST::Ruby
            "{",
            "  :a   => 42,",
            "  :aa  => 43,",
-           "  :aaa => 44,",
+           "  :aaa => 44",
            "}"
           ].join("\n")
         end
