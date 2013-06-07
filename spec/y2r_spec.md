@@ -259,9 +259,7 @@ block<void> b = { y2milestone("M1"); };
 #### Ruby (fragment)
 
 ```ruby
-b = lambda {
-  Builtins.y2milestone("M1")
-}
+b = lambda { Builtins.y2milestone("M1") }
 ```
 
 ### Function References
@@ -432,9 +430,7 @@ module YCP
     class DefaultClient < Client
       def f
         i = 42
-        b = lambda {
-          i2 = 43
-        }
+        b = lambda { i2 = 43 }
         nil
       end
     end
@@ -557,9 +553,7 @@ foreach(integer i, [42, 43, 44], { y2milestone("M1"); });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  Builtins.y2milestone("M1")
-}
+Builtins.foreach([42, 43, 44]) { |i| Builtins.y2milestone("M1") }
 ```
 
 Y2R handles YCP builtin calls with a double quote expression as the last
@@ -574,9 +568,7 @@ maplist(integer i, [42, 43, 44], ``(i * i));
 #### Ruby (fragment)
 
 ```ruby
-Builtins.maplist([42, 43, 44]) { |i|
-  Ops.multiply(i, i)
-}
+Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
 ```
 
 ### `_` Calls
@@ -715,18 +707,14 @@ module YCP
   module Clients
     class DefaultClient < Client
       def outer
-        f1 = lambda {
-          return 42
-        }
+        f1 = lambda { return 42 }
         f2 = lambda { |a2, b2, c2|
           a2 = deep_copy(a2)
           b2 = deep_copy(b2)
           c2 = deep_copy(c2)
           return 42
         }
-        f3 = lambda { |a2, b2, c2|
-          return 42
-        }
+        f3 = lambda { |a2, b2, c2| return 42 }
         f1.call
         a = "a"
         b = "b"
@@ -942,9 +930,7 @@ block<integer> b = ``(42);
 #### Ruby (fragment)
 
 ```ruby
-b = lambda {
-  42
-}
+b = lambda { 42 }
 ```
 
 Statements
@@ -1144,9 +1130,7 @@ foreach(integer i, [42, 43, 44], { break; });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  raise Break
-}
+Builtins.foreach([42, 43, 44]) { |i| raise Break }
 ```
 
 ### `continue` Statement
@@ -1176,9 +1160,7 @@ foreach(integer i, [42, 43, 44], { continue; });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i|
-  next
-}
+Builtins.foreach([42, 43, 44]) { |i| next }
 ```
 
 ### Function Definitions
@@ -1298,21 +1280,11 @@ module YCP
   module Clients
     class DefaultClient < Client
       def outer
-        f1 = lambda {
-          return 42
-        }
-        f2 = lambda { |a, b, c|
-          return 42
-        }
-        f3 = lambda { |a, b, c|
-          return 42
-        }
-        f4 = lambda { |a, b, c|
-          return 42
-        }
-        f5 = lambda { |a, b, c|
-          return 42
-        }
+        f1 = lambda { return 42 }
+        f2 = lambda { |a, b, c| return 42 }
+        f3 = lambda { |a, b, c| return 42 }
+        f4 = lambda { |a, b, c| return 42 }
+        f5 = lambda { |a, b, c| return 42 }
         f6 = lambda { |a, b, c|
           a = deep_copy(a)
           b = deep_copy(b)

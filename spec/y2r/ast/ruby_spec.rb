@@ -1479,11 +1479,87 @@ module Y2R::AST::Ruby
 
   describe Block, :type => :ruby do
     describe "#to_ruby" do
-      describe "basics" do
+      it "emits a single-line block when the block fits available space and the statments are single-line" do
+        node = Block.new(:args => [], :statements => @assignment_a_42)
+
+        node.to_ruby(@context_default).should == "{ a = 42 }"
+      end
+
+      it "emits a multi-line block when the block doesn't fit available space" do
+        node = Block.new(:args => [], :statements => @assignment_a_42)
+
+        node.to_ruby(@context_narrow).should == [
+          "{",
+          "  a = 42",
+          "}"
+        ].join("\n")
+      end
+
+      it "emits a multi-line block when the statements are multi-line" do
+        node = Block.new(:args => [], :statements => @statements)
+
+        node.to_ruby(@context_default).should == [
+          "{",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          "}"
+        ].join("\n")
+      end
+
+      describe "for single-line blocks" do
+        it "emits correct code for blocks with no arguments" do
+          node = Block.new(:args => [], :statements => @assignment_a_42)
+
+          node.to_ruby(@context_default).should == "{ a = 42 }"
+        end
+
+        it "emits correct code for blocks with one argument" do
+          node = Block.new(
+            :args       => [@variable_a],
+            :statements => @assignment_a_42
+          )
+
+          node.to_ruby(@context_default).should == "{ |a| a = 42 }"
+        end
+
+        it "emits correct code for blocks with multiple arguments" do
+          node = Block.new(
+            :args       => [@variable_a, @variable_b, @variable_c],
+            :statements => @assignment_a_42
+          )
+
+          node.to_ruby(@context_default).should == "{ |a, b, c| a = 42 }"
+        end
+
+        it "passes correct available space info to args" do
+          node = Block.new(
+            :args       => [
+              node_to_ruby_mock(:width => 80, :shift => 3),
+              node_to_ruby_mock(:width => 80, :shift => 5),
+              node_to_ruby_mock(:width => 80, :shift => 7)
+            ],
+            :statements => @assignment_a_42
+          )
+
+          node.to_ruby(@context_default)
+        end
+
+        it "passes correct available space info to statements" do
+          node = Block.new(
+            :args       => [],
+            :statements => node_to_ruby_mock(:width => 80, :shift => 2)
+          )
+
+          node.to_ruby(@context_default)
+        end
+      end
+
+      describe "for multi-line blocks" do
         it "emits correct code for blocks with no arguments" do
           node = Block.new(:args => [], :statements => @statements)
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby(@context_narrow).should == [
             "{",
             "  a = 42",
             "  b = 43",
@@ -1495,7 +1571,7 @@ module Y2R::AST::Ruby
         it "emits correct code for blocks with one argument" do
           node = Block.new(:args => [@variable_a], :statements => @statements)
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby(@context_narrow).should == [
             "{ |a|",
             "  a = 42",
             "  b = 43",
@@ -1510,7 +1586,7 @@ module Y2R::AST::Ruby
             :statements => @statements
           )
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby(@context_narrow).should == [
             "{ |a, b, c|",
             "  a = 42",
             "  b = 43",
@@ -1518,29 +1594,39 @@ module Y2R::AST::Ruby
             "}"
           ].join("\n")
         end
-      end
 
-      describe "formatting" do
         it "passes correct available space info to args" do
           node = Block.new(
             :args       => [
-              node_to_ruby_mock(:width => 80, :shift => 3),
-              node_to_ruby_mock(:width => 80, :shift => 5),
-              node_to_ruby_mock(:width => 80, :shift => 7)
+              node_to_ruby_mock(
+                { :width => 0, :shift => 3 },
+                { :width => 0, :shift => 3 }
+              ),
+              node_to_ruby_mock(
+                { :width => 0, :shift => 5 },
+                { :width => 0, :shift => 5 }
+              ),
+              node_to_ruby_mock(
+                { :width => 0, :shift => 7 },
+                { :width => 0, :shift => 7 }
+              )
             ],
             :statements => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby(@context_narrow)
         end
 
         it "passes correct available space info to statements" do
           node = Block.new(
             :args       => [],
-            :statements => node_to_ruby_mock(:width => 78, :shift => 0)
+            :statements => node_to_ruby_mock(
+              { :width =>  0, :shift => 2 },
+              { :width => -2, :shift => 0 }
+            )
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby(@context_narrow)
         end
       end
     end

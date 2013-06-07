@@ -354,9 +354,34 @@ module Y2R
         end
       end
 
-      # TODO: Emit one-line blocks for one-line block bodies.
       class Block < Node
         def to_ruby(context)
+          code = to_ruby_single_line(context)
+
+          if code.size > context.width - context.shift || multi_line?(code)
+            to_ruby_multi_line(context)
+          else
+            code
+          end
+        end
+
+        private
+
+        def to_ruby_single_line(context)
+          args_code = if !args.empty?
+            " |#{list(args, ", ", context.shifted(3))}|"
+          else
+            ""
+          end
+
+          statements_shift   = 1 + args_code.size + 1
+          statements_context = context.shifted(statements_shift)
+          statements_code    = statements.to_ruby(statements_context)
+
+          "{#{args_code} #{statements_code} }"
+        end
+
+        def to_ruby_multi_line(context)
           args_code = if !args.empty?
             " |#{list(args, ", ", context.shifted(3))}|"
           else
