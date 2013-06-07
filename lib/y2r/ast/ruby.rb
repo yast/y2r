@@ -357,27 +357,29 @@ module Y2R
         end
       end
 
-      # TODO: Split to multiple lines if any argument is multiline.
-      # TODO: Split to multiple lines if the result is too long.
       # TODO: Handle hash as the last argument specially.
       class MethodCall < Node
         def to_ruby(context)
+          # The algorithm for deciding whether the call should be split into
+          # multile lines is based on seeing if the arguments fit into the
+          # current line. That means we ignore the block part. This could lead
+          # to some cases where a block starts beyond the right margin (when the
+          # arguments fit, but just barely). I decided to ignore these cases, as
+          # their impact on readability is minimal and handling them would
+          # complicate already complex code.
+
           receiver_code = receiver ? "#{receiver.to_ruby(context)}." : ""
 
           args_shift   = receiver_code.size + name.size
           args_context = context.shifted(args_shift)
-          args_code    = if !args.empty?
-            if parens
-              "(#{list(args, ", ", args_context)})"
-            else
-              " #{list(args, ", ", args_context)}"
-            end
-          else
-            !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
-          end
+          args_code    = emit_args(args_context)
 
-          block_shift   = args_shift + args_code.size
-          block_context = context.shifted(block_shift)
+          if Code.multi_line?(args_code)
+            block_context = context.shifted(1)
+          else
+            block_shift   = args_shift + args_code.size
+            block_context = context.shifted(block_shift)
+          end
           block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
           "#{receiver_code}#{name}#{args_code}#{block_code}"
@@ -387,6 +389,34 @@ module Y2R
 
         def enclose?
           !parens
+        end
+
+        private
+
+        def emit_args(context)
+          code = emit_args_single_line(context)
+
+          if Code.fits_current_line?(code, context) || !parens
+            code
+          else
+            emit_args_multi_line(context)
+          end
+        end
+
+        def emit_args_single_line(context)
+          if !args.empty?
+            if parens
+              "(#{list(args, ", ", context)})"
+            else
+              " #{list(args, ", ", context)}"
+            end
+          else
+            !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
+          end
+        end
+
+        def emit_args_multi_line(context)
+          wrapped_line_list(args, "(", ",", ")", context)
         end
       end
 

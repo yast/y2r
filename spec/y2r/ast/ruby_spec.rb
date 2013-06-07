@@ -1373,8 +1373,225 @@ module Y2R::AST::Ruby
 
   describe MethodCall, :type => :ruby do
     describe "#to_ruby" do
-      describe "basics" do
-        it "emits correct code for method calls without a receiver" do
+      it "emits correct code for method calls without a receiver" do
+        node = MethodCall.new(
+          :receiver => nil,
+          :name     => "m",
+          :args     => [],
+          :block    => nil,
+          :parens   => false
+        )
+
+        node.to_ruby(@context_default).should == "m"
+      end
+
+      it "emits correct code for method calls with a receiver" do
+        node = MethodCall.new(
+          :receiver => @variable_a,
+          :name     => "m",
+          :args     => [],
+          :block    => nil,
+          :parens   => false
+        )
+
+        node.to_ruby(@context_default).should == "a.m"
+      end
+
+      it "passes correct available space info to receiver" do
+        node = MethodCall.new(
+          :receiver => node_to_ruby_mock(:width => 80, :shift => 0),
+          :name     => "m",
+          :args     => [],
+          :block    => nil,
+          :parens   => false
+        )
+
+        node.to_ruby(@context_default)
+      end
+
+      describe "on method calls with :parens => true" do
+        before :each do
+          @node_no_args = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+          @node_one_arg = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [@literal_42],
+            :block    => nil,
+            :parens   => true
+          )
+          @node_multiple_args = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [@literal_42, @literal_43, @literal_44],
+            :block    => nil,
+            :parens   => true
+          )
+          @node_const = MethodCall.new(
+            :receiver => nil,
+            :name     => "M",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+        end
+
+        describe "for single-line method calls" do
+          it "emits correct code for method calls with no arguments" do
+            @node_no_args.to_ruby(@context_default).should == "m"
+          end
+
+          it "emits correct code for method calls with one argument" do
+            @node_one_arg.to_ruby(@context_default).should == "m(42)"
+          end
+
+          it "emits correct code for method calls with multiple arguments" do
+            @node_multiple_args.to_ruby(@context_default).should ==
+              "m(42, 43, 44)"
+          end
+
+          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
+            @node_const.to_ruby(@context_default).should == "M()"
+          end
+
+          it "passes correct available space info to args" do
+            node = MethodCall.new(
+              :receiver => @variable_a,
+              :name     => "m",
+              :args     => [
+                node_to_ruby_mock(:width => 80, :shift => 3),
+                node_to_ruby_mock(:width => 80, :shift => 5),
+                node_to_ruby_mock(:width => 80, :shift => 7)
+              ],
+              :block    => nil,
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default)
+          end
+
+          it "passes correct available space info to block" do
+            node = MethodCall.new(
+              :receiver => @variable_a,
+              :name     => "m",
+              :args     => [],
+              :block    => node_to_ruby_mock(:width => 80, :shift => 3),
+              :parens   => false
+            )
+
+            node.to_ruby(@context_default)
+          end
+        end
+
+        describe "for multi-line method calls" do
+          it "emits correct code for method calls with no arguments" do
+            @node_no_args.to_ruby(@context_narrow).should == [
+              "m(",
+              ")"
+            ].join("\n")
+          end
+
+          it "emits correct code for method calls with one argument" do
+            @node_one_arg.to_ruby(@context_narrow).should == [
+              "m(",
+              "  42",
+              ")"
+            ].join("\n")
+          end
+
+          it "emits correct code for method calls with multiple arguments" do
+            @node_multiple_args.to_ruby(@context_narrow).should == [
+              "m(",
+              "  42,",
+              "  43,",
+              "  44",
+              ")"
+            ].join("\n")
+          end
+
+          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
+            @node_const.to_ruby(@context_narrow).should == [
+              "M(",
+              ")"
+            ].join("\n")
+          end
+
+          it "passes correct available space info to args" do
+            node = MethodCall.new(
+              :receiver => @variable_a,
+              :name     => "m",
+              :args     => [
+                node_to_ruby_mock(
+                  { :width =>  0, :shift => 3 },
+                  { :width => -2, :shift => 0 }
+                ),
+                node_to_ruby_mock(
+                  { :width =>  0, :shift => 5 },
+                  { :width => -2, :shift => 0 }
+                ),
+                node_to_ruby_mock(
+                  { :width =>  0, :shift => 7 },
+                  { :width => -2, :shift => 0 }
+                )
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+
+            node.to_ruby(@context_narrow)
+          end
+
+          it "passes correct available space info to block" do
+            node = MethodCall.new(
+              :receiver => @variable_a,
+              :name     => "m",
+              :args     => [],
+              :block    => node_to_ruby_mock(:width => 0, :shift => 1),
+              :parens   => true
+            )
+
+            node.to_ruby(@context_narrow)
+          end
+        end
+
+        it "emits correct code for method calls without a block" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+
+          node.to_ruby(@context_default).should == "m"
+        end
+
+        it "emits correct code for method calls with a block" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [],
+            :block    => Block.new(:args => [], :statements => @statements),
+            :parens   => true
+          )
+
+          node.to_ruby(@context_default).should == [
+            "m {",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+        end
+      end
+
+      describe "on method calls with :parens => false" do
+        it "emits correct code for method calls with no arguments" do
           node = MethodCall.new(
             :receiver => nil,
             :name     => "m",
@@ -1386,116 +1603,40 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default).should == "m"
         end
 
-        it "emits correct code for method calls with a receiver" do
+        it "emits correct code for method calls with one argument" do
           node = MethodCall.new(
-            :receiver => @variable_a,
+            :receiver => nil,
             :name     => "m",
+            :args     => [@literal_42],
+            :block    => nil,
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default).should == "m 42"
+        end
+
+        it "emits correct code for method calls with multiple arguments" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "m",
+            :args     => [@literal_42, @literal_43, @literal_44],
+            :block    => nil,
+            :parens   => false
+          )
+
+          node.to_ruby(@context_default).should == "m 42, 43, 44"
+        end
+
+        it "emits correct code for method calls with no receiver, const-like name and no arguments" do
+          node = MethodCall.new(
+            :receiver => nil,
+            :name     => "M",
             :args     => [],
             :block    => nil,
             :parens   => false
           )
 
-          node.to_ruby(@context_default).should == "a.m"
-        end
-
-        describe "on method calls with :parens => true" do
-          it "emits correct code for method calls with no arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [],
-              :block    => nil,
-              :parens   => true
-            )
-
-            node.to_ruby(@context_default).should == "m"
-          end
-
-          it "emits correct code for method calls with one argument" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [@literal_42],
-              :block    => nil,
-              :parens   => true
-            )
-
-            node.to_ruby(@context_default).should == "m(42)"
-          end
-
-          it "emits correct code for method calls with multiple arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [@literal_42, @literal_43, @literal_44],
-              :block    => nil,
-              :parens   => true
-            )
-
-            node.to_ruby(@context_default).should == "m(42, 43, 44)"
-          end
-
-          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "M",
-              :args     => [],
-              :block    => nil,
-              :parens   => true
-            )
-
-            node.to_ruby(@context_default).should == "M()"
-          end
-        end
-
-        describe "on method calls with :parens => false" do
-          it "emits correct code for method calls with no arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [],
-              :block    => nil,
-              :parens   => false
-            )
-
-            node.to_ruby(@context_default).should == "m"
-          end
-
-          it "emits correct code for method calls with one argument" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [@literal_42],
-              :block    => nil,
-              :parens   => false
-            )
-
-            node.to_ruby(@context_default).should == "m 42"
-          end
-
-          it "emits correct code for method calls with multiple arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "m",
-              :args     => [@literal_42, @literal_43, @literal_44],
-              :block    => nil,
-              :parens   => false
-            )
-
-            node.to_ruby(@context_default).should == "m 42, 43, 44"
-          end
-
-          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            node = MethodCall.new(
-              :receiver => nil,
-              :name     => "M",
-              :args     => [],
-              :block    => nil,
-              :parens   => false
-            )
-
-            node.to_ruby(@context_default).should == "M()"
-          end
+          node.to_ruby(@context_default).should == "M()"
         end
 
         it "emits correct code for method calls without a block" do
@@ -1526,20 +1667,6 @@ module Y2R::AST::Ruby
             "  c = 44",
             "}"
           ].join("\n")
-        end
-      end
-
-      describe "formatting" do
-        it "passes correct available space info to receiver" do
-          node = MethodCall.new(
-            :receiver => node_to_ruby_mock(:width => 80, :shift => 0),
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default)
         end
 
         it "passes correct available space info to args" do
