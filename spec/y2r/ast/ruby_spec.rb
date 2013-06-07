@@ -2,25 +2,33 @@
 
 require "spec_helper"
 
-def node_width_mock(*widths)
+def node_to_ruby_mock(*expected_contexts)
   mock = double
-  widths.each do |width|
+
+  expected_contexts.each do |expected_context|
     mock.should_receive(:to_ruby) do |context|
-      context.width.should == width
+      expected_context.each_pair do |key, value|
+        context.send(key).should == value
+      end
       ""
     end
   end
+
   mock
 end
 
-def node_width_mock_enclosed(*widths)
+def node_to_ruby_enclosed_mock(*expected_contexts)
   mock = double
-  widths.each do |width|
+
+  expected_contexts.each do |expected_context|
     mock.should_receive(:to_ruby_enclosed) do |context|
-      context.width.should == width
+      expected_context.each_pair do |key, value|
+        context.send(key).should == value
+      end
       ""
     end
   end
+
   mock
 end
 
@@ -120,9 +128,13 @@ module Y2R::AST::Ruby
 
       @else = Else.new(:body => @statements)
 
-      @context_default       = Context.new(:width => 80)
-      @context_narrow        = Context.new(:width => 0)
-      @context_max_key_width = Context.new(:width => 0, :max_key_width => 4)
+      @context_default       = Context.new(:width => 80, :shift => 0)
+      @context_narrow        = Context.new(:width => 0, :shift => 0)
+      @context_max_key_width = Context.new(
+        :width         => 0,
+        :shift         => 0,
+        :max_key_width => 4
+      )
     end
   end
 
@@ -168,10 +180,11 @@ module Y2R::AST::Ruby
 
       describe "formatting" do
         describe "on nodes where #enclosed? returns false" do
-          it "passes correct available width to #to_ruby" do
+          it "passes correct available space info to #to_ruby" do
             node = NotEnclosedNode.new
             node.should_receive(:to_ruby) do |context|
               context.width.should == 80
+              context.shift.should == 0
               "ruby"
             end
 
@@ -180,10 +193,11 @@ module Y2R::AST::Ruby
         end
 
         describe "on nodes where #enclosed? returns true" do
-          it "passes correct available width to #to_ruby" do
+          it "passes correct available space info to #to_ruby" do
             node = EnclosedNode.new
             node.should_receive(:to_ruby) do |context|
-              context.width.should == 79
+              context.width.should == 80
+              context.shift.should == 1
               "ruby"
             end
 
@@ -224,9 +238,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to statements" do
+        it "passes correct available space info to statements" do
           node = Program.new(
-            :statements => node_width_mock(80),
+            :statements => node_to_ruby_mock(:width => 80, :shift => 0),
             :comment    => nil
           )
 
@@ -257,21 +271,21 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to superclass" do
+        it "passes correct available space info to superclass" do
           node = Class.new(
             :name       => "C",
-            :superclass => node_width_mock(70),
+            :superclass => node_to_ruby_mock(:width => 80, :shift => 10),
             :statements => @statements
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to statements" do
+        it "passes correct available space info to statements" do
           node = Class.new(
             :name       => "C",
             :superclass => @variable_S,
-            :statements => node_width_mock(78)
+            :statements => node_to_ruby_mock(:width => 78, :shift => 0),
           )
 
           node.to_ruby(@context_default)
@@ -297,8 +311,11 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to statements" do
-          node = Module.new(:name => "M", :statements => node_width_mock(78))
+        it "passes correct available space info to statements" do
+          node = Module.new(
+            :name       => "M",
+            :statements => node_to_ruby_mock(:width => 78, :shift => 0),
+          )
 
           node.to_ruby(@context_default)
         end
@@ -355,13 +372,13 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to args" do
+        it "passes correct available space info to args" do
           node = Def.new(
             :name       => "m",
             :args       => [
-              node_width_mock(74),
-              node_width_mock(72),
-              node_width_mock(70)
+              node_to_ruby_mock(:width => 80, :shift => 6),
+              node_to_ruby_mock(:width => 80, :shift => 8),
+              node_to_ruby_mock(:width => 80, :shift => 10)
             ],
             :statements => @statements
           )
@@ -369,11 +386,11 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to statements" do
+        it "passes correct available space info to statements" do
           node = Def.new(
             :name       => "m",
             :args       => [],
-            :statements => node_width_mock(78)
+            :statements => node_to_ruby_mock(:width => 78, :shift => 0),
           )
 
           node.to_ruby(@context_default)
@@ -433,8 +450,10 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to statements" do
-          node = Statements.new(:statements => [node_width_mock(80)])
+        it "passes correct available space info to statements" do
+          node = Statements.new(
+            :statements => [node_to_ruby_mock(:width => 80, :shift => 0)]
+          )
 
           node.to_ruby(@context_default)
         end
@@ -459,8 +478,10 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to statements" do
-          node = Begin.new(:statements => node_width_mock(78))
+        it "passes correct available space info to statements" do
+          node = Begin.new(
+            :statements => node_to_ruby_mock(:width => 78, :shift => 0)
+          )
 
           node.to_ruby(@context_default)
         end
@@ -509,9 +530,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to condition" do
+        it "passes correct available space info to condition" do
           node = If.new(
-            :condition => node_width_mock(77),
+            :condition => node_to_ruby_mock(:width => 80, :shift => 3),
             :then      => @statements,
             :else      => @statements
           )
@@ -519,21 +540,21 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to then" do
+        it "passes correct available space info to then" do
           node = If.new(
             :condition => @literal_true,
-            :then      => node_width_mock(78),
+            :then      => node_to_ruby_mock(:width => 78, :shift => 0),
             :else      => @statements
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to else" do
+        it "passes correct available space info to else" do
           node = If.new(
             :condition => @literal_true,
             :then      => @statements,
-            :else      => node_width_mock(78)
+            :else      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -583,9 +604,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to condition" do
+        it "passes correct available space info to condition" do
           node = Unless.new(
-            :condition => node_width_mock(73),
+            :condition => node_to_ruby_mock(:width => 80, :shift => 7),
             :then      => @statements,
             :else      => @statements
           )
@@ -593,21 +614,21 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to then" do
+        it "passes correct available space info to then" do
           node = Unless.new(
             :condition => @literal_true,
-            :then      => node_width_mock(78),
+            :then      => node_to_ruby_mock(:width => 78, :shift => 0),
             :else      => @statements
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to else" do
+        it "passes correct available space info to else" do
           node = Unless.new(
             :condition => @literal_true,
             :then      => @statements,
-            :else      => node_width_mock(78)
+            :else      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -726,9 +747,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to expression" do
+        it "passes correct available space info to expression" do
           node = Case.new(
-            :expression => node_width_mock(75),
+            :expression => node_to_ruby_mock(:width => 80, :shift => 5),
             :whens      => [],
             :else       => nil
           )
@@ -736,21 +757,21 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to whens" do
+        it "passes correct available space info to whens" do
           node = Case.new(
             :expression => @literal_42,
-            :whens      => [node_width_mock(78)],
+            :whens      => [node_to_ruby_mock(:width => 78, :shift => 0)],
             :else       => nil
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to else" do
+        it "passes correct available space info to else" do
           node = Case.new(
             :expression => @literal_42,
             :whens      => [],
-            :else       => node_width_mock(78)
+            :else       => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -789,12 +810,12 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to values" do
+        it "passes correct available space info to values" do
           node = When.new(
             :values => [
-              node_width_mock(75),
-              node_width_mock(73),
-              node_width_mock(71)
+              node_to_ruby_mock(:width => 80, :shift => 5),
+              node_to_ruby_mock(:width => 80, :shift => 7),
+              node_to_ruby_mock(:width => 80, :shift => 9)
             ],
             :body   => @statements
           )
@@ -802,10 +823,10 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to body" do
+        it "passes correct available space info to body" do
           node = When.new(
             :values => [@literal_42],
-            :body   => node_width_mock(78)
+            :body   => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -830,8 +851,8 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to body" do
-          node = Else.new(:body => node_width_mock(78))
+        it "passes correct available space info to body" do
+          node = Else.new(:body => node_to_ruby_mock(:width => 78, :shift => 0))
 
           node.to_ruby(@context_default)
         end
@@ -868,19 +889,19 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to condition" do
+        it "passes correct available space info to condition" do
           node = While.new(
-            :condition => node_width_mock(74),
+            :condition => node_to_ruby_mock(:width => 80, :shift => 6),
             :body      => @statements
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to body" do
+        it "passes correct available space info to body" do
           node = While.new(
             :condition => @literal_true,
-            :body      => node_width_mock(78)
+            :body      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -918,19 +939,19 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to condition" do
+        it "passes correct available space info to condition" do
           node = Until.new(
-            :condition => node_width_mock(74),
+            :condition => node_to_ruby_mock(:width => 80, :shift => 6),
             :body      => @statements
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to body" do
+        it "passes correct available space info to body" do
           node = Until.new(
             :condition => @literal_true,
-            :body      => node_width_mock(78)
+            :body      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
           node.to_ruby(@context_default)
@@ -968,8 +989,10 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to value" do
-          node = Next.new(:value => node_width_mock(75))
+        it "passes correct available space info to value" do
+          node = Next.new(
+            :value => node_to_ruby_mock(:width => 80, :shift => 5)
+          )
 
           node.to_ruby(@context_default)
         end
@@ -994,8 +1017,10 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to value" do
-          node = Return.new(:value => node_width_mock(73))
+        it "passes correct available space info to value" do
+          node = Return.new(
+            :value => node_to_ruby_mock(:width => 80, :shift => 7)
+          )
 
           node.to_ruby(@context_default)
         end
@@ -1028,12 +1053,12 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to expressions" do
+        it "passes correct available space info to expressions" do
           node = Expressions.new(
             :expressions => [
-              node_width_mock(79),
-              node_width_mock(77),
-              node_width_mock(75)
+              node_to_ruby_mock(:width => 80, :shift => 1),
+              node_to_ruby_mock(:width => 80, :shift => 3),
+              node_to_ruby_mock(:width => 80, :shift => 5)
             ]
           )
 
@@ -1064,9 +1089,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to lhs" do
+        it "passes correct available space info to lhs" do
           node = Assignment.new(
-            :lhs => node_width_mock(80),
+            :lhs => node_to_ruby_mock(:width => 80, :shift => 0),
             :rhs => @literal_42
           )
 
@@ -1074,10 +1099,11 @@ module Y2R::AST::Ruby
         end
 
         describe "when assigning from a variable" do
-          it "passes correct available width to rhs" do
+          it "passes correct available space info to rhs" do
             rhs = Variable.new(:name => "a")
             rhs.should_receive(:to_ruby) do |context|
-              context.width.should == 66
+              context.width.should == 80
+              context.shift.should == 14
               ""
             end
 
@@ -1088,10 +1114,10 @@ module Y2R::AST::Ruby
         end
 
         describe "when assigning from a non-variable" do
-          it "passes correct available width to rhs" do
+          it "passes correct available space info to rhs" do
             node = Assignment.new(
               :lhs => @variable_a,
-              :rhs => node_width_mock(76)
+              :rhs => node_to_ruby_mock(:width => 80, :shift => 4)
             )
 
             node.to_ruby(@context_default)
@@ -1124,10 +1150,13 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to expression" do
+        it "passes correct available space info to expression" do
           node = UnaryOperator.new(
             :op         => "+",
-            :expression => node_width_mock_enclosed(79),
+            :expression => node_to_ruby_enclosed_mock(
+              :width => 80,
+              :shift => 1
+            ),
           )
 
           node.to_ruby(@context_default)
@@ -1161,21 +1190,21 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to lhs" do
+        it "passes correct available space info to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => node_width_mock_enclosed(80),
+            :lhs => node_to_ruby_enclosed_mock(:width => 80, :shift => 0),
             :rhs => @literal_43
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to rhs" do
+        it "passes correct available space info to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => @literal_42,
-            :rhs => node_width_mock_enclosed(75)
+            :rhs => node_to_ruby_enclosed_mock(:width => 80, :shift => 5)
           )
 
           node.to_ruby(@context_default)
@@ -1210,9 +1239,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to condition" do
+        it "passes correct available space info to condition" do
           node = TernaryOperator.new(
-            :condition => node_width_mock_enclosed(80),
+            :condition => node_to_ruby_enclosed_mock(:width => 80, :shift => 0),
             :then      => @literal_42,
             :else      => @literal_43
           )
@@ -1220,21 +1249,24 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to then" do
+        it "passes correct available space info to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
-            :then      => node_width_mock_enclosed(73),
+            :then      => node_to_ruby_enclosed_mock(:width => 80, :shift => 7),
             :else      => @literal_43
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to else" do
+        it "passes correct available space info to else" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @literal_42,
-            :else      => node_width_mock_enclosed(68)
+            :else      => node_to_ruby_enclosed_mock(
+              :width => 80,
+              :shift => 12
+            ),
           )
 
           node.to_ruby(@context_default)
@@ -1402,9 +1434,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to receiver" do
+        it "passes correct available space info to receiver" do
           node = MethodCall.new(
-            :receiver => node_width_mock(80),
+            :receiver => node_to_ruby_mock(:width => 80, :shift => 0),
             :name     => "m",
             :args     => [],
             :block    => nil,
@@ -1414,14 +1446,14 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to args" do
+        it "passes correct available space info to args" do
           node = MethodCall.new(
             :receiver => @variable_a,
             :name     => "m",
             :args     => [
-              node_width_mock(77),
-              node_width_mock(75),
-              node_width_mock(73)
+              node_to_ruby_mock(:width => 80, :shift => 3),
+              node_to_ruby_mock(:width => 80, :shift => 5),
+              node_to_ruby_mock(:width => 80, :shift => 7)
             ],
             :block    => nil,
             :parens   => false
@@ -1430,12 +1462,12 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to block" do
+        it "passes correct available space info to block" do
           node = MethodCall.new(
             :receiver => @variable_a,
             :name     => "m",
             :args     => [],
-            :block    => node_width_mock(77),
+            :block    => node_to_ruby_mock(:width => 80, :shift => 3),
             :parens   => false
           )
 
@@ -1489,12 +1521,12 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to args" do
+        it "passes correct available space info to args" do
           node = Block.new(
             :args       => [
-              node_width_mock(77),
-              node_width_mock(75),
-              node_width_mock(73)
+              node_to_ruby_mock(:width => 80, :shift => 3),
+              node_to_ruby_mock(:width => 80, :shift => 5),
+              node_to_ruby_mock(:width => 80, :shift => 7)
             ],
             :statements => @statements
           )
@@ -1502,8 +1534,11 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to statements" do
-          node = Block.new(:args => [], :statements => node_width_mock(78))
+        it "passes correct available space info to statements" do
+          node = Block.new(
+            :args       => [],
+            :statements => node_to_ruby_mock(:width => 78, :shift => 0)
+          )
 
           node.to_ruby(@context_default)
         end
@@ -1528,9 +1563,9 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to statements" do
+        it "passes correct available space info to statements" do
           node = ConstAccess.new(
-            :receiver => node_width_mock(80),
+            :receiver => node_to_ruby_mock(:width => 80, :shift => 0),
             :name     => "C"
           )
 
@@ -1622,11 +1657,11 @@ module Y2R::AST::Ruby
         )
       end
 
-      it "emits a single-line array when the array fits available width and all elements are single-line" do
+      it "emits a single-line array when the array fits available space and all elements are single-line" do
         @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
       end
 
-      it "emits a multi-line array when the array doesn't fit available width" do
+      it "emits a multi-line array when the array doesn't fit available space" do
         @node_multiple.to_ruby(@context_narrow).should == [
           "[",
           "  42,",
@@ -1685,12 +1720,12 @@ module Y2R::AST::Ruby
           @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
         end
 
-        it "passes correct available width to elements" do
+        it "passes correct available space info to elements" do
           node = Array.new(
             :elements => [
-              node_width_mock(79),
-              node_width_mock(77),
-              node_width_mock(75)
+              node_to_ruby_mock(:width => 80, :shift => 1),
+              node_to_ruby_mock(:width => 80, :shift => 3),
+              node_to_ruby_mock(:width => 80, :shift => 5)
             ]
           )
 
@@ -1724,12 +1759,21 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available widths to elements" do
+        it "passes correct available space info to elements" do
           node = Array.new(
             :elements => [
-              node_width_mock(-1, -2),
-              node_width_mock(-3, -2),
-              node_width_mock(-5, -2)
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 1 },
+                { :width => -2, :shift => 0 }
+              ),
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 3 },
+                { :width => -2, :shift => 0 }
+              ),
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 5 },
+                { :width => -2, :shift => 0 }
+              )
             ]
           )
 
@@ -1749,12 +1793,12 @@ module Y2R::AST::Ruby
         )
       end
 
-      it "emits a single-line hash when the hash fits available width and all entries are single-line" do
+      it "emits a single-line hash when the hash fits available space and all entries are single-line" do
         @node_multiple.to_ruby(@context_default).should ==
           "{ :a => 42, :b => 43, :c => 44 }"
       end
 
-      it "emits a multi-line hash when the hash doesn't fit available width" do
+      it "emits a multi-line hash when the hash doesn't fit available space" do
         @node_multiple.to_ruby(@context_narrow).should == [
           "{",
           "  :a => 42,",
@@ -1832,12 +1876,12 @@ module Y2R::AST::Ruby
             "{ :a => 42, :b => 43, :c => 44 }"
         end
 
-        it "passes correct available width to entries" do
+        it "passes correct available space info to entries" do
           node = Hash.new(
             :entries => [
-              node_width_mock(78),
-              node_width_mock(76),
-              node_width_mock(74)
+              node_to_ruby_mock(:width => 80, :shift => 2),
+              node_to_ruby_mock(:width => 80, :shift => 4),
+              node_to_ruby_mock(:width => 80, :shift => 6)
             ]
           )
 
@@ -1889,21 +1933,33 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available widths to entries" do
-          node1 = node_width_mock(-2, -2)
-          node2 = node_width_mock(-4, -2)
-          node3 = node_width_mock(-6, -2)
+        it "passes correct available space info to entries" do
+          node1 = node_to_ruby_mock(
+            { :width =>  0, :shift => 2 },
+            { :width => -2, :shift => 0 }
+          )
+          node2 = node_to_ruby_mock(
+            { :width =>  0, :shift => 4 },
+            { :width => -2, :shift => 0 }
+          )
+          node3 = node_to_ruby_mock(
+            { :width =>  0, :shift => 6 },
+            { :width => -2, :shift => 0 }
+          )
 
           node1.should_receive(:key_width) do |context|
             context.width.should == -2
+            context.shift.should == 0
             0
           end
           node2.should_receive(:key_width) do |context|
             context.width.should == -2
+            context.shift.should == 0
             0
           end
           node3.should_receive(:key_width) do |context|
             context.width.should == -2
+            context.shift.should == 0
             0
           end
 
@@ -1932,19 +1988,19 @@ module Y2R::AST::Ruby
       end
 
       describe "formatting" do
-        it "passes correct available width to key" do
+        it "passes correct available space info to key" do
           node = HashEntry.new(
-            :key   => node_width_mock(80),
+            :key   => node_to_ruby_mock(:width => 80, :shift => 0),
             :value => @literal_42
           )
 
           node.to_ruby(@context_default)
         end
 
-        it "passes correct available width to value" do
+        it "passes correct available space info to value" do
           node = HashEntry.new(
             :key   => @literal_a,
-            :value => node_width_mock(74)
+            :value => node_to_ruby_mock(:width => 80, :shift => 6)
           )
 
           node.to_ruby(@context_default)

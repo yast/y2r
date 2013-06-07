@@ -11,7 +11,7 @@ module Y2R
       :export_private => options[:export_private],
       :include_file   => options[:include_file]
     )
-    ruby_context = AST::Ruby::Context.new(:width => 80)
+    ruby_context = AST::Ruby::Context.new(:width => 80, :shift => 0)
 
     Parser.new.parse(input, options).compile(ycp_context).to_ruby(ruby_context)
   end

@@ -15,6 +15,13 @@ module Y2R
         def indented(n)
           context = dup
           context.width -= n
+          context.shift = 0
+          context
+        end
+
+        def shifted(n)
+          context = dup
+          context.shift += n
           context
         end
       end
@@ -23,7 +30,7 @@ module Y2R
         INDENT_STEP = 2
 
         def to_ruby_enclosed(context)
-          enclose? ? "(#{to_ruby(context.indented(1))})" : to_ruby(context)
+          enclose? ? "(#{to_ruby(context.shifted(1))})" : to_ruby(context)
         end
 
         protected
@@ -47,11 +54,11 @@ module Y2R
         end
 
         def list(items, separator, context)
-          item_indent = 0
+          item_shift = 0
           items.map do |item|
-            item_context = context.indented(item_indent)
+            item_context = context.shifted(item_shift)
             item_code    = item.to_ruby(item_context)
-            item_indent += item_code.size + separator.size
+            item_shift  += item_code.size + separator.size
             item_code
           end.join(separator)
         end
@@ -76,8 +83,8 @@ module Y2R
 
       class Class < Node
         def to_ruby(context)
-          superclass_indent  = 6 + name.size + 3
-          superclass_context = context.indented(superclass_indent)
+          superclass_shift  = 6 + name.size + 3
+          superclass_context = context.shifted(superclass_shift)
           superclass_code    = superclass.to_ruby(superclass_context)
 
           combine do |parts|
@@ -100,8 +107,8 @@ module Y2R
 
       class Def < Node
         def to_ruby(context)
-          args_indent  = 4 + name.size + 1
-          args_context = context.indented(args_indent)
+          args_shift   = 4 + name.size + 1
+          args_context = context.shifted(args_shift)
           args_code    = if !args.empty?
             "(#{list(args, ", ", args_context)})"
           else
@@ -141,7 +148,7 @@ module Y2R
       class If < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "if #{condition.to_ruby(context.indented(3))}"
+            parts << "if #{condition.to_ruby(context.shifted(3))}"
             parts << indented(self.then, context)
             if self.else
               parts << "else"
@@ -156,7 +163,7 @@ module Y2R
       class Unless < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "unless #{condition.to_ruby(context.indented(7))}"
+            parts << "unless #{condition.to_ruby(context.shifted(7))}"
             parts << indented(self.then, context)
             if self.else
               parts << "else"
@@ -170,7 +177,7 @@ module Y2R
       class Case < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "case #{expression.to_ruby(context.indented(5))}"
+            parts << "case #{expression.to_ruby(context.shifted(5))}"
             whens.each do |whem|
               parts << indented(whem, context)
             end
@@ -183,7 +190,7 @@ module Y2R
       class When < Node
         def to_ruby(context)
           combine do |parts|
-            parts << "when #{list(values, ", ", context.indented(5))}"
+            parts << "when #{list(values, ", ", context.shifted(5))}"
             parts << indented(body, context)
           end
         end
@@ -202,7 +209,7 @@ module Y2R
         def to_ruby(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "while #{condition.to_ruby(context.indented(6))}"
+              parts << "while #{condition.to_ruby(context.shifted(6))}"
               parts << indented(body, context)
               parts << "end"
             end
@@ -216,7 +223,7 @@ module Y2R
         def to_ruby(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "until #{condition.to_ruby(context.indented(6))}"
+              parts << "until #{condition.to_ruby(context.shifted(6))}"
               parts << indented(body, context)
               parts << "end"
             end
@@ -234,13 +241,13 @@ module Y2R
 
       class Next < Node
         def to_ruby(context)
-          "next" + (value ? " #{value.to_ruby(context.indented(5))}" : "")
+          "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
         end
       end
 
       class Return < Node
         def to_ruby(context)
-          "return" + (value ? " #{value.to_ruby(context.indented(7))}" : "")
+          "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
         end
       end
 
@@ -249,7 +256,7 @@ module Y2R
       # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
-          "(#{list(expressions, "; ", context.indented(1))})"
+          "(#{list(expressions, "; ", context.shifted(1))})"
         end
       end
 
@@ -259,12 +266,12 @@ module Y2R
 
           # YCP always makes a copy when assigning.
           if rhs.is_a?(Variable)
-            rhs_indent  = lhs_code.size + 13
-            rhs_context = context.indented(rhs_indent)
+            rhs_shift   = lhs_code.size + 13
+            rhs_context = context.shifted(rhs_shift)
             rhs_code    = "deep_copy(#{rhs.to_ruby(rhs_context)})"
           else
-            rhs_indent  = lhs_code.size + 3
-            rhs_context = context.indented(rhs_indent)
+            rhs_shift   = lhs_code.size + 3
+            rhs_context = context.shifted(rhs_shift)
             rhs_code    = rhs.to_ruby(rhs_context)
           end
 
@@ -275,7 +282,7 @@ module Y2R
       # TODO: Use parens only when needed.
       class UnaryOperator < Node
         def to_ruby(context)
-          "#{op}#{expression.to_ruby_enclosed(context.indented(op.size))}"
+          "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
         protected
@@ -290,8 +297,8 @@ module Y2R
         def to_ruby(context)
           lhs_code = lhs.to_ruby_enclosed(context)
 
-          rhs_indent  = lhs_code.size + 1 + op.size + 1
-          rhs_context = context.indented(rhs_indent)
+          rhs_shift   = lhs_code.size + 1 + op.size + 1
+          rhs_context = context.shifted(rhs_shift)
           rhs_code    = rhs.to_ruby_enclosed(rhs_context)
 
           "#{lhs_code} #{op} #{rhs_code}"
@@ -302,12 +309,12 @@ module Y2R
         def to_ruby(context)
           condition_code = condition.to_ruby_enclosed(context)
 
-          then_indent  = condition_code.size + 3
-          then_context = context.indented(then_indent)
+          then_shift   = condition_code.size + 3
+          then_context = context.shifted(then_shift)
           then_code    = self.then.to_ruby_enclosed(then_context)
 
-          else_indent  = then_indent + then_code.size + 3
-          else_context = context.indented(else_indent)
+          else_shift   = then_shift + then_code.size + 3
+          else_context = context.shifted(else_shift)
           else_code    = self.else.to_ruby_enclosed(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
@@ -321,8 +328,8 @@ module Y2R
         def to_ruby(context)
           receiver_code = receiver ? "#{receiver.to_ruby(context)}." : ""
 
-          args_indent  = receiver_code.size + name.size
-          args_context = context.indented(args_indent)
+          args_shift   = receiver_code.size + name.size
+          args_context = context.shifted(args_shift)
           args_code    = if !args.empty?
             if parens
               "(#{list(args, ", ", args_context)})"
@@ -333,8 +340,8 @@ module Y2R
             !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
           end
 
-          block_indent  = args_indent + args_code.size
-          block_context = context.indented(block_indent)
+          block_shift   = args_shift + args_code.size
+          block_context = context.shifted(block_shift)
           block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
           "#{receiver_code}#{name}#{args_code}#{block_code}"
@@ -351,7 +358,7 @@ module Y2R
       class Block < Node
         def to_ruby(context)
           args_code = if !args.empty?
-            " |#{list(args, ", ", context.indented(3))}|"
+            " |#{list(args, ", ", context.shifted(3))}|"
           else
             ""
           end
@@ -418,7 +425,7 @@ module Y2R
         def to_ruby(context)
           code = to_ruby_single_line(context)
 
-          if code.size > context.width || multi_line?(code)
+          if code.size > context.width - context.shift || multi_line?(code)
             to_ruby_multi_line(context)
           else
             code
@@ -434,7 +441,7 @@ module Y2R
         private
 
         def to_ruby_single_line(context)
-          "[#{list(elements, ", ", context.indented(1))}]"
+          "[#{list(elements, ", ", context.shifted(1))}]"
         end
 
         def to_ruby_multi_line(context)
@@ -452,7 +459,7 @@ module Y2R
         def to_ruby(context)
           code = to_ruby_single_line(context)
 
-          if code.size > context.width || multi_line?(code)
+          if code.size > context.width - context.shift || multi_line?(code)
             to_ruby_multi_line(context)
           else
             code
@@ -469,7 +476,7 @@ module Y2R
 
         def to_ruby_single_line(context)
           if !entries.empty?
-            "{ #{list(entries, ", ", context.indented(2))} }"
+            "{ #{list(entries, ", ", context.shifted(2))} }"
           else
             "{}"
           end
@@ -512,8 +519,8 @@ module Y2R
             ""
           end
 
-          value_indent  = key_code.size + spacing_code.size + 4
-          value_context = context.indented(value_indent)
+          value_shift   = key_code.size + spacing_code.size + 4
+          value_context = context.shifted(value_shift)
           value_code    = value.to_ruby(value_context)
 
           "#{key_code}#{spacing_code} => #{value_code}"
