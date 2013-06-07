@@ -276,7 +276,23 @@ module Y2R
       # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
+          code = to_ruby_single_line(context)
+
+          if Code.fits_current_line?(code, context)
+            code
+          else
+            to_ruby_multi_line(context)
+          end
+        end
+
+        private
+
+        def to_ruby_single_line(context)
           "(#{list(expressions, "; ", context.shifted(1))})"
+        end
+
+        def to_ruby_multi_line(context)
+          wrapped_line_list(expressions, "(", ";", ")", context)
         end
       end
 

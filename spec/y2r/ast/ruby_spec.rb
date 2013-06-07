@@ -1030,29 +1030,77 @@ module Y2R::AST::Ruby
 
   describe Expressions, :type => :ruby do
     describe "#to_ruby" do
-      describe "basics" do
-        it "emits correct code for expression lists with no expressions" do
-          node = Expressions.new(:expressions => [])
+      before :each do
+        @node_empty    = Expressions.new(:expressions => [])
+        @node_one      = Expressions.new(:expressions => [@literal_42])
+        @node_multiple = Expressions.new(
+          :expressions => [@literal_42, @literal_43, @literal_44]
+        )
+      end
 
-          node.to_ruby(@context_default).should == "()"
+      it "emits a single-line expression list when the expression list fits available space and all expressions are single-line" do
+        @node_multiple.to_ruby(@context_default).should == "(42; 43; 44)"
+      end
+
+      it "emits a multi-line expression list when the expression list doesn't fit available space" do
+        @node_multiple.to_ruby(@context_narrow).should == [
+          "(",
+          "  42;",
+          "  43;",
+          "  44",
+          ")"
+        ].join("\n")
+      end
+
+      it "emits a multi-line expression list when any expression is multi-line" do
+        # Using @statements is nonsense semantically, but it is a convenient
+        # multi-line node.
+        node1 = Expressions.new(:expressions => [@statements, @literal_43, @literal_44])
+        node2 = Expressions.new(:expressions => [@literal_42, @statements, @literal_44])
+        node3 = Expressions.new(:expressions => [@literal_42, @literal_43, @statements])
+
+        node1.to_ruby(@context_default).should == [
+          "(",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44;",
+          "  43;",
+          "  44",
+          ")"
+        ].join("\n")
+        node2.to_ruby(@context_default).should == [
+          "(",
+          "  42;",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44;",
+          "  44",
+          ")"
+        ].join("\n")
+        node3.to_ruby(@context_default).should == [
+          "(",
+          "  42;",
+          "  43;",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          ")"
+        ].join("\n")
+      end
+
+      describe "for single-line expression lists" do
+        it "emits correct code for empty expression lists" do
+          @node_empty.to_ruby(@context_default).should == "()"
         end
 
         it "emits correct code for expression lists with one expression" do
-          node = Expressions.new(:expressions => [@literal_42])
-
-          node.to_ruby(@context_default).should == "(42)"
+          @node_one.to_ruby(@context_default).should == "(42)"
         end
 
         it "emits correct code for expression lists with multiple expressions" do
-          node = Expressions.new(
-            :expressions => [@literal_42, @literal_43, @literal_44]
-          )
-
-          node.to_ruby(@context_default).should == "(42; 43; 44)"
+          @node_multiple.to_ruby(@context_default).should == "(42; 43; 44)"
         end
-      end
 
-      describe "formatting" do
         it "passes correct available space info to expressions" do
           node = Expressions.new(
             :expressions => [
@@ -1063,6 +1111,54 @@ module Y2R::AST::Ruby
           )
 
           node.to_ruby(@context_default)
+        end
+      end
+
+      describe "for multi-line expression lists" do
+        it "emits correct code for empty expression lists" do
+          @node_empty.to_ruby(@context_narrow).should == [
+           "(",
+           ")"
+          ].join("\n")
+        end
+
+        it "emits correct code for expression lists with one expression" do
+          @node_one.to_ruby(@context_narrow).should == [
+           "(",
+           "  42",
+           ")"
+          ].join("\n")
+        end
+
+        it "emits correct code for expression lists with multiple expressions" do
+          @node_multiple.to_ruby(@context_narrow).should == [
+           "(",
+           "  42;",
+           "  43;",
+           "  44",
+           ")"
+          ].join("\n")
+        end
+
+        it "passes correct available space info to expressions" do
+          node = Expressions.new(
+            :expressions => [
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 1 },
+                { :width => -2, :shift => 0 }
+              ),
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 3 },
+                { :width => -2, :shift => 0 }
+              ),
+              node_to_ruby_mock(
+                { :width =>  0, :shift => 5 },
+                { :width => -2, :shift => 0 }
+              )
+            ]
+          )
+
+          node.to_ruby(@context_narrow)
         end
       end
     end

@@ -647,7 +647,16 @@ module YCP
         @b = "b"
         @c = "c"
         f2(@a, @b, @c)
-        (a_ref = arg_ref(@a); b_ref = arg_ref(@b); c_ref = arg_ref(@c); f3_result = f3(a_ref, b_ref, c_ref); @a = a_ref.value; @b = b_ref.value; @c = c_ref.value; f3_result)
+        (
+          a_ref = arg_ref(@a);
+          b_ref = arg_ref(@b);
+          c_ref = arg_ref(@c);
+          f3_result = f3(a_ref, b_ref, c_ref);
+          @a = a_ref.value;
+          @b = b_ref.value;
+          @c = c_ref.value;
+          f3_result
+        )
         nil
       end
       def f1
@@ -720,7 +729,16 @@ module YCP
         b = "b"
         c = "c"
         f2.call(a, b, c)
-        (a_ref = arg_ref(a); b_ref = arg_ref(b); c_ref = arg_ref(c); f3_result = f3.call(a_ref, b_ref, c_ref); a = a_ref.value; b = b_ref.value; c = c_ref.value; f3_result)
+        (
+          a_ref = arg_ref(a);
+          b_ref = arg_ref(b);
+          c_ref = arg_ref(c);
+          f3_result = f3.call(a_ref, b_ref, c_ref);
+          a = a_ref.value;
+          b = b_ref.value;
+          c = c_ref.value;
+          f3_result
+        )
         nil
       end
     end
