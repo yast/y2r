@@ -141,41 +141,50 @@ module Y2R::AST::Ruby
   end
 
   describe Node, :type => :ruby do
+    class NotEnclosedNode < Node
+      def enclose?
+        false
+      end
+
+      def to_ruby(context)
+        "ruby"
+      end
+
+      def single_line_width
+        4
+      end
+    end
+
+    class EnclosedNode < Node
+      def enclose?
+        true
+      end
+
+      def to_ruby(context)
+        "ruby"
+      end
+
+      def single_line_width
+        4
+      end
+    end
+
+    before :each do
+      @node_not_enclosed = NotEnclosedNode.new
+      @node_enclosed     = EnclosedNode.new
+    end
+
     describe "#to_ruby_enclosed" do
-      class NotEnclosedNode < Node
-        def enclose?
-          false
-        end
-
-        def to_ruby(context)
-          "ruby"
-        end
-      end
-
-      class EnclosedNode < Node
-        def enclose?
-          true
-        end
-
-        def to_ruby(context)
-          "ruby"
-        end
-      end
-
       describe "basics" do
         describe "on nodes where #enclosed? returns false" do
           it "returns code that is not enclosed in parens" do
-            node = NotEnclosedNode.new
-
-            node.to_ruby_enclosed(@context_default).should == "ruby"
+            @node_not_enclosed.to_ruby_enclosed(@context_default).should == "ruby"
           end
         end
 
         describe "on nodes where #enclosed? returns true" do
           it "returns code that is enclosed in parens" do
-            node = EnclosedNode.new
-
-            node.to_ruby_enclosed(@context_default).should == "(ruby)"
+            @node_enclosed.to_ruby_enclosed(@context_default).should == "(ruby)"
           end
         end
       end
@@ -183,40 +192,61 @@ module Y2R::AST::Ruby
       describe "formatting" do
         describe "on nodes where #enclosed? returns false" do
           it "passes correct available space info to #to_ruby" do
-            node = NotEnclosedNode.new
-            node.should_receive(:to_ruby) do |context|
+            @node_not_enclosed.should_receive(:to_ruby) do |context|
               context.width.should == 80
               context.shift.should == 0
               "ruby"
             end
 
-            node.to_ruby_enclosed(@context_default)
+            @node_not_enclosed.to_ruby_enclosed(@context_default)
           end
         end
 
         describe "on nodes where #enclosed? returns true" do
           it "passes correct available space info to #to_ruby" do
-            node = EnclosedNode.new
-            node.should_receive(:to_ruby) do |context|
+            @node_enclosed.should_receive(:to_ruby) do |context|
               context.width.should == 80
               context.shift.should == 1
               "ruby"
             end
 
-            node.to_ruby_enclosed(@context_default)
+            @node_enclosed.to_ruby_enclosed(@context_default)
           end
+        end
+      end
+    end
+
+    describe "#single_line_width_enclosed" do
+      describe "on nodes where #enclosed? returns false" do
+        it "returns correct value" do
+          @node_not_enclosed.single_line_width_enclosed.should == 4
+        end
+      end
+
+      describe "on nodes where #enclosed? returns true" do
+        it "returns correct value" do
+          @node_enclosed.single_line_width_enclosed.should == 6
         end
       end
     end
   end
 
   describe Program, :type => :ruby do
+    before :each do
+      @node_without_comment = Program.new(
+        :statements => @statements,
+        :comment    => nil
+      )
+      @node_with_comment = Program.new(
+        :statements => @statements,
+        :comment    => "comment"
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code without a comment" do
-          node = Program.new(:statements => @statements, :comment => nil)
-
-          node.to_ruby(@context_default).should == [
+          @node_without_comment.to_ruby(@context_default).should == [
             "# encoding: utf-8",
             "",
             "a = 42",
@@ -226,9 +256,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code with a comment" do
-          node = Program.new(:statements => @statements, :comment => "comment")
-
-          node.to_ruby(@context_default).should == [
+          @node_with_comment.to_ruby(@context_default).should == [
             "# encoding: utf-8",
             "# comment",
             "",
@@ -250,19 +278,31 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity without a comment" do
+        @node_without_comment.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity with a comment" do
+        @node_with_comment.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Class, :type => :ruby do
+    before :each do
+      @node = Class.new(
+        :name       => "C",
+        :superclass => @variable_S,
+        :statements => @statements
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Class.new(
-            :name       => "C",
-            :superclass => @variable_S,
-            :statements => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node.to_ruby(@context_default).should == [
             "class C < S",
             "  a = 42",
             "  b = 43",
@@ -294,15 +334,23 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity" do
+        @node.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Module, :type => :ruby do
+    before :each do
+      @node = Module.new(:name  => "M", :statements => @statements)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Module.new(:name  => "M", :statements => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node.to_ruby(@context_default).should == [
             "module M",
             "  a = 42",
             "  b = 43",
@@ -323,15 +371,37 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity" do
+        @node.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Def, :type => :ruby do
+    before :each do
+      @node_no_args = Def.new(
+        :name       => "m",
+        :args       => [],
+        :statements => @statements
+      )
+      @node_one_arg = Def.new(
+        :name       => "m",
+        :args       => [@variable_a],
+        :statements => @statements
+      )
+      @node_multiple_args = Def.new(
+        :name       => "m",
+        :args       => [@variable_a, @variable_b, @variable_c],
+        :statements => @statements
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for method definitions with no arguments" do
-          node = Def.new(:name => "m", :args => [], :statements => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node_no_args.to_ruby(@context_default).should == [
             "def m",
             "  a = 42",
             "  b = 43",
@@ -341,13 +411,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for method definitions with one argument" do
-          node = Def.new(
-            :name       => "m",
-            :args       => [@variable_a],
-            :statements => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_one_arg.to_ruby(@context_default).should == [
             "def m(a)",
             "  a = 42",
             "  b = 43",
@@ -357,13 +421,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for method definitions with multiple arguments" do
-          node = Def.new(
-            :name       => "m",
-            :args       => [@variable_a, @variable_b, @variable_c],
-            :statements => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_multiple_args.to_ruby(@context_default).should == [
             "def m(a, b, c)",
             "  a = 42",
             "  b = 43",
@@ -399,33 +457,47 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for method definitions with no arguments" do
+        @node_no_args.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for method definitions with one argument" do
+        @node_one_arg.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for method definitions with multiple arguments" do
+        @node_multiple_args.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Statements, :type => :ruby do
+    before :each do
+      @node_empty    = Statements.new(:statements => [])
+      @node_one      = Statements.new(:statements => [@assignment_a_42])
+      @node_multiple = Statements.new(
+        :statements => [
+          @assignment_a_42,
+          @assignment_b_43,
+          @assignment_c_44
+        ]
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for statement lists with no statements" do
-          node = Statements.new(:statements => [])
-
-          node.to_ruby(@context_default).should == ""
+          @node_empty.to_ruby(@context_default).should == ""
         end
 
         it "emits correct code for statement lists with one statement" do
-          node = Statements.new(:statements => [@assignment_a_42])
-
-          node.to_ruby(@context_default).should == "a = 42"
+          @node_one.to_ruby(@context_default).should == "a = 42"
         end
 
         it "emits correct code for statement lists with multiple statements" do
-          node = Statements.new(
-            :statements => [
-              @assignment_a_42,
-              @assignment_b_43,
-              @assignment_c_44
-            ]
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_multiple.to_ruby(@context_default).should == [
             "a = 42",
             "b = 43",
             "c = 44",
@@ -489,15 +561,31 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for statement lists with no statements" do
+        @node_empty.single_line_width.should == 0
+      end
+
+      it "returns correct value for statement lists with one statement" do
+        @node_one.single_line_width.should == 6
+      end
+
+      it "returns infinity for statement lists with multiple statements" do
+        @node_multiple.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Begin, :type => :ruby do
+    before :each do
+      @node = Begin.new(:statements => @statements)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Begin.new(:statements => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node.to_ruby(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -517,19 +605,32 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity" do
+        @node.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe If, :type => :ruby do
+    before :each do
+      @node_without_else = If.new(
+        :condition => @literal_true,
+        :then      => @statements,
+        :else      => nil
+      )
+      @node_with_else = If.new(
+        :condition => @literal_true,
+        :then      => @statements,
+        :else      => @statements
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for if statements without else" do
-          node = If.new(
-            :condition => @literal_true,
-            :then      => @statements,
-            :else      => nil
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_without_else.to_ruby(@context_default).should == [
             "if true",
             "  a = 42",
             "  b = 43",
@@ -539,13 +640,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for if statements with else" do
-          node = If.new(
-            :condition => @literal_true,
-            :then      => @statements,
-            :else      => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_with_else.to_ruby(@context_default).should == [
             "if true",
             "  a = 42",
             "  b = 43",
@@ -591,19 +686,36 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for if statements without else" do
+        @node_without_else.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for if statements with else" do
+        @node_with_else.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Unless, :type => :ruby do
+    before :each do
+      @node_without_else = Unless.new(
+        :condition => @literal_true,
+        :then      => @statements,
+        :else      => nil
+      )
+      @node_with_else = Unless.new(
+        :condition => @literal_true,
+        :then      => @statements,
+        :else      => @statements
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for unless statements without else" do
-          node = Unless.new(
-            :condition => @literal_true,
-            :then      => @statements,
-            :else      => nil
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_without_else.to_ruby(@context_default).should == [
             "unless true",
             "  a = 42",
             "  b = 43",
@@ -613,13 +725,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for unless statements with else" do
-          node = Unless.new(
-            :condition => @literal_true,
-            :then      => @statements,
-            :else      => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_with_else.to_ruby(@context_default).should == [
             "unless true",
             "  a = 42",
             "  b = 43",
@@ -665,32 +771,58 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for unless statements without else" do
+        @node_without_else.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for unless statements with else" do
+        @node_with_else.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Case, :type => :ruby do
+    before :each do
+      @node_empty = Case.new(
+        :expression => @literal_42,
+        :whens      => [],
+        :else       => nil
+      )
+      @node_one_when_without_else = Case.new(
+        :expression => @literal_42,
+        :whens      => [@when_42],
+        :else       => nil
+      )
+      @node_one_when_with_else = Case.new(
+        :expression => @literal_42,
+        :whens      => [@when_42],
+        :else       => @else
+      )
+      @node_multiple_whens_without_else = Case.new(
+        :expression => @literal_42,
+        :whens      => [@when_42, @when_43, @when_44],
+        :else       => nil
+      )
+      @node_multiple_whens_with_else = Case.new(
+        :expression => @literal_42,
+        :whens      => [@when_42, @when_43, @when_44],
+        :else       => @else
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for empty case statements" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [],
-            :else       => nil
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_empty.to_ruby(@context_default).should == [
             "case 42",
             "end"
           ].join("\n")
         end
 
         it "emits correct code for case statements with one when clause and no else clause" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [@when_42],
-            :else       => nil
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_one_when_without_else.to_ruby(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -701,13 +833,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with one when clause and an else clause" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [@when_42],
-            :else       => @else
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_one_when_with_else.to_ruby(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -722,13 +848,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with multiple when clauses and no else clause" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [@when_42, @when_43, @when_44],
-            :else       => nil
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_multiple_whens_without_else.to_ruby(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -747,13 +867,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with multiple when clauses and an else clause" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [@when_42, @when_43, @when_44],
-            :else       => @else
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_multiple_whens_with_else.to_ruby(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -808,15 +922,48 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for empty case statements" do
+        @node_empty.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for case statements with one when clause and no else clause" do
+        @node_one_when_without_else.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for case statements with one when clause and an else clause" do
+        @node_one_when_with_else.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for case statements with multiple when clauses and no else clause" do
+        @node_multiple_whens_without_else.single_line_width.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity for case statements with multiple when clauses and an else clause" do
+        @node_multiple_whens_with_else.single_line_width.should ==
+          Float::INFINITY
+      end
+    end
   end
 
   describe When, :type => :ruby do
+    before :each do
+      @node_one_value = When.new(
+        :values => [@literal_42],
+        :body   => @statements
+      )
+      @node_multiple_values = When.new(
+        :values => [@literal_42, @literal_43, @literal_44],
+        :body   => @statements
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for when clauses with one value" do
-          node = When.new(:values => [@literal_42], :body => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node_one_value.to_ruby(@context_default).should == [
             "when 42",
             "  a = 42",
             "  b = 43",
@@ -825,12 +972,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for when clauses with multiple values" do
-          node = When.new(
-            :values => [@literal_42, @literal_43, @literal_44],
-            :body   => @statements
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_multiple_values.to_ruby(@context_default).should == [
             "when 42, 43, 44",
             "  a = 42",
             "  b = 43",
@@ -863,15 +1005,27 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for when clauses with one value" do
+        @node_one_value.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for when clauses with multiple values" do
+        @node_multiple_values.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Else, :type => :ruby do
+    before :each do
+      @node = Else.new(:body => @statements)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Else.new(:body => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node.to_ruby(@context_default).should == [
             "else",
             "  a = 42",
             "  b = 43",
@@ -888,15 +1042,27 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity" do
+        @node.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe While, :type => :ruby do
+    before :each do
+      @node_common  = While.new(
+        :condition => @literal_true,
+        :body      => @statements
+      )
+      @node_wrapper = While.new(:condition  => @literal_true, :body => @begin)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for common while statements" do
-          node = While.new(:condition => @literal_true, :body => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node_common.to_ruby(@context_default).should == [
             "while true",
             "  a = 42",
             "  b = 43",
@@ -906,9 +1072,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for while statements wrapping begin...end" do
-          node = While.new(:condition  => @literal_true, :body => @begin)
-
-          node.to_ruby(@context_default).should == [
+          @node_wrapper.to_ruby(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -938,15 +1102,31 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for common while statements" do
+        @node_common.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for while statements wrapping begin...end" do
+        @node_wrapper.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Until, :type => :ruby do
+    before :each do
+      @node_common  = Until.new(
+        :condition => @literal_true,
+        :body      => @statements
+      )
+      @node_wrapper = Until.new(:condition  => @literal_true, :body => @begin)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for common until statements" do
-          node = Until.new(:condition => @literal_true, :body => @statements)
-
-          node.to_ruby(@context_default).should == [
+          @node_common.to_ruby(@context_default).should == [
             "until true",
             "  a = 42",
             "  b = 43",
@@ -956,9 +1136,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for until statements wrapping begin...end" do
-          node = Until.new(:condition  => @literal_true, :body => @begin)
-
-          node.to_ruby(@context_default).should == [
+          @node_wrapper.to_ruby(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -988,33 +1166,52 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns infinity for common unless statements" do
+        @node_common.single_line_width.should == Float::INFINITY
+      end
+
+      it "returns infinity for unless statements wrapping begin...end" do
+        @node_wrapper.single_line_width.should == Float::INFINITY
+      end
+    end
   end
 
   describe Break, :type => :ruby do
+    before :each do
+      @node = Break.new
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Break.new
-
-          node.to_ruby(@context_default).should == "break"
+          @node.to_ruby(@context_default).should == "break"
         end
+      end
+    end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node.single_line_width.should == 5
       end
     end
   end
 
   describe Next, :type => :ruby do
+    before :each do
+      @node_without_value = Next.new(:value => nil)
+      @node_with_value    = Next.new(:value => @literal_42)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for nexts without a value" do
-          node = Next.new(:value => nil)
-
-          node.to_ruby(@context_default).should == "next"
+          @node_without_value.to_ruby(@context_default).should == "next"
         end
 
         it "emits correct code for nexts with a value" do
-          node = Next.new(:value => @literal_42)
-
-          node.to_ruby(@context_default).should == "next 42"
+          @node_with_value.to_ruby(@context_default).should == "next 42"
         end
       end
 
@@ -1028,21 +1225,32 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for nexts without a value" do
+        @node_without_value.single_line_width.should == 4
+      end
+
+      it "returns correct value for nexts with a value" do
+        @node_with_value.single_line_width.should == 7
+      end
+    end
   end
 
   describe Return, :type => :ruby do
+    before :each do
+      @node_without_value = Return.new(:value => nil)
+      @node_with_value    = Return.new(:value => @literal_42)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for returns without a value" do
-          node = Return.new(:value => nil)
-
-          node.to_ruby(@context_default).should == "return"
+          @node_without_value.to_ruby(@context_default).should == "return"
         end
 
         it "emits correct code for returns with a value" do
-          node = Return.new(:value => @literal_42)
-
-          node.to_ruby(@context_default).should == "return 42"
+          @node_with_value.to_ruby(@context_default).should == "return 42"
         end
       end
 
@@ -1056,18 +1264,28 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for nexts without a value" do
+        @node_without_value.single_line_width.should == 6
+      end
+
+      it "returns correct value for nexts with a value" do
+        @node_with_value.single_line_width.should == 9
+      end
+    end
   end
 
   describe Expressions, :type => :ruby do
-    describe "#to_ruby" do
-      before :each do
-        @node_empty    = Expressions.new(:expressions => [])
-        @node_one      = Expressions.new(:expressions => [@literal_42])
-        @node_multiple = Expressions.new(
-          :expressions => [@literal_42, @literal_43, @literal_44]
-        )
-      end
+    before :each do
+      @node_empty    = Expressions.new(:expressions => [])
+      @node_one      = Expressions.new(:expressions => [@literal_42])
+      @node_multiple = Expressions.new(
+        :expressions => [@literal_42, @literal_43, @literal_44]
+      )
+    end
 
+    describe "#to_ruby" do
       it "emits a single-line expression list when the expression list fits available space and all expressions are single-line" do
         @node_multiple.to_ruby(@context_default).should == "(42; 43; 44)"
       end
@@ -1192,24 +1410,45 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for empty expression lists" do
+        @node_empty.single_line_width.should == 2
+      end
+
+      it "returns correct value for expression lists with one expression" do
+        @node_one.single_line_width.should == 4
+      end
+
+      it "returns correct value for expression lists with multiple expressions" do
+        @node_multiple.single_line_width.should == 12
+      end
+    end
   end
 
   describe Assignment, :type => :ruby do
+    before :each do
+      @node_non_variable = Assignment.new(
+        :lhs => @variable_a,
+        :rhs => @literal_42
+      )
+      @node_variable = Assignment.new(
+        :lhs => @variable_a,
+        :rhs => @variable_b
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         describe "when assigning from a non-variable" do
           it "emits correct code" do
-            node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
-
-            node.to_ruby(@context_default).should == "a = 42"
+            @node_non_variable.to_ruby(@context_default).should == "a = 42"
           end
         end
 
         describe "when assigning from a variable" do
           it "emits correct code" do
-            node = Assignment.new(:lhs => @variable_a, :rhs => @variable_b)
-
-            node.to_ruby(@context_default).should == "a = deep_copy(b)"
+            @node_variable.to_ruby(@context_default).should == "a = deep_copy(b)"
           end
         end
       end
@@ -1251,27 +1490,42 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      describe "when assigning from a non-variable" do
+        it "returns correct value" do
+          @node_non_variable.single_line_width.should == 6
+        end
+      end
+
+      describe "when assigning from a non-variable" do
+        it "returns correct value" do
+          @node_variable.single_line_width.should == 16
+        end
+      end
+    end
   end
 
   describe UnaryOperator, :type => :ruby do
+    before :each do
+      @node_without_parens = UnaryOperator.new(
+        :op         => "+",
+        :expression => @literal_42,
+      )
+      @node_with_parens = UnaryOperator.new(
+        :op         => "+",
+        :expression => @binary_operator_42_plus_43,
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = UnaryOperator.new(
-            :op         => "+",
-            :expression => @literal_42,
-          )
-
-          node.to_ruby(@context_default).should == "+42"
+          @node_without_parens.to_ruby(@context_default).should == "+42"
         end
 
         it "encloses operand in parens when needed" do
-          node = UnaryOperator.new(
-            :op         => "+",
-            :expression => @binary_operator_42_plus_43,
-          )
-
-          node.to_ruby(@context_default).should == "+(42 + 43)"
+          @node_with_parens.to_ruby(@context_default).should == "+(42 + 43)"
         end
       end
 
@@ -1289,29 +1543,41 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node_without_parens.single_line_width.should == 3
+      end
+
+      it "returns correct value when parens are needed" do
+        @node_with_parens.single_line_width.should == 10
+      end
+    end
   end
 
   describe BinaryOperator, :type => :ruby do
+    before :each do
+      @node_without_parens = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @literal_42,
+        :rhs => @literal_43
+      )
+      @node_with_parens = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @binary_operator_42_plus_43,
+        :rhs => @binary_operator_44_plus_45
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = BinaryOperator.new(
-            :op  => "+",
-            :lhs => @literal_42,
-            :rhs => @literal_43
-          )
-
-          node.to_ruby(@context_default).should == "42 + 43"
+          @node_without_parens.to_ruby(@context_default).should == "42 + 43"
         end
 
         it "encloses operands in parens when needed" do
-          node = BinaryOperator.new(
-            :op  => "+",
-            :lhs => @binary_operator_42_plus_43,
-            :rhs => @binary_operator_44_plus_45
-          )
-
-          node.to_ruby(@context_default).should == "(42 + 43) + (44 + 45)"
+          @node_with_parens.to_ruby(@context_default).should ==
+            "(42 + 43) + (44 + 45)"
         end
       end
 
@@ -1337,29 +1603,41 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node_without_parens.single_line_width.should == 7
+      end
+
+      it "returns correct value when parens are needed" do
+        @node_with_parens.single_line_width.should == 21
+      end
+    end
   end
 
   describe TernaryOperator, :type => :ruby do
+    before :each do
+      @node_without_parens = TernaryOperator.new(
+        :condition => @literal_true,
+        :then      => @literal_42,
+        :else      => @literal_43
+      )
+      @node_with_parens = TernaryOperator.new(
+        :condition  => @binary_operator_true_or_false,
+        :then       => @binary_operator_42_plus_43,
+        :else       => @binary_operator_44_plus_45
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = TernaryOperator.new(
-            :condition => @literal_true,
-            :then      => @literal_42,
-            :else      => @literal_43
-          )
-
-          node.to_ruby(@context_default).should == "true ? 42 : 43"
+          @node_without_parens.to_ruby(@context_default).should ==
+            "true ? 42 : 43"
         end
 
         it "encloses operands in parens when needed" do
-          node = TernaryOperator.new(
-            :condition  => @binary_operator_true_or_false,
-            :then       => @binary_operator_42_plus_43,
-            :else       => @binary_operator_44_plus_45
-          )
-
-          node.to_ruby(@context_default).should ==
+          @node_with_parens.to_ruby(@context_default).should ==
             "(true || false) ? (42 + 43) : (44 + 45)"
         end
       end
@@ -1399,32 +1677,129 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node_without_parens.single_line_width.should == 14
+      end
+
+      it "returns correct value when parens are needed" do
+        @node_with_parens.single_line_width.should == 39
+      end
+    end
   end
 
   describe MethodCall, :type => :ruby do
+    before :each do
+      @node_without_receiver = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_with_receiver = MethodCall.new(
+        :receiver => @variable_a,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+
+      @node_parens_no_args = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_one_arg = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [@literal_42],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_multiple_args = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [@literal_42, @literal_43, @literal_44],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_const = MethodCall.new(
+        :receiver => nil,
+        :name     => "M",
+        :args     => [],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_without_block = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_with_block = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => Block.new(:args => [], :statements => @statements),
+        :parens   => true
+      )
+
+      @node_no_parens_no_args = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_no_parens_one_arg = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [@literal_42],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_no_parens_multiple_args = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [@literal_42, @literal_43, @literal_44],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_no_parens_const = MethodCall.new(
+        :receiver => nil,
+        :name     => "M",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_no_parens_without_block = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+      @node_no_parens_with_block = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [],
+        :block    => Block.new(:args => [], :statements => @statements),
+        :parens   => false
+      )
+    end
+
     describe "#to_ruby" do
       it "emits correct code for method calls without a receiver" do
-        node = MethodCall.new(
-          :receiver => nil,
-          :name     => "m",
-          :args     => [],
-          :block    => nil,
-          :parens   => false
-        )
-
-        node.to_ruby(@context_default).should == "m"
+        @node_without_receiver.to_ruby(@context_default).should == "m"
       end
 
       it "emits correct code for method calls with a receiver" do
-        node = MethodCall.new(
-          :receiver => @variable_a,
-          :name     => "m",
-          :args     => [],
-          :block    => nil,
-          :parens   => false
-        )
-
-        node.to_ruby(@context_default).should == "a.m"
+        @node_with_receiver.to_ruby(@context_default).should == "a.m"
       end
 
       it "passes correct available space info to receiver" do
@@ -1440,53 +1815,22 @@ module Y2R::AST::Ruby
       end
 
       describe "on method calls with :parens => true" do
-        before :each do
-          @node_no_args = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-          @node_one_arg = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42],
-            :block    => nil,
-            :parens   => true
-          )
-          @node_multiple_args = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42, @literal_43, @literal_44],
-            :block    => nil,
-            :parens   => true
-          )
-          @node_const = MethodCall.new(
-            :receiver => nil,
-            :name     => "M",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-        end
-
         describe "for single-line method calls" do
           it "emits correct code for method calls with no arguments" do
-            @node_no_args.to_ruby(@context_default).should == "m"
+            @node_parens_no_args.to_ruby(@context_default).should == "m"
           end
 
           it "emits correct code for method calls with one argument" do
-            @node_one_arg.to_ruby(@context_default).should == "m(42)"
+            @node_parens_one_arg.to_ruby(@context_default).should == "m(42)"
           end
 
           it "emits correct code for method calls with multiple arguments" do
-            @node_multiple_args.to_ruby(@context_default).should ==
+            @node_parens_multiple_args.to_ruby(@context_default).should ==
               "m(42, 43, 44)"
           end
 
           it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_const.to_ruby(@context_default).should == "M()"
+            @node_parens_const.to_ruby(@context_default).should == "M()"
           end
 
           it "passes correct available space info to args" do
@@ -1520,14 +1864,14 @@ module Y2R::AST::Ruby
 
         describe "for multi-line method calls" do
           it "emits correct code for method calls with no arguments" do
-            @node_no_args.to_ruby(@context_narrow).should == [
+            @node_parens_no_args.to_ruby(@context_narrow).should == [
               "m(",
               ")"
             ].join("\n")
           end
 
           it "emits correct code for method calls with one argument" do
-            @node_one_arg.to_ruby(@context_narrow).should == [
+            @node_parens_one_arg.to_ruby(@context_narrow).should == [
               "m(",
               "  42",
               ")"
@@ -1535,7 +1879,7 @@ module Y2R::AST::Ruby
           end
 
           it "emits correct code for method calls with multiple arguments" do
-            @node_multiple_args.to_ruby(@context_narrow).should == [
+            @node_parens_multiple_args.to_ruby(@context_narrow).should == [
               "m(",
               "  42,",
               "  43,",
@@ -1545,7 +1889,7 @@ module Y2R::AST::Ruby
           end
 
           it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_const.to_ruby(@context_narrow).should == [
+            @node_parens_const.to_ruby(@context_narrow).should == [
               "M(",
               ")"
             ].join("\n")
@@ -1590,27 +1934,11 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for method calls without a block" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == "m"
+          @node_parens_without_block.to_ruby(@context_default).should == "m"
         end
 
         it "emits correct code for method calls with a block" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => Block.new(:args => [], :statements => @statements),
-            :parens   => true
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_parens_with_block.to_ruby(@context_default).should == [
             "m {",
             "  a = 42",
             "  b = 43",
@@ -1622,75 +1950,27 @@ module Y2R::AST::Ruby
 
       describe "on method calls with :parens => false" do
         it "emits correct code for method calls with no arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m"
+          @node_no_parens_no_args.to_ruby(@context_default).should == "m"
         end
 
         it "emits correct code for method calls with one argument" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m 42"
+          @node_no_parens_one_arg.to_ruby(@context_default).should == "m 42"
         end
 
         it "emits correct code for method calls with multiple arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [@literal_42, @literal_43, @literal_44],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m 42, 43, 44"
+          @node_no_parens_multiple_args.to_ruby(@context_default).should == "m 42, 43, 44"
         end
 
         it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "M",
-            :args     => [],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "M()"
+          @node_no_parens_const.to_ruby(@context_default).should == "M()"
         end
 
         it "emits correct code for method calls without a block" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => nil,
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == "m"
+          @node_no_parens_without_block.to_ruby(@context_default).should == "m"
         end
 
         it "emits correct code for method calls with a block" do
-          node = MethodCall.new(
-            :receiver => nil,
-            :name     => "m",
-            :args     => [],
-            :block    => Block.new(:args => [], :statements => @statements),
-            :parens   => false
-          )
-
-          node.to_ruby(@context_default).should == [
+          @node_no_parens_with_block.to_ruby(@context_default).should == [
             "m {",
             "  a = 42",
             "  b = 43",
@@ -1728,9 +2008,99 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for method calls without a receiver" do
+        @node_without_receiver.single_line_width.should == 1
+      end
+
+      it "returns correct value for method calls with a receiver" do
+        @node_with_receiver.single_line_width.should == 3
+      end
+
+      describe "on method calls with :parens => true" do
+        it "returns correct value for method calls with no arguments" do
+          @node_parens_no_args.single_line_width.should == 1
+        end
+
+        it "returns correct value for method calls with one argument" do
+          @node_parens_one_arg.single_line_width.should == 5
+        end
+
+        it "returns correct value for method calls with multiple arguments" do
+          @node_parens_multiple_args.single_line_width.should == 13
+        end
+
+        it "returns correct value for method calls with no receiver, const-like name and no arguments" do
+          @node_parens_const.single_line_width.should == 3
+        end
+
+        it "returns correct value for method calls without a block" do
+          @node_parens_without_block.single_line_width.should == 1
+        end
+
+        it "returns correct value for method calls with a block" do
+          @node_parens_with_block.single_line_width.should == 1
+        end
+      end
+
+      describe "on method calls with :parens => false" do
+        it "returns correct value for method calls with no arguments" do
+          @node_no_parens_no_args.single_line_width.should == 1
+        end
+
+        it "returns correct value for method calls with one argument" do
+          @node_no_parens_one_arg.single_line_width.should == 4
+        end
+
+        it "returns correct value for method calls with multiple arguments" do
+          @node_no_parens_multiple_args.single_line_width.should == 12
+        end
+
+        it "returns correct value for method calls with no receiver, const-like name and no arguments" do
+          @node_no_parens_const.single_line_width.should == 3
+        end
+
+        it "returns correct value for method calls without a block" do
+          @node_no_parens_without_block.single_line_width.should == 1
+        end
+
+        it "returns correct value for method calls with a block" do
+          @node_no_parens_with_block.single_line_width.should == 1
+        end
+      end
+    end
   end
 
   describe Block, :type => :ruby do
+    before :each do
+      @node_single_no_args = Block.new(
+        :args       => [],
+        :statements => @assignment_a_42
+      )
+      @node_single_one_arg = Block.new(
+        :args       => [@variable_a],
+        :statements => @assignment_a_42
+      )
+      @node_single_multiple_args = Block.new(
+        :args       => [@variable_a, @variable_b, @variable_c],
+        :statements => @assignment_a_42
+      )
+
+      @node_multi_no_args = Block.new(
+        :args       => [],
+        :statements => @statements
+      )
+      @node_multi_one_arg = Block.new(
+        :args       => [@variable_a],
+        :statements => @statements
+      )
+      @node_multi_multiple_args = Block.new(
+        :args       => [@variable_a, @variable_b, @variable_c],
+        :statements => @statements
+      )
+    end
+
     describe "#to_ruby" do
       it "emits a single-line block when the block fits available space and the statments are single-line" do
         node = Block.new(:args => [], :statements => @assignment_a_42)
@@ -1762,27 +2132,17 @@ module Y2R::AST::Ruby
 
       describe "for single-line blocks" do
         it "emits correct code for blocks with no arguments" do
-          node = Block.new(:args => [], :statements => @assignment_a_42)
-
-          node.to_ruby(@context_default).should == "{ a = 42 }"
+          @node_single_no_args.to_ruby(@context_default).should == "{ a = 42 }"
         end
 
         it "emits correct code for blocks with one argument" do
-          node = Block.new(
-            :args       => [@variable_a],
-            :statements => @assignment_a_42
-          )
-
-          node.to_ruby(@context_default).should == "{ |a| a = 42 }"
+          @node_single_one_arg.to_ruby(@context_default).should ==
+            "{ |a| a = 42 }"
         end
 
         it "emits correct code for blocks with multiple arguments" do
-          node = Block.new(
-            :args       => [@variable_a, @variable_b, @variable_c],
-            :statements => @assignment_a_42
-          )
-
-          node.to_ruby(@context_default).should == "{ |a, b, c| a = 42 }"
+          @node_single_multiple_args.to_ruby(@context_default).should ==
+            "{ |a, b, c| a = 42 }"
         end
 
         it "passes correct available space info to args" do
@@ -1810,9 +2170,7 @@ module Y2R::AST::Ruby
 
       describe "for multi-line blocks" do
         it "emits correct code for blocks with no arguments" do
-          node = Block.new(:args => [], :statements => @statements)
-
-          node.to_ruby(@context_narrow).should == [
+          @node_multi_no_args.to_ruby(@context_narrow).should == [
             "{",
             "  a = 42",
             "  b = 43",
@@ -1822,9 +2180,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for blocks with one argument" do
-          node = Block.new(:args => [@variable_a], :statements => @statements)
-
-          node.to_ruby(@context_narrow).should == [
+          @node_multi_one_arg.to_ruby(@context_narrow).should == [
             "{ |a|",
             "  a = 42",
             "  b = 43",
@@ -1834,12 +2190,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for blocks with multiple arguments" do
-          node = Block.new(
-            :args       => [@variable_a, @variable_b, @variable_c],
-            :statements => @statements
-          )
-
-          node.to_ruby(@context_narrow).should == [
+          @node_multi_multiple_args.to_ruby(@context_narrow).should == [
             "{ |a, b, c|",
             "  a = 42",
             "  b = 43",
@@ -1883,21 +2234,55 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      describe "for single-line blocks" do
+        it "returns correct value for blocks with no arguments" do
+          @node_single_no_args.single_line_width.should == 10
+        end
+
+        it "returns correct value for blocks with one argument" do
+          @node_single_one_arg.single_line_width.should == 14
+        end
+
+        it "returns correct value for blocks with multiple arguments" do
+          @node_single_multiple_args.single_line_width.should == 20
+        end
+      end
+
+      describe "for multi-line blocks" do
+        it "returns infinity for blocks with no arguments" do
+          @node_multi_no_args.single_line_width.should == Float::INFINITY
+        end
+
+        it "returns infinity for blocks with one argument" do
+          @node_multi_one_arg.single_line_width.should == Float::INFINITY
+        end
+
+        it "returns infinity for blocks with multiple arguments" do
+          @node_multi_multiple_args.single_line_width.should == Float::INFINITY
+        end
+      end
+    end
   end
 
   describe ConstAccess, :type => :ruby do
+    before :each do
+      @node_without_receiver = ConstAccess.new(:receiver => nil, :name => "C")
+      @node_with_receiver    = ConstAccess.new(
+        :receiver => @variable_a,
+        :name     => "C"
+      )
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for const accesses without a receiver" do
-          node = ConstAccess.new(:receiver => nil, :name => "C")
-
-          node.to_ruby(@context_default).should == "C"
+          @node_without_receiver.to_ruby(@context_default).should == "C"
         end
 
         it "emits correct code for const accesses with a receiver" do
-          node = ConstAccess.new(:receiver => @variable_a, :name => "C")
-
-          node.to_ruby(@context_default).should == "a::C"
+          @node_with_receiver.to_ruby(@context_default).should == "a::C"
         end
       end
 
@@ -1912,90 +2297,142 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for const accesses without a receiver" do
+        @node_without_receiver.single_line_width.should == 1
+      end
+
+      it "returns correct value for const accesses with a receiver" do
+        @node_with_receiver.single_line_width.should == 4
+      end
+    end
   end
 
   describe Variable, :type => :ruby do
+    before :each do
+      @node = Variable.new(:name => "a")
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Variable.new(:name => "a")
-
-          node.to_ruby(@context_default).should == "a"
+          @node.to_ruby(@context_default).should == "a"
         end
+      end
+    end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node.single_line_width.should == 1
       end
     end
   end
 
   describe Self, :type => :ruby do
+    before :each do
+      @node = Self.new
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code" do
-          node = Self.new
-
-          node.to_ruby(@context_default).should == "self"
+          @node.to_ruby(@context_default).should == "self"
         end
+      end
+    end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node.single_line_width.should == 4
       end
     end
   end
 
   describe Literal, :type => :ruby do
+    before :each do
+      @node_nil     = Literal.new(:value => nil)
+      @node_true    = Literal.new(:value => true)
+      @node_false   = Literal.new(:value => false)
+      @node_integer = Literal.new(:value => 42)
+      @node_float   = Literal.new(:value => 42.0)
+      @node_symbol  = Literal.new(:value => :abcd)
+      @node_string  = Literal.new(:value => "abcd")
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code for nil literals" do
-          node = Literal.new(:value => nil)
-
-          node.to_ruby(@context_default).should == "nil"
+          @node_nil.to_ruby(@context_default).should == "nil"
         end
 
         it "emits correct code for true literals" do
-          node = Literal.new(:value => true)
-
-          node.to_ruby(@context_default).should == "true"
+          @node_true.to_ruby(@context_default).should == "true"
         end
 
         it "emits correct code for false literals" do
-          node = Literal.new(:value => false)
-
-          node.to_ruby(@context_default).should == "false"
+          @node_false.to_ruby(@context_default).should == "false"
         end
 
         it "emits correct code for integer literals" do
-          node = Literal.new(:value => 42)
-
-          node.to_ruby(@context_default).should == "42"
+          @node_integer.to_ruby(@context_default).should == "42"
         end
 
         it "emits correct code for float literals" do
-          node = Literal.new(:value => 42.0)
-
-          node.to_ruby(@context_default).should == "42.0"
+          @node_float.to_ruby(@context_default).should == "42.0"
         end
 
         it "emits correct code for symbol literals" do
-          node = Literal.new(:value => :abcd)
-
-          node.to_ruby(@context_default).should == ":abcd"
+          @node_symbol.to_ruby(@context_default).should == ":abcd"
         end
 
         it "emits correct code for string literals" do
-          node = Literal.new(:value => "abcd")
-
-          node.to_ruby(@context_default).should == "\"abcd\""
+          @node_string.to_ruby(@context_default).should == "\"abcd\""
         end
+      end
+    end
+
+    describe "#single_line_width" do
+      it "emits correct code for nil literals" do
+        @node_nil.single_line_width.should == 3
+      end
+
+      it "emits correct code for true literals" do
+        @node_true.single_line_width.should == 4
+      end
+
+      it "emits correct code for false literals" do
+        @node_false.single_line_width.should == 5
+      end
+
+      it "emits correct code for integer literals" do
+        @node_integer.single_line_width.should == 2
+      end
+
+      it "emits correct code for float literals" do
+        @node_float.single_line_width.should == 4
+      end
+
+      it "emits correct code for symbol literals" do
+        @node_symbol.single_line_width.should == 5
+      end
+
+      it "emits correct code for string literals" do
+        @node_string.single_line_width.should == 6
       end
     end
   end
 
   describe Array, :type => :ruby do
-    describe "#to_ruby" do
-      before :each do
-        @node_empty    = Array.new(:elements => [])
-        @node_one      = Array.new(:elements => [@literal_42])
-        @node_multiple = Array.new(
-          :elements => [@literal_42, @literal_43, @literal_44]
-        )
-      end
+    before :each do
+      @node_empty    = Array.new(:elements => [])
+      @node_one      = Array.new(:elements => [@literal_42])
+      @node_multiple = Array.new(
+        :elements => [@literal_42, @literal_43, @literal_44]
+      )
+    end
 
+    describe "#to_ruby" do
       it "emits a single-line array when the array fits available space and all elements are single-line" do
         @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
       end
@@ -2120,18 +2557,32 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for empty arrays" do
+        @node_empty.single_line_width.should == 2
+      end
+
+      it "returns correct value for arrays with one element" do
+        @node_one.single_line_width.should == 4
+      end
+
+      it "returns correct value for arrays with multiple elements" do
+        @node_multiple.single_line_width.should == 12
+      end
+    end
   end
 
   describe Hash, :type => :ruby do
-    describe "#to_ruby" do
-      before :each do
-        @node_empty = Hash.new(:entries => [])
-        @node_one   = Hash.new(:entries => [@hash_entry_a_42])
-        @node_multiple = Hash.new(
-          :entries => [@hash_entry_a_42, @hash_entry_b_43, @hash_entry_c_44]
-        )
-      end
+    before :each do
+      @node_empty = Hash.new(:entries => [])
+      @node_one   = Hash.new(:entries => [@hash_entry_a_42])
+      @node_multiple = Hash.new(
+        :entries => [@hash_entry_a_42, @hash_entry_b_43, @hash_entry_c_44]
+      )
+    end
 
+    describe "#to_ruby" do
       it "emits a single-line hash when the hash fits available space and all entries are single-line" do
         @node_multiple.to_ruby(@context_default).should ==
           "{ :a => 42, :b => 43, :c => 44 }"
@@ -2308,21 +2759,35 @@ module Y2R::AST::Ruby
         end
       end
     end
+
+    describe "#single_line_width" do
+      it "returns correct value for empty hashes" do
+        @node_empty.single_line_width.should == 2
+      end
+
+      it "returns correct value for hashes with one entry" do
+        @node_one.single_line_width.should == 12
+      end
+
+      it "returns correct value for hashes with multiple entries" do
+        @node_multiple.single_line_width.should == 32
+      end
+    end
   end
 
   describe HashEntry, :type => :ruby do
+    before :each do
+      @node = HashEntry.new(:key => @literal_a, :value => @literal_42)
+    end
+
     describe "#to_ruby" do
       describe "basics" do
         it "emits correct code with no max_key_width set" do
-          node = HashEntry.new(:key => @literal_a, :value => @literal_42)
-
-          node.to_ruby(@context_default).should == ":a => 42"
+          @node.to_ruby(@context_default).should == ":a => 42"
         end
 
         it "emits correct code with max_key_width set" do
-          node = HashEntry.new(:key => @literal_a, :value => @literal_42)
-
-          node.to_ruby(@context_max_key_width).should == ":a   => 42"
+          @node.to_ruby(@context_max_key_width).should == ":a   => 42"
         end
       end
 
@@ -2344,6 +2809,12 @@ module Y2R::AST::Ruby
 
           node.to_ruby(@context_default)
         end
+      end
+    end
+
+    describe "#single_line_width" do
+      it "returns correct value" do
+        @node.single_line_width.should == 8
       end
     end
   end

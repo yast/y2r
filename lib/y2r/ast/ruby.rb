@@ -46,6 +46,10 @@ module Y2R
           enclose? ? "(#{to_ruby(context.shifted(1))})" : to_ruby(context)
         end
 
+        def single_line_width_enclosed
+          enclose? ? 1 + single_line_width + 1 : single_line_width
+        end
+
         protected
 
         def indented(node, context)
@@ -83,6 +87,13 @@ module Y2R
           end
         end
 
+        def list_single_line_width(items, separator_width)
+          items_width      = items.map(&:single_line_width).reduce(0, &:+)
+          separators_width = separator_width * [items.size - 1, 0].max
+
+          items_width + separators_width
+        end
+
         def enclose?
           true
         end
@@ -99,6 +110,10 @@ module Y2R
             parts << statements.to_ruby(context)
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Class < Node
@@ -113,6 +128,10 @@ module Y2R
             parts << "end"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Module < Node
@@ -122,6 +141,10 @@ module Y2R
             parts << indented(statements, context)
             parts << "end"
           end
+        end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
         end
       end
 
@@ -140,6 +163,10 @@ module Y2R
             parts << indented(statements, context)
             parts << "end"
           end
+        end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
         end
       end
 
@@ -160,6 +187,17 @@ module Y2R
             end
           end
         end
+
+        def single_line_width
+          case statements.size
+            when 0
+              0
+            when 1
+              statements.first.single_line_width
+            else
+              Float::INFINITY   # always multiline
+          end
+        end
       end
 
       class Begin < Node
@@ -169,6 +207,10 @@ module Y2R
             parts << indented(statements, context)
             parts << "end"
           end
+        end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
         end
       end
 
@@ -185,6 +227,10 @@ module Y2R
             parts << "end"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       # TODO: Use trailing form where it makes sense.
@@ -200,6 +246,10 @@ module Y2R
             parts << "end"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Case < Node
@@ -213,6 +263,10 @@ module Y2R
             parts << "end"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class When < Node
@@ -222,6 +276,10 @@ module Y2R
             parts << indented(body, context)
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Else < Node
@@ -230,6 +288,10 @@ module Y2R
             parts << "else"
             parts << indented(body, context)
           end
+        end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
         end
       end
 
@@ -245,6 +307,10 @@ module Y2R
             "#{body.to_ruby(context)} while #{condition.to_ruby(context)}"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Until < Node
@@ -259,11 +325,19 @@ module Y2R
             "#{body.to_ruby(context)} until #{condition.to_ruby(context)}"
           end
         end
+
+        def single_line_width
+          Float::INFINITY   # always multiline
+        end
       end
 
       class Break < Node
         def to_ruby(context)
           "break"
+        end
+
+        def single_line_width
+          5
         end
       end
 
@@ -271,11 +345,19 @@ module Y2R
         def to_ruby(context)
           "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
         end
+
+        def single_line_width
+          value ? 5 + value.single_line_width : 4
+        end
       end
 
       class Return < Node
         def to_ruby(context)
           "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
+        end
+
+        def single_line_width
+          value ? 7 + value.single_line_width : 6
         end
       end
 
@@ -291,6 +373,10 @@ module Y2R
           else
             to_ruby_multi_line(context)
           end
+        end
+
+        def single_line_width
+          1 + list_single_line_width(expressions, 2) + 1
         end
 
         private
@@ -321,12 +407,27 @@ module Y2R
 
           "#{lhs_code} = #{rhs_code}"
         end
+
+        def single_line_width
+          lhs_width = lhs.single_line_width
+          rhs_width = if rhs.is_a?(Variable)
+            10 + rhs.single_line_width + 1
+          else
+            rhs.single_line_width
+          end
+
+          lhs_width + 3 + rhs_width
+        end
       end
 
       # TODO: Use parens only when needed.
       class UnaryOperator < Node
         def to_ruby(context)
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
+        end
+
+        def single_line_width
+          op.size + expression.single_line_width_enclosed
         end
 
         protected
@@ -347,6 +448,13 @@ module Y2R
 
           "#{lhs_code} #{op} #{rhs_code}"
         end
+
+        def single_line_width
+          lhs_width = lhs.single_line_width_enclosed
+          rhs_width = rhs.single_line_width_enclosed
+
+          lhs_width + 1 + op.size + 1 + rhs_width
+        end
       end
 
       class TernaryOperator < Node
@@ -362,6 +470,14 @@ module Y2R
           else_code    = self.else.to_ruby_enclosed(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
+        end
+
+        def single_line_width
+          condition_width = condition.single_line_width_enclosed
+          then_width      = self.then.single_line_width_enclosed
+          else_width      = self.else.single_line_width_enclosed
+
+          condition_width + 3 + then_width + 3 + else_width
         end
       end
 
@@ -391,6 +507,13 @@ module Y2R
           block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
           "#{receiver_code}#{name}#{args_code}#{block_code}"
+        end
+
+        def single_line_width
+          receiver_width = receiver ? receiver.single_line_width + 1 : 0
+          args_width     = args_single_line_width
+
+          receiver_width + name.size + args_width
         end
 
         protected
@@ -426,6 +549,18 @@ module Y2R
         def emit_args_multi_line(context)
           wrapped_line_list(args, "(", ",", ")", context)
         end
+
+        def args_single_line_width
+          if !args.empty?
+            if parens
+              1 + list_single_line_width(args, 2) + 1
+            else
+              1 + list_single_line_width(args, 2)
+            end
+          else
+            !receiver && name =~ /^[A-Z]/ && args.empty? ? 2 : 0
+          end
+        end
       end
 
       class Block < Node
@@ -436,6 +571,17 @@ module Y2R
             code
           else
             to_ruby_multi_line(context)
+          end
+        end
+
+        def single_line_width
+          args_width       = list_single_line_width(args, 2)
+          statements_width = statements.single_line_width
+
+          if !args.empty?
+            3 + args_width + 2 + statements_width + 2
+          else
+            2 + statements_width + 2
           end
         end
 
@@ -475,6 +621,10 @@ module Y2R
           (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
         end
 
+        def single_line_width
+          (receiver ? receiver.single_line_width + 2 : 0) + name.size
+        end
+
         protected
 
         def enclose?
@@ -485,6 +635,10 @@ module Y2R
       class Variable < Node
         def to_ruby(context)
           name
+        end
+
+        def single_line_width
+          name.size
         end
 
         protected
@@ -499,6 +653,10 @@ module Y2R
           "self"
         end
 
+        def single_line_width
+          4
+        end
+
         protected
 
         def enclose?
@@ -511,6 +669,10 @@ module Y2R
       class Literal < Node
         def to_ruby(context)
           value.inspect
+        end
+
+        def single_line_width
+          value.inspect.size
         end
 
         protected
@@ -529,6 +691,10 @@ module Y2R
           else
             to_ruby_multi_line(context)
           end
+        end
+
+        def single_line_width
+          2 + list_single_line_width(elements, 2)
         end
 
         protected
@@ -556,6 +722,14 @@ module Y2R
             code
           else
             to_ruby_multi_line(context)
+          end
+        end
+
+        def single_line_width
+          if !entries.empty?
+            4 + list_single_line_width(entries, 2)
+          else
+            2
           end
         end
 
@@ -611,6 +785,13 @@ module Y2R
           value_code    = value.to_ruby(value_context)
 
           "#{key_code}#{spacing_code} => #{value_code}"
+        end
+
+        def single_line_width
+          key_width   = key.single_line_width_enclosed
+          value_width = value.single_line_width_enclosed
+
+          key_width + 4 + value_width
         end
 
         def key_width(context)
