@@ -13,10 +13,6 @@ module Y2R
       # Code-related utilities.
       module Code
         class << self
-          def fits_current_line?(code, context)
-            code.size <= context.width - context.shift && !multi_line?(code)
-          end
-
           def multi_line?(code)
             !code.index("\n").nil?
           end
@@ -92,6 +88,10 @@ module Y2R
           separators_width = separator_width * [items.size - 1, 0].max
 
           items_width + separators_width
+        end
+
+        def fits_current_line?(context)
+          single_line_width <= context.width - context.shift
         end
 
         def enclose?
@@ -366,10 +366,8 @@ module Y2R
       # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
-          code = to_ruby_single_line(context)
-
-          if Code.fits_current_line?(code, context)
-            code
+          if fits_current_line?(context)
+            to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
           end
@@ -496,7 +494,7 @@ module Y2R
 
           args_shift   = receiver_code.size + name.size
           args_context = context.shifted(args_shift)
-          args_code    = emit_args(args_context)
+          args_code    = emit_args(context, args_context)
 
           if Code.multi_line?(args_code)
             block_context = context.shifted(1)
@@ -524,13 +522,11 @@ module Y2R
 
         private
 
-        def emit_args(context)
-          code = emit_args_single_line(context)
-
-          if Code.fits_current_line?(code, context) || !parens
-            code
+        def emit_args(context, args_context)
+          if fits_current_line?(context) || !parens
+            emit_args_single_line(args_context)
           else
-            emit_args_multi_line(context)
+            emit_args_multi_line(args_context)
           end
         end
 
@@ -565,10 +561,8 @@ module Y2R
 
       class Block < Node
         def to_ruby(context)
-          code = to_ruby_single_line(context)
-
-          if Code.fits_current_line?(code, context)
-            code
+          if fits_current_line?(context)
+            to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
           end
@@ -684,10 +678,8 @@ module Y2R
 
       class Array < Node
         def to_ruby(context)
-          code = to_ruby_single_line(context)
-
-          if Code.fits_current_line?(code, context)
-            code
+          if fits_current_line?(context)
+            to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
           end
@@ -716,10 +708,8 @@ module Y2R
 
       class Hash < Node
         def to_ruby(context)
-          code = to_ruby_single_line(context)
-
-          if Code.fits_current_line?(code, context)
-            code
+          if fits_current_line?(context)
+            to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
           end
