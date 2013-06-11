@@ -285,20 +285,18 @@ creates an instance of the `YCP::FunRef` class.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        @fref = fun_ref(method(:f), "void ()")
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      @fref = fun_ref(method(:f), "void ()")
+      nil
+    end
 
-      def f
-        return
-      end
+    def f
+      return
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Expressions
@@ -327,17 +325,15 @@ Y2R translates YCP local variables as Ruby local variables.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def f
-        i = 42
-        j = deep_copy(i)
-        nil
-      end
+  class DefaultClient < Client
+    def f
+      i = 42
+      j = deep_copy(i)
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R translates YCP variables at client toplevel as Ruby instance variables.
@@ -357,17 +353,15 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        @i = 42
-        @j = deep_copy(@i)
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      @i = 42
+      @j = deep_copy(@i)
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
@@ -428,17 +422,15 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def f
-        i = 42
-        b = lambda { i2 = 43 }
-        nil
-      end
+  class DefaultClient < Client
+    def f
+      i = 42
+      b = lambda { i2 = 43 }
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R uses suffixes to disambiguate variable aliases in statement blocks.
@@ -462,17 +454,15 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def f
-        i = 42
-        i2 = 43
-        nil
-      end
+  class DefaultClient < Client
+    def f
+      i = 42
+      i2 = 43
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Type Conversions
@@ -525,22 +515,20 @@ builtins in Ruby.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        Builtins.time
-        Builtins.random(100)
-        SCR.Dir(path(".syseditor.section"))
-        WFM.Args
-        @f = Builtins::Float.abs(-42.0)
-        @l = Builtins::List.reverse([42, 43, 44])
-        @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      Builtins.time
+      Builtins.random(100)
+      SCR.Dir(path(".syseditor.section"))
+      WFM.Args
+      @f = Builtins::Float.abs(-42.0)
+      @l = Builtins::List.reverse([42, 43, 44])
+      @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -593,17 +581,15 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        textdomain "helloworld"
-        @s = _("Hello, world!")
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      textdomain "helloworld"
+      @s = _("Hello, world!")
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Function Calls
@@ -641,45 +627,43 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        f1
-        @a = "a"
-        @b = "b"
-        @c = "c"
-        f2(@a, @b, @c)
-        (
-          a_ref = arg_ref(@a);
-          b_ref = arg_ref(@b);
-          c_ref = arg_ref(@c);
-          f3_result = f3(a_ref, b_ref, c_ref);
-          @a = a_ref.value;
-          @b = b_ref.value;
-          @c = c_ref.value;
-          f3_result
-        )
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      f1
+      @a = "a"
+      @b = "b"
+      @c = "c"
+      f2(@a, @b, @c)
+      (
+        a_ref = arg_ref(@a);
+        b_ref = arg_ref(@b);
+        c_ref = arg_ref(@c);
+        f3_result = f3(a_ref, b_ref, c_ref);
+        @a = a_ref.value;
+        @b = b_ref.value;
+        @c = c_ref.value;
+        f3_result
+      )
+      nil
+    end
 
-      def f1
-        return 42
-      end
+    def f1
+      return 42
+    end
 
-      def f2(a, b, c)
-        a = deep_copy(a)
-        b = deep_copy(b)
-        c = deep_copy(c)
-        return 42
-      end
+    def f2(a, b, c)
+      a = deep_copy(a)
+      b = deep_copy(b)
+      c = deep_copy(c)
+      return 42
+    end
 
-      def f3(a, b, c)
-        return 42
-      end
+    def f3(a, b, c)
+      return 42
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R translates YCP function calls of nested functions as invoking the `call`
@@ -718,38 +702,36 @@ method on them.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def outer
-        f1 = lambda { return 42 }
-        f2 = lambda { |a2, b2, c2|
-          a2 = deep_copy(a2)
-          b2 = deep_copy(b2)
-          c2 = deep_copy(c2)
-          return 42
-        }
-        f3 = lambda { |a2, b2, c2| return 42 }
-        f1.call
-        a = "a"
-        b = "b"
-        c = "c"
-        f2.call(a, b, c)
-        (
-          a_ref = arg_ref(a);
-          b_ref = arg_ref(b);
-          c_ref = arg_ref(c);
-          f3_result = f3.call(a_ref, b_ref, c_ref);
-          a = a_ref.value;
-          b = b_ref.value;
-          c = c_ref.value;
-          f3_result
-        )
-        nil
-      end
+  class DefaultClient < Client
+    def outer
+      f1 = lambda { return 42 }
+      f2 = lambda { |a2, b2, c2|
+        a2 = deep_copy(a2)
+        b2 = deep_copy(b2)
+        c2 = deep_copy(c2)
+        return 42
+      }
+      f3 = lambda { |a2, b2, c2| return 42 }
+      f1.call
+      a = "a"
+      b = "b"
+      c = "c"
+      f2.call(a, b, c)
+      (
+        a_ref = arg_ref(a);
+        b_ref = arg_ref(b);
+        c_ref = arg_ref(c);
+        f3_result = f3.call(a_ref, b_ref, c_ref);
+        a = a_ref.value;
+        b = b_ref.value;
+        c = c_ref.value;
+        f3_result
+      )
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Function References Calling
@@ -776,21 +758,19 @@ on them.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        @fref = fun_ref(method(:f), "void ()")
-        @fref.call
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      @fref = fun_ref(method(:f), "void ()")
+      @fref.call
+      nil
+    end
 
-      def f
-        return
-      end
+    def f
+      return
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Comparison Operators
@@ -996,16 +976,14 @@ Y2R translates YCP `textdomain` statement as a call to set the text domain.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        textdomain "users"
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      textdomain "users"
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Assignments
@@ -1071,19 +1049,17 @@ statement.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def f1
-        return
-      end
+  class DefaultClient < Client
+    def f1
+      return
+    end
 
-      def f2
-        return 42
-      end
+    def f2
+      return 42
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R translates YCP `return` statement inside block as Ruby `next` statement.
@@ -1230,38 +1206,36 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def f1
-        return 42
-      end
+  class DefaultClient < Client
+    def f1
+      return 42
+    end
 
-      def f2(a, b, c)
-        return 42
-      end
+    def f2(a, b, c)
+      return 42
+    end
 
-      def f3(a, b, c)
-        return 42
-      end
+    def f3(a, b, c)
+      return 42
+    end
 
-      def f4(a, b, c)
-        return 42
-      end
+    def f4(a, b, c)
+      return 42
+    end
 
-      def f5(a, b, c)
-        return 42
-      end
+    def f5(a, b, c)
+      return 42
+    end
 
-      def f6(a, b, c)
-        a = deep_copy(a)
-        b = deep_copy(b)
-        c = deep_copy(c)
-        return 42
-      end
+    def f6(a, b, c)
+      a = deep_copy(a)
+      b = deep_copy(b)
+      c = deep_copy(c)
+      return 42
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 Y2R translates nested YCP function definitions as Ruby lambdas. It maintains
@@ -1307,26 +1281,24 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def outer
-        f1 = lambda { return 42 }
-        f2 = lambda { |a, b, c| return 42 }
-        f3 = lambda { |a, b, c| return 42 }
-        f4 = lambda { |a, b, c| return 42 }
-        f5 = lambda { |a, b, c| return 42 }
-        f6 = lambda { |a, b, c|
-          a = deep_copy(a)
-          b = deep_copy(b)
-          c = deep_copy(c)
-          return 42
-        }
-        nil
-      end
+  class DefaultClient < Client
+    def outer
+      f1 = lambda { return 42 }
+      f2 = lambda { |a, b, c| return 42 }
+      f3 = lambda { |a, b, c| return 42 }
+      f4 = lambda { |a, b, c| return 42 }
+      f5 = lambda { |a, b, c| return 42 }
+      f6 = lambda { |a, b, c|
+        a = deep_copy(a)
+        b = deep_copy(b)
+        c = deep_copy(c)
+        return 42
+      }
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Statement Blocks
@@ -1351,18 +1323,16 @@ Y2R translates YCP statement blocks as Ruby statements.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        Builtins.y2milestone("M1")
-        Builtins.y2milestone("M2")
-        Builtins.y2milestone("M3")
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      Builtins.y2milestone("M1")
+      Builtins.y2milestone("M2")
+      Builtins.y2milestone("M3")
+      nil
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### `if` Statement
@@ -1601,26 +1571,24 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 # encoding: utf-8
 
 module YCP
-  module Clients
-    class DefaultClient < Client
-      def main
-        YCP.import("String")
-        @i = 42
-        @j = 43
-        nil
-      end
+  class DefaultClient < Client
+    def main
+      YCP.import("String")
+      @i = 42
+      @j = 43
+      nil
+    end
 
-      def f
-        return 42
-      end
+    def f
+      return 42
+    end
 
-      def g
-        return 43
-      end
+    def g
+      return 43
     end
   end
 end
-YCP::Clients::DefaultClient.new.main
+YCP::DefaultClient.new.main
 ```
 
 ### Modules

@@ -70,16 +70,14 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "# encoding: utf-8"
           lines << ""
           lines << "module YCP"
-          lines << "  module Clients"
-          lines << "    class DefaultClient < Client"
-          lines << "      def fragment_wrapper"
-          lines << indent(code[0..-2], 4)
-          lines << "        nil"
-          lines << "      end"
+          lines << "  class DefaultClient < Client"
+          lines << "    def fragment_wrapper"
+          lines << indent(code[0..-2], 3)
+          lines << "      nil"
           lines << "    end"
           lines << "  end"
           lines << "end"
-          lines << "YCP::Clients::DefaultClient.new.main"
+          lines << "YCP::DefaultClient.new.main"
 
           @ruby_code = lines.join("\n")
         else

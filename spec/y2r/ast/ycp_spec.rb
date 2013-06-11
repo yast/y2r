@@ -1753,24 +1753,18 @@ module Y2R::AST
             :statements => [
               Ruby::Module.new(
                 :name       => "YCP",
-                :statements => Ruby::Module.new(
-                  :name       => "Clients",
-                  :statements => Ruby::Class.new(
-                    :name       => "CClient",
-                    :superclass => Ruby::Variable.new(:name => "Client"),
-                    :statements => Ruby::Statements.new(
-                      :statements => statements
-                    )
+                :statements => Ruby::Class.new(
+                  :name       => "CClient",
+                  :superclass => Ruby::Variable.new(:name => "Client"),
+                  :statements => Ruby::Statements.new(
+                    :statements => statements
                   )
                 )
               ),
               Ruby::MethodCall.new(
                 :receiver => Ruby::MethodCall.new(
                   :receiver => Ruby::ConstAccess.new(
-                    :receiver => Ruby::ConstAccess.new(
-                      :receiver => Ruby::Variable.new(:name => "YCP"),
-                      :name     => "Clients"
-                    ),
+                    :receiver => Ruby::Variable.new(:name => "YCP"),
                     :name     => "CClient"
                   ),
                   :name     => "new",
