@@ -11,11 +11,12 @@ module Y2R
 
     # AST building context passed to |element_to_node| and related methods.
     class Context
-      attr_reader :element, :extracted_file
+      attr_reader :element, :as_include_file, :extracted_file
 
       def initialize(attrs = {})
-        @element        = attrs[:element] || nil
-        @extracted_file = attrs[:extracted_file] || nil
+        @element         = attrs[:element] || nil
+        @as_include_file = attrs[:as_include_file] || false
+        @extracted_file  = attrs[:extracted_file] || nil
       end
 
       def in?(element)
@@ -24,8 +25,9 @@ module Y2R
 
       def inside(element)
         Context.new(
-          :element        => element,
-          :extracted_file => @extracted_file
+          :element         => element,
+          :as_include_file => @as_include_file,
+          :extracted_file  => @extracted_file
         )
       end
     end
@@ -90,7 +92,11 @@ module Y2R
     end
 
     def xml_to_ast(xml, options)
-      context = Context.new(:extracted_file => options[:extracted_file])
+      context = Context.new(
+        :as_include_file => options[:as_include_file],
+        :extracted_file  => options[:extracted_file]
+      )
+
       ast = element_to_node(Nokogiri::XML(xml).root, context)
       ast.filename = options[:filename] || "default.ycp"
       ast
