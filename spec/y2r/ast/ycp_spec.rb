@@ -450,6 +450,17 @@ module Y2R::AST
       @context_hbox_local = YCP::Context.new(
         :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_hbox])]
       )
+
+      @context_inline = YCP::Context.new(
+        :dont_inline_include_files => false
+      )
+      @context_dont_inline = YCP::Context.new(
+        :dont_inline_include_files => true
+      )
+      @context_dont_inline_as_include = YCP::Context.new(
+        :as_include_file           => true,
+        :dont_inline_include_files => true
+      )
     end
   end
 
@@ -2237,10 +2248,51 @@ module Y2R::AST
 
   describe YCP::Include, :type => :ycp do
     describe "#compile" do
-      it "returns nil" do
-        ycp_node = YCP::Include.new
+      context "when include files are inlined" do
+        it "returns nil" do
+          ycp_node = YCP::Include.new(:name => "i.ycp")
 
-        ycp_node.compile(@context_empty).should be_nil
+          ycp_node.compile(@context_inline).should be_nil
+        end
+      end
+
+      context "when include files aren't inlined" do
+        context "and compiling as include file" do
+          it "returns correct AST node" do
+            ycp_node = YCP::Include.new(:name => "i.ycp")
+
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :name     => "include",
+              :args     => [
+                Ruby::Variable.new(:name => "include_target"),
+                Ruby::Literal.new(:value => "i.rb")
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node.compile(@context_dont_inline_as_include).should ==
+              ruby_node
+          end
+        end
+
+        context "and not compiling as include file" do
+          it "returns correct AST node" do
+            ycp_node = YCP::Include.new(:name => "i.ycp")
+
+            ruby_node = Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :name     => "include",
+              :args     => [Ruby::Self.new, Ruby::Literal.new(:value => "i.rb")],
+              :block    => nil,
+              :parens   => true
+            )
+
+            ycp_node.compile(@context_dont_inline).should ==
+              ruby_node
+          end
+        end
       end
     end
   end

@@ -12,13 +12,14 @@ Usage: y2r [--include-path <path> ...] [--module-path <path> ...] [options]
            [<ycp_file>] [<ruby_file>]
 
 Options:
-  -I, --include-path <path>  Path where to find included files.
-  -M, --module-path <path>   Path where to find modules.
-      --export-private       Export also private symbols from translated modules.
-      --as-include-file      Compile as include file.
-      --extract-file <file>  Compile only code of specified included file.
-  -v, --version              Print version information and exit.
-  -h, --help                 Print help and exit.
+  -I, --include-path <path>        Path where to find included files.
+  -M, --module-path <path>         Path where to find modules.
+      --export-private             Export also private symbols from translated modules.
+      --as-include-file            Compile as include file.
+      --extract-file <file>        Compile only code of specified included file.
+      --dont-inline-include-files  Don't inline include files.
+  -v, --version                    Print version information and exit.
+  -h, --help                       Print help and exit.
 EOT
 
 begin
@@ -49,12 +50,13 @@ begin
   end
 
   compile_options = {
-    :module_paths    => module_paths,
-    :include_paths   => include_paths,
-    :export_private  => options["--export-private"],
-    :as_include_file => options["--as-include-file"],
-    :extracted_file  => options["--extract-file"],
-    :filename        => ycp_file
+    :module_paths              => module_paths,
+    :include_paths             => include_paths,
+    :export_private            => options["--export-private"],
+    :as_include_file           => options["--as-include-file"],
+    :extracted_file            => options["--extract-file"],
+    :dont_inline_include_files => options["--dont-inline-include-files"],
+    :filename                  => ycp_file
   }
 
   output_stream.write(Y2R.compile(input_stream.read, compile_options))

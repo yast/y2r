@@ -14,12 +14,14 @@ module Y2R
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
       class Context
-        attr_accessor :blocks, :export_private
+        attr_accessor :blocks, :export_private, :as_include_file,
+          :dont_inline_include_files
 
         def initialize(attrs = {})
-          @blocks          = attrs[:blocks] || []
-          @export_private  = attrs[:export_private] || false
-          @as_include_file = attrs[:as_include_file] || false
+          @blocks                    = attrs[:blocks] || []
+          @export_private            = attrs[:export_private] || false
+          @as_include_file           = attrs[:as_include_file] || false
+          @dont_inline_include_files = attrs[:dont_inline_include_files] || false
         end
 
         def in?(klass)
@@ -32,9 +34,10 @@ module Y2R
 
         def inside(block)
           yield Context.new(
-            :blocks          => @blocks + [block],
-            :export_private  => @export_private,
-            :as_include_file => @as_include_file
+            :blocks                    => @blocks + [block],
+            :export_private            => @export_private,
+            :as_include_file           => @as_include_file,
+            :dont_inline_include_files => @dont_inline_include_files
           )
         end
 
@@ -735,7 +738,26 @@ module Y2R
 
       class Include < Node
         def compile(context)
-          # Ignored because ycpc already included the file for us.
+          if context.dont_inline_include_files
+            args = [
+              if context.as_include_file
+                Ruby::Variable.new(:name => "include_target")
+              else
+                Ruby::Self.new
+              end,
+              Ruby::Literal.new(:value => name.sub(/\.y(cp|h)$/, ".rb"))
+            ]
+
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :name     => "include",
+              :args     => args,
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            nil   # ycpc already included the file for us.
+          end
         end
       end
 

@@ -11,12 +11,14 @@ module Y2R
 
     # AST building context passed to |element_to_node| and related methods.
     class Context
-      attr_reader :element, :as_include_file, :extracted_file
+      attr_reader :element, :as_include_file, :extracted_file,
+        :dont_inline_include_files
 
       def initialize(attrs = {})
-        @element         = attrs[:element] || nil
-        @as_include_file = attrs[:as_include_file] || false
-        @extracted_file  = attrs[:extracted_file] || nil
+        @element                   = attrs[:element] || nil
+        @as_include_file           = attrs[:as_include_file] || false
+        @extracted_file            = attrs[:extracted_file] || nil
+        @dont_inline_include_files = attrs[:dont_inline_include_files] || false
       end
 
       def in?(element)
@@ -25,9 +27,10 @@ module Y2R
 
       def inside(element)
         Context.new(
-          :element         => element,
-          :as_include_file => @as_include_file,
-          :extracted_file  => @extracted_file
+          :element                   => element,
+          :as_include_file           => @as_include_file,
+          :extracted_file            => @extracted_file,
+          :dont_inline_include_files => @dont_inline_include_files
         )
       end
     end
@@ -93,8 +96,9 @@ module Y2R
 
     def xml_to_ast(xml, options)
       context = Context.new(
-        :as_include_file => options[:as_include_file],
-        :extracted_file  => options[:extracted_file]
+        :as_include_file           => options[:as_include_file],
+        :extracted_file            => options[:extracted_file],
+        :dont_inline_include_files => options[:dont_inline_include_files]
       )
 
       ast = element_to_node(Nokogiri::XML(xml).root, context)
@@ -118,10 +122,16 @@ module Y2R
         when "block"
           all_statements = extract_collection(element, "statements", context)
 
-          statements = if toplevel_block?(element) && context.extracted_file
+          extracted_statements = if toplevel_block?(element) && context.extracted_file
             extract_file_statements(all_statements, context.extracted_file)
           else
             all_statements
+          end
+
+          statements = if toplevel_block?(element) && context.dont_inline_include_files
+            skip_include_statements(extracted_statements)
+          else
+            extracted_statements
           end
 
           file_block_class = if context.as_include_file
@@ -560,6 +570,27 @@ module Y2R
       end
 
       extracted
+    end
+
+    def skip_include_statements(statements)
+      filtered = []
+      do_skip = false
+      nesting_level = 0
+
+      statements.each do |statement|
+        if statement.is_a?(AST::YCP::Include)
+          filtered << statement if nesting_level == 0
+          nesting_level += 1
+          do_skip = true
+        elsif statement.is_a?(AST::YCP::Filename)
+          nesting_level -= 1
+          do_skip = false if nesting_level == 0
+        else
+          filtered << statement unless do_skip
+        end
+      end
+
+      filtered
     end
 
     def add_testedfiles(ycp, xml)
