@@ -739,6 +739,94 @@ module Y2R
         end
       end
 
+      class IncludeBlock < Node
+        def name
+          nil
+        end
+
+        def compile(context)
+          class_statements = []
+
+          context.inside self do |inner_context|
+            class_statements += build_initialize_method_def(inner_context)
+            class_statements += build_other_defs(inner_context)
+          end
+
+          Ruby::Program.new(
+            :statements => Ruby::Statements.new(
+              :statements => [
+                Ruby::Module.new(
+                  :name       => "YCP",
+                  :statements => Ruby::Module.new(
+                    :name       => module_name,
+                    :statements => Ruby::Statements.new(
+                      :statements => class_statements
+                    )
+                  )
+                )
+              ]
+            ),
+            :comment    => comment
+          )
+        end
+
+        private
+
+        def module_name
+          parts = path_parts.map do |part|
+            part.
+              gsub(/^./)     { |s| s.upcase    }.
+              gsub(/[_.-]./) { |s| s[1].upcase }
+          end
+
+          "#{parts.join("")}Include"
+        end
+
+        def initialize_method_name
+          parts = path_parts.map { |p| p.gsub(/[_.-]/, "_") }
+
+          "initialize_#{parts.join("_")}"
+        end
+
+        def path_parts
+          filename.
+            sub(/^.*\/src\/include\//, "").
+            sub(/\.y(cp|h)$/, "").
+            split("/")
+        end
+
+        def fundef_statements
+          statements.select { |s| s.is_a?(FunDef) }
+        end
+
+        def other_statements
+          statements - fundef_statements
+        end
+
+        def build_initialize_method_def(context)
+          if !other_statements.empty?
+            initialize_method_statements = other_statements.map { |s| s.compile(context) }
+            initialize_method_statements << Ruby::Literal.new(:value => nil)
+
+            [
+              Ruby::Def.new(
+                :name       => initialize_method_name,
+                :args       => [Ruby::Variable.new(:name => "include_target")],
+                :statements => Ruby::Statements.new(
+                  :statements => initialize_method_statements
+                )
+              )
+            ]
+          else
+            []
+          end
+        end
+
+        def build_other_defs(context)
+          fundef_statements.map { |t| t.compile(context) }
+        end
+      end
+
       class List < Node
         def compile(context)
           Ruby::Array.new(

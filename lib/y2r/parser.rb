@@ -124,9 +124,15 @@ module Y2R
             all_statements
           end
 
+          file_block_class = if context.as_include_file
+            AST::YCP::IncludeBlock
+          else
+            AST::YCP::FileBlock
+          end
+
           {
             :def    => AST::YCP::DefBlock,
-            :file   => AST::YCP::FileBlock,
+            :file   => file_block_class,
             :module => AST::YCP::ModuleBlock,
             :stmt   => AST::YCP::StmtBlock,
             :unspec => AST::YCP::UnspecBlock

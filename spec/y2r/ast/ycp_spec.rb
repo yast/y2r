@@ -2245,6 +2245,104 @@ module Y2R::AST
     end
   end
 
+  describe YCP::IncludeBlock, :type => :ycp do
+    describe "#compile" do
+      def ruby_include_statements(statements, comment)
+        Ruby::Program.new(
+          :statements => Ruby::Statements.new(
+            :statements => [
+              Ruby::Module.new(
+                :name       => "YCP",
+                :statements => Ruby::Module.new(
+                  :name       => "CInclude",
+                  :statements => Ruby::Statements.new(
+                    :statements => statements
+                  )
+                )
+              )
+            ]
+          ),
+          :comment    => comment
+        )
+      end
+
+      it "returns correct AST node for empty blocks" do
+        ycp_node = YCP::IncludeBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => [],
+          :comment    => nil,
+        )
+
+        ruby_node = ruby_include_statements([], nil)
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with statements" do
+        ycp_node = YCP::IncludeBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => @ycp_statements,
+          :comment    => nil
+        )
+
+        ruby_node = ruby_include_statements(
+          [
+            Ruby::Def.new(
+              :name       => "initialize_c",
+              :args       => [Ruby::Variable.new(:name => "include_target")],
+              :statements => Ruby::Statements.new(
+                :statements => [
+                  @ruby_assignment_i_42,
+                  @ruby_assignment_j_43,
+                  @ruby_assignment_k_44,
+                  @ruby_literal_nil
+                ]
+              )
+            )
+          ],
+          nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with function definitions" do
+        ycp_node = YCP::IncludeBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => [
+            @ycp_fundef_f,
+            @ycp_fundef_g,
+            @ycp_fundef_h
+          ],
+          :comment    => nil
+        )
+
+        ruby_node = ruby_include_statements(
+          [@ruby_def_f, @ruby_def_g, @ruby_def_h],
+          nil
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for blocks with a comment" do
+        ycp_node = YCP::IncludeBlock.new(
+          :filename   => "c.ycp",
+          :symbols    => [],
+          :statements => [],
+          :comment    => "comment",
+        )
+
+        ruby_node = ruby_include_statements([], "comment")
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
   describe YCP::List, :type => :ycp do
     describe "#compile" do
       it "returns correct AST node" do
