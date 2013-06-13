@@ -338,7 +338,10 @@ module Y2R
           AST::YCP::Import.new(:name => element["name"])
 
         when "include"
-          AST::YCP::Include.new(:name => element["name"])
+          AST::YCP::Include.new(
+            :name    => element["name"],
+            :skipped => element["skipped"] == "1"
+          )
 
         when "list"
           AST::YCP::List.new(
@@ -554,6 +557,8 @@ module Y2R
 
       statements.each do |statement|
         if statement.is_a?(AST::YCP::Include)
+          next if statement.skipped
+
           nesting_level += 1
           if statement.name == file
             do_extract = true
@@ -580,6 +585,8 @@ module Y2R
       statements.each do |statement|
         if statement.is_a?(AST::YCP::Include)
           filtered << statement if nesting_level == 0
+          next if statement.skipped
+
           nesting_level += 1
           do_skip = true
         elsif statement.is_a?(AST::YCP::Filename)
