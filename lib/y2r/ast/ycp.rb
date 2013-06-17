@@ -929,6 +929,13 @@ module Y2R
                           :block    => nil,
                           :parens   => true
                         )
+                      ),
+                      Ruby::MethodCall.new(
+                        :receiver => Ruby::Variable.new(:name => name),
+                        :name     => "main",
+                        :args     => [],
+                        :block    => nil,
+                        :parens   => true
                       )
                     ]
                   )
@@ -969,7 +976,7 @@ module Y2R
 
             [
               Ruby::Def.new(
-                :name       => "initialize",
+                :name       => "main",
                 :args       => [],
                 :statements => Ruby::Statements.new(
                   :statements => initialize_statements

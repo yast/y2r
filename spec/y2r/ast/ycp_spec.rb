@@ -2513,6 +2513,13 @@ module Y2R::AST
                         :block    => nil,
                         :parens   => true
                       )
+                    ),
+                    Ruby::MethodCall.new(
+                      :receiver => Ruby::Variable.new(:name => "M"),
+                      :name     => "main",
+                      :args     => [],
+                      :block    => nil,
+                      :parens   => true
                     )
                   ]
                 )
@@ -2595,7 +2602,7 @@ module Y2R::AST
         ruby_node = ruby_module_statements(
           [
             Ruby::Def.new(
-              :name       => "initialize",
+              :name       => "main",
               :args       => [],
               :statements => @ruby_statements_non_empty
             )
@@ -2643,7 +2650,7 @@ module Y2R::AST
         ruby_node = ruby_module_statements(
           [
             Ruby::Def.new(
-              :name       => "initialize",
+              :name       => "main",
               :args       => [],
               :statements => Ruby::Statements.new(
                 :statements => [

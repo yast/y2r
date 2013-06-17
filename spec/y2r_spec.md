@@ -388,7 +388,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 require "ycp"
 module YCP
   class MClass < Module
-    def initialize
+    def main
       @i = 42
       @j = deep_copy(@i)
       @k = 42
@@ -399,6 +399,7 @@ module YCP
     publish({ :variable => :l, :type => "integer" })
   end
   M = MClass.new
+  M.main
 end
 ```
 
@@ -1628,7 +1629,7 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 require "ycp"
 module YCP
   class MClass < Module
-    def initialize
+    def main
       YCP.import("String")
       @i = 42
       @j = 43
@@ -1652,5 +1653,6 @@ module YCP
     publish({ :function => :g, :type => "integer ()" })
   end
   M = MClass.new
+  M.main
 end
 ```
