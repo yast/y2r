@@ -102,7 +102,11 @@ module Y2R
       )
 
       ast = element_to_node(Nokogiri::XML(xml).root, context)
-      ast.filename = options[:filename] || "default.ycp"
+      ast.filename = if options[:extracted_file]
+        options[:extracted_file]
+      else
+        options[:filename] || "default.ycp"
+      end
       ast
     end
 
