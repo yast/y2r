@@ -559,6 +559,8 @@ module Y2R
         if statement.is_a?(AST::YCP::Include)
           next if statement.skipped
 
+          extracted << statement if do_extract
+
           nesting_level += 1
           if statement.name == file
             do_extract = true
@@ -569,6 +571,8 @@ module Y2R
           if do_extract && nesting_level < threshhold_level
             do_extract = false
           end
+
+          extracted << statement if do_extract
         else
           extracted << statement if do_extract
         end
