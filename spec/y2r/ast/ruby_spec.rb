@@ -2886,10 +2886,7 @@ module Y2R::AST::Ruby
 
       describe "for multi-line hashes" do
         it "emits correct code for empty hashes" do
-          @node_empty.to_ruby(@context_narrow).should == [
-           "{",
-           "}"
-          ].join("\n")
+          @node_empty.to_ruby(@context_narrow).should == "{}"
         end
 
         it "emits correct code for hashes with one entry" do

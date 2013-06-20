@@ -802,9 +802,11 @@ module Y2R
 
             entry_context = context.dup
             entry_context.max_key_width = max_key_width
-          end
 
-          wrapped_line_list(entries, "{", ",", "}", entry_context)
+            wrapped_line_list(entries, "{", ",", "}", entry_context)
+          else
+            "{}"
+          end
         end
       end
 
