@@ -753,7 +753,11 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          wrapped_line_list(elements, "[", ",", "]", context)
+          if !elements.empty?
+            wrapped_line_list(elements, "[", ",", "]", context)
+          else
+            "[]"
+          end
         end
       end
 

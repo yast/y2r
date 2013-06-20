@@ -2728,10 +2728,7 @@ module Y2R::AST::Ruby
 
       describe "for multi-line arrays" do
         it "emits correct code for empty arrays" do
-          @node_empty.to_ruby(@context_narrow).should == [
-           "[",
-           "]"
-          ].join("\n")
+          @node_empty.to_ruby(@context_narrow).should == "[]"
         end
 
         it "emits correct code for arrays with one element" do
