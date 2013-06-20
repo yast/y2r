@@ -241,7 +241,7 @@ module Y2R::AST::Ruby
       )
       @node_with_comment = Program.new(
         :statements => @statements,
-        :comment    => "comment"
+        :comment    => "line 1\n\nline 3"
       )
     end
 
@@ -261,7 +261,9 @@ module Y2R::AST::Ruby
           @node_with_comment.to_ruby(@context_default).should == [
             "# encoding: utf-8",
             "",
-            "# comment",
+            "# line 1",
+            "#",
+            "# line 3",
             "",
             "a = 42",
             "b = 43",

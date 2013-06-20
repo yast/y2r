@@ -107,7 +107,7 @@ module Y2R
             parts << "# encoding: utf-8"
             if comment
               parts << ""
-              parts << "# #{comment}"
+              parts << format_comment
             end
             parts << ""
             parts << statements.to_ruby(context)
@@ -116,6 +116,12 @@ module Y2R
 
         def single_line_width
           Float::INFINITY   # always multiline
+        end
+
+        private
+
+        def format_comment
+          comment.gsub(/^.*$/) { |s| s.empty? ? "#" : "# #{s}" }
         end
       end
 
