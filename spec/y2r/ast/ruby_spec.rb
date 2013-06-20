@@ -260,6 +260,7 @@ module Y2R::AST::Ruby
         it "emits correct code with a comment" do
           @node_with_comment.to_ruby(@context_default).should == [
             "# encoding: utf-8",
+            "",
             "# comment",
             "",
             "a = 42",

@@ -105,7 +105,10 @@ module Y2R
         def to_ruby(context)
           combine do |parts|
             parts << "# encoding: utf-8"
-            parts << "# #{comment}" if comment
+            if comment
+              parts << ""
+              parts << "# #{comment}"
+            end
             parts << ""
             parts << statements.to_ruby(context)
           end
