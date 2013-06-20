@@ -1419,9 +1419,7 @@ else
 #### Ruby (fragment)
 
 ```ruby
-if true
-  Builtins.y2milestone("M1")
-end
+Builtins.y2milestone("M1") if true
 if true
   Builtins.y2milestone("M2")
 else
