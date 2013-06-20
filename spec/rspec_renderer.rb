@@ -69,6 +69,10 @@ class RSpecRenderer < Redcarpet::Render::Base
 
           lines << "# encoding: utf-8"
           lines << ""
+          lines << "# Translated by Y2R (https://github.com/yast/y2r)."
+          lines << "#"
+          lines << "# Original file: default.ycp"
+          lines << ""
           lines << "module YCP"
           lines << "  class DefaultClient < Client"
           lines << "    def fragment_wrapper"

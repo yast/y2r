@@ -284,6 +284,10 @@ creates an instance of the `YCP::FunRef` class.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def main
@@ -324,6 +328,10 @@ Y2R translates YCP local variables as Ruby local variables.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def f
@@ -351,6 +359,10 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -384,6 +396,10 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 require "ycp"
 module YCP
@@ -422,6 +438,10 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def f
@@ -453,6 +473,10 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -514,6 +538,10 @@ builtins in Ruby.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -581,6 +609,10 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def main
@@ -626,6 +658,10 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -702,6 +738,10 @@ method on them.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def outer
@@ -757,6 +797,10 @@ on them.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -976,6 +1020,10 @@ Y2R translates YCP `textdomain` statement as a call to set the text domain.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def main
@@ -1048,6 +1096,10 @@ statement.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -1206,6 +1258,10 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def f1
@@ -1281,6 +1337,10 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def outer
@@ -1322,6 +1382,10 @@ Y2R translates YCP statement blocks as Ruby statements.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 module YCP
   class DefaultClient < Client
@@ -1571,6 +1635,10 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 ```ruby
 # encoding: utf-8
 
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
 module YCP
   class DefaultClient < Client
     def main
@@ -1625,6 +1693,10 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 
 ```ruby
 # encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
 
 require "ycp"
 module YCP

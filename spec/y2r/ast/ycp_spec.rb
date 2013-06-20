@@ -461,6 +461,19 @@ module Y2R::AST
         :as_include_file           => true,
         :dont_inline_include_files => true
       )
+
+      # ----- Misc. -----
+
+      @banner_comment = [
+        "Translated by Y2R (https://github.com/yast/y2r).",
+        "",
+        "Original file: "
+      ].join("\n")
+      @banner_comment_c = [
+        "Translated by Y2R (https://github.com/yast/y2r).",
+        "",
+        "Original file: c.ycp"
+      ].join("\n")
     end
   end
 
@@ -1802,7 +1815,7 @@ module Y2R::AST
           :comment    => nil,
         )
 
-        ruby_node = ruby_client_statements([], nil)
+        ruby_node = ruby_client_statements([], @banner_comment_c)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -1830,7 +1843,7 @@ module Y2R::AST
               )
             )
           ],
-          nil
+          @banner_comment_c
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1850,7 +1863,7 @@ module Y2R::AST
 
         ruby_node = ruby_client_statements(
           [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          nil
+          @banner_comment_c
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1864,7 +1877,7 @@ module Y2R::AST
           :comment    => "comment",
         )
 
-        ruby_node = ruby_client_statements([], "comment")
+        ruby_node = ruby_client_statements([], "#@banner_comment_c\n\ncomment")
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2326,7 +2339,7 @@ module Y2R::AST
           :comment    => nil,
         )
 
-        ruby_node = ruby_include_statements([], nil)
+        ruby_node = ruby_include_statements([], @banner_comment_c)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2354,7 +2367,7 @@ module Y2R::AST
               )
             )
           ],
-          nil
+          @banner_comment_c
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2374,7 +2387,7 @@ module Y2R::AST
 
         ruby_node = ruby_include_statements(
           [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          nil
+          @banner_comment_c
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2388,7 +2401,7 @@ module Y2R::AST
           :comment    => "comment",
         )
 
-        ruby_node = ruby_include_statements([], "comment")
+        ruby_node = ruby_include_statements([], "#@banner_comment_c\n\ncomment")
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2566,7 +2579,7 @@ module Y2R::AST
           :comment    => nil
         )
 
-        ruby_node = ruby_module_statements([], nil)
+        ruby_node = ruby_module_statements([], @banner_comment)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2585,7 +2598,7 @@ module Y2R::AST
             ruby_publish_call("b", false),
             ruby_publish_call("c", false)
           ],
-          nil
+          @banner_comment
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2607,7 +2620,7 @@ module Y2R::AST
               :statements => @ruby_statements_non_empty
             )
           ],
-          nil
+          @banner_comment
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2627,7 +2640,7 @@ module Y2R::AST
 
         ruby_node = ruby_module_statements(
           [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          nil
+          @banner_comment
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2677,7 +2690,7 @@ module Y2R::AST
               )
             )
           ],
-          nil
+          @banner_comment
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2691,7 +2704,7 @@ module Y2R::AST
           :comment    => "comment"
         )
 
-        ruby_node = ruby_module_statements([], "comment")
+        ruby_node = ruby_module_statements([], "#@banner_comment\n\ncomment")
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2721,7 +2734,7 @@ module Y2R::AST
             :comment    => nil
           )
 
-          ruby_node = ruby_module_statements([], nil)
+          ruby_node = ruby_module_statements([], @banner_comment)
 
           ycp_node.compile(context).should == ruby_node
         end
@@ -2744,7 +2757,7 @@ module Y2R::AST
               ruby_publish_call("b", true),
               ruby_publish_call("c", true)
             ],
-            nil
+            @banner_comment
           )
 
           ycp_node.compile(context).should == ruby_node
