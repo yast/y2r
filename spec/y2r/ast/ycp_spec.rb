@@ -1776,7 +1776,7 @@ module Y2R::AST
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
-                :name       => "YCP",
+                :name       => "Yast",
                 :statements => Ruby::Class.new(
                   :name       => "CClient",
                   :superclass => Ruby::Variable.new(:name => "Client"),
@@ -1788,7 +1788,7 @@ module Y2R::AST
               Ruby::MethodCall.new(
                 :receiver => Ruby::MethodCall.new(
                   :receiver => Ruby::ConstAccess.new(
-                    :receiver => Ruby::Variable.new(:name => "YCP"),
+                    :receiver => Ruby::Variable.new(:name => "Yast"),
                     :name     => "CClient"
                   ),
                   :name     => "new",
@@ -2235,7 +2235,7 @@ module Y2R::AST
         ycp_node = YCP::Import.new(:name => "M")
 
         ruby_node = Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "YCP"),
+          :receiver => Ruby::Variable.new(:name => "Yast"),
           :name     => "import",
           :args     => [Ruby::Literal.new(:value => "M")],
           :block    => nil,
@@ -2275,7 +2275,7 @@ module Y2R::AST
             ycp_node = YCP::Include.new(:name => "i.ycp")
 
             ruby_node = Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :receiver => Ruby::Variable.new(:name => "Yast"),
               :name     => "include",
               :args     => [
                 Ruby::Variable.new(:name => "include_target"),
@@ -2295,7 +2295,7 @@ module Y2R::AST
             ycp_node = YCP::Include.new(:name => "i.ycp")
 
             ruby_node = Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :receiver => Ruby::Variable.new(:name => "Yast"),
               :name     => "include",
               :args     => [Ruby::Self.new, Ruby::Literal.new(:value => "i.rb")],
               :block    => nil,
@@ -2317,7 +2317,7 @@ module Y2R::AST
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
-                :name       => "YCP",
+                :name       => "Yast",
                 :statements => Ruby::Module.new(
                   :name       => "CInclude",
                   :statements => Ruby::Statements.new(
@@ -2507,7 +2507,7 @@ module Y2R::AST
                 :parens   => false
               ),
               Ruby::Module.new(
-                :name       => "YCP",
+                :name       => "Yast",
                 :statements => Ruby::Statements.new(
                   :statements => [
                     Ruby::Class.new(

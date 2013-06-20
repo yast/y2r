@@ -171,8 +171,8 @@ s = "abcd"
 
 ### Paths
 
-Y2R translates YCP paths as calls to the `YCP.path` method, which creates an
-instance of the `YCP::Path` class.
+Y2R translates YCP paths as calls to the `Yast.path` method, which creates an
+instance of the `Yast::Path` class.
 
 TODO: What about encoding?
 
@@ -226,8 +226,8 @@ m2 = { :a => 42, :b => 43, :c => 44 }
 
 ### Terms
 
-Y2R translates YCP terms as calls to the `YCP.term` method, which creates an
-instance of the `YCP::Term` class. If term is from list of known UI terms, then
+Y2R translates YCP terms as calls to the `Yast.term` method, which creates an
+instance of the `Yast::Term` class. If term is from list of known UI terms, then
 its shortcut is created.
 
 #### YCP (fragment)
@@ -265,7 +265,7 @@ b = lambda { Builtins.y2milestone("M1") }
 ### Function References
 
 Y2R translates YCP function references as calls to the `fun_ref` method, which
-creates an instance of the `YCP::FunRef` class.
+creates an instance of the `Yast::FunRef` class.
 
 #### YCP (complete code)
 
@@ -288,7 +288,7 @@ creates an instance of the `YCP::FunRef` class.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       @fref = fun_ref(method(:f), "void ()")
@@ -300,7 +300,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Expressions
@@ -332,7 +332,7 @@ Y2R translates YCP local variables as Ruby local variables.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def f
       i = 42
@@ -341,7 +341,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R translates YCP variables at client toplevel as Ruby instance variables.
@@ -364,7 +364,7 @@ Y2R translates YCP variables at client toplevel as Ruby instance variables.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       @i = 42
@@ -373,7 +373,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R translates YCP variables at module toplevel as Ruby instance variables.
@@ -402,7 +402,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 # Original file: default.ycp
 
 require "ycp"
-module YCP
+module Yast
   class MClass < Module
     def main
       @i = 42
@@ -442,7 +442,7 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def f
       i = 42
@@ -451,7 +451,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R uses suffixes to disambiguate variable aliases in statement blocks.
@@ -478,7 +478,7 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def f
       i = 42
@@ -487,13 +487,13 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Type Conversions
 
-Y2R translates YCP type conversions as calls of the `YCP::Convert.convert`
-method or shortcut `YCP::Convert.to_<type>` if given shortcut exists.
+Y2R translates YCP type conversions as calls of the `Yast::Convert.convert`
+method or shortcut `Yast::Convert.to_<type>` if given shortcut exists.
 
 
 #### YCP (fragment)
@@ -514,8 +514,8 @@ s = Convert.to_string(a)
 
 ### Builtin Calls
 
-Y2R translates YCP builtin calls as calls of methods in the `YCP::Builtins`,
-`YCP::SCR` and `YCP::WFM` modules. These reimplement the behavior of all YCP
+Y2R translates YCP builtin calls as calls of methods in the `Yast::Builtins`,
+`Yast::SCR` and `Yast::WFM` modules. These reimplement the behavior of all YCP
 builtins in Ruby.
 
 #### YCP (complete code)
@@ -543,7 +543,7 @@ builtins in Ruby.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       Builtins.time
@@ -557,7 +557,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R handles YCP builtin calls with a block as the last argument specially. It
@@ -613,7 +613,7 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       textdomain "helloworld"
@@ -622,7 +622,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Function Calls
@@ -663,7 +663,7 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       f1
@@ -700,7 +700,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R translates YCP function calls of nested functions as invoking the `call`
@@ -742,7 +742,7 @@ method on them.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def outer
       f1 = lambda { return 42 }
@@ -772,7 +772,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Function References Calling
@@ -802,7 +802,7 @@ on them.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       @fref = fun_ref(method(:f), "void ()")
@@ -815,12 +815,12 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Comparison Operators
 
-Y2R translates YCP comparison operators as calls of methods in the `YCP::Ops`
+Y2R translates YCP comparison operators as calls of methods in the `Yast::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
@@ -848,7 +848,7 @@ b6 = Ops.greater_or_equal(42, 43)
 
 ### Arithmetic Operators
 
-Y2R translates YCP arithmetic operators as calls of methods in the `YCP::Ops`
+Y2R translates YCP arithmetic operators as calls of methods in the `Yast::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
@@ -880,7 +880,7 @@ i6 = Ops.modulo(42, 43)
 
 ### Bitwise Operators
 
-Y2R translates YCP bitwise operators as calls of methods in the `YCP::Ops`
+Y2R translates YCP bitwise operators as calls of methods in the `Yast::Ops`
 module that implement their behavior. Equivalent Ruby operators can't be used
 because their behavior differs from the behavior of YCP operators in some cases.
 
@@ -951,8 +951,8 @@ i = b ? 42 : 43
 
 ### Index Operator
 
-Y2R translates YCP index operator as a call of a method in the `YCP::Ops` module
-that implements its behavior. There is no equivalent operator in Ruby.
+Y2R translates YCP index operator as a call of a method in the `Yast::Ops`
+module that implements its behavior. There is no equivalent operator in Ruby.
 
 #### YCP (fragment)
 
@@ -989,7 +989,7 @@ Y2R translates YCP statements into Ruby statements.
 
 ### `import` Statement
 
-Y2R translates YCP `import` statement as a `YCP.import` call.
+Y2R translates YCP `import` statement as a `Yast.import` call.
 
 #### YCP (fragment)
 
@@ -1000,7 +1000,7 @@ import "String";
 #### Ruby (fragment)
 
 ```ruby
-YCP.import("String")
+Yast.import("String")
 ```
 
 ### `textdomain` Statement
@@ -1024,7 +1024,7 @@ Y2R translates YCP `textdomain` statement as a call to set the text domain.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       textdomain "users"
@@ -1032,7 +1032,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Assignments
@@ -1055,7 +1055,7 @@ i = 43
 ```
 
 Y2R translates YCP assignments with brackets as a call of a method in the
-`YCP::Ops` module that implements its behavior. There is no equivalent operator
+`Yast::Ops` module that implements its behavior. There is no equivalent operator
 in Ruby.
 
 #### YCP (fragment)
@@ -1101,7 +1101,7 @@ statement.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def f1
       return
@@ -1112,7 +1112,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R translates YCP `return` statement inside block as Ruby `next` statement.
@@ -1175,7 +1175,7 @@ end until true
 ```
 
 Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
-raises `YCP::Break`.
+raises `Yast::Break`.
 
 ```ycp
 foreach(integer i, [42, 43, 44], { break; });
@@ -1262,7 +1262,7 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def f1
       return 42
@@ -1292,7 +1292,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 Y2R translates nested YCP function definitions as Ruby lambdas. It maintains
@@ -1341,7 +1341,7 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def outer
       f1 = lambda { return 42 }
@@ -1359,7 +1359,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Statement Blocks
@@ -1387,7 +1387,7 @@ Y2R translates YCP statement blocks as Ruby statements.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
       Builtins.y2milestone("M1")
@@ -1397,7 +1397,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### `if` Statement
@@ -1637,10 +1637,10 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 #
 # Original file: default.ycp
 
-module YCP
+module Yast
   class DefaultClient < Client
     def main
-      YCP.import("String")
+      Yast.import("String")
       @i = 42
       @j = 43
       nil
@@ -1655,7 +1655,7 @@ module YCP
     end
   end
 end
-YCP::DefaultClient.new.main
+Yast::DefaultClient.new.main
 ```
 
 ### Modules
@@ -1697,10 +1697,10 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 # Original file: default.ycp
 
 require "ycp"
-module YCP
+module Yast
   class MClass < Module
     def main
-      YCP.import("String")
+      Yast.import("String")
       @i = 42
       @j = 43
       M()

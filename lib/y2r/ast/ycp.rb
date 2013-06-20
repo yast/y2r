@@ -602,7 +602,7 @@ module Y2R
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
-                  :name       => "YCP",
+                  :name       => "Yast",
                   :statements => Ruby::Class.new(
                     :name       => class_name,
                     :superclass => Ruby::Variable.new(:name => "Client"),
@@ -614,7 +614,7 @@ module Y2R
                 Ruby::MethodCall.new(
                   :receiver => Ruby::MethodCall.new(
                     :receiver => Ruby::ConstAccess.new(
-                      :receiver => Ruby::Variable.new(:name => "YCP"),
+                      :receiver => Ruby::Variable.new(:name => "Yast"),
                       :name     => class_name
                     ),
                     :name     => "new",
@@ -742,7 +742,7 @@ module Y2R
           return nil if name == "SCR" || name == "WFM"
 
           Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "YCP"),
+            :receiver => Ruby::Variable.new(:name => "Yast"),
             :name     => "import",
             :args     => [Ruby::Literal.new(:value => name)],
             :block    => nil,
@@ -764,7 +764,7 @@ module Y2R
             ]
 
             Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "YCP"),
+              :receiver => Ruby::Variable.new(:name => "Yast"),
               :name     => "include",
               :args     => args,
               :block    => nil,
@@ -793,7 +793,7 @@ module Y2R
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
-                  :name       => "YCP",
+                  :name       => "Yast",
                   :statements => Ruby::Module.new(
                     :name       => module_name,
                     :statements => Ruby::Statements.new(
@@ -925,7 +925,7 @@ module Y2R
                   :parens   => false
                 ),
                 Ruby::Module.new(
-                  :name       => "YCP",
+                  :name       => "Yast",
                   :statements => Ruby::Statements.new(
                     :statements => [
                       Ruby::Class.new(

@@ -73,7 +73,7 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "#"
           lines << "# Original file: default.ycp"
           lines << ""
-          lines << "module YCP"
+          lines << "module Yast"
           lines << "  class DefaultClient < Client"
           lines << "    def fragment_wrapper"
           lines << indent(code[0..-2], 3)
@@ -81,7 +81,7 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "    end"
           lines << "  end"
           lines << "end"
-          lines << "YCP::DefaultClient.new.main"
+          lines << "Yast::DefaultClient.new.main"
 
           @ruby_code = lines.join("\n")
         else
