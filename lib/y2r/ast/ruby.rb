@@ -223,7 +223,6 @@ module Y2R
         end
       end
 
-      # TODO: Use trailing form where it makes sense.
       class If < Node
         def to_ruby(context)
           combine do |parts|
@@ -242,7 +241,6 @@ module Y2R
         end
       end
 
-      # TODO: Use trailing form where it makes sense.
       class Unless < Node
         def to_ruby(context)
           combine do |parts|
@@ -372,7 +370,6 @@ module Y2R
 
       # ===== Expressions =====
 
-      # TODO: Use parens only when needed.
       class Expressions < Node
         def to_ruby(context)
           if fits_current_line?(context)
@@ -427,7 +424,6 @@ module Y2R
         end
       end
 
-      # TODO: Use parens only when needed.
       class UnaryOperator < Node
         def to_ruby(context)
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
@@ -444,7 +440,6 @@ module Y2R
         end
       end
 
-      # TODO: Use parens only when needed.
       class BinaryOperator < Node
         def to_ruby(context)
           lhs_code = lhs.to_ruby_enclosed(context)
@@ -488,7 +483,6 @@ module Y2R
         end
       end
 
-      # TODO: Handle hash as the last argument specially.
       class MethodCall < Node
         def to_ruby(context)
           # The algorithm for deciding whether the call should be split into
