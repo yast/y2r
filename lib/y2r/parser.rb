@@ -144,10 +144,16 @@ module Y2R
             AST::YCP::FileBlock
           end
 
+          module_block_class = if context.as_include_file
+            AST::YCP::IncludeBlock
+          else
+            AST::YCP::ModuleBlock
+          end
+
           {
             :def    => AST::YCP::DefBlock,
             :file   => file_block_class,
-            :module => AST::YCP::ModuleBlock,
+            :module => module_block_class,
             :stmt   => AST::YCP::StmtBlock,
             :unspec => AST::YCP::UnspecBlock
           }[element["kind"].to_sym].new(
