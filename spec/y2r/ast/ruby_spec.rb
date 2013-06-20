@@ -1605,10 +1605,7 @@ module Y2R::AST::Ruby
 
       describe "for multi-line expression lists" do
         it "emits correct code for empty expression lists" do
-          @node_empty.to_ruby(@context_narrow).should == [
-           "(",
-           ")"
-          ].join("\n")
+          @node_empty.to_ruby(@context_narrow).should == "()"
         end
 
         it "emits correct code for expression lists with one expression" do

@@ -438,7 +438,11 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          wrapped_line_list(expressions, "(", ";", ")", context)
+          if !expressions.empty?
+            wrapped_line_list(expressions, "(", ";", ")", context)
+          else
+            "()"
+          end
         end
       end
 
