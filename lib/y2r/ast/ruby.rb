@@ -267,6 +267,34 @@ module Y2R
 
       class Unless < Node
         def to_ruby(context)
+          if fits_current_line?(context)
+            to_ruby_single_line(context)
+          else
+            to_ruby_multi_line(context)
+          end
+        end
+
+        def single_line_width
+          if !self.else
+            self.then.single_line_width + 8 + condition.single_line_width
+          else
+            Float::INFINITY
+          end
+        end
+
+        private
+
+        def to_ruby_single_line(context)
+          then_code = self.then.to_ruby(context)
+
+          condition_shift   = then_code.size + 8
+          condition_context = context.shifted(condition_shift)
+          condition_code    = condition.to_ruby(condition_context)
+
+          "#{then_code} unless #{condition_code}"
+        end
+
+        def to_ruby_multi_line(context)
           combine do |parts|
             parts << "unless #{condition.to_ruby(context.shifted(7))}"
             parts << indented(self.then, context)
@@ -276,10 +304,6 @@ module Y2R
             end
             parts << "end"
           end
-        end
-
-        def single_line_width
-          Float::INFINITY   # always multiline
         end
       end
 

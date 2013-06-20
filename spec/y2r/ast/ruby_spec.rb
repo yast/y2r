@@ -823,7 +823,12 @@ module Y2R::AST::Ruby
 
   describe Unless, :type => :ruby do
     before :each do
-      @node_without_else = Unless.new(
+      @node_without_else_single = Unless.new(
+        :condition => @literal_true,
+        :then      => @assignment_a_42,
+        :else      => nil
+      )
+      @node_without_else_multi = Unless.new(
         :condition => @literal_true,
         :then      => @statements,
         :else      => nil
@@ -836,9 +841,39 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby" do
-      describe "basics" do
-        it "emits correct code for unless statements without else" do
-          @node_without_else.to_ruby(@context_default).should == [
+      describe "for unless statements without else" do
+        it "emits a single-line unless statement when the unless statement fits available space and then is single-line" do
+          node = Unless.new(
+            :condition => @literal_true,
+            :then      => @assignment_a_42,
+            :else      => nil
+          )
+
+          node.to_ruby(@context_default).should == "a = 42 unless true"
+        end
+
+        it "emits a multi-line unless statement when the unless statement doesn't fit available space" do
+          node = Unless.new(
+            :condition => @literal_true,
+            :then      => @assignment_a_42,
+            :else      => nil
+          )
+
+          node.to_ruby(@context_narrow).should == [
+            "unless true",
+            "  a = 42",
+            "end"
+          ].join("\n")
+        end
+
+        it "emits a multi-line unless statement when then is multi-line" do
+          node = Unless.new(
+            :condition => @literal_true,
+            :then      => @statements,
+            :else      => nil
+          )
+
+          node.to_ruby(@context_default).should == [
             "unless true",
             "  a = 42",
             "  b = 43",
@@ -847,7 +882,80 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "emits correct code for unless statements with else" do
+        describe "for single-line unless statements" do
+          it "emits correct code" do
+            @node_without_else_single.to_ruby(@context_default).should ==
+              "a = 42 unless true"
+          end
+
+          it "passes correct available space info to condition" do
+            node = Unless.new(
+              :condition => node_width_and_to_ruby_mock(
+                :width => 80,
+                :shift => 14
+              ),
+              :then      => @assignment_a_42,
+              :else      => nil
+            )
+
+            node.to_ruby(@context_default)
+          end
+
+          it "passes correct available space info to then" do
+            node = Unless.new(
+              :condition => @literal_true,
+              :then      => node_width_and_to_ruby_mock(
+                :width => 80,
+                :shift => 0
+              ),
+              :else      => nil
+            )
+
+            node.to_ruby(@context_default)
+          end
+        end
+
+        describe "for multi-line unless statements" do
+          it "emits correct code" do
+            @node_without_else_multi.to_ruby(@context_narrow).should == [
+              "unless true",
+              "  a = 42",
+              "  b = 43",
+              "  c = 44",
+              "end"
+            ].join("\n")
+          end
+
+          it "passes correct available space info to condition" do
+            node = Unless.new(
+              :condition => node_width_and_to_ruby_mock(
+                :width => 0,
+                :shift => 7
+              ),
+              :then      => @statements,
+              :else      => nil
+            )
+
+            node.to_ruby(@context_narrow)
+          end
+
+          it "passes correct available space info to then" do
+            node = Unless.new(
+              :condition => @literal_true,
+              :then      => node_width_and_to_ruby_mock(
+                :width => -2,
+                :shift => 0
+              ),
+              :else      => nil
+            )
+
+            node.to_ruby(@context_narrow)
+          end
+        end
+      end
+
+      describe "for unless statements with else" do
+        it "emits correct code" do
           @node_with_else.to_ruby(@context_default).should == [
             "unless true",
             "  a = 42",
@@ -860,9 +968,7 @@ module Y2R::AST::Ruby
             "end"
           ].join("\n")
         end
-      end
 
-      describe "formatting" do
         it "passes correct available space info to condition" do
           node = Unless.new(
             :condition => node_to_ruby_mock(:width => 80, :shift => 7),
@@ -896,12 +1002,24 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width" do
-      it "returns infinity for unless statements without else" do
-        @node_without_else.single_line_width.should == Float::INFINITY
+      describe "for unless statements without else" do
+        describe "for single-line unless statements" do
+          it "returns correct value" do
+            @node_without_else_single.single_line_width.should == 18
+          end
+        end
+
+        describe "for multi-line unless statements" do
+          it "returns infinity" do
+            @node_without_else_multi.single_line_width.should == Float::INFINITY
+          end
+        end
       end
 
-      it "returns infinity for unless statements with else" do
-        @node_with_else.single_line_width.should == Float::INFINITY
+      describe "for unless statements with else" do
+        it "returns infinity" do
+          @node_with_else.single_line_width.should == Float::INFINITY
+        end
       end
     end
   end
