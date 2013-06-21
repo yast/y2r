@@ -83,7 +83,7 @@ module Y2R
     end
 
     def element_to_node(element, context)
-      case element.name
+      node = case element.name
         when "arg", "cond", "else", "expr", "false", "key", "lhs", "rhs",
              "stmt","then", "true", "until", "value", "ycp"
           element_to_node(element.elements[0], context)
@@ -491,6 +491,15 @@ module Y2R
         else
           raise "Invalid element: <#{element.name}>."
       end
+
+      if element["comment_before"]
+        node.comment_before = element["comment_before"]
+      end
+      if element["comment_after"]
+        node.comment_after = element["comment_after"]
+      end
+
+      node
     end
 
     def extract_children(element, context)
