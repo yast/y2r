@@ -14,14 +14,11 @@ module Y2R
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
       class CompilerContext
-        attr_accessor :blocks, :export_private, :as_include_file,
-          :dont_inline_include_files
+        attr_accessor :blocks, :options
 
         def initialize(attrs = {})
-          @blocks                    = attrs[:blocks] || []
-          @export_private            = attrs[:export_private] || false
-          @as_include_file           = attrs[:as_include_file] || false
-          @dont_inline_include_files = attrs[:dont_inline_include_files] || false
+          @blocks  = attrs[:blocks] || []
+          @options = attrs[:options] || {}
         end
 
         def in?(klass)
@@ -34,10 +31,8 @@ module Y2R
 
         def inside(block)
           yield CompilerContext.new(
-            :blocks                    => @blocks + [block],
-            :export_private            => @export_private,
-            :as_include_file           => @as_include_file,
-            :dont_inline_include_files => @dont_inline_include_files
+            :blocks  => @blocks + [block],
+            :options => @options
           )
         end
 
@@ -753,9 +748,9 @@ module Y2R
 
       class Include < Node
         def compile(context)
-          if context.dont_inline_include_files
+          if context.options[:dont_inline_include_files]
             args = [
-              if context.as_include_file
+              if context.options[:as_include_file]
                 Ruby::Variable.new(:name => "include_target")
               else
                 Ruby::Self.new
@@ -1010,7 +1005,7 @@ module Y2R
         end
 
         def build_publish_calls(context)
-          exported_symbols = if context.export_private
+          exported_symbols = if context.options[:export_private]
             symbols
           else
             symbols.select(&:global)

@@ -458,14 +458,16 @@ module Y2R::AST
       )
 
       @context_inline = YCP::CompilerContext.new(
-        :dont_inline_include_files => false
+        :options => { :dont_inline_include_files => false }
       )
       @context_dont_inline = YCP::CompilerContext.new(
-        :dont_inline_include_files => true
+        :options => { :dont_inline_include_files => true }
       )
       @context_dont_inline_as_include = YCP::CompilerContext.new(
-        :as_include_file           => true,
-        :dont_inline_include_files => true
+        :options => {
+          :as_include_file           => true,
+          :dont_inline_include_files => true
+        }
       )
 
       # ----- Misc. -----
@@ -2724,7 +2726,9 @@ module Y2R::AST
 
       describe "in context with export_private == false" do
         it "does not export private symbols" do
-          context = YCP::CompilerContext.new(:export_private => false)
+          context = YCP::CompilerContext.new(
+            :options => { :export_private => false}
+          )
 
           ycp_node = YCP::ModuleBlock.new(
             :name       => "M",
@@ -2741,7 +2745,9 @@ module Y2R::AST
 
       describe "in context with export_private == true" do
         it "does exports private symbols" do
-          context = YCP::CompilerContext.new(:export_private => true)
+          context = YCP::CompilerContext.new(
+            :options => { :export_private => true}
+          )
 
           ycp_node = YCP::ModuleBlock.new(
             :name       => "M",
