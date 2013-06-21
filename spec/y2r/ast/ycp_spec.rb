@@ -349,115 +349,121 @@ module Y2R::AST
       # Note we use non-filled AST nodes for :blocks. This doesn't cause any
       # harm as the compiler code only looks at the node class, not its data.
 
-      @context_empty = YCP::Context.new
+      @context_empty = YCP::CompilerContext.new
 
-      @context_while           = YCP::Context.new(:blocks => [YCP::While.new])
-      @context_while_in_unspec = YCP::Context.new(
+      @context_while           = YCP::CompilerContext.new(
+        :blocks => [YCP::While.new]
+      )
+      @context_while_in_unspec = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new, YCP::While.new]
       )
 
-      @context_do               = YCP::Context.new(:blocks => [YCP::Do.new])
-      @context_do_in_unspec     = YCP::Context.new(
+      @context_do               = YCP::CompilerContext.new(
+        :blocks => [YCP::Do.new]
+      )
+      @context_do_in_unspec     = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new, YCP::Do.new]
       )
-      @context_repeat           = YCP::Context.new(:blocks => [YCP::Repeat.new])
-      @context_repeat_in_unspec = YCP::Context.new(
+      @context_repeat           = YCP::CompilerContext.new(
+        :blocks => [YCP::Repeat.new]
+      )
+      @context_repeat_in_unspec = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new, YCP::Repeat.new]
       )
 
-      @context_unspec           = YCP::Context.new(
+      @context_unspec           = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new]
       )
-      @context_unspec_in_while  = YCP::Context.new(
+      @context_unspec_in_while  = YCP::CompilerContext.new(
         :blocks => [YCP::While.new, YCP::UnspecBlock.new]
       )
-      @context_unspec_in_do = YCP::Context.new(
+      @context_unspec_in_do = YCP::CompilerContext.new(
         :blocks => [YCP::Do.new, YCP::UnspecBlock.new]
       )
-      @context_unspec_in_repeat = YCP::Context.new(
+      @context_unspec_in_repeat = YCP::CompilerContext.new(
         :blocks => [YCP::Repeat.new, YCP::UnspecBlock.new]
       )
-      @context_unspec_in_file = YCP::Context.new(
+      @context_unspec_in_file = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new, YCP::UnspecBlock.new]
       )
-      @context_unspec_in_def = YCP::Context.new(
+      @context_unspec_in_def = YCP::CompilerContext.new(
         :blocks => [YCP::DefBlock.new, YCP::UnspecBlock.new]
       )
 
-      @context_def           = YCP::Context.new(
+      @context_def           = YCP::CompilerContext.new(
         :blocks => [YCP::DefBlock.new]
       )
-      @context_def_in_file = YCP::Context.new(
+      @context_def_in_file = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new, YCP::DefBlock.new]
       )
-      @context_def_in_unspec = YCP::Context.new(
+      @context_def_in_unspec = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new, YCP::DefBlock.new]
       )
 
       # The following contexts are used in context-sensitive variable name
       # handling tests, so we fill-in at least some data needed by them.
 
-      @context_module = YCP::Context.new(
+      @context_module = YCP::CompilerContext.new(
         :blocks => [YCP::ModuleBlock.new(:name => "M")]
       )
-      @context_global = YCP::Context.new(
+      @context_global = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new(:symbols => @symbols_var)]
       )
-      @context_local_global_vars = YCP::Context.new(
+      @context_local_global_vars = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => @symbols_var),
           YCP::DefBlock.new(:symbols => [])
         ]
       )
-      @context_local_local_vars = YCP::Context.new(
+      @context_local_local_vars = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @symbols_var)
         ]
       )
-      @context_local_local_funs = YCP::Context.new(
+      @context_local_local_funs = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @symbols_fun)
         ]
       )
-      @context_local_nested_vars = YCP::Context.new(
+      @context_local_nested_vars = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @symbols_var),
           YCP::DefBlock.new(:symbols => @symbols_var)
         ]
       )
-      @context_local_nested_funs = YCP::Context.new(
+      @context_local_nested_funs = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @symbols_fun),
           YCP::DefBlock.new(:symbols => @symbols_fun)
         ]
       )
-      @context_for_references = YCP::Context.new(
+      @context_for_references = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => @ycp_symbols_private)
         ]
       )
-      @context_hbox_global = YCP::Context.new(
+      @context_hbox_global = YCP::CompilerContext.new(
         :blocks => [
           YCP::FileBlock.new(:symbols => []),
           YCP::DefBlock.new(:symbols => [@ycp_symbol_hbox])
         ]
       )
-      @context_hbox_local = YCP::Context.new(
+      @context_hbox_local = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_hbox])]
       )
 
-      @context_inline = YCP::Context.new(
+      @context_inline = YCP::CompilerContext.new(
         :dont_inline_include_files => false
       )
-      @context_dont_inline = YCP::Context.new(
+      @context_dont_inline = YCP::CompilerContext.new(
         :dont_inline_include_files => true
       )
-      @context_dont_inline_as_include = YCP::Context.new(
+      @context_dont_inline_as_include = YCP::CompilerContext.new(
         :as_include_file           => true,
         :dont_inline_include_files => true
       )
@@ -2718,7 +2724,7 @@ module Y2R::AST
 
       describe "in context with export_private == false" do
         it "does not export private symbols" do
-          context = YCP::Context.new(:export_private => false)
+          context = YCP::CompilerContext.new(:export_private => false)
 
           ycp_node = YCP::ModuleBlock.new(
             :name       => "M",
@@ -2735,7 +2741,7 @@ module Y2R::AST
 
       describe "in context with export_private == true" do
         it "does exports private symbols" do
-          context = YCP::Context.new(:export_private => true)
+          context = YCP::CompilerContext.new(:export_private => true)
 
           ycp_node = YCP::ModuleBlock.new(
             :name       => "M",

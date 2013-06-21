@@ -7,7 +7,7 @@ require File.expand_path(File.dirname(__FILE__) + "/y2r/version")
 
 module Y2R
   def self.compile(input, options = {})
-    ycp_context = AST::YCP::Context.new(
+    ycp_context = AST::YCP::CompilerContext.new(
       :export_private            => options[:export_private],
       :as_include_file           => options[:as_include_file],
       :dont_inline_include_files => options[:dont_inline_include_files]

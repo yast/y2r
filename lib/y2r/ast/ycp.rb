@@ -13,7 +13,7 @@ module Y2R
     module YCP
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
-      class Context
+      class CompilerContext
         attr_accessor :blocks, :export_private, :as_include_file,
           :dont_inline_include_files
 
@@ -33,7 +33,7 @@ module Y2R
         end
 
         def inside(block)
-          yield Context.new(
+          yield CompilerContext.new(
             :blocks                    => @blocks + [block],
             :export_private            => @export_private,
             :as_include_file           => @as_include_file,
