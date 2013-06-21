@@ -9,32 +9,6 @@ module Y2R
     class SyntaxError < StandardError
     end
 
-    # AST building context passed to |element_to_node| and related methods.
-    class Context
-      attr_reader :element, :as_include_file, :extracted_file,
-        :dont_inline_include_files
-
-      def initialize(attrs = {})
-        @element                   = attrs[:element] || nil
-        @as_include_file           = attrs[:as_include_file] || false
-        @extracted_file            = attrs[:extracted_file] || nil
-        @dont_inline_include_files = attrs[:dont_inline_include_files] || false
-      end
-
-      def in?(element)
-        element == @element
-      end
-
-      def inside(element)
-        Context.new(
-          :element                   => element,
-          :as_include_file           => @as_include_file,
-          :extracted_file            => @extracted_file,
-          :dont_inline_include_files => @dont_inline_include_files
-        )
-      end
-    end
-
     def initialize(options = {})
       @options = options
     end
@@ -99,13 +73,7 @@ module Y2R
     end
 
     def xml_to_ast(xml)
-      context = Context.new(
-        :as_include_file           => @options[:as_include_file],
-        :extracted_file            => @options[:extracted_file],
-        :dont_inline_include_files => @options[:dont_inline_include_files]
-      )
-
-      ast = element_to_node(Nokogiri::XML(xml).root, context)
+      ast = element_to_node(Nokogiri::XML(xml).root, nil)
       ast.filename = if @options[:extracted_file]
         @options[:extracted_file]
       else
@@ -130,25 +98,25 @@ module Y2R
         when "block"
           all_statements = extract_collection(element, "statements", context)
 
-          extracted_statements = if toplevel_block?(element) && context.extracted_file
-            extract_file_statements(all_statements, context.extracted_file)
+          extracted_statements = if toplevel_block?(element) && @options[:extracted_file]
+            extract_file_statements(all_statements, @options[:extracted_file])
           else
             all_statements
           end
 
-          statements = if toplevel_block?(element) && context.dont_inline_include_files
+          statements = if toplevel_block?(element) && @options[:dont_inline_include_files]
             skip_include_statements(extracted_statements)
           else
             extracted_statements
           end
 
-          file_block_class = if context.as_include_file
+          file_block_class = if @options[:as_include_file]
             AST::YCP::IncludeBlock
           else
             AST::YCP::FileBlock
           end
 
-          module_block_class = if context.as_include_file
+          module_block_class = if @options[:as_include_file]
             AST::YCP::IncludeBlock
           else
             AST::YCP::ModuleBlock
@@ -182,7 +150,7 @@ module Y2R
         when "builtin"
           symbol_attrs = element.attributes.select { |n, v| n =~ /^sym\d+$/ }
           symbol_values = symbol_attrs.values.map(&:value)
-          children = extract_children(element, context.inside(:builtin))
+          children = extract_children(element, :builtin)
 
           if symbol_values.empty?
             args  = children
@@ -248,11 +216,7 @@ module Y2R
           else
             AST::YCP::YETerm.new(
               :name     => element["name"],
-              :children => extract_collection(
-                element,
-                "list",
-                context.inside(:yeterm)
-              )
+              :children => extract_collection(element, "list", :yeterm)
             )
           end
 
@@ -285,7 +249,7 @@ module Y2R
           )
 
         when "element"
-          if !context.in?(:map)
+          if context != :map
             element_to_node(element.elements[0], context)
           else
             AST::YCP::MapElement.new(
@@ -359,7 +323,7 @@ module Y2R
 
         when "list"
           AST::YCP::List.new(
-            :children => extract_children(element, context.inside(:list))
+            :children => extract_children(element, :list)
           )
 
         when "locale"
@@ -367,7 +331,7 @@ module Y2R
 
         when "map"
           AST::YCP::Map.new(
-            :children => extract_children(element, context.inside(:map))
+            :children => extract_children(element, :map)
           )
 
         when "repeat"
@@ -508,7 +472,7 @@ module Y2R
         when "yeterm"
           AST::YCP::YETerm.new(
             :name     => element["name"],
-            :children => extract_children(element, context.inside(:yeterm))
+            :children => extract_children(element, :yeterm)
           )
 
         when "yetriple"
