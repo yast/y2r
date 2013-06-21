@@ -250,6 +250,27 @@ module Y2R
       end
 
       class Node < OpenStruct
+        class << self
+          def transfers_comments(*names)
+            names.each do |name|
+              name_without_comments = :"#{name}_without_comments"
+              name_with_comments    = :"#{name}_with_comments"
+
+              define_method name_with_comments do |*args|
+                node = send(name_without_comments, *args)
+                if node
+                  node.comment_before = comment_before if comment_before
+                  node.comment_after  = comment_after  if comment_after
+                end
+                node
+              end
+
+              alias_method name_without_comments, name
+              alias_method name, name_with_comments
+            end
+          end
+        end
+
         def creates_local_scope?
           false
         end
@@ -293,6 +314,8 @@ module Y2R
             :rhs => child.compile(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class Bracket < Node
@@ -309,6 +332,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Break < Node
@@ -328,6 +353,8 @@ module Y2R
               raise "Misplaced \"break\" statement."
           end
         end
+
+        transfers_comments :compile
       end
 
       class Builtin < Node
@@ -355,6 +382,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Call < Node
@@ -431,6 +460,8 @@ module Y2R
             call
           end
         end
+
+        transfers_comments :compile
       end
 
       class Case < Node
@@ -453,6 +484,8 @@ module Y2R
             :body   => body_without_break.compile(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class Compare < Node
@@ -474,6 +507,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Const < Node
@@ -510,12 +545,16 @@ module Y2R
               raise "Unknown const type: #{type.inspect}."
           end
         end
+
+        transfers_comments :compile
       end
 
       class Continue < Node
         def compile(context)
           Ruby::Next.new
         end
+
+        transfers_comments :compile
       end
 
       class Default < Node
@@ -532,6 +571,8 @@ module Y2R
 
           Ruby::Else.new(:body => body_without_break.compile(context))
         end
+
+        transfers_comments :compile
       end
 
       class DefBlock < Node
@@ -546,6 +587,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile
       end
 
       class Do < Node
@@ -561,6 +604,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile
       end
 
       class Entry < Node
@@ -571,6 +616,8 @@ module Y2R
         def compile_as_ref(context)
           Ruby::Variable.new(:name => "#{name}_ref")
         end
+
+        transfers_comments :compile, :compile_as_ref
       end
 
       class FileBlock < Node
@@ -620,6 +667,8 @@ module Y2R
             :comment    => header_comment(filename, comment)
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -704,6 +753,8 @@ module Y2R
             end
           end
         end
+
+        transfers_comments :compile
       end
 
       class If < Node
@@ -721,6 +772,8 @@ module Y2R
             :else      => else_compiled
           )
         end
+
+        transfers_comments :compile
       end
 
       class Import < Node
@@ -737,6 +790,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Include < Node
@@ -762,6 +817,8 @@ module Y2R
             nil   # ycpc already included the file for us.
           end
         end
+
+        transfers_comments :compile
       end
 
       class IncludeBlock < Node
@@ -794,6 +851,8 @@ module Y2R
             :comment    => header_comment(filename, comment)
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -860,6 +919,8 @@ module Y2R
             :elements => children.map { |ch| ch.compile(context) }
           )
         end
+
+        transfers_comments :compile
       end
 
       class Locale < Node
@@ -872,12 +933,16 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Map < Node
         def compile(context)
           Ruby::Hash.new(:entries => children.map { |ch| ch.compile(context) })
         end
+
+        transfers_comments :compile
       end
 
       class MapElement < Node
@@ -887,6 +952,8 @@ module Y2R
             :value => value.compile(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class ModuleBlock < Node
@@ -955,6 +1022,8 @@ module Y2R
             :comment    => header_comment(filename, comment)
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -1030,6 +1099,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile
       end
 
       class Return < Node
@@ -1043,6 +1114,8 @@ module Y2R
               raise "Misplaced \"return\" statement."
           end
         end
+
+        transfers_comments :compile
       end
 
       class StmtBlock < Node
@@ -1053,6 +1126,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile
       end
 
       class Switch < Node
@@ -1063,6 +1138,8 @@ module Y2R
             :else       => default ? default.compile(context) : nil
           )
         end
+
+        transfers_comments :compile
       end
 
       class Symbol < Node
@@ -1116,6 +1193,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Textdomain < Node
@@ -1128,6 +1207,8 @@ module Y2R
             :parens   => false
           )
         end
+
+        transfers_comments :compile
       end
 
       class Typedef < Node
@@ -1169,6 +1250,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class Variable < Node
@@ -1211,6 +1294,8 @@ module Y2R
               raise "Unknown variable category: #{category.inspect}."
           end
         end
+
+        transfers_comments :compile
       end
 
       class While < Node
@@ -1224,6 +1309,8 @@ module Y2R
             :body      => compile_statements_inside_block(self.do, context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class YCPCode < Node
@@ -1252,6 +1339,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class YEBinary < Node
@@ -1292,6 +1381,8 @@ module Y2R
             raise "Unknown binary operator: #{name.inspect}."
           end
         end
+
+        transfers_comments :compile
       end
 
       class YEBracket < Node
@@ -1322,6 +1413,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class YEIs < Node
@@ -1337,6 +1430,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class YEPropagate < Node
@@ -1390,6 +1485,8 @@ module Y2R
             child.compile(context)
           end
         end
+
+        transfers_comments :compile
       end
 
       class YEReference < Node
@@ -1422,6 +1519,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile, :compile_as_setter, :compile_as_getter
       end
 
       class YEReturn < Node
@@ -1450,6 +1549,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class YETerm < Node
@@ -1541,6 +1642,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile
       end
 
       class YETriple < Node
@@ -1551,6 +1654,8 @@ module Y2R
             :else      => self.false.compile(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class YEUnary < Node
@@ -1581,6 +1686,8 @@ module Y2R
             raise "Unknown unary operator: #{name.inspect}."
           end
         end
+
+        transfers_comments :compile
       end
     end
   end

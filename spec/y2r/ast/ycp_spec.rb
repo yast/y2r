@@ -629,6 +629,33 @@ module Y2R::AST
     end
   end
 
+  describe YCP::Node, :type => :ycp do
+    describe ".transfers_comments" do
+      class YCP::TransferringNode < YCP::Node
+        def compile
+          Ruby::Literal.new(:value => nil)
+        end
+
+        transfers_comments :compile
+      end
+
+      it "causes wrapped methods to transfer comments" do
+        ycp_node = YCP::TransferringNode.new(
+          :comment_before => "before",
+          :comment_after  => "after"
+        )
+
+        ruby_node = Ruby::Literal.new(
+          :value          => nil,
+          :comment_before => "before",
+          :comment_after  => "after"
+        )
+
+        ycp_node.compile.should == ruby_node
+      end
+    end
+  end
+
   describe YCP::Bracket, :type => :ycp do
     describe "#compile" do
       it "returns correct AST node" do
