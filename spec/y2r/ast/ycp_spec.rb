@@ -3910,7 +3910,7 @@ module Y2R::AST
 
   describe YCP::YEBracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node when the default isn't a call" do
         ycp_node = YCP::YEBracket.new(
           :value   => YCP::List.new(
             :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
@@ -3938,6 +3938,50 @@ module Y2R::AST
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when the default is a call" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => YCP::Call.new(
+            :category => :function,
+            :ns       => nil,
+            :name     => "f",
+            :args     => [],
+            :type     => YCP::Type.new("integer ()")
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            Ruby::Array.new(:elements => [@ruby_literal_1])
+          ],
+          :block    => Ruby::Block.new(
+            :args       => [],
+            :statements => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_module).should == ruby_node
       end
     end
   end

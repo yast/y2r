@@ -1297,15 +1297,29 @@ module Y2R
 
       class YEBracket < Node
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => "index",
-            :args     => [
+          # In expressions like |m["foo"]:f()|, the |f| function is called only
+          # when the value is missing. In other words, the default is evaluated
+          # lazily. We need to emulate this laziness at least for the calls.
+          if default.is_a?(Call)
+            args  = [value.compile(context), index.compile(context)]
+            block = Ruby::Block.new(
+              :args       => [],
+              :statements => default.compile(context)
+            )
+          else
+            args  = [
               value.compile(context),
               index.compile(context),
               default.compile(context),
-            ],
-            :block    => nil,
+            ]
+            block = nil
+          end
+
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => "index",
+            :args     => args,
+            :block    => block,
             :parens   => true
           )
         end
