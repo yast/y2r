@@ -13,49 +13,42 @@ module Y2R
     module YCP
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
-      class CompilerContext
-        attr_accessor :blocks, :options
-
-        def initialize(attrs = {})
-          @blocks  = attrs[:blocks] || []
-          @options = attrs[:options] || {}
-        end
-
+      class CompilerContext < OpenStruct
         def in?(klass)
-          @blocks.find { |b| b.is_a?(klass) } ? true : false
+          blocks.find { |b| b.is_a?(klass) } ? true : false
         end
 
         def innermost(*klasses)
-          @blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
+          blocks.reverse.find { |b| klasses.any? { |k| b.is_a?(k) } }
         end
 
         def inside(block)
           yield CompilerContext.new(
-            :blocks  => @blocks + [block],
-            :options => @options
+            :blocks  => blocks + [block],
+            :options => options
           )
         end
 
         def module_name
-          @blocks.first.name
+          blocks.first.name
         end
 
         def symbols
-          @blocks.map { |b| b.symbols.map(&:name) }.flatten
+          blocks.map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def locals
-          index = @blocks.index(&:creates_local_scope?) || @blocks.length
-          @blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
+          index = blocks.index(&:creates_local_scope?) || blocks.length
+          blocks[index..-1].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def globals
-          index = @blocks.index(&:creates_local_scope?) || @blocks.length
-          @blocks[0..index].map { |b| b.symbols.map(&:name) }.flatten
+          index = blocks.index(&:creates_local_scope?) || blocks.length
+          blocks[0..index].map { |b| b.symbols.map(&:name) }.flatten
         end
 
         def symbol_for(name)
-          symbols = @blocks.map { |b| b.symbols }.flatten
+          symbols = blocks.map { |b| b.symbols }.flatten
           symbols.reverse.find { |s| s.name == name }
         end
       end

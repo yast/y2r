@@ -349,7 +349,10 @@ module Y2R::AST
       # Note we use non-filled AST nodes for :blocks. This doesn't cause any
       # harm as the compiler code only looks at the node class, not its data.
 
-      @context_empty = YCP::CompilerContext.new
+      @context_empty           = YCP::CompilerContext.new(
+        :blocks  => [],
+        :options => {}
+      )
 
       @context_while           = YCP::CompilerContext.new(
         :blocks => [YCP::While.new]
@@ -2727,6 +2730,7 @@ module Y2R::AST
       describe "in context with export_private == false" do
         it "does not export private symbols" do
           context = YCP::CompilerContext.new(
+            :blocks  => [],
             :options => { :export_private => false}
           )
 
@@ -2746,6 +2750,7 @@ module Y2R::AST
       describe "in context with export_private == true" do
         it "does exports private symbols" do
           context = YCP::CompilerContext.new(
+            :blocks  => [],
             :options => { :export_private => true}
           )
 
