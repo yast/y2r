@@ -23,10 +23,10 @@ module Y2R
         end
 
         def inside(block)
-          yield CompilerContext.new(
-            :blocks  => blocks + [block],
-            :options => options
-          )
+          context = dup
+          context.blocks = blocks + [block]
+
+          yield context
         end
 
         def module_name
