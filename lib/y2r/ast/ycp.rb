@@ -846,7 +846,6 @@ module Y2R
         def build_initialize_method_def(context)
           if !other_statements.empty?
             initialize_method_statements = other_statements.map { |s| s.compile(context) }
-            initialize_method_statements << Ruby::Literal.new(:value => nil)
 
             [
               Ruby::Def.new(
