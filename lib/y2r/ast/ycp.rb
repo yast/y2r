@@ -911,7 +911,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            class_statements += build_initialize_def(inner_context)
+            class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
           end
@@ -977,12 +977,12 @@ module Y2R
           fundef_statements.find { |s| s.name == name }
         end
 
-        def build_initialize_def(context)
+        def build_main_def(context)
           if !other_statements.empty? || constructor
-            initialize_statements = other_statements.map { |s| s.compile(context) }
+            main_statements = other_statements.map { |s| s.compile(context) }
 
             if constructor
-              initialize_statements << Ruby::MethodCall.new(
+              main_statements << Ruby::MethodCall.new(
                 :receiver => nil,
                 :name     => name,
                 :args     => [],
@@ -996,7 +996,7 @@ module Y2R
                 :name       => "main",
                 :args       => [],
                 :statements => Ruby::Statements.new(
-                  :statements => initialize_statements
+                  :statements => main_statements
                 )
               )
             ]
