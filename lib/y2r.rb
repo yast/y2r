@@ -12,7 +12,7 @@ module Y2R
       :as_include_file           => options[:as_include_file],
       :dont_inline_include_files => options[:dont_inline_include_files]
     )
-    ruby_context = AST::Ruby::Context.new(:width => 80, :shift => 0)
+    ruby_context = AST::Ruby::EmitterContext.new(:width => 80, :shift => 0)
 
     Parser.new(options).parse(input).compile(ycp_context).to_ruby(ruby_context)
   end

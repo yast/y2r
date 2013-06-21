@@ -20,7 +20,7 @@ module Y2R
       end
 
       # Context passed to the #to_ruby and related methods on nodes.
-      class Context < OpenStruct
+      class EmitterContext < OpenStruct
         def indented(n)
           context = dup
           context.width -= n

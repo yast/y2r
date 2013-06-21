@@ -132,9 +132,9 @@ module Y2R::AST::Ruby
 
       @def = Def.new(:name => "m", :args => [], :statements => @statements)
 
-      @context_default       = Context.new(:width => 80, :shift => 0)
-      @context_narrow        = Context.new(:width => 0, :shift => 0)
-      @context_max_key_width = Context.new(
+      @context_default       = EmitterContext.new(:width => 80, :shift => 0)
+      @context_narrow        = EmitterContext.new(:width => 0, :shift => 0)
+      @context_max_key_width = EmitterContext.new(
         :width         => 0,
         :shift         => 0,
         :max_key_width => 4
