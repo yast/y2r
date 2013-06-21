@@ -826,10 +826,13 @@ module Y2R
         end
 
         def path_parts
-          filename.
-            sub(/^.*\/src\/include\//, "").
-            sub(/\.y(cp|h)$/, "").
-            split("/")
+          path = if filename =~ /\/src\/include\//
+            filename.sub(/^.*\/src\/include\//, "")
+          else
+            File.basename(filename)
+          end
+
+          path.sub(/\.y(cp|h)$/, "").split("/")
         end
 
         def fundef_statements
