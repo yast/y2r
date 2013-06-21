@@ -35,15 +35,19 @@ module Y2R
       end
     end
 
-    def parse(input, options = {})
-      xml_to_ast(ycp_to_xml(input, options), options)
+    def initialize(options = {})
+      @options = options
+    end
+
+    def parse(input)
+      xml_to_ast(ycp_to_xml(input))
     end
 
     private
 
-    def ycp_to_xml(ycp, options)
-      module_paths  = options[:module_paths]  || []
-      include_paths = options[:include_paths] || []
+    def ycp_to_xml(ycp)
+      module_paths  = @options[:module_paths]  || []
+      include_paths = @options[:include_paths] || []
 
       ycp_file = Tempfile.new("y2r")
       begin
@@ -94,18 +98,18 @@ module Y2R
       add_testedfiles(ycp, xml)
     end
 
-    def xml_to_ast(xml, options)
+    def xml_to_ast(xml)
       context = Context.new(
-        :as_include_file           => options[:as_include_file],
-        :extracted_file            => options[:extracted_file],
-        :dont_inline_include_files => options[:dont_inline_include_files]
+        :as_include_file           => @options[:as_include_file],
+        :extracted_file            => @options[:extracted_file],
+        :dont_inline_include_files => @options[:dont_inline_include_files]
       )
 
       ast = element_to_node(Nokogiri::XML(xml).root, context)
-      ast.filename = if options[:extracted_file]
-        options[:extracted_file]
+      ast.filename = if @options[:extracted_file]
+        @options[:extracted_file]
       else
-        options[:filename] || "default.ycp"
+        @options[:filename] || "default.ycp"
       end
       ast
     end

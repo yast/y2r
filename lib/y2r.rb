@@ -14,6 +14,6 @@ module Y2R
     )
     ruby_context = AST::Ruby::Context.new(:width => 80, :shift => 0)
 
-    Parser.new.parse(input, options).compile(ycp_context).to_ruby(ruby_context)
+    Parser.new(options).parse(input).compile(ycp_context).to_ruby(ruby_context)
   end
 end
