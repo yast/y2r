@@ -115,6 +115,60 @@ module Y2R
         SYMBOL  = Type.new("symbol")
       end
 
+      # Contains utility functions related to comment processing.
+      module Comments
+        class << self
+          def process_comment_before(comment)
+            comment = strip_leading_whitespace(comment)
+            comment = strip_trailing_whitespace(comment)
+            comment = fix_delimiters(comment)
+
+            # In many before comments, there is a line of whitespace caused by
+            # separation of the comment from the node it belongs to. For
+            # example, in this case, the comment and the node are separated by
+            # "\n  ":
+            #
+            #   {
+            #     /* Comment */
+            #     y2milestone("M1");
+            #   }
+            #
+            # We need to remove such lines of whitespace (but not touch any
+            # additional ones).
+            comment = remove_last_whitepsace_line(comment)
+
+            comment
+          end
+
+          def process_comment_after(comment)
+            comment = strip_leading_whitespace(comment)
+            comment = strip_trailing_whitespace(comment)
+            comment = fix_delimiters(comment)
+            comment
+          end
+
+          private
+
+          def strip_leading_whitespace(comment)
+            comment.gsub(/^[ \t]+/, "")
+          end
+
+          def strip_trailing_whitespace(comment)
+            comment.gsub(/[ \t]+$/, "")
+          end
+
+          def fix_delimiters(comment)
+            comment.gsub(/^\/\//, "#")
+          end
+
+          def remove_last_whitepsace_line(comment)
+            lines = comment.split("\n")
+            lines.pop if lines.last =~ /^[ \t]*$/
+            lines.join("\n")
+          end
+        end
+      end
+
       # Contains utility functions related to Ruby variables.
       module RubyVar
         # Taken from Ruby's parse.y (for 1.9.3).
@@ -259,8 +313,17 @@ module Y2R
               define_method name_with_comments do |*args|
                 node = send(name_without_comments, *args)
                 if node
-                  node.comment_before = comment_before if comment_before
-                  node.comment_after  = comment_after  if comment_after
+                  if comment_before
+                    node.comment_before = Comments.process_comment_before(
+                      comment_before
+                    )
+                  end
+
+                  if comment_after
+                    node.comment_after = Comments.process_comment_after(
+                      comment_after
+                    )
+                  end
                 end
                 node
               end
