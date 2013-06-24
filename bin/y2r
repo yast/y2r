@@ -19,6 +19,7 @@ Options:
       --extract-file <file>        Compile only code of specified included file.
       --report-file <file>         Report specified file as the compiled one.
       --dont-inline-include-files  Don't inline include files.
+  -c, --comments                   Transfer comments.
   -v, --version                    Print version information and exit.
   -h, --help                       Print help and exit.
 EOT
@@ -58,6 +59,7 @@ begin
     :extracted_file            => options["--extract-file"],
     :reported_file             => options["--report-file"],
     :dont_inline_include_files => options["--dont-inline-include-files"],
+    :comments                  => options["--comments"],
     :filename                  => ycp_file
   }
 

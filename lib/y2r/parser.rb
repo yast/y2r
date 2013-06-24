@@ -492,11 +492,13 @@ module Y2R
           raise "Invalid element: <#{element.name}>."
       end
 
-      if element["comment_before"]
-        node.comment_before = element["comment_before"]
-      end
-      if element["comment_after"]
-        node.comment_after = element["comment_after"]
+      if @options[:comments]
+        if element["comment_before"]
+          node.comment_before = element["comment_before"]
+        end
+        if element["comment_after"]
+          node.comment_after = element["comment_after"]
+        end
       end
 
       node
