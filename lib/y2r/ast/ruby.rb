@@ -46,6 +46,10 @@ module Y2R
           enclose? ? "(#{to_ruby(context.shifted(1))})" : to_ruby(context)
         end
 
+        def single_line_width
+          single_line_width_no_comments
+        end
+
         def single_line_width_enclosed
           enclose? ? 1 + single_line_width + 1 : single_line_width
         end
@@ -95,7 +99,7 @@ module Y2R
         end
 
         def fits_current_line?(context)
-          single_line_width <= context.width - context.shift
+          single_line_width_no_comments <= context.width - context.shift
         end
 
         def enclose?
@@ -118,7 +122,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
 
@@ -142,7 +146,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -156,7 +160,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -178,7 +182,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -201,7 +205,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           case statements.size
             when 0
               0
@@ -222,7 +226,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -236,7 +240,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           if !self.else
             self.then.single_line_width + 4 + condition.single_line_width
           else
@@ -278,7 +282,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           if !self.else
             self.then.single_line_width + 8 + condition.single_line_width
           else
@@ -323,7 +327,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -336,7 +340,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -349,7 +353,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -367,7 +371,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -385,7 +389,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           Float::INFINITY   # always multiline
         end
       end
@@ -395,7 +399,7 @@ module Y2R
           "break"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           5
         end
       end
@@ -405,7 +409,7 @@ module Y2R
           "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           value ? 5 + value.single_line_width : 4
         end
       end
@@ -415,7 +419,7 @@ module Y2R
           "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           value ? 7 + value.single_line_width : 6
         end
       end
@@ -431,7 +435,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           1 + list_single_line_width(expressions, 2) + 1
         end
 
@@ -468,7 +472,7 @@ module Y2R
           "#{lhs_code} = #{rhs_code}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           lhs_width = lhs.single_line_width
           rhs_width = if rhs.is_a?(Variable)
             10 + rhs.single_line_width + 1
@@ -485,7 +489,7 @@ module Y2R
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           op.size + expression.single_line_width_enclosed
         end
 
@@ -507,7 +511,7 @@ module Y2R
           "#{lhs_code} #{op} #{rhs_code}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           lhs_width = lhs.single_line_width_enclosed
           rhs_width = rhs.single_line_width_enclosed
 
@@ -530,7 +534,7 @@ module Y2R
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           condition_width = condition.single_line_width_enclosed
           then_width      = self.then.single_line_width_enclosed
           else_width      = self.else.single_line_width_enclosed
@@ -566,7 +570,7 @@ module Y2R
           "#{receiver_code}#{name}#{args_code}#{block_code}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           receiver_width = receiver ? receiver.single_line_width + 1 : 0
           args_width     = args_single_line_width
 
@@ -627,7 +631,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           args_width       = list_single_line_width(args, 2)
           statements_width = statements.single_line_width
 
@@ -674,7 +678,7 @@ module Y2R
           (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           (receiver ? receiver.single_line_width + 2 : 0) + name.size
         end
 
@@ -690,7 +694,7 @@ module Y2R
           name
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           name.size
         end
 
@@ -706,7 +710,7 @@ module Y2R
           "self"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           4
         end
 
@@ -724,7 +728,7 @@ module Y2R
           value.inspect
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           value.inspect.size
         end
 
@@ -744,7 +748,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           2 + list_single_line_width(elements, 2)
         end
 
@@ -778,7 +782,7 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           if !entries.empty?
             4 + list_single_line_width(entries, 2)
           else
@@ -842,7 +846,7 @@ module Y2R
           "#{key_code}#{spacing_code} => #{value_code}"
         end
 
-        def single_line_width
+        def single_line_width_no_comments
           key_width   = key.single_line_width_enclosed
           value_width = value.single_line_width_enclosed
 

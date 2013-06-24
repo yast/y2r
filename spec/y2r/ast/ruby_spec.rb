@@ -284,13 +284,15 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity without a comment" do
-        @node_without_comment.single_line_width.should == Float::INFINITY
+        @node_without_comment.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
 
       it "returns infinity with a comment" do
-        @node_with_comment.single_line_width.should == Float::INFINITY
+        @node_with_comment.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
@@ -340,9 +342,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity" do
-        @node.single_line_width.should == Float::INFINITY
+        @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -377,9 +379,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity" do
-        @node.single_line_width.should == Float::INFINITY
+        @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -463,17 +465,18 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity for method definitions with no arguments" do
-        @node_no_args.single_line_width.should == Float::INFINITY
+        @node_no_args.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for method definitions with one argument" do
-        @node_one_arg.single_line_width.should == Float::INFINITY
+        @node_one_arg.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for method definitions with multiple arguments" do
-        @node_multiple_args.single_line_width.should == Float::INFINITY
+        @node_multiple_args.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
@@ -567,17 +570,17 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for statement lists with no statements" do
-        @node_empty.single_line_width.should == 0
+        @node_empty.single_line_width_no_comments.should == 0
       end
 
       it "returns correct value for statement lists with one statement" do
-        @node_one.single_line_width.should == 6
+        @node_one.single_line_width_no_comments.should == 6
       end
 
       it "returns infinity for statement lists with multiple statements" do
-        @node_multiple.single_line_width.should == Float::INFINITY
+        @node_multiple.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -611,9 +614,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity" do
-        @node.single_line_width.should == Float::INFINITY
+        @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -798,24 +801,26 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       describe "for if statements without else" do
         describe "for single-line if statements" do
           it "returns correct value" do
-            @node_without_else_single.single_line_width.should == 14
+            @node_without_else_single.single_line_width_no_comments.should == 14
           end
         end
 
         describe "for multi-line if statements" do
           it "returns infinity" do
-            @node_without_else_multi.single_line_width.should == Float::INFINITY
+            @node_without_else_multi.single_line_width_no_comments.should ==
+              Float::INFINITY
           end
         end
       end
 
       describe "for if statements with else" do
         it "returns infinity" do
-          @node_with_else.single_line_width.should == Float::INFINITY
+          @node_with_else.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
       end
     end
@@ -1002,24 +1007,26 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       describe "for unless statements without else" do
         describe "for single-line unless statements" do
           it "returns correct value" do
-            @node_without_else_single.single_line_width.should == 18
+            @node_without_else_single.single_line_width_no_comments.should == 18
           end
         end
 
         describe "for multi-line unless statements" do
           it "returns infinity" do
-            @node_without_else_multi.single_line_width.should == Float::INFINITY
+            @node_without_else_multi.single_line_width_no_comments.should ==
+              Float::INFINITY
           end
         end
       end
 
       describe "for unless statements with else" do
         it "returns infinity" do
-          @node_with_else.single_line_width.should == Float::INFINITY
+          @node_with_else.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
       end
     end
@@ -1165,26 +1172,28 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity for empty case statements" do
-        @node_empty.single_line_width.should == Float::INFINITY
+        @node_empty.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for case statements with one when clause and no else clause" do
-        @node_one_when_without_else.single_line_width.should == Float::INFINITY
+        @node_one_when_without_else.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
 
       it "returns infinity for case statements with one when clause and an else clause" do
-        @node_one_when_with_else.single_line_width.should == Float::INFINITY
+        @node_one_when_with_else.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
 
       it "returns infinity for case statements with multiple when clauses and no else clause" do
-        @node_multiple_whens_without_else.single_line_width.should ==
+        @node_multiple_whens_without_else.single_line_width_no_comments.should ==
           Float::INFINITY
       end
 
       it "returns infinity for case statements with multiple when clauses and an else clause" do
-        @node_multiple_whens_with_else.single_line_width.should ==
+        @node_multiple_whens_with_else.single_line_width_no_comments.should ==
           Float::INFINITY
       end
     end
@@ -1248,13 +1257,14 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity for when clauses with one value" do
-        @node_one_value.single_line_width.should == Float::INFINITY
+        @node_one_value.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for when clauses with multiple values" do
-        @node_multiple_values.single_line_width.should == Float::INFINITY
+        @node_multiple_values.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
@@ -1285,9 +1295,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity" do
-        @node.single_line_width.should == Float::INFINITY
+        @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -1345,13 +1355,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity for common while statements" do
-        @node_common.single_line_width.should == Float::INFINITY
+        @node_common.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for while statements wrapping begin...end" do
-        @node_wrapper.single_line_width.should == Float::INFINITY
+        @node_wrapper.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -1409,13 +1419,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns infinity for common unless statements" do
-        @node_common.single_line_width.should == Float::INFINITY
+        @node_common.single_line_width_no_comments.should == Float::INFINITY
       end
 
       it "returns infinity for unless statements wrapping begin...end" do
-        @node_wrapper.single_line_width.should == Float::INFINITY
+        @node_wrapper.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
@@ -1433,9 +1443,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node.single_line_width.should == 5
+        @node.single_line_width_no_comments.should == 5
       end
     end
   end
@@ -1470,13 +1480,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for nexts without a value" do
-        @node_without_value.single_line_width.should == 4
+        @node_without_value.single_line_width_no_comments.should == 4
       end
 
       it "returns correct value for nexts with a value" do
-        @node_with_value.single_line_width.should == 7
+        @node_with_value.single_line_width_no_comments.should == 7
       end
     end
   end
@@ -1511,13 +1521,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for nexts without a value" do
-        @node_without_value.single_line_width.should == 6
+        @node_without_value.single_line_width_no_comments.should == 6
       end
 
       it "returns correct value for nexts with a value" do
-        @node_with_value.single_line_width.should == 9
+        @node_with_value.single_line_width_no_comments.should == 9
       end
     end
   end
@@ -1646,17 +1656,17 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for empty expression lists" do
-        @node_empty.single_line_width.should == 2
+        @node_empty.single_line_width_no_comments.should == 2
       end
 
       it "returns correct value for expression lists with one expression" do
-        @node_one.single_line_width.should == 4
+        @node_one.single_line_width_no_comments.should == 4
       end
 
       it "returns correct value for expression lists with multiple expressions" do
-        @node_multiple.single_line_width.should == 12
+        @node_multiple.single_line_width_no_comments.should == 12
       end
     end
   end
@@ -1728,16 +1738,16 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       describe "when assigning from a non-variable" do
         it "returns correct value" do
-          @node_non_variable.single_line_width.should == 6
+          @node_non_variable.single_line_width_no_comments.should == 6
         end
       end
 
       describe "when assigning from a non-variable" do
         it "returns correct value" do
-          @node_variable.single_line_width.should == 16
+          @node_variable.single_line_width_no_comments.should == 16
         end
       end
     end
@@ -1783,13 +1793,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node_without_parens.single_line_width.should == 3
+        @node_without_parens.single_line_width_no_comments.should == 3
       end
 
       it "returns correct value when parens are needed" do
-        @node_with_parens.single_line_width.should == 10
+        @node_with_parens.single_line_width_no_comments.should == 10
       end
     end
   end
@@ -1844,13 +1854,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node_without_parens.single_line_width.should == 7
+        @node_without_parens.single_line_width_no_comments.should == 7
       end
 
       it "returns correct value when parens are needed" do
-        @node_with_parens.single_line_width.should == 21
+        @node_with_parens.single_line_width_no_comments.should == 21
       end
     end
   end
@@ -1918,13 +1928,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node_without_parens.single_line_width.should == 14
+        @node_without_parens.single_line_width_no_comments.should == 14
       end
 
       it "returns correct value when parens are needed" do
-        @node_with_parens.single_line_width.should == 39
+        @node_with_parens.single_line_width_no_comments.should == 39
       end
     end
   end
@@ -2251,64 +2261,66 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for method calls without a receiver" do
-        @node_without_receiver.single_line_width.should == 1
+        @node_without_receiver.single_line_width_no_comments.should == 1
       end
 
       it "returns correct value for method calls with a receiver" do
-        @node_with_receiver.single_line_width.should == 3
+        @node_with_receiver.single_line_width_no_comments.should == 3
       end
 
       describe "on method calls with :parens => true" do
         it "returns correct value for method calls with no arguments" do
-          @node_parens_no_args.single_line_width.should == 1
+          @node_parens_no_args.single_line_width_no_comments.should == 1
         end
 
         it "returns correct value for method calls with one argument" do
-          @node_parens_one_arg.single_line_width.should == 5
+          @node_parens_one_arg.single_line_width_no_comments.should == 5
         end
 
         it "returns correct value for method calls with multiple arguments" do
-          @node_parens_multiple_args.single_line_width.should == 13
+          @node_parens_multiple_args.single_line_width_no_comments.should == 13
         end
 
         it "returns correct value for method calls with no receiver, const-like name and no arguments" do
-          @node_parens_const.single_line_width.should == 3
+          @node_parens_const.single_line_width_no_comments.should == 3
         end
 
         it "returns correct value for method calls without a block" do
-          @node_parens_without_block.single_line_width.should == 1
+          @node_parens_without_block.single_line_width_no_comments.should == 1
         end
 
         it "returns correct value for method calls with a block" do
-          @node_parens_with_block.single_line_width.should == 1
+          @node_parens_with_block.single_line_width_no_comments.should == 1
         end
       end
 
       describe "on method calls with :parens => false" do
         it "returns correct value for method calls with no arguments" do
-          @node_no_parens_no_args.single_line_width.should == 1
+          @node_no_parens_no_args.single_line_width_no_comments.should == 1
         end
 
         it "returns correct value for method calls with one argument" do
-          @node_no_parens_one_arg.single_line_width.should == 4
+          @node_no_parens_one_arg.single_line_width_no_comments.should == 4
         end
 
         it "returns correct value for method calls with multiple arguments" do
-          @node_no_parens_multiple_args.single_line_width.should == 12
+          @node_no_parens_multiple_args.single_line_width_no_comments.should ==
+            12
         end
 
         it "returns correct value for method calls with no receiver, const-like name and no arguments" do
-          @node_no_parens_const.single_line_width.should == 3
+          @node_no_parens_const.single_line_width_no_comments.should == 3
         end
 
         it "returns correct value for method calls without a block" do
-          @node_no_parens_without_block.single_line_width.should == 1
+          @node_no_parens_without_block.single_line_width_no_comments.should ==
+            1
         end
 
         it "returns correct value for method calls with a block" do
-          @node_no_parens_with_block.single_line_width.should == 1
+          @node_no_parens_with_block.single_line_width_no_comments.should == 1
         end
       end
     end
@@ -2472,32 +2484,35 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       describe "for single-line blocks" do
         it "returns correct value for blocks with no arguments" do
-          @node_single_no_args.single_line_width.should == 10
+          @node_single_no_args.single_line_width_no_comments.should == 10
         end
 
         it "returns correct value for blocks with one argument" do
-          @node_single_one_arg.single_line_width.should == 14
+          @node_single_one_arg.single_line_width_no_comments.should == 14
         end
 
         it "returns correct value for blocks with multiple arguments" do
-          @node_single_multiple_args.single_line_width.should == 20
+          @node_single_multiple_args.single_line_width_no_comments.should == 20
         end
       end
 
       describe "for multi-line blocks" do
         it "returns infinity for blocks with no arguments" do
-          @node_multi_no_args.single_line_width.should == Float::INFINITY
+          @node_multi_no_args.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
 
         it "returns infinity for blocks with one argument" do
-          @node_multi_one_arg.single_line_width.should == Float::INFINITY
+          @node_multi_one_arg.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
 
         it "returns infinity for blocks with multiple arguments" do
-          @node_multi_multiple_args.single_line_width.should == Float::INFINITY
+          @node_multi_multiple_args.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
       end
     end
@@ -2537,13 +2552,13 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for const accesses without a receiver" do
-        @node_without_receiver.single_line_width.should == 1
+        @node_without_receiver.single_line_width_no_comments.should == 1
       end
 
       it "returns correct value for const accesses with a receiver" do
-        @node_with_receiver.single_line_width.should == 4
+        @node_with_receiver.single_line_width_no_comments.should == 4
       end
     end
   end
@@ -2561,9 +2576,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node.single_line_width.should == 1
+        @node.single_line_width_no_comments.should == 1
       end
     end
   end
@@ -2581,9 +2596,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node.single_line_width.should == 4
+        @node.single_line_width_no_comments.should == 4
       end
     end
   end
@@ -2632,33 +2647,33 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "emits correct code for nil literals" do
-        @node_nil.single_line_width.should == 3
+        @node_nil.single_line_width_no_comments.should == 3
       end
 
       it "emits correct code for true literals" do
-        @node_true.single_line_width.should == 4
+        @node_true.single_line_width_no_comments.should == 4
       end
 
       it "emits correct code for false literals" do
-        @node_false.single_line_width.should == 5
+        @node_false.single_line_width_no_comments.should == 5
       end
 
       it "emits correct code for integer literals" do
-        @node_integer.single_line_width.should == 2
+        @node_integer.single_line_width_no_comments.should == 2
       end
 
       it "emits correct code for float literals" do
-        @node_float.single_line_width.should == 4
+        @node_float.single_line_width_no_comments.should == 4
       end
 
       it "emits correct code for symbol literals" do
-        @node_symbol.single_line_width.should == 5
+        @node_symbol.single_line_width_no_comments.should == 5
       end
 
       it "emits correct code for string literals" do
-        @node_string.single_line_width.should == 6
+        @node_string.single_line_width_no_comments.should == 6
       end
     end
   end
@@ -2788,17 +2803,17 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for empty arrays" do
-        @node_empty.single_line_width.should == 2
+        @node_empty.single_line_width_no_comments.should == 2
       end
 
       it "returns correct value for arrays with one element" do
-        @node_one.single_line_width.should == 4
+        @node_one.single_line_width_no_comments.should == 4
       end
 
       it "returns correct value for arrays with multiple elements" do
-        @node_multiple.single_line_width.should == 12
+        @node_multiple.single_line_width_no_comments.should == 12
       end
     end
   end
@@ -2979,17 +2994,17 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value for empty hashes" do
-        @node_empty.single_line_width.should == 2
+        @node_empty.single_line_width_no_comments.should == 2
       end
 
       it "returns correct value for hashes with one entry" do
-        @node_one.single_line_width.should == 12
+        @node_one.single_line_width_no_comments.should == 12
       end
 
       it "returns correct value for hashes with multiple entries" do
-        @node_multiple.single_line_width.should == 32
+        @node_multiple.single_line_width_no_comments.should == 32
       end
     end
   end
@@ -3032,9 +3047,9 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#single_line_width" do
+    describe "#single_line_width_no_comments" do
       it "returns correct value" do
-        @node.single_line_width.should == 8
+        @node.single_line_width_no_comments.should == 8
       end
     end
   end
