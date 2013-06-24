@@ -143,6 +143,16 @@ module Y2R::AST::Ruby
   end
 
   describe Node, :type => :ruby do
+    class CommentedNode < Node
+      def to_ruby_no_comments(context)
+        "ruby"
+      end
+
+      def single_line_width_no_comments
+        4
+      end
+    end
+
     class NotEnclosedNode < Node
       def enclose?
         false
@@ -174,6 +184,33 @@ module Y2R::AST::Ruby
     before :each do
       @node_not_enclosed = NotEnclosedNode.new
       @node_enclosed     = EnclosedNode.new
+
+      @node_comment_none   = CommentedNode.new
+      @node_comment_before = CommentedNode.new(:comment_before => "# before")
+      @node_comment_after  = CommentedNode.new(:comment_after => "# after")
+    end
+
+    describe "#to_ruby" do
+      describe "on nodes without any comments" do
+        it "returns code without any comments" do
+          @node_comment_none.to_ruby(@context_default).should == "ruby"
+        end
+      end
+
+      describe "on nodes with comment before" do
+        it "returns code with comment before" do
+          @node_comment_before.to_ruby(@context_default).should == [
+            "# before",
+            "ruby"
+          ].join("\n")
+        end
+      end
+
+      describe "on nodes with comment after" do
+        it "returns code with comment after" do
+          @node_comment_after.to_ruby(@context_default).should == "ruby # after"
+        end
+      end
     end
 
     describe "#to_ruby_enclosed" do
@@ -214,6 +251,26 @@ module Y2R::AST::Ruby
 
             @node_enclosed.to_ruby_enclosed(@context_default)
           end
+        end
+      end
+    end
+
+    describe "#single_line_width" do
+      describe "on nodes without any comments" do
+        it "returns width without any comments" do
+          @node_comment_none.single_line_width.should == 4
+        end
+      end
+
+      describe "on nodes with comment before" do
+        it "returns width with comment before" do
+          @node_comment_before.single_line_width.should == Float::INFINITY
+        end
+      end
+
+      describe "on nodes with comment after" do
+        it "returns width with comment after" do
+          @node_comment_after.single_line_width.should == 12
         end
       end
     end

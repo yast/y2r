@@ -39,7 +39,10 @@ module Y2R
         INDENT_STEP = 2
 
         def to_ruby(context)
-          to_ruby_no_comments(context)
+          code = to_ruby_no_comments(context)
+          code = "#{comment_before}\n#{code}" if comment_before
+          code = "#{code} #{comment_after}"   if comment_after
+          code
         end
 
         def to_ruby_enclosed(context)
@@ -47,7 +50,10 @@ module Y2R
         end
 
         def single_line_width
-          single_line_width_no_comments
+          width = single_line_width_no_comments
+          width += Float::INFINITY        if comment_before
+          width += 1 + comment_after.size if comment_after
+          width
         end
 
         def single_line_width_enclosed
