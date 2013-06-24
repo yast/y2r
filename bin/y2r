@@ -17,6 +17,7 @@ Options:
       --export-private             Export also private symbols from translated modules.
       --as-include-file            Compile as include file.
       --extract-file <file>        Compile only code of specified included file.
+      --report-file <file>         Report specified file as the compiled one.
       --dont-inline-include-files  Don't inline include files.
   -v, --version                    Print version information and exit.
   -h, --help                       Print help and exit.
@@ -55,6 +56,7 @@ begin
     :export_private            => options["--export-private"],
     :as_include_file           => options["--as-include-file"],
     :extracted_file            => options["--extract-file"],
+    :reported_file             => options["--report-file"],
     :dont_inline_include_files => options["--dont-inline-include-files"],
     :filename                  => ycp_file
   }

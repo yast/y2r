@@ -74,8 +74,8 @@ module Y2R
 
     def xml_to_ast(xml)
       ast = element_to_node(Nokogiri::XML(xml).root, nil)
-      ast.filename = if @options[:extracted_file]
-        @options[:extracted_file]
+      ast.filename = if @options[:reported_file]
+        @options[:reported_file]
       else
         @options[:filename] || "default.ycp"
       end
