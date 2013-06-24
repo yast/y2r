@@ -87,7 +87,7 @@ module Y2R
     def element_to_node(element, context)
       node = case element.name
         when "arg", "cond", "else", "expr", "false", "key", "lhs", "rhs",
-             "stmt","then", "true", "until", "value", "ycp"
+             "stmt","then", "true", "until", "value", "yconst", "ycp"
           element_to_node(element.elements[0], context)
 
         when "assign"
