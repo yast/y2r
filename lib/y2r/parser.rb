@@ -35,6 +35,8 @@ module Y2R
         xml_file.close
         begin
           begin
+            ENV["Y2PARSECOMMENTS"] = "1" if @options[:comments]
+
             cmd = [
               "ycpc",
               "--no-std-modules",
