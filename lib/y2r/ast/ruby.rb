@@ -38,6 +38,10 @@ module Y2R
       class Node < OpenStruct
         INDENT_STEP = 2
 
+        def to_ruby(context)
+          to_ruby_no_comments(context)
+        end
+
         def to_ruby_enclosed(context)
           enclose? ? "(#{to_ruby(context.shifted(1))})" : to_ruby(context)
         end
@@ -102,7 +106,7 @@ module Y2R
       # ===== Statements =====
 
       class Program < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "# encoding: utf-8"
             if comment
@@ -126,7 +130,7 @@ module Y2R
       end
 
       class Class < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           superclass_shift  = 6 + name.size + 3
           superclass_context = context.shifted(superclass_shift)
           superclass_code    = superclass.to_ruby(superclass_context)
@@ -144,7 +148,7 @@ module Y2R
       end
 
       class Module < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "module #{name}"
             parts << indented(statements, context)
@@ -158,7 +162,7 @@ module Y2R
       end
 
       class Def < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           args_shift   = 4 + name.size + 1
           args_context = context.shifted(args_shift)
           args_code    = if !args.empty?
@@ -180,7 +184,7 @@ module Y2R
       end
 
       class Statements < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             # The |compact| call is needed because some YCP AST nodes don't
             # translate into anything, meaning their |compile| method will
@@ -210,7 +214,7 @@ module Y2R
       end
 
       class Begin < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "begin"
             parts << indented(statements, context)
@@ -224,11 +228,11 @@ module Y2R
       end
 
       class If < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -242,7 +246,7 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           then_code = self.then.to_ruby(context)
 
           condition_shift   = then_code.size + 4
@@ -252,7 +256,7 @@ module Y2R
           "#{then_code} if #{condition_code}"
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           combine do |parts|
             parts << "if #{condition.to_ruby(context.shifted(3))}"
             parts << indented(self.then, context)
@@ -266,11 +270,11 @@ module Y2R
       end
 
       class Unless < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -284,7 +288,7 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           then_code = self.then.to_ruby(context)
 
           condition_shift   = then_code.size + 8
@@ -294,7 +298,7 @@ module Y2R
           "#{then_code} unless #{condition_code}"
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           combine do |parts|
             parts << "unless #{condition.to_ruby(context.shifted(7))}"
             parts << indented(self.then, context)
@@ -308,7 +312,7 @@ module Y2R
       end
 
       class Case < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "case #{expression.to_ruby(context.shifted(5))}"
             whens.each do |whem|
@@ -325,7 +329,7 @@ module Y2R
       end
 
       class When < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "when #{list(values, ", ", context.shifted(5))}"
             parts << indented(body, context)
@@ -338,7 +342,7 @@ module Y2R
       end
 
       class Else < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           combine do |parts|
             parts << "else"
             parts << indented(body, context)
@@ -351,7 +355,7 @@ module Y2R
       end
 
       class While < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "while #{condition.to_ruby(context.shifted(6))}"
@@ -369,7 +373,7 @@ module Y2R
       end
 
       class Until < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "until #{condition.to_ruby(context.shifted(6))}"
@@ -387,7 +391,7 @@ module Y2R
       end
 
       class Break < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           "break"
         end
 
@@ -397,7 +401,7 @@ module Y2R
       end
 
       class Next < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
         end
 
@@ -407,7 +411,7 @@ module Y2R
       end
 
       class Return < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
         end
 
@@ -419,11 +423,11 @@ module Y2R
       # ===== Expressions =====
 
       class Expressions < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -433,11 +437,11 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           "(#{list(expressions, "; ", context.shifted(1))})"
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           if !expressions.empty?
             wrapped_line_list(expressions, "(", ";", ")", context)
           else
@@ -447,7 +451,7 @@ module Y2R
       end
 
       class Assignment < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           lhs_code = lhs.to_ruby(context)
 
           # YCP always makes a copy when assigning.
@@ -477,7 +481,7 @@ module Y2R
       end
 
       class UnaryOperator < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
@@ -493,7 +497,7 @@ module Y2R
       end
 
       class BinaryOperator < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           lhs_code = lhs.to_ruby_enclosed(context)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
@@ -512,7 +516,7 @@ module Y2R
       end
 
       class TernaryOperator < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           condition_code = condition.to_ruby_enclosed(context)
 
           then_shift   = condition_code.size + 3
@@ -536,7 +540,7 @@ module Y2R
       end
 
       class MethodCall < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           # The algorithm for deciding whether the call should be split into
           # multile lines is based on seeing if the arguments fit into the
           # current line. That means we ignore the block part. This could lead
@@ -615,11 +619,11 @@ module Y2R
       end
 
       class Block < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -636,7 +640,7 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           args_code = if !args.empty?
             " |#{list(args, ", ", context.shifted(3))}|"
           else
@@ -650,7 +654,7 @@ module Y2R
           "{#{args_code} #{statements_code} }"
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           args_code = if !args.empty?
             " |#{list(args, ", ", context.shifted(3))}|"
           else
@@ -666,7 +670,7 @@ module Y2R
       end
 
       class ConstAccess < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
         end
 
@@ -682,7 +686,7 @@ module Y2R
       end
 
       class Variable < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           name
         end
 
@@ -698,7 +702,7 @@ module Y2R
       end
 
       class Self < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           "self"
         end
 
@@ -716,7 +720,7 @@ module Y2R
       # ===== Literals =====
 
       class Literal < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           value.inspect
         end
 
@@ -732,11 +736,11 @@ module Y2R
       end
 
       class Array < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -752,11 +756,11 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           "[#{list(elements, ", ", context.shifted(1))}]"
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           if !elements.empty?
             wrapped_line_list(elements, "[", ",", "]", context)
           else
@@ -766,11 +770,11 @@ module Y2R
       end
 
       class Hash < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           if fits_current_line?(context)
-            to_ruby_single_line(context)
+            to_ruby_no_comments_single_line(context)
           else
-            to_ruby_multi_line(context)
+            to_ruby_no_comments_multi_line(context)
           end
         end
 
@@ -790,7 +794,7 @@ module Y2R
 
         private
 
-        def to_ruby_single_line(context)
+        def to_ruby_no_comments_single_line(context)
           if !entries.empty?
             "{ #{list(entries, ", ", context.shifted(2))} }"
           else
@@ -798,7 +802,7 @@ module Y2R
           end
         end
 
-        def to_ruby_multi_line(context)
+        def to_ruby_no_comments_multi_line(context)
           if !entries.empty?
             max_key_width = entries.map do |entry|
               entry.key_width(context.indented(INDENT_STEP))
@@ -815,7 +819,7 @@ module Y2R
       end
 
       class HashEntry < Node
-        def to_ruby(context)
+        def to_ruby_no_comments(context)
           max_key_width = context.max_key_width
 
           # We don't want to pass context.max_key_width to the key or value.

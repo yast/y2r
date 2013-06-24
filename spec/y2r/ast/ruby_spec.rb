@@ -245,10 +245,10 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code without a comment" do
-          @node_without_comment.to_ruby(@context_default).should == [
+          @node_without_comment.to_ruby_no_comments(@context_default).should == [
             "# encoding: utf-8",
             "",
             "a = 42",
@@ -258,7 +258,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code with a comment" do
-          @node_with_comment.to_ruby(@context_default).should == [
+          @node_with_comment.to_ruby_no_comments(@context_default).should == [
             "# encoding: utf-8",
             "",
             "# line 1",
@@ -279,7 +279,7 @@ module Y2R::AST::Ruby
             :comment    => nil
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -304,10 +304,10 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == [
+          @node.to_ruby_no_comments(@context_default).should == [
             "class C < S",
             "  a = 42",
             "  b = 43",
@@ -325,7 +325,7 @@ module Y2R::AST::Ruby
             :statements => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to statements" do
@@ -335,7 +335,7 @@ module Y2R::AST::Ruby
             :statements => node_to_ruby_mock(:width => 78, :shift => 0),
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -352,10 +352,10 @@ module Y2R::AST::Ruby
       @node = Module.new(:name  => "M", :statements => @statements)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == [
+          @node.to_ruby_no_comments(@context_default).should == [
             "module M",
             "  a = 42",
             "  b = 43",
@@ -372,7 +372,7 @@ module Y2R::AST::Ruby
             :statements => node_to_ruby_mock(:width => 78, :shift => 0),
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -403,10 +403,10 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for method definitions with no arguments" do
-          @node_no_args.to_ruby(@context_default).should == [
+          @node_no_args.to_ruby_no_comments(@context_default).should == [
             "def m",
             "  a = 42",
             "  b = 43",
@@ -416,7 +416,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for method definitions with one argument" do
-          @node_one_arg.to_ruby(@context_default).should == [
+          @node_one_arg.to_ruby_no_comments(@context_default).should == [
             "def m(a)",
             "  a = 42",
             "  b = 43",
@@ -426,7 +426,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for method definitions with multiple arguments" do
-          @node_multiple_args.to_ruby(@context_default).should == [
+          @node_multiple_args.to_ruby_no_comments(@context_default).should == [
             "def m(a, b, c)",
             "  a = 42",
             "  b = 43",
@@ -448,7 +448,7 @@ module Y2R::AST::Ruby
             :statements => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to statements" do
@@ -458,7 +458,7 @@ module Y2R::AST::Ruby
             :statements => node_to_ruby_mock(:width => 78, :shift => 0),
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -491,18 +491,18 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for statement lists with no statements" do
-          @node_empty.to_ruby(@context_default).should == ""
+          @node_empty.to_ruby_no_comments(@context_default).should == ""
         end
 
         it "emits correct code for statement lists with one statement" do
-          @node_one.to_ruby(@context_default).should == "a = 42"
+          @node_one.to_ruby_no_comments(@context_default).should == "a = 42"
         end
 
         it "emits correct code for statement lists with multiple statements" do
-          @node_multiple.to_ruby(@context_default).should == [
+          @node_multiple.to_ruby_no_comments(@context_default).should == [
             "a = 42",
             "b = 43",
             "c = 44",
@@ -520,7 +520,7 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby_no_comments(@context_default).should == [
             "a = 42",
             "b = 43",
             "c = 44",
@@ -530,7 +530,7 @@ module Y2R::AST::Ruby
         it "emits blank lines before method definitions" do
           node = Statements.new(:statements => [@assignment_a_42, @def])
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby_no_comments(@context_default).should == [
             "a = 42",
             "",
             "def m",
@@ -544,7 +544,7 @@ module Y2R::AST::Ruby
         it "emits blank lines after method definitions" do
           node = Statements.new(:statements => [@def, @assignment_a_42])
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby_no_comments(@context_default).should == [
             "def m",
             "  a = 42",
             "  b = 43",
@@ -562,7 +562,7 @@ module Y2R::AST::Ruby
             :statements => [node_to_ruby_mock(:width => 80, :shift => 0)]
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -587,10 +587,10 @@ module Y2R::AST::Ruby
       @node = Begin.new(:statements => @statements)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == [
+          @node.to_ruby_no_comments(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -606,7 +606,7 @@ module Y2R::AST::Ruby
             :statements => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -637,7 +637,7 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "for if statements without else" do
         it "emits a single-line if statement when the if statement fits available space and then is single-line" do
           node = If.new(
@@ -646,7 +646,7 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_default).should == "a = 42 if true"
+          node.to_ruby_no_comments(@context_default).should == "a = 42 if true"
         end
 
         it "emits a multi-line if statement when the if statement doesn't fit available space" do
@@ -656,7 +656,7 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_narrow).should == [
+          node.to_ruby_no_comments(@context_narrow).should == [
             "if true",
             "  a = 42",
             "end"
@@ -670,7 +670,7 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby_no_comments(@context_default).should == [
             "if true",
             "  a = 42",
             "  b = 43",
@@ -681,7 +681,7 @@ module Y2R::AST::Ruby
 
         describe "for single-line if statements" do
           it "emits correct code" do
-            @node_without_else_single.to_ruby(@context_default).should ==
+            @node_without_else_single.to_ruby_no_comments(@context_default).should ==
               "a = 42 if true"
           end
 
@@ -695,7 +695,7 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
 
           it "passes correct available space info to then" do
@@ -708,13 +708,13 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
         end
 
         describe "for multi-line if statements" do
           it "emits correct code" do
-            @node_without_else_multi.to_ruby(@context_narrow).should == [
+            @node_without_else_multi.to_ruby_no_comments(@context_narrow).should == [
               "if true",
               "  a = 42",
               "  b = 43",
@@ -733,7 +733,7 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
 
           it "passes correct available space info to then" do
@@ -746,14 +746,14 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
         end
       end
 
       describe "for if statements with else" do
         it "emits correct code" do
-          @node_with_else.to_ruby(@context_default).should == [
+          @node_with_else.to_ruby_no_comments(@context_default).should == [
             "if true",
             "  a = 42",
             "  b = 43",
@@ -773,7 +773,7 @@ module Y2R::AST::Ruby
             :else      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to then" do
@@ -783,7 +783,7 @@ module Y2R::AST::Ruby
             :else      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to else" do
@@ -793,7 +793,7 @@ module Y2R::AST::Ruby
             :else      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -840,7 +840,7 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "for unless statements without else" do
         it "emits a single-line unless statement when the unless statement fits available space and then is single-line" do
           node = Unless.new(
@@ -849,7 +849,8 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_default).should == "a = 42 unless true"
+          node.to_ruby_no_comments(@context_default).should ==
+            "a = 42 unless true"
         end
 
         it "emits a multi-line unless statement when the unless statement doesn't fit available space" do
@@ -859,7 +860,7 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_narrow).should == [
+          node.to_ruby_no_comments(@context_narrow).should == [
             "unless true",
             "  a = 42",
             "end"
@@ -873,7 +874,7 @@ module Y2R::AST::Ruby
             :else      => nil
           )
 
-          node.to_ruby(@context_default).should == [
+          node.to_ruby_no_comments(@context_default).should == [
             "unless true",
             "  a = 42",
             "  b = 43",
@@ -884,7 +885,7 @@ module Y2R::AST::Ruby
 
         describe "for single-line unless statements" do
           it "emits correct code" do
-            @node_without_else_single.to_ruby(@context_default).should ==
+            @node_without_else_single.to_ruby_no_comments(@context_default).should ==
               "a = 42 unless true"
           end
 
@@ -898,7 +899,7 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
 
           it "passes correct available space info to then" do
@@ -911,13 +912,13 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
         end
 
         describe "for multi-line unless statements" do
           it "emits correct code" do
-            @node_without_else_multi.to_ruby(@context_narrow).should == [
+            @node_without_else_multi.to_ruby_no_comments(@context_narrow).should == [
               "unless true",
               "  a = 42",
               "  b = 43",
@@ -936,7 +937,7 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
 
           it "passes correct available space info to then" do
@@ -949,14 +950,14 @@ module Y2R::AST::Ruby
               :else      => nil
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
         end
       end
 
       describe "for unless statements with else" do
         it "emits correct code" do
-          @node_with_else.to_ruby(@context_default).should == [
+          @node_with_else.to_ruby_no_comments(@context_default).should == [
             "unless true",
             "  a = 42",
             "  b = 43",
@@ -976,7 +977,7 @@ module Y2R::AST::Ruby
             :else      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to then" do
@@ -986,7 +987,7 @@ module Y2R::AST::Ruby
             :else      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to else" do
@@ -996,7 +997,7 @@ module Y2R::AST::Ruby
             :else      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1053,17 +1054,17 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for empty case statements" do
-          @node_empty.to_ruby(@context_default).should == [
+          @node_empty.to_ruby_no_comments(@context_default).should == [
             "case 42",
             "end"
           ].join("\n")
         end
 
         it "emits correct code for case statements with one when clause and no else clause" do
-          @node_one_when_without_else.to_ruby(@context_default).should == [
+          @node_one_when_without_else.to_ruby_no_comments(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -1074,7 +1075,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with one when clause and an else clause" do
-          @node_one_when_with_else.to_ruby(@context_default).should == [
+          @node_one_when_with_else.to_ruby_no_comments(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -1089,7 +1090,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with multiple when clauses and no else clause" do
-          @node_multiple_whens_without_else.to_ruby(@context_default).should == [
+          @node_multiple_whens_without_else.to_ruby_no_comments(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -1108,7 +1109,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for case statements with multiple when clauses and an else clause" do
-          @node_multiple_whens_with_else.to_ruby(@context_default).should == [
+          @node_multiple_whens_with_else.to_ruby_no_comments(@context_default).should == [
             "case 42",
             "  when 42",
             "    a = 42",
@@ -1139,7 +1140,7 @@ module Y2R::AST::Ruby
             :else       => nil
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to whens" do
@@ -1149,7 +1150,7 @@ module Y2R::AST::Ruby
             :else       => nil
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to else" do
@@ -1159,7 +1160,7 @@ module Y2R::AST::Ruby
             :else       => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1201,10 +1202,10 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for when clauses with one value" do
-          @node_one_value.to_ruby(@context_default).should == [
+          @node_one_value.to_ruby_no_comments(@context_default).should == [
             "when 42",
             "  a = 42",
             "  b = 43",
@@ -1213,7 +1214,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for when clauses with multiple values" do
-          @node_multiple_values.to_ruby(@context_default).should == [
+          @node_multiple_values.to_ruby_no_comments(@context_default).should == [
             "when 42, 43, 44",
             "  a = 42",
             "  b = 43",
@@ -1233,7 +1234,7 @@ module Y2R::AST::Ruby
             :body   => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to body" do
@@ -1242,7 +1243,7 @@ module Y2R::AST::Ruby
             :body   => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1263,10 +1264,10 @@ module Y2R::AST::Ruby
       @node = Else.new(:body => @statements)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == [
+          @node.to_ruby_no_comments(@context_default).should == [
             "else",
             "  a = 42",
             "  b = 43",
@@ -1279,7 +1280,7 @@ module Y2R::AST::Ruby
         it "passes correct available space info to body" do
           node = Else.new(:body => node_to_ruby_mock(:width => 78, :shift => 0))
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1300,10 +1301,10 @@ module Y2R::AST::Ruby
       @node_wrapper = While.new(:condition  => @literal_true, :body => @begin)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for common while statements" do
-          @node_common.to_ruby(@context_default).should == [
+          @node_common.to_ruby_no_comments(@context_default).should == [
             "while true",
             "  a = 42",
             "  b = 43",
@@ -1313,7 +1314,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for while statements wrapping begin...end" do
-          @node_wrapper.to_ruby(@context_default).should == [
+          @node_wrapper.to_ruby_no_comments(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -1330,7 +1331,7 @@ module Y2R::AST::Ruby
             :body      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to body" do
@@ -1339,7 +1340,7 @@ module Y2R::AST::Ruby
             :body      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1364,10 +1365,10 @@ module Y2R::AST::Ruby
       @node_wrapper = Until.new(:condition  => @literal_true, :body => @begin)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for common until statements" do
-          @node_common.to_ruby(@context_default).should == [
+          @node_common.to_ruby_no_comments(@context_default).should == [
             "until true",
             "  a = 42",
             "  b = 43",
@@ -1377,7 +1378,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for until statements wrapping begin...end" do
-          @node_wrapper.to_ruby(@context_default).should == [
+          @node_wrapper.to_ruby_no_comments(@context_default).should == [
             "begin",
             "  a = 42",
             "  b = 43",
@@ -1394,7 +1395,7 @@ module Y2R::AST::Ruby
             :body      => @statements
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to body" do
@@ -1403,7 +1404,7 @@ module Y2R::AST::Ruby
             :body      => node_to_ruby_mock(:width => 78, :shift => 0)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1424,10 +1425,10 @@ module Y2R::AST::Ruby
       @node = Break.new
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == "break"
+          @node.to_ruby_no_comments(@context_default).should == "break"
         end
       end
     end
@@ -1445,14 +1446,16 @@ module Y2R::AST::Ruby
       @node_with_value    = Next.new(:value => @literal_42)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for nexts without a value" do
-          @node_without_value.to_ruby(@context_default).should == "next"
+          @node_without_value.to_ruby_no_comments(@context_default).should ==
+            "next"
         end
 
         it "emits correct code for nexts with a value" do
-          @node_with_value.to_ruby(@context_default).should == "next 42"
+          @node_with_value.to_ruby_no_comments(@context_default).should ==
+            "next 42"
         end
       end
 
@@ -1462,7 +1465,7 @@ module Y2R::AST::Ruby
             :value => node_to_ruby_mock(:width => 80, :shift => 5)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1484,14 +1487,16 @@ module Y2R::AST::Ruby
       @node_with_value    = Return.new(:value => @literal_42)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for returns without a value" do
-          @node_without_value.to_ruby(@context_default).should == "return"
+          @node_without_value.to_ruby_no_comments(@context_default).should ==
+            "return"
         end
 
         it "emits correct code for returns with a value" do
-          @node_with_value.to_ruby(@context_default).should == "return 42"
+          @node_with_value.to_ruby_no_comments(@context_default).should ==
+            "return 42"
         end
       end
 
@@ -1501,7 +1506,7 @@ module Y2R::AST::Ruby
             :value => node_to_ruby_mock(:width => 80, :shift => 7)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1526,13 +1531,14 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       it "emits a single-line expression list when the expression list fits available space and all expressions are single-line" do
-        @node_multiple.to_ruby(@context_default).should == "(42; 43; 44)"
+        @node_multiple.to_ruby_no_comments(@context_default).should ==
+          "(42; 43; 44)"
       end
 
       it "emits a multi-line expression list when the expression list doesn't fit available space" do
-        @node_multiple.to_ruby(@context_narrow).should == [
+        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
           "(",
           "  42;",
           "  43;",
@@ -1548,7 +1554,7 @@ module Y2R::AST::Ruby
         node2 = Expressions.new(:expressions => [@literal_42, @statements, @literal_44])
         node3 = Expressions.new(:expressions => [@literal_42, @literal_43, @statements])
 
-        node1.to_ruby(@context_default).should == [
+        node1.to_ruby_no_comments(@context_default).should == [
           "(",
           "  a = 42",
           "  b = 43",
@@ -1557,7 +1563,7 @@ module Y2R::AST::Ruby
           "  44",
           ")"
         ].join("\n")
-        node2.to_ruby(@context_default).should == [
+        node2.to_ruby_no_comments(@context_default).should == [
           "(",
           "  42;",
           "  a = 42",
@@ -1566,7 +1572,7 @@ module Y2R::AST::Ruby
           "  44",
           ")"
         ].join("\n")
-        node3.to_ruby(@context_default).should == [
+        node3.to_ruby_no_comments(@context_default).should == [
           "(",
           "  42;",
           "  43;",
@@ -1579,15 +1585,15 @@ module Y2R::AST::Ruby
 
       describe "for single-line expression lists" do
         it "emits correct code for empty expression lists" do
-          @node_empty.to_ruby(@context_default).should == "()"
+          @node_empty.to_ruby_no_comments(@context_default).should == "()"
         end
 
         it "emits correct code for expression lists with one expression" do
-          @node_one.to_ruby(@context_default).should == "(42)"
+          @node_one.to_ruby_no_comments(@context_default).should == "(42)"
         end
 
         it "emits correct code for expression lists with multiple expressions" do
-          @node_multiple.to_ruby(@context_default).should == "(42; 43; 44)"
+          @node_multiple.to_ruby_no_comments(@context_default).should == "(42; 43; 44)"
         end
 
         it "passes correct available space info to expressions" do
@@ -1599,17 +1605,17 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
 
       describe "for multi-line expression lists" do
         it "emits correct code for empty expression lists" do
-          @node_empty.to_ruby(@context_narrow).should == "()"
+          @node_empty.to_ruby_no_comments(@context_narrow).should == "()"
         end
 
         it "emits correct code for expression lists with one expression" do
-          @node_one.to_ruby(@context_narrow).should == [
+          @node_one.to_ruby_no_comments(@context_narrow).should == [
            "(",
            "  42",
            ")"
@@ -1617,7 +1623,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for expression lists with multiple expressions" do
-          @node_multiple.to_ruby(@context_narrow).should == [
+          @node_multiple.to_ruby_no_comments(@context_narrow).should == [
            "(",
            "  42;",
            "  43;",
@@ -1635,7 +1641,7 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_narrow)
+          node.to_ruby_no_comments(@context_narrow)
         end
       end
     end
@@ -1667,17 +1673,19 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         describe "when assigning from a non-variable" do
           it "emits correct code" do
-            @node_non_variable.to_ruby(@context_default).should == "a = 42"
+            @node_non_variable.to_ruby_no_comments(@context_default).should ==
+              "a = 42"
           end
         end
 
         describe "when assigning from a variable" do
           it "emits correct code" do
-            @node_variable.to_ruby(@context_default).should == "a = deep_copy(b)"
+            @node_variable.to_ruby_no_comments(@context_default).should ==
+              "a = deep_copy(b)"
           end
         end
       end
@@ -1689,7 +1697,7 @@ module Y2R::AST::Ruby
             :rhs => @literal_42
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         describe "when assigning from a variable" do
@@ -1703,7 +1711,7 @@ module Y2R::AST::Ruby
 
             node = Assignment.new(:lhs => @variable_a, :rhs => rhs)
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
         end
 
@@ -1714,7 +1722,7 @@ module Y2R::AST::Ruby
               :rhs => node_to_ruby_mock(:width => 80, :shift => 4)
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
         end
       end
@@ -1747,14 +1755,16 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node_without_parens.to_ruby(@context_default).should == "+42"
+          @node_without_parens.to_ruby_no_comments(@context_default).should ==
+            "+42"
         end
 
         it "encloses operand in parens when needed" do
-          @node_with_parens.to_ruby(@context_default).should == "+(42 + 43)"
+          @node_with_parens.to_ruby_no_comments(@context_default).should ==
+            "+(42 + 43)"
         end
       end
 
@@ -1768,7 +1778,7 @@ module Y2R::AST::Ruby
             ),
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1798,14 +1808,15 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node_without_parens.to_ruby(@context_default).should == "42 + 43"
+          @node_without_parens.to_ruby_no_comments(@context_default).should ==
+            "42 + 43"
         end
 
         it "encloses operands in parens when needed" do
-          @node_with_parens.to_ruby(@context_default).should ==
+          @node_with_parens.to_ruby_no_comments(@context_default).should ==
             "(42 + 43) + (44 + 45)"
         end
       end
@@ -1818,7 +1829,7 @@ module Y2R::AST::Ruby
             :rhs => @literal_43
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to rhs" do
@@ -1828,7 +1839,7 @@ module Y2R::AST::Ruby
             :rhs => node_to_ruby_enclosed_mock(:width => 80, :shift => 5)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -1858,15 +1869,15 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node_without_parens.to_ruby(@context_default).should ==
+          @node_without_parens.to_ruby_no_comments(@context_default).should ==
             "true ? 42 : 43"
         end
 
         it "encloses operands in parens when needed" do
-          @node_with_parens.to_ruby(@context_default).should ==
+          @node_with_parens.to_ruby_no_comments(@context_default).should ==
             "(true || false) ? (42 + 43) : (44 + 45)"
         end
       end
@@ -1879,7 +1890,7 @@ module Y2R::AST::Ruby
             :else      => @literal_43
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to then" do
@@ -1889,7 +1900,7 @@ module Y2R::AST::Ruby
             :else      => @literal_43
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to else" do
@@ -1902,7 +1913,7 @@ module Y2R::AST::Ruby
             ),
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -2022,13 +2033,15 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       it "emits correct code for method calls without a receiver" do
-        @node_without_receiver.to_ruby(@context_default).should == "m"
+        @node_without_receiver.to_ruby_no_comments(@context_default).should ==
+          "m"
       end
 
       it "emits correct code for method calls with a receiver" do
-        @node_with_receiver.to_ruby(@context_default).should == "a.m"
+        @node_with_receiver.to_ruby_no_comments(@context_default).should ==
+          "a.m"
       end
 
       it "passes correct available space info to receiver" do
@@ -2040,26 +2053,29 @@ module Y2R::AST::Ruby
           :parens   => false
         )
 
-        node.to_ruby(@context_default)
+        node.to_ruby_no_comments(@context_default)
       end
 
       describe "on method calls with :parens => true" do
         describe "for single-line method calls" do
           it "emits correct code for method calls with no arguments" do
-            @node_parens_no_args.to_ruby(@context_default).should == "m"
+            @node_parens_no_args.to_ruby_no_comments(@context_default).should ==
+              "m"
           end
 
           it "emits correct code for method calls with one argument" do
-            @node_parens_one_arg.to_ruby(@context_default).should == "m(42)"
+            @node_parens_one_arg.to_ruby_no_comments(@context_default).should ==
+              "m(42)"
           end
 
           it "emits correct code for method calls with multiple arguments" do
-            @node_parens_multiple_args.to_ruby(@context_default).should ==
+            @node_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
               "m(42, 43, 44)"
           end
 
           it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_parens_const.to_ruby(@context_default).should == "M()"
+            @node_parens_const.to_ruby_no_comments(@context_default).should ==
+              "M()"
           end
 
           it "passes correct available space info to args" do
@@ -2075,7 +2091,7 @@ module Y2R::AST::Ruby
               :parens   => false
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
 
           it "passes correct available space info to block" do
@@ -2087,20 +2103,20 @@ module Y2R::AST::Ruby
               :parens   => false
             )
 
-            node.to_ruby(@context_default)
+            node.to_ruby_no_comments(@context_default)
           end
         end
 
         describe "for multi-line method calls" do
           it "emits correct code for method calls with no arguments" do
-            @node_parens_no_args.to_ruby(@context_narrow).should == [
+            @node_parens_no_args.to_ruby_no_comments(@context_narrow).should == [
               "m(",
               ")"
             ].join("\n")
           end
 
           it "emits correct code for method calls with one argument" do
-            @node_parens_one_arg.to_ruby(@context_narrow).should == [
+            @node_parens_one_arg.to_ruby_no_comments(@context_narrow).should == [
               "m(",
               "  42",
               ")"
@@ -2108,7 +2124,7 @@ module Y2R::AST::Ruby
           end
 
           it "emits correct code for method calls with multiple arguments" do
-            @node_parens_multiple_args.to_ruby(@context_narrow).should == [
+            @node_parens_multiple_args.to_ruby_no_comments(@context_narrow).should == [
               "m(",
               "  42,",
               "  43,",
@@ -2118,7 +2134,7 @@ module Y2R::AST::Ruby
           end
 
           it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_parens_const.to_ruby(@context_narrow).should == [
+            @node_parens_const.to_ruby_no_comments(@context_narrow).should == [
               "M(",
               ")"
             ].join("\n")
@@ -2137,7 +2153,7 @@ module Y2R::AST::Ruby
               :parens   => true
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
 
           it "passes correct available space info to block" do
@@ -2149,16 +2165,17 @@ module Y2R::AST::Ruby
               :parens   => true
             )
 
-            node.to_ruby(@context_narrow)
+            node.to_ruby_no_comments(@context_narrow)
           end
         end
 
         it "emits correct code for method calls without a block" do
-          @node_parens_without_block.to_ruby(@context_default).should == "m"
+          @node_parens_without_block.to_ruby_no_comments(@context_default).should ==
+            "m"
         end
 
         it "emits correct code for method calls with a block" do
-          @node_parens_with_block.to_ruby(@context_default).should == [
+          @node_parens_with_block.to_ruby_no_comments(@context_default).should == [
             "m {",
             "  a = 42",
             "  b = 43",
@@ -2170,27 +2187,32 @@ module Y2R::AST::Ruby
 
       describe "on method calls with :parens => false" do
         it "emits correct code for method calls with no arguments" do
-          @node_no_parens_no_args.to_ruby(@context_default).should == "m"
+          @node_no_parens_no_args.to_ruby_no_comments(@context_default).should ==
+            "m"
         end
 
         it "emits correct code for method calls with one argument" do
-          @node_no_parens_one_arg.to_ruby(@context_default).should == "m 42"
+          @node_no_parens_one_arg.to_ruby_no_comments(@context_default).should ==
+            "m 42"
         end
 
         it "emits correct code for method calls with multiple arguments" do
-          @node_no_parens_multiple_args.to_ruby(@context_default).should == "m 42, 43, 44"
+          @node_no_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
+            "m 42, 43, 44"
         end
 
         it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-          @node_no_parens_const.to_ruby(@context_default).should == "M()"
+          @node_no_parens_const.to_ruby_no_comments(@context_default).should ==
+            "M()"
         end
 
         it "emits correct code for method calls without a block" do
-          @node_no_parens_without_block.to_ruby(@context_default).should == "m"
+          @node_no_parens_without_block.to_ruby_no_comments(@context_default).should ==
+            "m"
         end
 
         it "emits correct code for method calls with a block" do
-          @node_no_parens_with_block.to_ruby(@context_default).should == [
+          @node_no_parens_with_block.to_ruby_no_comments(@context_default).should == [
             "m {",
             "  a = 42",
             "  b = 43",
@@ -2212,7 +2234,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to block" do
@@ -2224,7 +2246,7 @@ module Y2R::AST::Ruby
             :parens   => false
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -2321,17 +2343,17 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       it "emits a single-line block when the block fits available space and the statments are single-line" do
         node = Block.new(:args => [], :statements => @assignment_a_42)
 
-        node.to_ruby(@context_default).should == "{ a = 42 }"
+        node.to_ruby_no_comments(@context_default).should == "{ a = 42 }"
       end
 
       it "emits a multi-line block when the block doesn't fit available space" do
         node = Block.new(:args => [], :statements => @assignment_a_42)
 
-        node.to_ruby(@context_narrow).should == [
+        node.to_ruby_no_comments(@context_narrow).should == [
           "{",
           "  a = 42",
           "}"
@@ -2341,7 +2363,7 @@ module Y2R::AST::Ruby
       it "emits a multi-line block when the statements are multi-line" do
         node = Block.new(:args => [], :statements => @statements)
 
-        node.to_ruby(@context_default).should == [
+        node.to_ruby_no_comments(@context_default).should == [
           "{",
           "  a = 42",
           "  b = 43",
@@ -2352,16 +2374,17 @@ module Y2R::AST::Ruby
 
       describe "for single-line blocks" do
         it "emits correct code for blocks with no arguments" do
-          @node_single_no_args.to_ruby(@context_default).should == "{ a = 42 }"
+          @node_single_no_args.to_ruby_no_comments(@context_default).should ==
+            "{ a = 42 }"
         end
 
         it "emits correct code for blocks with one argument" do
-          @node_single_one_arg.to_ruby(@context_default).should ==
+          @node_single_one_arg.to_ruby_no_comments(@context_default).should ==
             "{ |a| a = 42 }"
         end
 
         it "emits correct code for blocks with multiple arguments" do
-          @node_single_multiple_args.to_ruby(@context_default).should ==
+          @node_single_multiple_args.to_ruby_no_comments(@context_default).should ==
             "{ |a, b, c| a = 42 }"
         end
 
@@ -2375,7 +2398,7 @@ module Y2R::AST::Ruby
             :statements => @assignment_a_42
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to statements" do
@@ -2387,13 +2410,13 @@ module Y2R::AST::Ruby
             )
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
 
       describe "for multi-line blocks" do
         it "emits correct code for blocks with no arguments" do
-          @node_multi_no_args.to_ruby(@context_narrow).should == [
+          @node_multi_no_args.to_ruby_no_comments(@context_narrow).should == [
             "{",
             "  a = 42",
             "  b = 43",
@@ -2403,7 +2426,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for blocks with one argument" do
-          @node_multi_one_arg.to_ruby(@context_narrow).should == [
+          @node_multi_one_arg.to_ruby_no_comments(@context_narrow).should == [
             "{ |a|",
             "  a = 42",
             "  b = 43",
@@ -2413,7 +2436,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for blocks with multiple arguments" do
-          @node_multi_multiple_args.to_ruby(@context_narrow).should == [
+          @node_multi_multiple_args.to_ruby_no_comments(@context_narrow).should == [
             "{ |a, b, c|",
             "  a = 42",
             "  b = 43",
@@ -2432,7 +2455,7 @@ module Y2R::AST::Ruby
             :statements => @statements
           )
 
-          node.to_ruby(@context_narrow)
+          node.to_ruby_no_comments(@context_narrow)
         end
 
         it "passes correct available space info to statements" do
@@ -2444,7 +2467,7 @@ module Y2R::AST::Ruby
             )
           )
 
-          node.to_ruby(@context_narrow)
+          node.to_ruby_no_comments(@context_narrow)
         end
       end
     end
@@ -2489,14 +2512,16 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for const accesses without a receiver" do
-          @node_without_receiver.to_ruby(@context_default).should == "C"
+          @node_without_receiver.to_ruby_no_comments(@context_default).should ==
+            "C"
         end
 
         it "emits correct code for const accesses with a receiver" do
-          @node_with_receiver.to_ruby(@context_default).should == "a::C"
+          @node_with_receiver.to_ruby_no_comments(@context_default).should ==
+            "a::C"
         end
       end
 
@@ -2507,7 +2532,7 @@ module Y2R::AST::Ruby
             :name     => "C"
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
@@ -2528,10 +2553,10 @@ module Y2R::AST::Ruby
       @node = Variable.new(:name => "a")
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == "a"
+          @node.to_ruby_no_comments(@context_default).should == "a"
         end
       end
     end
@@ -2548,10 +2573,10 @@ module Y2R::AST::Ruby
       @node = Self.new
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code" do
-          @node.to_ruby(@context_default).should == "self"
+          @node.to_ruby_no_comments(@context_default).should == "self"
         end
       end
     end
@@ -2574,34 +2599,35 @@ module Y2R::AST::Ruby
       @node_string  = Literal.new(:value => "abcd")
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code for nil literals" do
-          @node_nil.to_ruby(@context_default).should == "nil"
+          @node_nil.to_ruby_no_comments(@context_default).should == "nil"
         end
 
         it "emits correct code for true literals" do
-          @node_true.to_ruby(@context_default).should == "true"
+          @node_true.to_ruby_no_comments(@context_default).should == "true"
         end
 
         it "emits correct code for false literals" do
-          @node_false.to_ruby(@context_default).should == "false"
+          @node_false.to_ruby_no_comments(@context_default).should == "false"
         end
 
         it "emits correct code for integer literals" do
-          @node_integer.to_ruby(@context_default).should == "42"
+          @node_integer.to_ruby_no_comments(@context_default).should == "42"
         end
 
         it "emits correct code for float literals" do
-          @node_float.to_ruby(@context_default).should == "42.0"
+          @node_float.to_ruby_no_comments(@context_default).should == "42.0"
         end
 
         it "emits correct code for symbol literals" do
-          @node_symbol.to_ruby(@context_default).should == ":abcd"
+          @node_symbol.to_ruby_no_comments(@context_default).should == ":abcd"
         end
 
         it "emits correct code for string literals" do
-          @node_string.to_ruby(@context_default).should == "\"abcd\""
+          @node_string.to_ruby_no_comments(@context_default).should ==
+            "\"abcd\""
         end
       end
     end
@@ -2646,13 +2672,14 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       it "emits a single-line array when the array fits available space and all elements are single-line" do
-        @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
+        @node_multiple.to_ruby_no_comments(@context_default).should ==
+          "[42, 43, 44]"
       end
 
       it "emits a multi-line array when the array doesn't fit available space" do
-        @node_multiple.to_ruby(@context_narrow).should == [
+        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
           "[",
           "  42,",
           "  43,",
@@ -2668,7 +2695,7 @@ module Y2R::AST::Ruby
         node2 = Array.new(:elements => [@literal_42, @statements, @literal_44])
         node3 = Array.new(:elements => [@literal_42, @literal_43, @statements])
 
-        node1.to_ruby(@context_default).should == [
+        node1.to_ruby_no_comments(@context_default).should == [
           "[",
           "  a = 42",
           "  b = 43",
@@ -2677,7 +2704,7 @@ module Y2R::AST::Ruby
           "  44",
           "]"
         ].join("\n")
-        node2.to_ruby(@context_default).should == [
+        node2.to_ruby_no_comments(@context_default).should == [
           "[",
           "  42,",
           "  a = 42",
@@ -2686,7 +2713,7 @@ module Y2R::AST::Ruby
           "  44",
           "]"
         ].join("\n")
-        node3.to_ruby(@context_default).should == [
+        node3.to_ruby_no_comments(@context_default).should == [
           "[",
           "  42,",
           "  43,",
@@ -2699,15 +2726,16 @@ module Y2R::AST::Ruby
 
       describe "for single-line arrays" do
         it "emits correct code for empty arrays" do
-          @node_empty.to_ruby(@context_default).should == "[]"
+          @node_empty.to_ruby_no_comments(@context_default).should == "[]"
         end
 
         it "emits correct code for arrays with one element" do
-          @node_one.to_ruby(@context_default).should == "[42]"
+          @node_one.to_ruby_no_comments(@context_default).should == "[42]"
         end
 
         it "emits correct code for arrays with multiple elements" do
-          @node_multiple.to_ruby(@context_default).should == "[42, 43, 44]"
+          @node_multiple.to_ruby_no_comments(@context_default).should ==
+            "[42, 43, 44]"
         end
 
         it "passes correct available space info to elements" do
@@ -2719,17 +2747,17 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
 
       describe "for multi-line arrays" do
         it "emits correct code for empty arrays" do
-          @node_empty.to_ruby(@context_narrow).should == "[]"
+          @node_empty.to_ruby_no_comments(@context_narrow).should == "[]"
         end
 
         it "emits correct code for arrays with one element" do
-          @node_one.to_ruby(@context_narrow).should == [
+          @node_one.to_ruby_no_comments(@context_narrow).should == [
            "[",
            "  42",
            "]"
@@ -2737,7 +2765,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for arrays with multiple elements" do
-          @node_multiple.to_ruby(@context_narrow).should == [
+          @node_multiple.to_ruby_no_comments(@context_narrow).should == [
            "[",
            "  42,",
            "  43,",
@@ -2755,7 +2783,7 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_narrow)
+          node.to_ruby_no_comments(@context_narrow)
         end
       end
     end
@@ -2784,14 +2812,14 @@ module Y2R::AST::Ruby
       )
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       it "emits a single-line hash when the hash fits available space and all entries are single-line" do
-        @node_multiple.to_ruby(@context_default).should ==
+        @node_multiple.to_ruby_no_comments(@context_default).should ==
           "{ :a => 42, :b => 43, :c => 44 }"
       end
 
       it "emits a multi-line hash when the hash doesn't fit available space" do
-        @node_multiple.to_ruby(@context_narrow).should == [
+        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
           "{",
           "  :a => 42,",
           "  :b => 43,",
@@ -2825,7 +2853,7 @@ module Y2R::AST::Ruby
           ]
         )
 
-        node1.to_ruby(@context_default).should == [
+        node1.to_ruby_no_comments(@context_default).should == [
           "{",
           "  :a => a = 42",
           "  b = 43",
@@ -2834,7 +2862,7 @@ module Y2R::AST::Ruby
           "  :c => 44",
           "}"
         ].join("\n")
-        node2.to_ruby(@context_default).should == [
+        node2.to_ruby_no_comments(@context_default).should == [
           "{",
           "  :a => 42,",
           "  :b => a = 42",
@@ -2843,7 +2871,7 @@ module Y2R::AST::Ruby
           "  :c => 44",
           "}"
         ].join("\n")
-        node3.to_ruby(@context_default).should == [
+        node3.to_ruby_no_comments(@context_default).should == [
           "{",
           "  :a => 42,",
           "  :b => 43,",
@@ -2856,15 +2884,16 @@ module Y2R::AST::Ruby
 
       describe "for single-line hashes" do
         it "emits correct code for empty hashes" do
-          @node_empty.to_ruby(@context_default).should == "{}"
+          @node_empty.to_ruby_no_comments(@context_default).should == "{}"
         end
 
         it "emits correct code for hashes with one entry" do
-          @node_one.to_ruby(@context_default).should == "{ :a => 42 }"
+          @node_one.to_ruby_no_comments(@context_default).should ==
+            "{ :a => 42 }"
         end
 
         it "emits correct code for hashes with multiple entries" do
-          @node_multiple.to_ruby(@context_default).should ==
+          @node_multiple.to_ruby_no_comments(@context_default).should ==
             "{ :a => 42, :b => 43, :c => 44 }"
         end
 
@@ -2877,17 +2906,17 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
 
       describe "for multi-line hashes" do
         it "emits correct code for empty hashes" do
-          @node_empty.to_ruby(@context_narrow).should == "{}"
+          @node_empty.to_ruby_no_comments(@context_narrow).should == "{}"
         end
 
         it "emits correct code for hashes with one entry" do
-          @node_one.to_ruby(@context_narrow).should == [
+          @node_one.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a => 42",
            "}"
@@ -2895,7 +2924,7 @@ module Y2R::AST::Ruby
         end
 
         it "emits correct code for hashes with multiple entries" do
-          @node_multiple.to_ruby(@context_narrow).should == [
+          @node_multiple.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a => 42,",
            "  :b => 43,",
@@ -2913,7 +2942,7 @@ module Y2R::AST::Ruby
             ]
           )
 
-          node.to_ruby(@context_narrow).should == [
+          node.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a   => 42,",
            "  :aa  => 43,",
@@ -2945,7 +2974,7 @@ module Y2R::AST::Ruby
 
           node = Hash.new(:entries => [node1, node2, node3])
 
-          node.to_ruby(@context_narrow)
+          node.to_ruby_no_comments(@context_narrow)
         end
       end
     end
@@ -2970,14 +2999,15 @@ module Y2R::AST::Ruby
       @node = HashEntry.new(:key => @literal_a, :value => @literal_42)
     end
 
-    describe "#to_ruby" do
+    describe "#to_ruby_no_comments" do
       describe "basics" do
         it "emits correct code with no max_key_width set" do
-          @node.to_ruby(@context_default).should == ":a => 42"
+          @node.to_ruby_no_comments(@context_default).should == ":a => 42"
         end
 
         it "emits correct code with max_key_width set" do
-          @node.to_ruby(@context_max_key_width).should == ":a   => 42"
+          @node.to_ruby_no_comments(@context_max_key_width).should ==
+            ":a   => 42"
         end
       end
 
@@ -2988,7 +3018,7 @@ module Y2R::AST::Ruby
             :value => @literal_42
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
 
         it "passes correct available space info to value" do
@@ -2997,7 +3027,7 @@ module Y2R::AST::Ruby
             :value => node_to_ruby_mock(:width => 80, :shift => 6)
           )
 
-          node.to_ruby(@context_default)
+          node.to_ruby_no_comments(@context_default)
         end
       end
     end
