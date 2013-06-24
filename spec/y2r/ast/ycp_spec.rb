@@ -2499,7 +2499,37 @@ module Y2R::AST
 
   describe YCP::ModuleBlock, :type => :ycp do
     describe "#compile" do
-      def ruby_module_statements(statements, comment)
+      def ruby_module_statements(statements, has_main_def, comment)
+        module_statements = [
+          Ruby::Class.new(
+            :name       => "MClass",
+            :superclass => Ruby::Variable.new(:name => "Module"),
+            :statements => Ruby::Statements.new(
+              :statements => statements
+            )
+          ),
+          Ruby::Assignment.new(
+            :lhs => Ruby::Variable.new(:name => "M"),
+            :rhs => Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "MClass"),
+              :name     => "new",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+        ]
+
+        if has_main_def
+          module_statements << Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "M"),
+            :name     => "main",
+            :args     => [],
+            :block    => nil,
+            :parens   => true
+          )
+        end
+
         Ruby::Program.new(
           :statements => Ruby::Statements.new(
             :statements => [
@@ -2513,32 +2543,7 @@ module Y2R::AST
               Ruby::Module.new(
                 :name       => "Yast",
                 :statements => Ruby::Statements.new(
-                  :statements => [
-                    Ruby::Class.new(
-                      :name       => "MClass",
-                      :superclass => Ruby::Variable.new(:name => "Module"),
-                      :statements => Ruby::Statements.new(
-                        :statements => statements
-                      )
-                    ),
-                    Ruby::Assignment.new(
-                      :lhs => Ruby::Variable.new(:name => "M"),
-                      :rhs => Ruby::MethodCall.new(
-                        :receiver => Ruby::Variable.new(:name => "MClass"),
-                        :name     => "new",
-                        :args     => [],
-                        :block    => nil,
-                        :parens   => true
-                      )
-                    ),
-                    Ruby::MethodCall.new(
-                      :receiver => Ruby::Variable.new(:name => "M"),
-                      :name     => "main",
-                      :args     => [],
-                      :block    => nil,
-                      :parens   => true
-                    )
-                  ]
+                  :statements => module_statements
                 )
               ),
             ]
@@ -2583,7 +2588,7 @@ module Y2R::AST
           :comment    => nil
         )
 
-        ruby_node = ruby_module_statements([], @banner_comment)
+        ruby_node = ruby_module_statements([], false, @banner_comment)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2602,6 +2607,7 @@ module Y2R::AST
             ruby_publish_call("b", false),
             ruby_publish_call("c", false)
           ],
+          false,
           @banner_comment
         )
 
@@ -2624,6 +2630,7 @@ module Y2R::AST
               :statements => @ruby_statements_non_empty
             )
           ],
+          true,
           @banner_comment
         )
 
@@ -2644,6 +2651,7 @@ module Y2R::AST
 
         ruby_node = ruby_module_statements(
           [@ruby_def_f, @ruby_def_g, @ruby_def_h],
+          false,
           @banner_comment
         )
 
@@ -2694,6 +2702,7 @@ module Y2R::AST
               )
             )
           ],
+          true,
           @banner_comment
         )
 
@@ -2708,7 +2717,11 @@ module Y2R::AST
           :comment    => "comment"
         )
 
-        ruby_node = ruby_module_statements([], "#@banner_comment\n\ncomment")
+        ruby_node = ruby_module_statements(
+          [],
+          false,
+          "#@banner_comment\n\ncomment"
+        )
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2741,7 +2754,7 @@ module Y2R::AST
             :comment    => nil
           )
 
-          ruby_node = ruby_module_statements([], @banner_comment)
+          ruby_node = ruby_module_statements([], false, @banner_comment)
 
           ycp_node.compile(context).should == ruby_node
         end
@@ -2767,6 +2780,7 @@ module Y2R::AST
               ruby_publish_call("b", true),
               ruby_publish_call("c", true)
             ],
+            false,
             @banner_comment
           )
 

@@ -904,6 +904,36 @@ module Y2R
             class_statements += build_publish_calls(inner_context)
           end
 
+          module_statements = [
+            Ruby::Class.new(
+              :name       => "#{name}Class",
+              :superclass => Ruby::Variable.new(:name => "Module"),
+              :statements => Ruby::Statements.new(
+                :statements => class_statements
+              )
+            ),
+            Ruby::Assignment.new(
+              :lhs => Ruby::Variable.new(:name => name),
+              :rhs => Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "#{name}Class"),
+                :name     => "new",
+                :args     => [],
+                :block    => nil,
+                :parens   => true
+              )
+            )
+          ]
+
+          if has_main_def?
+            module_statements << Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => name),
+              :name     => "main",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          end
+
           Ruby::Program.new(
             :statements => Ruby::Statements.new(
               :statements => [
@@ -917,32 +947,7 @@ module Y2R
                 Ruby::Module.new(
                   :name       => "Yast",
                   :statements => Ruby::Statements.new(
-                    :statements => [
-                      Ruby::Class.new(
-                        :name       => "#{name}Class",
-                        :superclass => Ruby::Variable.new(:name => "Module"),
-                        :statements => Ruby::Statements.new(
-                          :statements => class_statements
-                        )
-                      ),
-                      Ruby::Assignment.new(
-                        :lhs => Ruby::Variable.new(:name => name),
-                        :rhs => Ruby::MethodCall.new(
-                          :receiver => Ruby::Variable.new(:name => "#{name}Class"),
-                          :name     => "new",
-                          :args     => [],
-                          :block    => nil,
-                          :parens   => true
-                        )
-                      ),
-                      Ruby::MethodCall.new(
-                        :receiver => Ruby::Variable.new(:name => name),
-                        :name     => "main",
-                        :args     => [],
-                        :block    => nil,
-                        :parens   => true
-                      )
-                    ]
+                    :statements => module_statements
                   )
                 )
               ]
@@ -965,8 +970,12 @@ module Y2R
           fundef_statements.find { |s| s.name == name }
         end
 
+        def has_main_def?
+          !other_statements.empty? || constructor
+        end
+
         def build_main_def(context)
-          if !other_statements.empty? || constructor
+          if has_main_def?
             main_statements = other_statements.map { |s| s.compile(context) }
 
             if constructor
