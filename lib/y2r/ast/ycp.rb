@@ -814,8 +814,8 @@ module Y2R
         end
 
         def path_parts
-          path = if filename =~ /\/src\/include\//
-            filename.sub(/^.*\/src\/include\//, "")
+          path = if filename =~ /src\/include\//
+            filename.sub(/^.*src\/include\//, "")
           else
             File.basename(filename)
           end
