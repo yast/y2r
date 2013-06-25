@@ -117,11 +117,25 @@ module Y2R
 
       # Contains utility functions related to comment processing.
       module Comments
+        COMMENT_SPLITTING_REGEXP = /
+          \#[^\n]*\n             # one-line hash comment
+          |
+          \/\/[^\n]*\n           # one-line slash comment
+          |
+          \/\*                   # multi-line comment
+          (
+            [^*]|\*[^\/]
+          )*
+          \*\/
+          |
+          ((?!\#|\/\/|\/\*).)+   # non-comment
+        /xm
+
         class << self
           def process_comment_before(comment)
+            comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
-            comment = fix_delimiters(comment)
 
             # In many before comments, there is a line of whitespace caused by
             # separation of the comment from the node it belongs to. For
@@ -141,9 +155,9 @@ module Y2R
           end
 
           def process_comment_after(comment)
+            comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
-            comment = fix_delimiters(comment)
             comment
           end
 
@@ -158,7 +172,32 @@ module Y2R
           end
 
           def fix_delimiters(comment)
-            comment.gsub(/^\/\//, "#")
+            fixed_comment = ""
+
+            comment.scan(COMMENT_SPLITTING_REGEXP) do
+              segment = $&
+
+              case segment
+                when /^\/\//   # one-line slash comment
+                  segment.sub!(/^\/\//, "#")
+
+                when /\/\*/    # multi-line comment
+                  segment.sub!(/^\/\*/, "")         # leading "/*"
+                  segment.sub!(/\*\/$/, "")         # trailing "*/"
+                  segment.sub!(/^[ \t]*\n/, "")     # leading empty lines
+                  segment.sub!(/(\n[ \t]*)$/, "")   # trailing empty lines
+
+                  if segment.split("\n").all? { |l| l =~ /^[ \t]*\*/ }
+                    segment.gsub!(/^[ \t]*\*/, "")
+                  end
+
+                  segment.gsub!(/^/, "#")
+              end
+
+              fixed_comment << segment
+            end
+
+            fixed_comment
           end
 
           def remove_last_whitepsace_line(comment)
