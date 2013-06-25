@@ -404,6 +404,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 # Original file: default.ycp
 
 require "ycp"
+
 module Yast
   class MClass < Module
     def main
@@ -415,6 +416,7 @@ module Yast
     publish({ :variable => :k, :type => "integer" })
     publish({ :variable => :l, :type => "integer" })
   end
+
   M = MClass.new
   M.main
 end
@@ -1699,6 +1701,7 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 # Original file: default.ycp
 
 require "ycp"
+
 module Yast
   class MClass < Module
     def main
@@ -1720,6 +1723,7 @@ module Yast
     publish({ :variable => :j, :type => "integer" })
     publish({ :function => :g, :type => "integer ()" })
   end
+
   M = MClass.new
   M.main
 end

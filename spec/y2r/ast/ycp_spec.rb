@@ -2500,14 +2500,15 @@ module Y2R::AST
             )
           ),
           Ruby::Assignment.new(
-            :lhs => Ruby::Variable.new(:name => "M"),
-            :rhs => Ruby::MethodCall.new(
+            :lhs            => Ruby::Variable.new(:name => "M"),
+            :rhs            => Ruby::MethodCall.new(
               :receiver => Ruby::Variable.new(:name => "MClass"),
               :name     => "new",
               :args     => [],
               :block    => nil,
               :parens   => true
-            )
+            ),
+            :comment_before => ""
           )
         ]
 
@@ -2533,10 +2534,11 @@ module Y2R::AST
                 :parens   => false
               ),
               Ruby::Module.new(
-                :name       => "Yast",
-                :statements => Ruby::Statements.new(
+                :name           => "Yast",
+                :statements     => Ruby::Statements.new(
                   :statements => module_statements
-                )
+                ),
+                :comment_before => ""
               ),
             ]
           )
