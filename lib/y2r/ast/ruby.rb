@@ -128,7 +128,7 @@ module Y2R
       # ===== Statements =====
 
       class Program < Node
-        def to_ruby_no_comments(context)
+        def to_ruby(context)
           combine do |parts|
             parts << "# encoding: utf-8"
             parts << ""
@@ -136,7 +136,7 @@ module Y2R
             parts << "#"
             parts << "# Original file: #{filename}"
             parts << ""
-            parts << statements.to_ruby(context)
+            parts << wrap_code_with_comments { statements.to_ruby(context) }
           end
         end
 
