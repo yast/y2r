@@ -130,8 +130,6 @@ module Y2R::AST::Ruby
 
       @else = Else.new(:body => @statements)
 
-      @def = Def.new(:name => "m", :args => [], :statements => @statements)
-
       @context_default       = EmitterContext.new(:width => 80, :shift => 0)
       @context_narrow        = EmitterContext.new(:width => 0, :shift => 0)
       @context_max_key_width = EmitterContext.new(
@@ -584,34 +582,6 @@ module Y2R::AST::Ruby
             "a = 42",
             "b = 43",
             "c = 44",
-          ].join("\n")
-        end
-
-        it "emits blank lines before method definitions" do
-          node = Statements.new(:statements => [@assignment_a_42, @def])
-
-          node.to_ruby_no_comments(@context_default).should == [
-            "a = 42",
-            "",
-            "def m",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44",
-            "end"
-          ].join("\n")
-        end
-
-        it "emits blank lines after method definitions" do
-          node = Statements.new(:statements => [@def, @assignment_a_42])
-
-          node.to_ruby_no_comments(@context_default).should == [
-            "def m",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44",
-            "end",
-            "",
-            "a = 42"
           ].join("\n")
         end
       end

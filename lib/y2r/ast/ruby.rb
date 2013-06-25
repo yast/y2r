@@ -199,15 +199,7 @@ module Y2R
             # The |compact| call is needed because some YCP AST nodes don't
             # translate into anything, meaning their |compile| method will
             # return |nil|. These |nil|s may end up in statement lists.
-            statements.compact.each_with_index do |statement, i|
-              parts << statement.to_ruby(context)
-
-              # Yes, this is ugly, but still the best way I can think of now.
-              if (statement.is_a?(Def) && statements[i + 1]) ||
-                 (statement            && statements[i + 1].is_a?(Def))
-                parts << ""
-              end
-            end
+            statements.compact.each { |s| parts << s.to_ruby(context) }
           end
         end
 
