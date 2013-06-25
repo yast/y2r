@@ -6,6 +6,24 @@ require "tempfile"
 
 module Y2R
   class Parser
+    SKIPPED_ELEMENTS = [
+      "arg",
+      "cond",
+      "else",
+      "expr",
+      "false",
+      "key",
+      "lhs",
+      "rhs",
+      "stmt",
+      "then",
+      "true",
+      "until",
+      "value",
+      "yconst",
+      "ycp"
+    ]
+
     class SyntaxError < StandardError
     end
 
@@ -81,7 +99,14 @@ module Y2R
     end
 
     def xml_to_ast(xml)
-      ast = element_to_node(Nokogiri::XML(xml).root, nil)
+      root = Nokogiri::XML(xml).root
+
+      # Comment processing in ycpc is rough and comments often get attached to
+      # wrong nodes. This is a deliberate decision because it is easier to fix
+      # comments here than to do the right thing in ycpc.
+      fix_comments(root, nil) if @options[:comments]
+
+      ast = element_to_node(root, nil)
       ast.filename = if @options[:reported_file]
         @options[:reported_file]
       else
@@ -90,10 +115,61 @@ module Y2R
       ast
     end
 
+    def fix_comments(element, last_element)
+      # We don't want to attach any comments to these.
+      if SKIPPED_ELEMENTS.include?(element.name)
+        fix_comments(element.elements[0], last_element)
+        return
+      end
+
+      # Consider code like this:
+      #
+      #   {
+      #     y2milestone("M1");
+      #   } <-- newline here
+      #
+      # In ycpc there is no node to attach the newline to as |comment_before|,
+      # so it is attached as |comment_after| to the |y2milestone| call. If it
+      # was kept there, it would clutter the generated code with additional
+      # newline at the end.
+      #
+      # To prevent all such situations, we remove all whitespace-only
+      # |comment_after| attributes at this point. If there is an actual comment,
+      # it is kept.
+      if element["comment_after"] && element["comment_after"] =~ /^\s*$/
+        element.attributes["comment_after"].remove
+      end
+
+      # In general, ycpc collects comments and they end up as |comment_before|
+      # at the next AST node that is created. In reality, parts of the comments
+      # may belong to the previous node (passed as |last_element|).
+      comment_before = element["comment_before"]
+      if last_element && comment_before
+        if comment_before =~ /\n/
+          after_part, before_part = comment_before.split("\n", 2)
+          last_element["comment_after"] = after_part unless after_part.empty?
+          if before_part.empty?
+            element.attributes["comment_before"].remove
+          else
+            element["comment_before"] = before_part
+          end
+        else
+          last_element["comment_after"] = comment_before
+          element.attributes["comment_before"].remove
+        end
+      end
+
+      # Recurse into children.
+      last_element = element
+      element.elements.each do |child|
+        fix_comments(child, last_element)
+        last_element = child
+      end
+    end
+
     def element_to_node(element, context)
       node = case element.name
-        when "arg", "cond", "else", "expr", "false", "key", "lhs", "rhs",
-             "stmt","then", "true", "until", "value", "yconst", "ycp"
+        when *SKIPPED_ELEMENTS
           element_to_node(element.elements[0], context)
 
         when "assign"
