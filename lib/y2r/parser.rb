@@ -14,7 +14,13 @@ module Y2R
     end
 
     def parse(input)
-      xml_to_ast(ycp_to_xml(input))
+      xml = ycp_to_xml(input)
+
+      if !@options[:xml]
+        xml_to_ast(xml)
+      else
+        xml
+      end
     end
 
     private
