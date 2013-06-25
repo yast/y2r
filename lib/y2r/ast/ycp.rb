@@ -182,7 +182,14 @@ module Y2R
                   segment.sub!(/^\/\//, "#")
 
                 when /\/\*/    # multi-line comment
-                  segment.sub!(/^\/\*/, "")         # leading "/*"
+                  is_doc_comment = segment =~ /\/\*\*\n/
+
+                  if is_doc_comment
+                    segment.sub!(/^\/\*\*\n/, "")   # leading "/**\n"
+                  else
+                    segment.sub!(/^\/\*/, "")       # leading "/*"
+                  end
+
                   segment.sub!(/\*\/$/, "")         # trailing "*/"
                   segment.sub!(/^[ \t]*\n/, "")     # leading empty lines
                   segment.sub!(/(\n[ \t]*)$/, "")   # trailing empty lines
