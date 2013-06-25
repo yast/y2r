@@ -290,35 +290,21 @@ module Y2R::AST::Ruby
 
   describe Program, :type => :ruby do
     before :each do
-      @node_without_comment = Program.new(
+      @node = Program.new(
         :statements => @statements,
-        :comment    => nil
-      )
-      @node_with_comment = Program.new(
-        :statements => @statements,
-        :comment    => "line 1\n\nline 3"
+        :filename   => "file.ycp"
       )
     end
 
     describe "#to_ruby_no_comments" do
       describe "basics" do
-        it "emits correct code without a comment" do
-          @node_without_comment.to_ruby_no_comments(@context_default).should == [
+        it "emits correct code" do
+          @node.to_ruby_no_comments(@context_default).should == [
             "# encoding: utf-8",
             "",
-            "a = 42",
-            "b = 43",
-            "c = 44"
-          ].join("\n")
-        end
-
-        it "emits correct code with a comment" do
-          @node_with_comment.to_ruby_no_comments(@context_default).should == [
-            "# encoding: utf-8",
-            "",
-            "# line 1",
+            "# Translated by Y2R (https://github.com/yast/y2r).",
             "#",
-            "# line 3",
+            "# Original file: file.ycp",
             "",
             "a = 42",
             "b = 43",
@@ -330,8 +316,8 @@ module Y2R::AST::Ruby
       describe "formatting" do
         it "passes correct available space info to statements" do
           node = Program.new(
-            :statements => node_to_ruby_mock(:width => 80, :shift => 0),
-            :comment    => nil
+            :filename   => "file.ycp",
+            :statements => node_to_ruby_mock(:width => 80, :shift => 0)
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -340,14 +326,8 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns infinity without a comment" do
-        @node_without_comment.single_line_width_no_comments.should ==
-          Float::INFINITY
-      end
-
-      it "returns infinity with a comment" do
-        @node_with_comment.single_line_width_no_comments.should ==
-          Float::INFINITY
+      it "returns infinity" do
+        @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end

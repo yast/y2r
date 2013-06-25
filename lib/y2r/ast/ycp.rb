@@ -390,21 +390,6 @@ module Y2R
             compile_statements(statements, inner_context)
           end
         end
-
-        def header_comment(filename, comment)
-          lines = []
-
-          lines << "Translated by Y2R (https://github.com/yast/y2r)."
-          lines << ""
-          lines << "Original file: #{filename}"
-
-          if comment
-            lines << ""
-            lines << comment
-          end
-
-          lines.join("\n")
-        end
       end
 
       # Sorted alphabetically.
@@ -736,6 +721,7 @@ module Y2R
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -765,8 +751,7 @@ module Y2R
                   :parens   => true
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
 
@@ -937,6 +922,7 @@ module Y2R
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -949,8 +935,7 @@ module Y2R
                   )
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
 
@@ -1104,6 +1089,7 @@ module Y2R
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::MethodCall.new(
@@ -1120,8 +1106,7 @@ module Y2R
                   )
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
 

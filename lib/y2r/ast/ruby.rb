@@ -119,10 +119,10 @@ module Y2R
         def to_ruby_no_comments(context)
           combine do |parts|
             parts << "# encoding: utf-8"
-            if comment
-              parts << ""
-              parts << format_comment
-            end
+            parts << ""
+            parts << "# Translated by Y2R (https://github.com/yast/y2r)."
+            parts << "#"
+            parts << "# Original file: #{filename}"
             parts << ""
             parts << statements.to_ruby(context)
           end
