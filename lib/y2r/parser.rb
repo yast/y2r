@@ -501,11 +501,14 @@ module Y2R
       end
 
       if @options[:comments]
-        if element["comment_before"]
-          node.comment_before = element["comment_before"]
+        comment_before = element["comment_before"]
+        if comment_before && comment_before !~ /\A[ \t]*\z/
+          node.comment_before = comment_before
         end
-        if element["comment_after"]
-          node.comment_after = element["comment_after"]
+
+        comment_after = element["comment_after"]
+        if comment_after && comment_after !~ /\A[ \t]*$\z/
+          node.comment_after = comment_after
         end
       end
 
