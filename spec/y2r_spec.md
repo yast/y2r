@@ -299,6 +299,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -340,6 +341,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -372,6 +374,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -449,6 +452,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -485,6 +489,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -555,6 +560,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -620,6 +626,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -695,6 +702,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -767,6 +775,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -809,6 +818,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1026,6 +1036,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1105,6 +1116,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1280,6 +1292,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1347,6 +1360,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1385,6 +1399,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1641,6 +1656,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 

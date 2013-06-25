@@ -81,6 +81,7 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "    end"
           lines << "  end"
           lines << "end"
+          lines << ""
           lines << "Yast::DefaultClient.new.main"
 
           @ruby_code = lines.join("\n")

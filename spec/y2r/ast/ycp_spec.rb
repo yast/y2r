@@ -1817,7 +1817,7 @@ module Y2R::AST
                 )
               ),
               Ruby::MethodCall.new(
-                :receiver => Ruby::MethodCall.new(
+                :receiver       => Ruby::MethodCall.new(
                   :receiver => Ruby::ConstAccess.new(
                     :receiver => Ruby::Variable.new(:name => "Yast"),
                     :name     => "CClient"
@@ -1827,10 +1827,11 @@ module Y2R::AST
                   :block    => nil,
                   :parens   => true
                 ),
-                :name     => "main",
-                :args     => [],
-                :block    => nil,
-                :parens   => true
+                :name           => "main",
+                :args           => [],
+                :block          => nil,
+                :parens         => true,
+                :comment_before => ""
               )
             ]
           )
