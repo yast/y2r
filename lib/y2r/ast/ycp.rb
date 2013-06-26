@@ -208,9 +208,7 @@ module Y2R
           end
 
           def remove_last_whitepsace_line(comment)
-            lines = comment.split("\n")
-            lines.pop if lines.last =~ /^[ \t]*$/
-            lines.join("\n")
+            comment.sub(/\n[ \t]*\z/, "")
           end
         end
       end
