@@ -260,6 +260,14 @@ module Y2R
           false
         end
 
+        def needs_copy?
+          false
+        end
+
+        def compile_as_copy_if_needed(context)
+          compile(context)
+        end
+
         def compile_statements(statements, context)
           if statements
             statements.compile(context)
@@ -296,7 +304,7 @@ module Y2R
         def compile(context)
           Ruby::Assignment.new(
             :lhs => RubyVar.for(ns, name, context, :in_code),
-            :rhs => child.compile(context)
+            :rhs => child.compile_as_copy_if_needed(context)
           )
         end
       end
@@ -1042,9 +1050,13 @@ module Y2R
         def compile(context)
           case context.innermost(DefBlock, FileBlock, UnspecBlock)
             when DefBlock, FileBlock
-              Ruby::Return.new(:value => child ? child.compile(context) : nil)
+              Ruby::Return.new(
+                :value => child ? child.compile_as_copy_if_needed(context) : nil
+              )
             when UnspecBlock
-              Ruby::Next.new(:value => child ? child.compile(context) : nil)
+              Ruby::Next.new(
+                :value => child ? child.compile_as_copy_if_needed(context) : nil
+              )
             else
               raise "Misplaced \"return\" statement."
           end
@@ -1176,6 +1188,33 @@ module Y2R
       end
 
       class Variable < Node
+        def needs_copy?
+          case category
+            when :variable, :reference
+              type.needs_copy?
+            when :function
+              false
+            else
+              raise "Unknown variable category: #{category.inspect}."
+          end
+        end
+
+        def compile_as_copy_if_needed(context)
+          node = compile(context)
+
+          if needs_copy?
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [node],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            node
+          end
+        end
+
         def compile(context)
           case category
             when :variable, :reference

@@ -1657,28 +1657,13 @@ module Y2R::AST::Ruby
 
   describe Assignment, :type => :ruby do
     before :each do
-      @node_non_variable = Assignment.new(
-        :lhs => @variable_a,
-        :rhs => @literal_42
-      )
-      @node_variable = Assignment.new(
-        :lhs => @variable_a,
-        :rhs => @variable_b
-      )
+      @node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
     end
 
     describe "#to_ruby" do
       describe "basics" do
-        describe "when assigning from a non-variable" do
-          it "emits correct code" do
-            @node_non_variable.to_ruby(@context_default).should == "a = 42"
-          end
-        end
-
-        describe "when assigning from a variable" do
-          it "emits correct code" do
-            @node_variable.to_ruby(@context_default).should == "a = deep_copy(b)"
-          end
+        it "emits correct code" do
+          @node.to_ruby(@context_default).should == "a = 42"
         end
       end
 
@@ -1692,45 +1677,20 @@ module Y2R::AST::Ruby
           node.to_ruby(@context_default)
         end
 
-        describe "when assigning from a variable" do
-          it "passes correct available space info to rhs" do
-            rhs = Variable.new(:name => "a")
-            rhs.should_receive(:to_ruby) do |context|
-              context.width.should == 80
-              context.shift.should == 14
-              ""
-            end
+        it "passes correct available space info to rhs" do
+          node = Assignment.new(
+            :lhs => @variable_a,
+            :rhs => node_to_ruby_mock(:width => 80, :shift => 4)
+          )
 
-            node = Assignment.new(:lhs => @variable_a, :rhs => rhs)
-
-            node.to_ruby(@context_default)
-          end
-        end
-
-        describe "when assigning from a non-variable" do
-          it "passes correct available space info to rhs" do
-            node = Assignment.new(
-              :lhs => @variable_a,
-              :rhs => node_to_ruby_mock(:width => 80, :shift => 4)
-            )
-
-            node.to_ruby(@context_default)
-          end
+          node.to_ruby(@context_default)
         end
       end
     end
 
     describe "#single_line_width" do
-      describe "when assigning from a non-variable" do
-        it "returns correct value" do
-          @node_non_variable.single_line_width.should == 6
-        end
-      end
-
-      describe "when assigning from a non-variable" do
-        it "returns correct value" do
-          @node_variable.single_line_width.should == 16
-        end
+      it "returns correct value" do
+        @node.single_line_width.should == 6
       end
     end
   end

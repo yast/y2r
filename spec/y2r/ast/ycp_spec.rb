@@ -23,6 +23,19 @@ module Y2R::AST
       @ycp_entry_b = YCP::Entry.new(:ns => nil, :name => "b")
       @ycp_entry_c = YCP::Entry.new(:ns => nil, :name => "c")
 
+      @ycp_variable_boolean = YCP::Variable.new(
+        :category => :variable,
+        :ns       => nil,
+        :name     => "i",
+        :type     => YCP::Type.new("boolean")
+      )
+      @ycp_variable_string = YCP::Variable.new(
+        :category => :variable,
+        :ns       => nil,
+        :name     => "i",
+        :type     => YCP::Type.new("string")
+      )
+
       @ycp_assign_i_42 = YCP::Assign.new(
         :ns    => nil,
         :name  => "i",
@@ -642,6 +655,44 @@ module Y2R::AST
             @ycp_node_reserved.compile(@context_local_nested_vars).should ==
               ruby_node_reserved
           end
+        end
+      end
+
+      describe "for assignments with variables on rhs" do
+        it "returns correct AST node for a rhs that doesn't need copy" do
+          ycp_node = YCP::Assign.new(
+            :ns    => nil,
+            :name  => "i",
+            :child => @ycp_variable_boolean
+          )
+
+          ruby_node = Ruby::Assignment.new(
+            :lhs => @ruby_variable_i,
+            :rhs => @ruby_variable_i
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
+        end
+
+        it "returns correct AST node for a rhs that needs copy" do
+          ycp_node = YCP::Assign.new(
+            :ns    => nil,
+            :name  => "i",
+            :child => @ycp_variable_string
+          )
+
+          ruby_node = Ruby::Assignment.new(
+            :lhs => @ruby_variable_i,
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [@ruby_variable_i],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
         end
       end
     end
@@ -2929,6 +2980,32 @@ module Y2R::AST
         it "returns correct AST node for a return with a value" do
           @ycp_node_with_value.compile(@context_unspec_in_def).should ==
             @ruby_node_next_with_value
+        end
+      end
+
+      describe "for return statements with variables as a value" do
+        it "returns correct AST node for a value that doesn't need copy" do
+          ycp_node = YCP::Return.new(:child => @ycp_variable_boolean)
+
+          ruby_node = Ruby::Return.new(:value => @ruby_variable_i)
+
+          ycp_node.compile(@context_global).should == ruby_node
+        end
+
+        it "returns correct AST node for a value that needs copy" do
+          ycp_node = YCP::Return.new(:child => @ycp_variable_string)
+
+          ruby_node = Ruby::Return.new(
+            :value => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [@ruby_variable_i],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
         end
       end
     end

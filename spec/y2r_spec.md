@@ -336,7 +336,7 @@ module Yast
   class DefaultClient < Client
     def f
       i = 42
-      j = deep_copy(i)
+      j = i
       nil
     end
   end
@@ -368,7 +368,7 @@ module Yast
   class DefaultClient < Client
     def main
       @i = 42
-      @j = deep_copy(@i)
+      @j = @i
       nil
     end
   end
@@ -406,9 +406,9 @@ module Yast
   class MClass < Module
     def main
       @i = 42
-      @j = deep_copy(@i)
+      @j = @i
       @k = 42
-      @l = deep_copy(@i)
+      @l = @i
     end
 
     publish({ :variable => :k, :type => "integer" })
