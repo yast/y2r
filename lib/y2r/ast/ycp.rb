@@ -124,9 +124,9 @@ module Y2R
       # Contains utility functions related to comment processing.
       module Comments
         COMMENT_SPLITTING_REGEXP = /
-          \#[^\n]*\n             # one-line hash comment
+          \#[^\n]*(\n|$)         # one-line hash comment
           |
-          \/\/[^\n]*\n           # one-line slash comment
+          \/\/[^\n]*(\n|$)       # one-line slash comment
           |
           \/\*                   # multi-line comment
           (
