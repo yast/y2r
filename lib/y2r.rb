@@ -11,8 +11,9 @@ module Y2R
 
     if !options[:xml]
       ycp_context = AST::YCP::CompilerContext.new(
-        :blocks  => [],
-        :options => options
+        :blocks     => [],
+        :whitespace => :drop,
+        :options    => options
       )
       ruby_context = AST::Ruby::EmitterContext.new(:width => 80, :shift => 0)
 

@@ -29,6 +29,18 @@ module Y2R
           yield context
         end
 
+        def drop_whitespace
+          context = dup
+          context.whitespace = :drop
+          context
+        end
+
+        def keep_whitespace
+          context = dup
+          context.whitespace = :keep
+          context
+        end
+
         def module_name
           blocks.first.name
         end
@@ -138,7 +150,7 @@ module Y2R
         /xm
 
         class << self
-          def process_comment_before(comment)
+          def process_comment_before(comment, options)
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
@@ -157,13 +169,22 @@ module Y2R
             # additional ones).
             comment = remove_last_whitepsace_line(comment)
 
+            if options[:whitespace] == :drop
+              comment = drop_whitespace_only_lines(comment)
+            end
+
             comment
           end
 
-          def process_comment_after(comment)
+          def process_comment_after(comment, options)
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
+
+            if options[:whitespace] == :drop
+              comment = drop_whitespace_only_lines(comment)
+            end
+
             comment
           end
 
@@ -211,6 +232,10 @@ module Y2R
             end
 
             fixed_comment
+          end
+
+          def drop_whitespace_only_lines(comment)
+            comment.gsub(/^[ \t]*$/, "")
           end
 
           def remove_last_whitepsace_line(comment)
@@ -360,19 +385,30 @@ module Y2R
               name_without_comments = :"#{name}_without_comments"
               name_with_comments    = :"#{name}_with_comments"
 
-              define_method name_with_comments do |*args|
-                node = send(name_without_comments, *args)
+              define_method name_with_comments do |context|
+                whitespace = context.whitespace
+                context = context.drop_whitespace if context.whitespace == :keep
+
+                node = send(name_without_comments, context)
                 if node
                   if comment_before
-                    node.comment_before = Comments.process_comment_before(
-                      comment_before
+                    processed_comment_before = Comments.process_comment_before(
+                      comment_before,
+                      :whitespace => whitespace
                     )
+                    unless processed_comment_before.empty?
+                      node.comment_before = processed_comment_before
+                    end
                   end
 
                   if comment_after
-                    node.comment_after = Comments.process_comment_after(
-                      comment_after
+                    processed_comment_after = Comments.process_comment_after(
+                      comment_after,
+                      :whitespace => whitespace
                     )
+                    unless processed_comment_after.empty?
+                      node.comment_after = processed_comment_after
+                    end
                   end
                 end
                 node
@@ -1234,6 +1270,8 @@ module Y2R
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
