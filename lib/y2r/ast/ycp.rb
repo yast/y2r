@@ -1455,18 +1455,24 @@ module Y2R
       class YETerm < Node
         UI_TERMS = [
           :BarGraph,
+          :BusyIndicator,
           :Bottom,
+          :ButtonBox,
+          :Cell,
+          :Center,
           :CheckBox,
-          :ColoredLabel,
+          :CheckBoxFrame,
+          :ColoredLabel, 
           :ComboBox,
-          :Date,
+          :DateField,
           :DownloadProgress,
           :DumbTab,
+          :Dummy,
           :DummySpecialWidget,
           :Empty,
           :Frame,
           :HBox,
-          :HBoxvHCenter,
+          :HCenter,
           :HMultiProgressMeter,
           :HSpacing,
           :HSquash,
@@ -1478,6 +1484,7 @@ module Y2R
           :Heading,
           :IconButton,
           :Image,
+          :InputField,
           :IntField,
           :Label,
           :Left,
@@ -1505,7 +1512,8 @@ module Y2R
           :Slider,
           :Table,
           :TextEntry,
-          :Time,
+          :TimeField,
+          :TimezoneSelector,
           :Top,
           :Tree,
           :VBox,
@@ -1515,16 +1523,23 @@ module Y2R
           :VSquash,
           :VStretch,
           :VWeight,
-          :Wizard
+          :Wizard,
+          # special ones that will have upper case shortcut, but in term is lowercase
+          :id,
+          :item,
+          :header,
+          :opt,
         ]
 
         def compile(context)
           children_compiled = children.map { |ch| ch.compile(context) }
 
-          if UI_TERMS.include?(name.to_sym) && !context.symbols.include?(name)
+          method_name = name.dup
+          method_name[0] = method_name[0].upcase
+          if UI_TERMS.include?(name.to_sym) && !context.symbols.include?(method_name)
             Ruby::MethodCall.new(
               :receiver => nil,
-              :name     => name,
+              :name     => method_name,
               :args     => children_compiled,
               :block    => nil,
               :parens   => true

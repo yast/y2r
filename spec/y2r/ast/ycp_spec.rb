@@ -162,6 +162,13 @@ module Y2R::AST
         :name     => "HBox"
       )
 
+      @ycp_symbol_id = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => YCP::Type.new("integer"),
+        :name     => "Id"
+      )
+
       @ycp_stmt_block = YCP::StmtBlock.new(
         :symbols    => [],
         :statements => @ycp_statements,
@@ -459,6 +466,17 @@ module Y2R::AST
       @context_hbox_local = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_hbox])]
       )
+
+      @context_id_global = YCP::CompilerContext.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => [@ycp_symbol_id])
+        ]
+      )
+      @context_id_local = YCP::CompilerContext.new(
+        :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_id])]
+      )
+
 
       @context_inline = YCP::CompilerContext.new(
         :options => { :dont_inline_include_files => false }
@@ -4291,6 +4309,36 @@ module Y2R::AST
         ycp_node.compile(@context_hbox_local).should  == ruby_node_full
       end
 
+      it "returns correct AST node for UI terms starting with lowercase" do
+        ycp_node = YCP::YETerm.new(
+          :name     => "id",
+          :children => [@ycp_const_42]
+        )
+
+        ruby_node_shortcut = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "Id",
+          :args     => [
+            @ruby_literal_42
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+        ruby_node_full = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "term",
+          :args     => [
+            Ruby::Literal.new(:value => :id),
+            @ruby_literal_42
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should       == ruby_node_shortcut
+        ycp_node.compile(@context_id_global).should == ruby_node_full
+        ycp_node.compile(@context_id_local).should  == ruby_node_full
+      end
     end
   end
 

@@ -235,7 +235,7 @@ its shortcut is created.
 ```ycp
 term t1 = `a();
 term t2 = `a(42, 43, 44);
-term ui = `HBox(`Empty());
+term ui = `HBox(`opt(`disabled), `Empty());
 ```
 
 #### Ruby (fragment)
@@ -243,7 +243,7 @@ term ui = `HBox(`Empty());
 ```ruby
 t1 = term(:a)
 t2 = term(:a, 42, 43, 44)
-ui = HBox(Empty())
+ui = HBox(Opt(:disabled), Empty())
 ```
 
 ### Blocks
