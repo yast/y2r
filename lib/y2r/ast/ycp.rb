@@ -77,6 +77,10 @@ module Y2R
           @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
         end
 
+        def needs_copy?
+          !IMMUTABLE_TYPES.include?(no_const) && !reference?
+        end
+
         def arg_types
           types = []
           type = ""
@@ -113,6 +117,8 @@ module Y2R
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
+
+        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL]
       end
 
       # Contains utility functions related to comment processing.
@@ -382,6 +388,14 @@ module Y2R
           false
         end
 
+        def needs_copy?
+          false
+        end
+
+        def compile_as_copy_if_needed(context)
+          compile(context)
+        end
+
         def compile_statements(statements, context)
           if statements
             statements.compile(context)
@@ -403,7 +417,7 @@ module Y2R
         def compile(context)
           Ruby::Assignment.new(
             :lhs => RubyVar.for(ns, name, context, :in_code),
-            :rhs => child.compile(context)
+            :rhs => child.compile_as_copy_if_needed(context)
           )
         end
 
@@ -1202,9 +1216,13 @@ module Y2R
         def compile(context)
           case context.innermost(DefBlock, FileBlock, UnspecBlock)
             when DefBlock, FileBlock
-              Ruby::Return.new(:value => child ? child.compile(context) : nil)
+              Ruby::Return.new(
+                :value => child ? child.compile_as_copy_if_needed(context) : nil
+              )
             when UnspecBlock
-              Ruby::Next.new(:value => child ? child.compile(context) : nil)
+              Ruby::Next.new(
+                :value => child ? child.compile_as_copy_if_needed(context) : nil
+              )
             else
               raise "Misplaced \"return\" statement."
           end
@@ -1239,9 +1257,7 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          immutable_types = [Type::BOOLEAN, Type::INTEGER, Type::SYMBOL]
-
-          !immutable_types.include?(type.no_const) && !type.reference?
+          type.needs_copy?
         end
 
         def compile(context)
@@ -1350,6 +1366,33 @@ module Y2R
       end
 
       class Variable < Node
+        def needs_copy?
+          case category
+            when :variable, :reference
+              type.needs_copy?
+            when :function
+              false
+            else
+              raise "Unknown variable category: #{category.inspect}."
+          end
+        end
+
+        def compile_as_copy_if_needed(context)
+          node = compile(context)
+
+          if needs_copy?
+            Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [node],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            node
+          end
+        end
+
         def compile(context)
           case category
             when :variable, :reference
@@ -1651,18 +1694,24 @@ module Y2R
       class YETerm < Node
         UI_TERMS = [
           :BarGraph,
+          :BusyIndicator,
           :Bottom,
+          :ButtonBox,
+          :Cell,
+          :Center,
           :CheckBox,
-          :ColoredLabel,
+          :CheckBoxFrame,
+          :ColoredLabel, 
           :ComboBox,
-          :Date,
+          :DateField,
           :DownloadProgress,
           :DumbTab,
+          :Dummy,
           :DummySpecialWidget,
           :Empty,
           :Frame,
           :HBox,
-          :HBoxvHCenter,
+          :HCenter,
           :HMultiProgressMeter,
           :HSpacing,
           :HSquash,
@@ -1674,6 +1723,7 @@ module Y2R
           :Heading,
           :IconButton,
           :Image,
+          :InputField,
           :IntField,
           :Label,
           :Left,
@@ -1701,7 +1751,8 @@ module Y2R
           :Slider,
           :Table,
           :TextEntry,
-          :Time,
+          :TimeField,
+          :TimezoneSelector,
           :Top,
           :Tree,
           :VBox,
@@ -1711,16 +1762,23 @@ module Y2R
           :VSquash,
           :VStretch,
           :VWeight,
-          :Wizard
+          :Wizard,
+          # special ones that will have upper case shortcut, but in term is lowercase
+          :id,
+          :item,
+          :header,
+          :opt,
         ]
 
         def compile(context)
           children_compiled = children.map { |ch| ch.compile(context) }
 
-          if UI_TERMS.include?(name.to_sym) && !context.symbols.include?(name)
+          method_name = name.dup
+          method_name[0] = method_name[0].upcase
+          if UI_TERMS.include?(name.to_sym) && !context.symbols.include?(method_name)
             Ruby::MethodCall.new(
               :receiver => nil,
-              :name     => name,
+              :name     => method_name,
               :args     => children_compiled,
               :block    => nil,
               :parens   => true

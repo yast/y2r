@@ -23,6 +23,19 @@ module Y2R::AST
       @ycp_entry_b = YCP::Entry.new(:ns => nil, :name => "b")
       @ycp_entry_c = YCP::Entry.new(:ns => nil, :name => "c")
 
+      @ycp_variable_boolean = YCP::Variable.new(
+        :category => :variable,
+        :ns       => nil,
+        :name     => "i",
+        :type     => YCP::Type.new("boolean")
+      )
+      @ycp_variable_string = YCP::Variable.new(
+        :category => :variable,
+        :ns       => nil,
+        :name     => "i",
+        :type     => YCP::Type.new("string")
+      )
+
       @ycp_assign_i_42 = YCP::Assign.new(
         :ns    => nil,
         :name  => "i",
@@ -160,6 +173,13 @@ module Y2R::AST
         :category => :variable,
         :type     => YCP::Type.new("integer"),
         :name     => "HBox"
+      )
+
+      @ycp_symbol_id = YCP::Symbol.new(
+        :global   => false,
+        :category => :variable,
+        :type     => YCP::Type.new("integer"),
+        :name     => "Id"
       )
 
       @ycp_stmt_block = YCP::StmtBlock.new(
@@ -455,6 +475,17 @@ module Y2R::AST
         :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_hbox])]
       )
 
+      @context_id_global = YCP::CompilerContext.new(
+        :blocks => [
+          YCP::FileBlock.new(:symbols => []),
+          YCP::DefBlock.new(:symbols => [@ycp_symbol_id])
+        ]
+      )
+      @context_id_local = YCP::CompilerContext.new(
+        :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_id])]
+      )
+
+
       @context_inline = YCP::CompilerContext.new(
         :options => { :dont_inline_include_files => false }
       )
@@ -619,6 +650,44 @@ module Y2R::AST
             @ycp_node_reserved.compile(@context_local_nested_vars).should ==
               ruby_node_reserved
           end
+        end
+      end
+
+      describe "for assignments with variables on rhs" do
+        it "returns correct AST node for a rhs that doesn't need copy" do
+          ycp_node = YCP::Assign.new(
+            :ns    => nil,
+            :name  => "i",
+            :child => @ycp_variable_boolean
+          )
+
+          ruby_node = Ruby::Assignment.new(
+            :lhs => @ruby_variable_i,
+            :rhs => @ruby_variable_i
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
+        end
+
+        it "returns correct AST node for a rhs that needs copy" do
+          ycp_node = YCP::Assign.new(
+            :ns    => nil,
+            :name  => "i",
+            :child => @ycp_variable_string
+          )
+
+          ruby_node = Ruby::Assignment.new(
+            :lhs => @ruby_variable_i,
+            :rhs => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [@ruby_variable_i],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
         end
       end
     end
@@ -2888,6 +2957,32 @@ module Y2R::AST
             @ruby_node_next_with_value
         end
       end
+
+      describe "for return statements with variables as a value" do
+        it "returns correct AST node for a value that doesn't need copy" do
+          ycp_node = YCP::Return.new(:child => @ycp_variable_boolean)
+
+          ruby_node = Ruby::Return.new(:value => @ruby_variable_i)
+
+          ycp_node.compile(@context_global).should == ruby_node
+        end
+
+        it "returns correct AST node for a value that needs copy" do
+          ycp_node = YCP::Return.new(:child => @ycp_variable_string)
+
+          ruby_node = Ruby::Return.new(
+            :value => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "deep_copy",
+              :args     => [@ruby_variable_i],
+              :block    => nil,
+              :parens   => true
+            )
+          )
+
+          ycp_node.compile(@context_global).should == ruby_node
+        end
+      end
     end
   end
 
@@ -4266,6 +4361,36 @@ module Y2R::AST
         ycp_node.compile(@context_hbox_local).should  == ruby_node_full
       end
 
+      it "returns correct AST node for UI terms starting with lowercase" do
+        ycp_node = YCP::YETerm.new(
+          :name     => "id",
+          :children => [@ycp_const_42]
+        )
+
+        ruby_node_shortcut = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "Id",
+          :args     => [
+            @ruby_literal_42
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+        ruby_node_full = Ruby::MethodCall.new(
+          :receiver => nil,
+          :name     => "term",
+          :args     => [
+            Ruby::Literal.new(:value => :id),
+            @ruby_literal_42
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should       == ruby_node_shortcut
+        ycp_node.compile(@context_id_global).should == ruby_node_full
+        ycp_node.compile(@context_id_local).should  == ruby_node_full
+      end
     end
   end
 

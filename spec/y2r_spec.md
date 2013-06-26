@@ -235,7 +235,7 @@ its shortcut is created.
 ```ycp
 term t1 = `a();
 term t2 = `a(42, 43, 44);
-term ui = `HBox(`Empty());
+term ui = `HBox(`opt(`disabled), `Empty());
 ```
 
 #### Ruby (fragment)
@@ -243,7 +243,7 @@ term ui = `HBox(`Empty());
 ```ruby
 t1 = term(:a)
 t2 = term(:a, 42, 43, 44)
-ui = HBox(Empty())
+ui = HBox(Opt(:disabled), Empty())
 ```
 
 ### Blocks
@@ -336,7 +336,7 @@ module Yast
   class DefaultClient < Client
     def f
       i = 42
-      j = deep_copy(i)
+      j = i
       nil
     end
   end
@@ -369,7 +369,7 @@ module Yast
   class DefaultClient < Client
     def main
       @i = 42
-      @j = deep_copy(@i)
+      @j = @i
       nil
     end
   end
@@ -409,9 +409,9 @@ module Yast
   class MClass < Module
     def main
       @i = 42
-      @j = deep_copy(@i)
+      @j = @i
       @k = 42
-      @l = deep_copy(@i)
+      @l = @i
     end
     publish({ :variable => :k, :type => "integer" })
     publish({ :variable => :l, :type => "integer" })

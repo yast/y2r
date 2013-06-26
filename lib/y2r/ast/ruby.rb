@@ -468,16 +468,9 @@ module Y2R
         def to_ruby_no_comments(context)
           lhs_code = lhs.to_ruby(context)
 
-          # YCP always makes a copy when assigning.
-          if rhs.is_a?(Variable)
-            rhs_shift   = lhs_code.size + 13
-            rhs_context = context.shifted(rhs_shift)
-            rhs_code    = "deep_copy(#{rhs.to_ruby(rhs_context)})"
-          else
-            rhs_shift   = lhs_code.size + 3
-            rhs_context = context.shifted(rhs_shift)
-            rhs_code    = rhs.to_ruby(rhs_context)
-          end
+          rhs_shift   = lhs_code.size + 3
+          rhs_context = context.shifted(rhs_shift)
+          rhs_code    = rhs.to_ruby(rhs_context)
 
           "#{lhs_code} = #{rhs_code}"
         end
