@@ -77,6 +77,10 @@ module Y2R
           @type =~ /^const / ? Type.new(@type.sub(/^const /, "")) : self
         end
 
+        def needs_copy?
+          !IMMUTABLE_TYPES.include?(no_const) && !reference?
+        end
+
         def arg_types
           types = []
           type = ""
@@ -113,6 +117,8 @@ module Y2R
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
+
+        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL]
       end
 
       # Contains utility functions related to Ruby variables.
@@ -1067,9 +1073,7 @@ module Y2R
 
       class Symbol < Node
         def needs_copy?
-          immutable_types = [Type::BOOLEAN, Type::INTEGER, Type::SYMBOL]
-
-          !immutable_types.include?(type.no_const) && !type.reference?
+          type.needs_copy?
         end
 
         def compile(context)
