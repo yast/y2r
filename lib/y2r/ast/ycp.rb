@@ -470,9 +470,12 @@ module Y2R
       end
 
       class Compare < Node
+        OPS_TO_OPS = {
+          "==" => "==",
+          "!=" => "!="
+        }
+
         OPS_TO_METHODS = {
-          "==" => "equal",
-          "!=" => "not_equal",
           "<"  => "less_than",
           ">"  => "greater_than",
           "<=" => "less_or_equal",
@@ -480,13 +483,23 @@ module Y2R
         }
 
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => OPS_TO_METHODS[op],
-            :args     => [lhs.compile(context), rhs.compile(context)],
-            :block    => nil,
-            :parens   => true
-          )
+          if OPS_TO_OPS[op]
+            Ruby::BinaryOperator.new(
+              :op       => OPS_TO_OPS[op],
+              :lhs      => lhs.compile(context),
+              :rhs      => rhs.compile(context)
+            )
+          elsif OPS_TO_METHODS[op]
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => OPS_TO_METHODS[op],
+              :args     => [lhs.compile(context), rhs.compile(context)],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            raise "Unknown compare operator #{op}."
+          end
         end
       end
 

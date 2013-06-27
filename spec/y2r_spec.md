@@ -821,8 +821,8 @@ Yast::DefaultClient.new.main
 ### Comparison Operators
 
 Y2R translates YCP comparison operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can't be used
-because their behavior differs from the behavior of YCP operators in some cases.
+module that implement their behavior or ruby equivalent if behavior is same in
+all cases.
 
 #### YCP (fragment)
 
@@ -838,8 +838,8 @@ boolean b6 = 42 >= 43;
 #### Ruby (fragment)
 
 ```ruby
-b1 = Ops.equal(42, 43)
-b2 = Ops.not_equal(42, 43)
+b1 = 42 == 43
+b2 = 42 != 43
 b3 = Ops.less_than(42, 43)
 b4 = Ops.greater_than(42, 43)
 b5 = Ops.less_or_equal(42, 43)
