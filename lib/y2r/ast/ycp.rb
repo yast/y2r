@@ -1359,7 +1359,7 @@ module Y2R
           # when the value is missing. In other words, the default is evaluated
           # lazily. We need to emulate this laziness at least for the calls.
           if default.is_a?(Call)
-            args  = [value.compile(context), index.compile(context)]
+            args  = [value.compile(context), build_index(context)]
             block = Ruby::Block.new(
               :args       => [],
               :statements => default.compile(context)
@@ -1367,9 +1367,13 @@ module Y2R
           else
             args  = [
               value.compile(context),
-              index.compile(context),
-              default.compile(context),
+              build_index(context),
             ]
+
+            if !(default.is_a?(Const) && default.type == :void)
+              args << default.compile(context)
+            end
+
             block = nil
           end
 
@@ -1380,6 +1384,16 @@ module Y2R
             :block    => block,
             :parens   => true
           )
+        end
+
+        private
+
+        def build_index(context)
+          if index.children.size == 1
+            index.children.first.compile(context)
+          else
+            index.compile(context)
+          end
         end
       end
 
