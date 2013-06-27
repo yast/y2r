@@ -635,19 +635,19 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
     return 42;
   }
 
-  integer f2(string a, string b, string c) {
+  integer f2(list a, list b, list c) {
     return 42;
   }
 
-  integer f3(string& a, string& b, string& c) {
+  integer f3(list& a, list& b, list& c) {
     return 42;
   }
 
   f1();
 
-  string a = "a";
-  string b = "b";
-  string c = "c";
+  list a = ["a"];
+  list b = ["b"];
+  list c = ["c"];
 
   f2(a, b, c);
   f3(a, b, c);
@@ -667,9 +667,9 @@ module Yast
   class DefaultClient < Client
     def main
       f1
-      @a = "a"
-      @b = "b"
-      @c = "c"
+      @a = ["a"]
+      @b = ["b"]
+      @c = ["c"]
       f2(@a, @b, @c)
       (
         a_ref = arg_ref(@a);
@@ -713,19 +713,19 @@ method on them.
       return 42;
     }
 
-    integer f2(string a, string b, string c) {
+    integer f2(list a, list b, list c) {
       return 42;
     }
 
-    integer f3(string& a, string& b, string& c) {
+    integer f3(list& a, list& b, list& c) {
       return 42;
     }
 
     f1();
 
-    string a = "a";
-    string b = "b";
-    string c = "c";
+    list a = ["a"];
+    list b = ["b"];
+    list c = ["c"];
 
     f2(a, b, c);
     f3(a, b, c);
@@ -754,9 +754,9 @@ module Yast
       }
       f3 = lambda { |a2, b2, c2| return 42 }
       f1.call
-      a = "a"
-      b = "b"
-      c = "c"
+      a = ["a"]
+      b = ["b"]
+      c = ["c"]
       f2.call(a, b, c)
       (
         a_ref = arg_ref(a);
@@ -1243,11 +1243,23 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
     return 42;
   }
 
-  integer f5(string& a, string& b, string& c) {
+  integer f5(string a, string b, string c) {
     return 42;
   }
 
-  integer f6(string a, string b, string c) {
+  integer f6(path a, path b, path c) {
+    return 42;
+  }
+
+  integer f7(term a, term b, term c) {
+    return 42;
+  }
+
+  integer f8(list& a, list& b, list& c) {
+    return 42;
+  }
+
+  integer f9(list a, list b, list c) {
     return 42;
   }
 }
@@ -1285,6 +1297,18 @@ module Yast
     end
 
     def f6(a, b, c)
+      return 42
+    end
+
+    def f7(a, b, c)
+      return 42
+    end
+
+    def f8(a, b, c)
+      return 42
+    end
+
+    def f9(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
@@ -1320,11 +1344,23 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
       return 42;
     }
 
-    integer f5(string& a, string& b, string& c) {
+    integer f5(string a, string b, string c) {
       return 42;
     }
 
-    integer f6(string a, string b, string c) {
+    integer f6(path a, path b, path c) {
+      return 42;
+    }
+
+    integer f7(term a, term b, term c) {
+      return 42;
+    }
+
+    integer f8(list& a, list& b, list& c) {
+      return 42;
+    }
+
+    integer f9(list a, list b, list c) {
       return 42;
     }
   }
@@ -1349,7 +1385,10 @@ module Yast
       f3 = lambda { |a, b, c| return 42 }
       f4 = lambda { |a, b, c| return 42 }
       f5 = lambda { |a, b, c| return 42 }
-      f6 = lambda { |a, b, c|
+      f6 = lambda { |a, b, c| return 42 }
+      f7 = lambda { |a, b, c| return 42 }
+      f8 = lambda { |a, b, c| return 42 }
+      f9 = lambda { |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)

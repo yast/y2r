@@ -117,8 +117,11 @@ module Y2R
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
+        STRING  = Type.new("string")
+        PATH    = Type.new("path")
+        TERM    = Type.new("term")
 
-        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL]
+        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL, STRING, PATH, TERM]
       end
 
       # Contains utility functions related to Ruby variables.
