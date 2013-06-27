@@ -33,14 +33,26 @@ module Y2R
           context.shift += n
           context
         end
+
+        def with_trailer(trailer)
+          context = dup
+          context.trailer = trailer
+          context
+        end
+
+        def without_trailer
+          context = dup
+          context.trailer = nil
+          context
+        end
       end
 
       class Node < OpenStruct
         INDENT_STEP = 2
 
         def to_ruby(context)
-          wrap_code_with_comments do
-            to_ruby_no_comments(context)
+          wrap_code_with_comments context do |inner_context|
+            to_ruby_no_comments(inner_context)
           end
         end
 
@@ -56,6 +68,10 @@ module Y2R
 
         def single_line_width_enclosed
           enclose? ? 1 + single_line_width + 1 : single_line_width
+        end
+
+        def has_comment?
+          comment_before || comment_after
         end
 
         protected
@@ -88,7 +104,7 @@ module Y2R
           combine do |parts|
             parts << opener
             items[0..-2].each do |item|
-              parts << "#{indented(item, context)}#{separator}"
+              parts << "#{indented(item, context.with_trailer(separator))}"
             end
             parts << "#{indented(items.last, context)}" unless items.empty?
             parts << closer
@@ -110,8 +126,8 @@ module Y2R
           true
         end
 
-        def wrap_code_with_comments
-          code = yield
+        def wrap_code_with_comments(context)
+          code = "#{yield(context.without_trailer)}#{context.trailer}"
           code = "#{comment_before}\n#{code}" if comment_before
           code = "#{code} #{comment_after}"   if comment_after
           code
@@ -130,13 +146,17 @@ module Y2R
       class Program < Node
         def to_ruby(context)
           combine do |parts|
+            statements_code = wrap_code_with_comments context do |inner_context|
+              statements.to_ruby(inner_context)
+            end
+
             parts << "# encoding: utf-8"
             parts << ""
             parts << "# Translated by Y2R (https://github.com/yast/y2r)."
             parts << "#"
             parts << "# Original file: #{filename}"
             parts << ""
-            parts << wrap_code_with_comments { statements.to_ruby(context) }
+            parts << statements_code
           end
         end
 
@@ -740,7 +760,7 @@ module Y2R
 
       class Array < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context) || elements.empty?
+          if (fits_current_line?(context) && !elements_have_comments?) || elements.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -748,7 +768,11 @@ module Y2R
         end
 
         def single_line_width_no_comments
-          1 + list_single_line_width(elements, 2) + 1
+          if !elements_have_comments?
+            1 + list_single_line_width(elements, 2) + 1
+          else
+            Float::INFINITY
+          end
         end
 
         protected
@@ -758,6 +782,10 @@ module Y2R
         end
 
         private
+
+        def elements_have_comments?
+          elements.any? { |e| e.has_comment? }
+        end
 
         def to_ruby_no_comments_single_line(context)
           "[#{list(elements, ", ", context.shifted(1))}]"

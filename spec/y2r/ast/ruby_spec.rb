@@ -21,6 +21,20 @@ def node_width_and_to_ruby_mock(expected_context)
   mock
 end
 
+def node_width_comment_and_to_ruby_mock(expected_context)
+  mock = node_to_ruby_mock(expected_context)
+  mock.should_receive(:single_line_width).and_return(0)
+  mock.should_receive(:has_comment?).and_return(false)
+  mock
+end
+
+def node_width_comment2_and_to_ruby_mock(expected_context)
+  mock = node_to_ruby_mock(expected_context)
+  mock.should_receive(:single_line_width).and_return(0)
+  mock.should_receive(:has_comment?).twice.and_return(false)
+  mock
+end
+
 def node_to_ruby_enclosed_mock(expected_context)
   mock = double
 
@@ -50,6 +64,32 @@ module Y2R::AST::Ruby
       @literal_43 = Literal.new(:value => 43)
       @literal_44 = Literal.new(:value => 44)
       @literal_45 = Literal.new(:value => 45)
+
+      @literal_42_comment_before = Literal.new(
+        :value          => 42,
+        :comment_before => "# before"
+      )
+      @literal_43_comment_before = Literal.new(
+        :value          => 43,
+        :comment_before => "# before"
+      )
+      @literal_44_comment_before = Literal.new(
+        :value          => 44,
+        :comment_before => "# before"
+      )
+
+      @literal_42_comment_after = Literal.new(
+        :value         => 42,
+        :comment_after => "# after"
+      )
+      @literal_43_comment_after = Literal.new(
+        :value         => 43,
+        :comment_after => "# after"
+      )
+      @literal_44_comment_after = Literal.new(
+        :value         => 44,
+        :comment_after => "# after"
+      )
 
       @variable_a = Variable.new(:name => "a")
       @variable_b = Variable.new(:name => "b")
@@ -2694,6 +2734,21 @@ module Y2R::AST::Ruby
       @node_multiple = Array.new(
         :elements => [@literal_42, @literal_43, @literal_44]
       )
+
+      @node_comments_before = Array.new(
+        :elements => [
+          @literal_42_comment_before,
+          @literal_43_comment_before,
+          @literal_44_comment_before
+        ]
+      )
+      @node_comments_after = Array.new(
+        :elements => [
+          @literal_42_comment_after,
+          @literal_43_comment_after,
+          @literal_44_comment_after
+        ]
+      )
     end
 
     describe "#to_ruby_no_comments" do
@@ -2748,6 +2803,77 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
+      it "emits a multi-line array when any element has comment before" do
+        node1 = Array.new(
+          :elements => [@literal_42_comment_before, @literal_43, @literal_44]
+        )
+        node2 = Array.new(
+          :elements => [@literal_42, @literal_43_comment_before, @literal_44]
+        )
+        node3 = Array.new(
+          :elements => [@literal_42, @literal_43, @literal_44_comment_before]
+        )
+
+        node1.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  # before",
+          "  42,",
+          "  43,",
+          "  44",
+          "]"
+        ].join("\n")
+        node2.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  42,",
+          "  # before",
+          "  43,",
+          "  44",
+          "]"
+        ].join("\n")
+        node3.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  42,",
+          "  43,",
+          "  # before",
+          "  44",
+          "]"
+        ].join("\n")
+      end
+
+      it "emits a multi-line array when any element has comment after" do
+        node1 = Array.new(
+          :elements => [@literal_42_comment_after, @literal_43, @literal_44]
+        )
+        node2 = Array.new(
+          :elements => [@literal_42, @literal_43_comment_after, @literal_44]
+        )
+        node3 = Array.new(
+          :elements => [@literal_42, @literal_43, @literal_44_comment_after]
+        )
+
+        node1.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  42, # after",
+          "  43,",
+          "  44",
+          "]"
+        ].join("\n")
+        node2.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  42,",
+          "  43, # after",
+          "  44",
+          "]"
+        ].join("\n")
+        node3.to_ruby_no_comments(@context_default).should == [
+          "[",
+          "  42,",
+          "  43,",
+          "  44 # after",
+          "]"
+        ].join("\n")
+      end
+
       describe "for single-line arrays" do
         it "emits correct code for empty arrays" do
           @node_empty.to_ruby_no_comments(@context_default).should == "[]"
@@ -2765,9 +2891,9 @@ module Y2R::AST::Ruby
         it "passes correct available space info to elements" do
           node = Array.new(
             :elements => [
-              node_width_and_to_ruby_mock(:width => 80, :shift => 1),
-              node_width_and_to_ruby_mock(:width => 80, :shift => 3),
-              node_width_and_to_ruby_mock(:width => 80, :shift => 5)
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 1),
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 3),
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 5)
             ]
           )
 
@@ -2798,12 +2924,35 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
+        it "emits correct code for arrays with elements with comment before" do
+          @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
+           "[",
+           "  # before",
+           "  42,",
+           "  # before",
+           "  43,",
+           "  # before",
+           "  44",
+           "]"
+          ].join("\n")
+        end
+
+        it "emits correct code for arrays with elements with comment after" do
+          @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
+           "[",
+           "  42, # after",
+           "  43, # after",
+           "  44 # after",
+           "]"
+          ].join("\n")
+        end
+
         it "passes correct available space info to elements" do
           node = Array.new(
             :elements => [
-              node_width_and_to_ruby_mock(:width => -2, :shift => 0),
-              node_width_and_to_ruby_mock(:width => -2, :shift => 0),
-              node_width_and_to_ruby_mock(:width => -2, :shift => 0)
+              node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0),
+              node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0),
+              node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0)
             ]
           )
 
@@ -2823,6 +2972,16 @@ module Y2R::AST::Ruby
 
       it "returns correct value for arrays with multiple elements" do
         @node_multiple.single_line_width_no_comments.should == 12
+      end
+
+      it "returns infinity for arrays with elements with comment before" do
+        @node_comments_before.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity for arrays with elements with comment after" do
+        @node_comments_after.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
