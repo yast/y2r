@@ -133,10 +133,6 @@ module Y2R::AST::Ruby
         :key   => @literal_a,
         :value => @literal_42
       )
-      @hash_entry_a_statements = HashEntry.new(
-        :key   => @literal_a,
-        :value => @statements
-      )
       @hash_entry_aa_43 = HashEntry.new(
         :key   => @literal_aa,
         :value => @literal_43
@@ -149,13 +145,50 @@ module Y2R::AST::Ruby
         :key   => @literal_b,
         :value => @literal_43
       )
-      @hash_entry_b_statements = HashEntry.new(
-        :key   => @literal_b,
-        :value => @statements
-      )
       @hash_entry_c_44 = HashEntry.new(
         :key   => @literal_c,
         :value => @literal_44
+      )
+
+      @hash_entry_a_42_comment_before = HashEntry.new(
+        :key            => @literal_a,
+        :value          => @literal_42,
+        :comment_before => "# before"
+      )
+      @hash_entry_b_43_comment_before = HashEntry.new(
+        :key            => @literal_b,
+        :value          => @literal_43,
+        :comment_before => "# before"
+      )
+      @hash_entry_c_44_comment_before = HashEntry.new(
+        :key            => @literal_c,
+        :value          => @literal_44,
+        :comment_before => "# before"
+      )
+
+      @hash_entry_a_42_comment_after = HashEntry.new(
+        :key           => @literal_a,
+        :value         => @literal_42,
+        :comment_after => "# after"
+      )
+      @hash_entry_b_43_comment_after = HashEntry.new(
+        :key           => @literal_b,
+        :value         => @literal_43,
+        :comment_after => "# after"
+      )
+      @hash_entry_c_44_comment_after = HashEntry.new(
+        :key           => @literal_c,
+        :value         => @literal_44,
+        :comment_after => "# after"
+      )
+
+      @hash_entry_a_statements = HashEntry.new(
+        :key   => @literal_a,
+        :value => @statements
+      )
+      @hash_entry_b_statements = HashEntry.new(
+        :key   => @literal_b,
+        :value => @statements
       )
       @hash_entry_c_statements = HashEntry.new(
         :key   => @literal_c,
@@ -3112,6 +3145,21 @@ module Y2R::AST::Ruby
       @node_multiple = Hash.new(
         :entries => [@hash_entry_a_42, @hash_entry_b_43, @hash_entry_c_44]
       )
+
+      @node_comments_before = Hash.new(
+        :entries => [
+          @hash_entry_a_42_comment_before,
+          @hash_entry_b_43_comment_before,
+          @hash_entry_c_44_comment_before
+        ]
+      )
+      @node_comments_after = Hash.new(
+        :entries => [
+          @hash_entry_a_42_comment_after,
+          @hash_entry_b_43_comment_after,
+          @hash_entry_c_44_comment_after
+        ]
+      )
     end
 
     describe "#to_ruby_no_comments" do
@@ -3184,6 +3232,101 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
+      it "emits a multi-line hash when any entry has comment before" do
+        node1 = Hash.new(
+          :entries => [
+            @hash_entry_a_42_comment_before,
+            @hash_entry_b_43,
+            @hash_entry_c_44
+          ]
+        )
+        node2 = Hash.new(
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_43_comment_before,
+            @hash_entry_c_44
+          ]
+        )
+        node3 = Hash.new(
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_43,
+            @hash_entry_c_44_comment_before
+          ]
+        )
+
+        node1.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  # before",
+          "  :a => 42,",
+          "  :b => 43,",
+          "  :c => 44",
+          "}"
+        ].join("\n")
+        node2.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  # before",
+          "  :b => 43,",
+          "  :c => 44",
+          "}"
+        ].join("\n")
+        node3.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  :b => 43,",
+          "  # before",
+          "  :c => 44",
+          "}"
+        ].join("\n")
+      end
+
+      it "emits a multi-line hash when any entry has comment after" do
+        node1 = Hash.new(
+          :entries => [
+            @hash_entry_a_42_comment_after,
+            @hash_entry_b_43,
+            @hash_entry_c_44
+          ]
+        )
+        node2 = Hash.new(
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_43_comment_after,
+            @hash_entry_c_44
+          ]
+        )
+        node3 = Hash.new(
+          :entries => [
+            @hash_entry_a_42,
+            @hash_entry_b_43,
+            @hash_entry_c_44_comment_after
+          ]
+        )
+
+        node1.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  :a => 42, # after",
+          "  :b => 43,",
+          "  :c => 44",
+          "}"
+        ].join("\n")
+        node2.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  :b => 43, # after",
+          "  :c => 44",
+          "}"
+        ].join("\n")
+        node3.to_ruby_no_comments(@context_default).should == [
+          "{",
+          "  :a => 42,",
+          "  :b => 43,",
+          "  :c => 44 # after",
+          "}"
+        ].join("\n")
+      end
+
       describe "for single-line hashes" do
         it "emits correct code for empty hashes" do
           @node_empty.to_ruby_no_comments(@context_default).should == "{}"
@@ -3202,9 +3345,9 @@ module Y2R::AST::Ruby
         it "passes correct available space info to entries" do
           node = Hash.new(
             :entries => [
-              node_width_and_to_ruby_mock(:width => 80, :shift => 2),
-              node_width_and_to_ruby_mock(:width => 80, :shift => 4),
-              node_width_and_to_ruby_mock(:width => 80, :shift => 6)
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 2),
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 4),
+              node_width_comment2_and_to_ruby_mock(:width => 80, :shift => 6)
             ]
           )
 
@@ -3235,6 +3378,29 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
+        it "emits correct code for hashes with entries with comment before" do
+          @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
+           "{",
+           "  # before",
+           "  :a => 42,",
+           "  # before",
+           "  :b => 43,",
+           "  # before",
+           "  :c => 44",
+           "}"
+          ].join("\n")
+        end
+
+        it "emits correct code for hashes with entries with comment after" do
+          @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
+           "{",
+           "  :a => 42, # after",
+           "  :b => 43, # after",
+           "  :c => 44 # after",
+           "}"
+          ].join("\n")
+        end
+
         it "aligns arrows" do
           node = Hash.new(
             :entries => [
@@ -3254,9 +3420,9 @@ module Y2R::AST::Ruby
         end
 
         it "passes correct available space info to entries" do
-          node1 = node_width_and_to_ruby_mock(:width => -2, :shift => 0)
-          node2 = node_width_and_to_ruby_mock(:width => -2, :shift => 0)
-          node3 = node_width_and_to_ruby_mock(:width => -2, :shift => 0)
+          node1 = node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0)
+          node2 = node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0)
+          node3 = node_width_comment_and_to_ruby_mock(:width => -2, :shift => 0)
 
           node1.should_receive(:key_width) do |context|
             context.width.should == -2
@@ -3292,6 +3458,16 @@ module Y2R::AST::Ruby
 
       it "returns correct value for hashes with multiple entries" do
         @node_multiple.single_line_width_no_comments.should == 32
+      end
+
+      it "returns infinity for hashes with entries with comment before" do
+        @node_comments_before.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity for hashes with entries with comment after" do
+        @node_comments_after.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end

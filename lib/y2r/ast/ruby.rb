@@ -806,7 +806,7 @@ module Y2R
 
       class Hash < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context) || entries.empty?
+          if (fits_current_line?(context) && !entries_have_comments?) || entries.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -815,7 +815,11 @@ module Y2R
 
         def single_line_width_no_comments
           if !entries.empty?
-            2 + list_single_line_width(entries, 2) + 2
+            if !entries_have_comments?
+              2 + list_single_line_width(entries, 2) + 2
+            else
+              Float::INFINITY
+            end
           else
             2
           end
@@ -828,6 +832,10 @@ module Y2R
         end
 
         private
+
+        def entries_have_comments?
+          entries.any? { |e| e.has_comment? }
+        end
 
         def to_ruby_no_comments_single_line(context)
           if !entries.empty?
