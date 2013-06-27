@@ -129,8 +129,11 @@ module Y2R
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
+        STRING  = Type.new("string")
+        PATH    = Type.new("path")
+        TERM    = Type.new("term")
 
-        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL]
+        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL, STRING, PATH, TERM]
       end
 
       # Contains utility functions related to comment processing.
@@ -631,9 +634,12 @@ module Y2R
       end
 
       class Compare < Node
+        OPS_TO_OPS = {
+          "==" => "==",
+          "!=" => "!="
+        }
+
         OPS_TO_METHODS = {
-          "==" => "equal",
-          "!=" => "not_equal",
           "<"  => "less_than",
           ">"  => "greater_than",
           "<=" => "less_or_equal",
@@ -641,13 +647,23 @@ module Y2R
         }
 
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => OPS_TO_METHODS[op],
-            :args     => [lhs.compile(context), rhs.compile(context)],
-            :block    => nil,
-            :parens   => true
-          )
+          if OPS_TO_OPS[op]
+            Ruby::BinaryOperator.new(
+              :op       => OPS_TO_OPS[op],
+              :lhs      => lhs.compile(context),
+              :rhs      => rhs.compile(context)
+            )
+          elsif OPS_TO_METHODS[op]
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => OPS_TO_METHODS[op],
+              :args     => [lhs.compile(context), rhs.compile(context)],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            raise "Unknown compare operator #{op}."
+          end
         end
 
         transfers_comments :compile

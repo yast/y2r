@@ -29,11 +29,11 @@ module Y2R::AST
         :name     => "i",
         :type     => YCP::Type.new("boolean")
       )
-      @ycp_variable_string = YCP::Variable.new(
+      @ycp_variable_list = YCP::Variable.new(
         :category => :variable,
         :ns       => nil,
         :name     => "i",
-        :type     => YCP::Type.new("string")
+        :type     => YCP::Type.new("list")
       )
 
       @ycp_assign_i_42 = YCP::Assign.new(
@@ -673,7 +673,7 @@ module Y2R::AST
           ycp_node = YCP::Assign.new(
             :ns    => nil,
             :name  => "i",
-            :child => @ycp_variable_string
+            :child => @ycp_variable_list
           )
 
           ruby_node = Ruby::Assignment.new(
@@ -1546,6 +1546,14 @@ module Y2R::AST
         )
       end
 
+      def ruby_operator(name)
+        Ruby::BinaryOperator.new(
+          :op  => name,
+          :lhs => @ruby_literal_42,
+          :rhs => @ruby_literal_43
+        )
+      end
+
       it "returns correct AST node" do
         ycp_node_equal            = ycp_compare("==")
         ycp_node_not_equal        = ycp_compare("!=")
@@ -1554,8 +1562,8 @@ module Y2R::AST
         ycp_node_less_or_equal    = ycp_compare("<=")
         ycp_node_greater_or_equal = ycp_compare(">=")
 
-        ruby_node_equal            = ruby_ops_call("equal")
-        ruby_node_not_equal        = ruby_ops_call("not_equal")
+        ruby_node_equal            = ruby_operator("==")
+        ruby_node_not_equal        = ruby_operator("!=")
         ruby_node_less_than        = ruby_ops_call("less_than")
         ruby_node_greater_than     = ruby_ops_call("greater_than")
         ruby_node_less_or_equal    = ruby_ops_call("less_or_equal")
@@ -2040,7 +2048,7 @@ module Y2R::AST
 
         it "returns correct AST node for function definitions with arguments" do
           ycp_node_without_copy = ycp_fundef_with_args("boolean")
-          ycp_node_with_copy    = ycp_fundef_with_args("string")
+          ycp_node_with_copy    = ycp_fundef_with_args("list")
 
           ruby_node_without_copy = Ruby::Def.new(
             :name => "f",
@@ -2194,7 +2202,7 @@ module Y2R::AST
 
         it "returns correct AST node for function definitions with arguments" do
           ycp_node_without_copy = ycp_fundef_with_args("boolean")
-          ycp_node_with_copy    = ycp_fundef_with_args("string")
+          ycp_node_with_copy    = ycp_fundef_with_args("list")
 
           ruby_node_without_copy = Ruby::Assignment.new(
             :lhs => Ruby::Variable.new(:name => "f"),
@@ -2968,7 +2976,7 @@ module Y2R::AST
         end
 
         it "returns correct AST node for a value that needs copy" do
-          ycp_node = YCP::Return.new(:child => @ycp_variable_string)
+          ycp_node = YCP::Return.new(:child => @ycp_variable_list)
 
           ruby_node = Ruby::Return.new(
             :value => Ruby::MethodCall.new(
@@ -3148,6 +3156,24 @@ module Y2R::AST
         ycp_node.needs_copy?.should be_false
       end
 
+      it "returns false for strings" do
+        ycp_node = ycp_symbol("string")
+
+        ycp_node.needs_copy?.should be_false
+      end
+
+      it "returns false for paths" do
+        ycp_node = ycp_symbol("path")
+
+        ycp_node.needs_copy?.should be_false
+      end
+
+      it "returns false for terms" do
+        ycp_node = ycp_symbol("term")
+
+        ycp_node.needs_copy?.should be_false
+      end
+
       it "returns false for references" do
         ycp_node = ycp_symbol("string &")
 
@@ -3155,7 +3181,7 @@ module Y2R::AST
       end
 
       it "returns true for other types" do
-        ycp_node = ycp_symbol("string")
+        ycp_node = ycp_symbol("list")
 
         ycp_node.needs_copy?.should be_true
       end
