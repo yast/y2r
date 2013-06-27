@@ -700,7 +700,7 @@ module Y2R::AST
 
   describe YCP::Bracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node when args has single value" do
         ycp_node = YCP::Bracket.new(
           :entry => YCP::Variable.new(
             :category => :variable,
@@ -716,7 +716,33 @@ module Y2R::AST
           :name     => "assign",
           :args     => [
             Ruby::Variable.new(:name => "@l"),
-            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when args has multiple elements" do
+        ycp_node = YCP::Bracket.new(
+          :entry => YCP::Variable.new(
+            :category => :variable,
+            :ns       => nil,
+            :name     => "l"
+          ),
+          :arg   => YCP::List.new(:children => [@ycp_const_1, @ycp_const_1]),
+          :rhs   => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "assign",
+          :args     => [
+            Ruby::Variable.new(:name => "@l"),
+            Ruby::Array.new(:elements => [@ruby_literal_1, @ruby_literal_1]),
             @ruby_literal_0,
           ],
           :block    => nil,

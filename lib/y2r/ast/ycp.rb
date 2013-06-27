@@ -319,12 +319,22 @@ module Y2R
             :name     => "assign",
             :args     => [
               entry.compile(context),
-              arg.compile(context),
+              build_index(context),
               rhs.compile(context),
             ],
             :block    => nil,
             :parens   => true
           )
+        end
+
+        private
+
+        def build_index(context)
+          if arg.children.size == 1
+            arg.children.first.compile(context)
+          else
+            arg.compile(context)
+          end
         end
       end
 
