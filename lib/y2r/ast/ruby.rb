@@ -458,7 +458,7 @@ module Y2R
 
       class Expressions < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context) || expressions.empty?
+          if (fits_current_line?(context) && !expressions_have_comments?) || expressions.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -466,10 +466,18 @@ module Y2R
         end
 
         def single_line_width_no_comments
-          1 + list_single_line_width(expressions, 2) + 1
+          if !expressions_have_comments?
+            1 + list_single_line_width(expressions, 2) + 1
+          else
+            Float::INFINITY
+          end
         end
 
         private
+
+        def expressions_have_comments?
+          expressions_have_comments = expressions.any? { |e| e.has_comment? }
+        end
 
         def to_ruby_no_comments_single_line(context)
           "(#{list(expressions, "; ", context.shifted(1))})"
