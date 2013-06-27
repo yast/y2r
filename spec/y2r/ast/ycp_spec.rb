@@ -696,7 +696,7 @@ module Y2R::AST
   describe YCP::Node, :type => :ycp do
     describe ".transfers_comments" do
       class YCP::TransferringNode < YCP::Node
-        def compile
+        def compile(context)
           Ruby::Literal.new(:value => nil)
         end
 
@@ -715,7 +715,7 @@ module Y2R::AST
           :comment_after  => "after"
         )
 
-        ycp_node.compile.should == ruby_node
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
