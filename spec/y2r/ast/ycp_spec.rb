@@ -700,7 +700,7 @@ module Y2R::AST
 
   describe YCP::Bracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node when args has single value" do
         ycp_node = YCP::Bracket.new(
           :entry => YCP::Variable.new(
             :category => :variable,
@@ -716,7 +716,33 @@ module Y2R::AST
           :name     => "assign",
           :args     => [
             Ruby::Variable.new(:name => "@l"),
-            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when args has multiple elements" do
+        ycp_node = YCP::Bracket.new(
+          :entry => YCP::Variable.new(
+            :category => :variable,
+            :ns       => nil,
+            :name     => "l"
+          ),
+          :arg   => YCP::List.new(:children => [@ycp_const_1, @ycp_const_1]),
+          :rhs   => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "assign",
+          :args     => [
+            Ruby::Variable.new(:name => "@l"),
+            Ruby::Array.new(:elements => [@ruby_literal_1, @ruby_literal_1]),
             @ruby_literal_0,
           ],
           :block    => nil,
@@ -4049,7 +4075,36 @@ module Y2R::AST
 
   describe YCP::YEBracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node when the default isn't a call" do
+      it "returns correct AST node when the default is nil" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => YCP::Const.new(:type => :void)
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when the default is not nil" do
         ycp_node = YCP::YEBracket.new(
           :value   => YCP::List.new(
             :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
@@ -4069,7 +4124,7 @@ module Y2R::AST
                 @ruby_literal_44
               ]
             ),
-            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_1,
             @ruby_literal_0,
           ],
           :block    => nil,
@@ -4105,7 +4160,7 @@ module Y2R::AST
                 @ruby_literal_44
               ]
             ),
-            Ruby::Array.new(:elements => [@ruby_literal_1])
+            @ruby_literal_1
           ],
           :block    => Ruby::Block.new(
             :args       => [],
@@ -4122,6 +4177,75 @@ module Y2R::AST
 
         ycp_node.compile(@context_module).should == ruby_node
       end
+
+      it "returns correct AST node when the index has one element" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when index has multiple elements" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [YCP::List.new(
+              :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            )]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_0, @ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                Ruby::Array.new(
+                  :elements => [
+                    @ruby_literal_42,
+                    @ruby_literal_43,
+                    @ruby_literal_44
+                  ]
+                )
+              ]
+            ),
+            Ruby::Array.new(
+              :elements => [@ruby_literal_0, @ruby_literal_1]
+            ),
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
     end
   end
 
