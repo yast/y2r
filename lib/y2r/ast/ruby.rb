@@ -756,7 +756,7 @@ module Y2R
 
       class Hash < Node
         def to_ruby(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || entries.empty?
             to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
@@ -788,18 +788,14 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          if !entries.empty?
-            max_key_width = entries.map do |entry|
-              entry.key_width(context.indented(INDENT_STEP))
-            end.max
+          max_key_width = entries.map do |entry|
+            entry.key_width(context.indented(INDENT_STEP))
+          end.max
 
-            entry_context = context.dup
-            entry_context.max_key_width = max_key_width
+          entry_context = context.dup
+          entry_context.max_key_width = max_key_width
 
-            wrapped_line_list(entries, "{", ",", "}", entry_context)
-          else
-            "{}"
-          end
+          wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
       end
 
