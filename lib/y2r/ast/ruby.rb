@@ -490,6 +490,35 @@ module Y2R
 
       class Assignment < Node
         def to_ruby_no_comments(context)
+          if !has_line_breaking_comment?
+            to_ruby_no_comments_single_line(context)
+          else
+            to_ruby_no_comments_multi_line(context)
+          end
+        end
+
+        def single_line_width_no_comments
+          if !has_line_breaking_comment?
+            lhs_width = lhs.single_line_width
+            rhs_width = if rhs.is_a?(Variable)
+              10 + rhs.single_line_width + 1
+            else
+              rhs.single_line_width
+            end
+
+            lhs_width + 3 + rhs_width
+          else
+            Float::INFINITY
+          end
+        end
+
+        private
+
+        def has_line_breaking_comment?
+          lhs.comment_after || rhs.comment_before
+        end
+
+        def to_ruby_no_comments_single_line(context)
           lhs_code = lhs.to_ruby(context)
 
           rhs_shift   = lhs_code.size + 3
@@ -499,15 +528,11 @@ module Y2R
           "#{lhs_code} = #{rhs_code}"
         end
 
-        def single_line_width_no_comments
-          lhs_width = lhs.single_line_width
-          rhs_width = if rhs.is_a?(Variable)
-            10 + rhs.single_line_width + 1
-          else
-            rhs.single_line_width
+        def to_ruby_no_comments_multi_line(context)
+          combine do |parts|
+            parts << lhs.to_ruby(context.with_trailer(" ="))
+            parts << indented(rhs, context)
           end
-
-          lhs_width + 3 + rhs_width
         end
       end
 

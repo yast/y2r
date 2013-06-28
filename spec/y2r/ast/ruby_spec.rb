@@ -35,6 +35,18 @@ def node_width_comment2_and_to_ruby_mock(expected_context)
   mock
 end
 
+def node_comment_before_and_to_ruby_mock(expected_context)
+  mock = node_to_ruby_mock(expected_context)
+  mock.should_receive(:comment_before).and_return(false)
+  mock
+end
+
+def node_comment_after_and_to_ruby_mock(expected_context)
+  mock = node_to_ruby_mock(expected_context)
+  mock.should_receive(:comment_after).and_return(false)
+  mock
+end
+
 def node_to_ruby_enclosed_mock(expected_context)
   mock = double
 
@@ -95,6 +107,11 @@ module Y2R::AST::Ruby
       @variable_b = Variable.new(:name => "b")
       @variable_c = Variable.new(:name => "c")
       @variable_S = Variable.new(:name => "S")
+
+      @variable_a_comment_after = Variable.new(
+        :name          => "a",
+        :comment_after => "# after"
+      )
 
       @assignment_a_42 = Assignment.new(
         :lhs => @variable_a,
@@ -1916,20 +1933,52 @@ module Y2R::AST::Ruby
 
   describe Assignment, :type => :ruby do
     before :each do
-      @node = Assignment.new(:lhs => @variable_a, :rhs => @literal_42)
+      @node = Assignment.new(
+        :lhs => @variable_a,
+        :rhs => @literal_42
+      )
+
+      @node_lhs_comment_after = Assignment.new(
+        :lhs => @variable_a_comment_after,
+        :rhs => @literal_42
+      )
+      @node_rhs_comment_before = Assignment.new(
+        :lhs => @variable_a,
+        :rhs => @literal_42_comment_before
+      )
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
+      it "emits a single-line assignment when lhs and rhs don't have any comments" do
+        @node.to_ruby_no_comments(@context_default).should == "a = 42"
+      end
+
+      it "emits a multi-line assignment when lhs has comment after" do
+        @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
+          "a = # after",
+          "  42"
+        ].join("\n")
+      end
+
+      it "emits a multi-line assignment when rhs has comment before" do
+        @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
+          "a =",
+          "  # before",
+          "  42"
+        ].join("\n")
+      end
+
+      describe "for single-line assignments" do
         it "emits correct code" do
           @node.to_ruby_no_comments(@context_default).should == "a = 42"
         end
-      end
 
-      describe "formatting" do
         it "passes correct available space info to lhs" do
           node = Assignment.new(
-            :lhs => node_to_ruby_mock(:width => 80, :shift => 0),
+            :lhs => node_comment_after_and_to_ruby_mock(
+              :width => 80,
+              :shift => 0
+            ),
             :rhs => @literal_42
           )
 
@@ -1939,7 +1988,51 @@ module Y2R::AST::Ruby
         it "passes correct available space info to rhs" do
           node = Assignment.new(
             :lhs => @variable_a,
-            :rhs => node_to_ruby_mock(:width => 80, :shift => 4)
+            :rhs => node_comment_before_and_to_ruby_mock(
+              :width => 80,
+              :shift => 4
+            )
+          )
+
+          node.to_ruby_no_comments(@context_default)
+        end
+      end
+
+      describe "for multi-line assignments" do
+        it "emits correct code when lhs has comment after" do
+          @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
+            "a = # after",
+            "  42"
+          ].join("\n")
+        end
+
+        it "emits correct code when rhs has comment before" do
+          @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
+            "a =",
+            "  # before",
+            "  42"
+          ].join("\n")
+        end
+
+        it "passes correct available space info to lhs" do
+          node = Assignment.new(
+            :lhs => node_comment_after_and_to_ruby_mock(
+              :width => 80,
+              :shift => 0
+            ),
+            :rhs => @literal_42_comment_before
+          )
+
+          node.to_ruby_no_comments(@context_default)
+        end
+
+        it "passes correct available space info to rhs" do
+          node = Assignment.new(
+            :lhs => @variable_a_comment_after,
+            :rhs => node_to_ruby_mock(
+              :width => 78,
+              :shift => 0
+            )
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -1948,8 +2041,18 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width" do
-      it "returns correct value" do
+      it "returns correct value when lhs and rhs don't have any comments" do
         @node.single_line_width_no_comments.should == 6
+      end
+
+      it "returns infinity when lhs has comment after" do
+        @node_lhs_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity when rhs has comment before" do
+        @node_lhs_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
