@@ -726,7 +726,7 @@ module Y2R
 
       class Array < Node
         def to_ruby(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || elements.empty?
             to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
@@ -750,11 +750,7 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          if !elements.empty?
-            wrapped_line_list(elements, "[", ",", "]", context)
-          else
-            "[]"
-          end
+          wrapped_line_list(elements, "[", ",", "]", context)
         end
       end
 
