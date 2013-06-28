@@ -1258,15 +1258,11 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
     return 42;
   }
 
-  integer f7(term a, term b, term c) {
+  integer f7(list& a, list& b, list& c) {
     return 42;
   }
 
-  integer f8(list& a, list& b, list& c) {
-    return 42;
-  }
-
-  integer f9(list a, list b, list c) {
+  integer f8(list a, list b, list c) {
     return 42;
   }
 }
@@ -1305,9 +1301,6 @@ module Yast
       return 42
     end
     def f8(a, b, c)
-      return 42
-    end
-    def f9(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
@@ -1352,15 +1345,11 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
       return 42;
     }
 
-    integer f7(term a, term b, term c) {
+    integer f7(list& a, list& b, list& c) {
       return 42;
     }
 
-    integer f8(list& a, list& b, list& c) {
-      return 42;
-    }
-
-    integer f9(list a, list b, list c) {
+    integer f8(list a, list b, list c) {
       return 42;
     }
   }
@@ -1387,8 +1376,7 @@ module Yast
       f5 = lambda { |a, b, c| return 42 }
       f6 = lambda { |a, b, c| return 42 }
       f7 = lambda { |a, b, c| return 42 }
-      f8 = lambda { |a, b, c| return 42 }
-      f9 = lambda { |a, b, c|
+      f8 = lambda { |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)

@@ -438,7 +438,7 @@ module Y2R
 
       class Expressions < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || expressions.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -456,11 +456,7 @@ module Y2R
         end
 
         def to_ruby_no_comments_multi_line(context)
-          if !expressions.empty?
-            wrapped_line_list(expressions, "(", ";", ")", context)
-          else
-            "()"
-          end
+          wrapped_line_list(expressions, "(", ";", ")", context)
         end
       end
 
@@ -744,7 +740,7 @@ module Y2R
 
       class Array < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || elements.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -752,7 +748,7 @@ module Y2R
         end
 
         def single_line_width_no_comments
-          2 + list_single_line_width(elements, 2)
+          1 + list_single_line_width(elements, 2) + 1
         end
 
         protected
@@ -768,17 +764,13 @@ module Y2R
         end
 
         def to_ruby_no_comments_multi_line(context)
-          if !elements.empty?
-            wrapped_line_list(elements, "[", ",", "]", context)
-          else
-            "[]"
-          end
+          wrapped_line_list(elements, "[", ",", "]", context)
         end
       end
 
       class Hash < Node
         def to_ruby_no_comments(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || entries.empty?
             to_ruby_no_comments_single_line(context)
           else
             to_ruby_no_comments_multi_line(context)
@@ -787,7 +779,7 @@ module Y2R
 
         def single_line_width_no_comments
           if !entries.empty?
-            4 + list_single_line_width(entries, 2)
+            2 + list_single_line_width(entries, 2) + 2
           else
             2
           end
@@ -810,18 +802,14 @@ module Y2R
         end
 
         def to_ruby_no_comments_multi_line(context)
-          if !entries.empty?
-            max_key_width = entries.map do |entry|
-              entry.key_width(context.indented(INDENT_STEP))
-            end.max
+          max_key_width = entries.map do |entry|
+            entry.key_width(context.indented(INDENT_STEP))
+          end.max
 
-            entry_context = context.dup
-            entry_context.max_key_width = max_key_width
+          entry_context = context.dup
+          entry_context.max_key_width = max_key_width
 
-            wrapped_line_list(entries, "{", ",", "}", entry_context)
-          else
-            "{}"
-          end
+          wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
       end
 

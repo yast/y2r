@@ -3168,12 +3168,6 @@ module Y2R::AST
         ycp_node.needs_copy?.should be_false
       end
 
-      it "returns false for terms" do
-        ycp_node = ycp_symbol("term")
-
-        ycp_node.needs_copy?.should be_false
-      end
-
       it "returns false for references" do
         ycp_node = ycp_symbol("string &")
 

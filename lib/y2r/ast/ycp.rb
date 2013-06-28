@@ -131,9 +131,8 @@ module Y2R
         SYMBOL  = Type.new("symbol")
         STRING  = Type.new("string")
         PATH    = Type.new("path")
-        TERM    = Type.new("term")
 
-        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL, STRING, PATH, TERM]
+        IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL, STRING, PATH]
       end
 
       # Contains utility functions related to comment processing.
