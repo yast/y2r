@@ -884,6 +884,35 @@ module Y2R
 
       class HashEntry < Node
         def to_ruby_no_comments(context)
+          if !has_line_breaking_comment?
+            to_ruby_no_comments_single_line(context)
+          else
+            to_ruby_no_comments_multi_line(context)
+          end
+        end
+
+        def single_line_width_no_comments
+          if !has_line_breaking_comment?
+            key_width   = key.single_line_width_enclosed
+            value_width = value.single_line_width_enclosed
+
+            key_width + 4 + value_width
+          else
+            Float::INFINITY
+          end
+        end
+
+        def key_width(context)
+          key.to_ruby(context).size
+        end
+
+        protected
+
+        def has_line_breaking_comment?
+          key.comment_after || value.comment_before
+        end
+
+        def to_ruby_no_comments_single_line(context)
           max_key_width = context.max_key_width
 
           # We don't want to pass context.max_key_width to the key or value.
@@ -906,18 +935,27 @@ module Y2R
           "#{key_code}#{spacing_code} => #{value_code}"
         end
 
-        def single_line_width_no_comments
-          key_width   = key.single_line_width_enclosed
-          value_width = value.single_line_width_enclosed
+        def to_ruby_no_comments_multi_line(context)
+          combine do |parts|
+            max_key_width = context.max_key_width
 
-          key_width + 4 + value_width
+            # We don't want to pass context.max_key_width to the key or value.
+            # There can be a hash there for which it could cause problems.
+            context = context.dup
+            context.max_key_width = nil
+
+            key_code = key.to_ruby_no_comments(context)
+
+            spacing_code = if max_key_width
+              " " * (max_key_width - key_code.size)
+            else
+              ""
+            end
+
+            parts << key.to_ruby(context.with_trailer("#{spacing_code} =>"))
+            parts << indented(value, context)
+          end
         end
-
-        def key_width(context)
-          key.to_ruby(context).size
-        end
-
-        protected
 
         def enclose?
           false
