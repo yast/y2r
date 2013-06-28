@@ -804,10 +804,6 @@ module Y2R
       end
 
       class IncludeBlock < Node
-        def name
-          nil
-        end
-
         def compile(context)
           class_statements = []
 
