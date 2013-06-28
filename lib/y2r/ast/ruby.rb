@@ -734,7 +734,7 @@ module Y2R
         end
 
         def single_line_width
-          2 + list_single_line_width(elements, 2)
+          1 + list_single_line_width(elements, 2) + 1
         end
 
         protected
@@ -769,7 +769,7 @@ module Y2R
 
         def single_line_width
           if !entries.empty?
-            4 + list_single_line_width(entries, 2)
+            2 + list_single_line_width(entries, 2) + 2
           else
             2
           end
