@@ -420,7 +420,7 @@ module Y2R
 
       class Expressions < Node
         def to_ruby(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) || expressions.empty?
             to_ruby_single_line(context)
           else
             to_ruby_multi_line(context)
@@ -438,11 +438,7 @@ module Y2R
         end
 
         def to_ruby_multi_line(context)
-          if !expressions.empty?
-            wrapped_line_list(expressions, "(", ";", ")", context)
-          else
-            "()"
-          end
+          wrapped_line_list(expressions, "(", ";", ")", context)
         end
       end
 
