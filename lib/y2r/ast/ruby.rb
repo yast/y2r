@@ -602,6 +602,35 @@ module Y2R
 
       class TernaryOperator < Node
         def to_ruby_no_comments(context)
+          if !has_line_breaking_comment?
+            to_ruby_no_comments_single_line(context)
+          else
+            to_ruby_no_comments_multi_line(context)
+          end
+        end
+
+        def single_line_width_no_comments
+          if !has_line_breaking_comment?
+            condition_width = condition.single_line_width_enclosed
+            then_width      = self.then.single_line_width_enclosed
+            else_width      = self.else.single_line_width_enclosed
+
+            condition_width + 3 + then_width + 3 + else_width
+          else
+            Float::INFINITY
+          end
+        end
+
+        private
+
+        def has_line_breaking_comment?
+          condition.comment_after ||
+            self.then.comment_before ||
+            self.then.comment_after ||
+            self.else.comment_before
+        end
+
+        def to_ruby_no_comments_single_line(context)
           condition_code = condition.to_ruby_enclosed(context)
 
           then_shift   = condition_code.size + 3
@@ -615,12 +644,12 @@ module Y2R
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
 
-        def single_line_width_no_comments
-          condition_width = condition.single_line_width_enclosed
-          then_width      = self.then.single_line_width_enclosed
-          else_width      = self.else.single_line_width_enclosed
-
-          condition_width + 3 + then_width + 3 + else_width
+        def to_ruby_no_comments_multi_line(context)
+          combine do |parts|
+            parts << condition.to_ruby_enclosed(context.with_trailer(" ?"))
+            parts << indented_enclosed(self.then, context.with_trailer(" :"))
+            parts << indented_enclosed(self.else, context)
+          end
         end
       end
 

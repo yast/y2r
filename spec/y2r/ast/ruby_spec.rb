@@ -36,6 +36,11 @@ module Y2R::AST::Ruby
       @literal_true  = Literal.new(:value => true)
       @literal_false = Literal.new(:value => false)
 
+      @literal_true_comment_after = Literal.new(
+        :value         => true,
+        :comment_after => "# after"
+      )
+
       @literal_a   = Literal.new(:value => :a)
       @literal_aa  = Literal.new(:value => :aa)
       @literal_aaa = Literal.new(:value => :aaa)
@@ -2280,11 +2285,33 @@ module Y2R::AST::Ruby
 
   describe TernaryOperator, :type => :ruby do
     before :each do
-      @node_without_parens = TernaryOperator.new(
+      @node = TernaryOperator.new(
         :condition => @literal_true,
         :then      => @literal_42,
         :else      => @literal_43
       )
+
+      @node_condition_comment_after = TernaryOperator.new(
+        :condition => @literal_true_comment_after,
+        :then      => @literal_42,
+        :else      => @literal_43
+      )
+      @node_then_comment_before = TernaryOperator.new(
+        :condition => @literal_true,
+        :then      => @literal_42_comment_before,
+        :else      => @literal_43
+      )
+      @node_then_comment_after = TernaryOperator.new(
+        :condition => @literal_true,
+        :then      => @literal_42_comment_after,
+        :else      => @literal_43
+      )
+      @node_else_comment_before = TernaryOperator.new(
+        :condition => @literal_true,
+        :then      => @literal_42,
+        :else      => @literal_43_comment_before
+      )
+
       @node_with_parens = TernaryOperator.new(
         :condition  => @binary_operator_true_or_false,
         :then       => @binary_operator_42_plus_43,
@@ -2293,19 +2320,49 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code" do
-          @node_without_parens.to_ruby_no_comments(@context_default).should ==
-            "true ? 42 : 43"
-        end
-
-        it "encloses operands in parens when needed" do
-          @node_with_parens.to_ruby_no_comments(@context_default).should ==
-            "(true || false) ? (42 + 43) : (44 + 45)"
-        end
+      it "emits a single-line ternary operator when condition, then and else don't have any comments" do
+        @node.to_ruby_no_comments(@context_default).should == "true ? 42 : 43"
       end
 
-      describe "formatting" do
+      it "emits a multi-line ternary operator when condition has comment after" do
+        @node_condition_comment_after.to_ruby_no_comments(@context_default).should == [
+          "true ? # after",
+          "  42 :",
+          "  43"
+        ].join("\n")
+      end
+
+      it "emits a multi-line ternary operator when then has comment before" do
+        @node_then_comment_before.to_ruby_no_comments(@context_default).should == [
+          "true ?",
+          "  # before",
+          "  42 :",
+          "  43"
+        ].join("\n")
+      end
+
+      it "emits a multi-line ternary operator when then has comment after" do
+        @node_then_comment_after.to_ruby_no_comments(@context_default).should == [
+          "true ?",
+          "  42 : # after",
+          "  43"
+        ].join("\n")
+      end
+
+      it "emits a multi-line ternary operator when else has comment before" do
+        @node_else_comment_before.to_ruby_no_comments(@context_default).should == [
+          "true ?",
+          "  42 :",
+          "  # before",
+          "  43"
+        ].join("\n")
+      end
+
+      describe "for single-line ternary operators" do
+        it "emits correct code" do
+          @node.to_ruby_no_comments(@context_default).should == "true ? 42 : 43"
+        end
+
         it "passes correct available space info to condition" do
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
@@ -2348,11 +2405,114 @@ module Y2R::AST::Ruby
           node.to_ruby_no_comments(@context_default)
         end
       end
+
+      describe "for multi-line ternary operators" do
+        it "emits correct code when condition has comment after" do
+          @node_condition_comment_after.to_ruby_no_comments(@context_default).should == [
+            "true ? # after",
+            "  42 :",
+            "  43"
+          ].join("\n")
+        end
+
+        it "emits correct code when then has comment before" do
+          @node_then_comment_before.to_ruby_no_comments(@context_default).should == [
+            "true ?",
+            "  # before",
+            "  42 :",
+            "  43"
+          ].join("\n")
+        end
+
+        it "emits correct code when then has comment after" do
+          @node_then_comment_after.to_ruby_no_comments(@context_default).should == [
+            "true ?",
+            "  42 : # after",
+            "  43"
+          ].join("\n")
+        end
+
+        it "emits correct code when else has comment before" do
+          @node_else_comment_before.to_ruby_no_comments(@context_default).should == [
+            "true ?",
+            "  42 :",
+            "  # before",
+            "  43"
+          ].join("\n")
+        end
+
+        it "passes correct available space info to condition" do
+          node = TernaryOperator.new(
+            :condition => check_context_enclosed(
+              @literal_42,
+              :width => 80,
+              :shift => 0
+            ),
+            :then      => @literal_42_comment_before,
+            :else      => @literal_43
+          )
+
+          node.to_ruby_no_comments(@context_default)
+        end
+
+        it "passes correct available space info to then" do
+          node = TernaryOperator.new(
+            :condition => @literal_true_comment_after,
+            :then      => check_context_enclosed(
+              @literal_43,
+              :width => 78,
+              :shift => 0
+            ),
+            :else      => @literal_43
+          )
+
+          node.to_ruby_no_comments(@context_default)
+        end
+
+        it "passes correct available space info to else" do
+          node = TernaryOperator.new(
+            :condition => @literal_true_comment_after,
+            :then      => @literal_42,
+            :else      => check_context_enclosed(
+              @literal_44,
+              :width => 78,
+              :shift => 0
+            ),
+          )
+
+          node.to_ruby_no_comments(@context_default)
+        end
+      end
+
+      it "encloses operands in parens when needed" do
+        @node_with_parens.to_ruby_no_comments(@context_default).should ==
+          "(true || false) ? (42 + 43) : (44 + 45)"
+      end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value" do
-        @node_without_parens.single_line_width_no_comments.should == 14
+      it "returns correct value when condition, true and false don't have any comments" do
+        @node.single_line_width_no_comments.should == 14
+      end
+
+      it "returns infinity when condition has comment after" do
+        @node_condition_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity when then has comment before" do
+        @node_then_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity when then has comment after" do
+        @node_then_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
+      it "returns infinity when else has comment before" do
+        @node_then_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
 
       it "returns correct value when parens are needed" do
