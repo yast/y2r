@@ -207,10 +207,10 @@ module Y2R
               segment = $&
 
               case segment
-                when /^\/\//   # one-line slash comment
+                when /\A^\/\//   # one-line slash comment
                   segment.sub!(/^\/\//, "#")
 
-                when /\/\*/    # multi-line comment
+                when /\A\/\*/    # multi-line comment
                   is_doc_comment = segment =~ /\/\*\*\n/
 
                   if is_doc_comment
