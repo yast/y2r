@@ -727,17 +727,46 @@ module Y2R
 
       class ConstAccess < Node
         def to_ruby_no_comments(context)
-          (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
+          if !has_line_breaking_comment?
+            to_ruby_no_comments_single_line(context)
+          else
+            to_ruby_no_comments_multi_line(context)
+          end
         end
 
         def single_line_width_no_comments
-          (receiver ? receiver.single_line_width + 2 : 0) + name.size
+          if receiver
+            if !has_line_breaking_comment?
+              receiver.single_line_width + 2 + name.size
+            else
+              Float::INFINITY
+            end
+          else
+            name.size
+          end
         end
 
         protected
 
         def enclose?
           false
+        end
+
+        private
+
+        def has_line_breaking_comment?
+          receiver && receiver.comment_after
+        end
+
+        def to_ruby_no_comments_single_line(context)
+          (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
+        end
+
+        def to_ruby_no_comments_multi_line(context)
+          combine do |parts|
+            parts << receiver.to_ruby(context.with_trailer("::"))
+            parts << indent(name)
+          end
         end
       end
 

@@ -2874,25 +2874,66 @@ module Y2R::AST::Ruby
         :receiver => @variable_a,
         :name     => "C"
       )
+
+      @node_receiver_comment_after = ConstAccess.new(
+        :receiver => @variable_a_comment_after,
+        :name     => "C"
+      )
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code for const accesses without a receiver" do
-          @node_without_receiver.to_ruby_no_comments(@context_default).should ==
-            "C"
+      it "emits correct code for const accesses without a receiver" do
+        @node_without_receiver.to_ruby_no_comments(@context_default).should ==
+          "C"
+      end
+
+      it "emits correct code for const accesses with a receiver" do
+        @node_with_receiver.to_ruby_no_comments(@context_default).should ==
+          "a::C"
+      end
+
+      it "emits a single-line const access when receiver doesn't have any comments" do
+        @node_with_receiver.to_ruby_no_comments(@context_default).should ==
+          "a::C"
+      end
+
+      it "emits a multi-line const access when receiver has comment after" do
+        @node_receiver_comment_after.to_ruby_no_comments(@context_default).should == [
+          "a:: # after",
+          "  C"
+        ].join("\n")
+      end
+
+      describe "for single-line const accesses" do
+        it "emits correct code" do
+          @node_with_receiver.to_ruby_no_comments(@context_default).should == "a::C"
         end
 
-        it "emits correct code for const accesses with a receiver" do
-          @node_with_receiver.to_ruby_no_comments(@context_default).should ==
-            "a::C"
+        it "passes correct available space info to receiver" do
+          node = ConstAccess.new(
+            :receiver => check_context(@variable_a, :width => 80, :shift => 0),
+            :name     => "C"
+          )
+
+          node.to_ruby_no_comments(@context_default)
         end
       end
 
-      describe "formatting" do
-        it "passes correct available space info to statements" do
+      describe "for multi-line const accesses" do
+        it "emits correct code when receiver has comment after" do
+          @node_receiver_comment_after.to_ruby_no_comments(@context_default).should == [
+            "a:: # after",
+            "  C"
+          ].join("\n")
+        end
+
+        it "passes correct available space info to receiver" do
           node = ConstAccess.new(
-            :receiver => check_context(@variable_a, :width => 80, :shift => 0),
+            :receiver => check_context(
+              @variable_a_comment_after,
+              :width => 80,
+              :shift => 0
+            ),
             :name     => "C"
           )
 
@@ -2908,6 +2949,11 @@ module Y2R::AST::Ruby
 
       it "returns correct value for const accesses with a receiver" do
         @node_with_receiver.single_line_width_no_comments.should == 4
+      end
+
+      it "returns correct value when receiver has comment after" do
+        @node_receiver_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
