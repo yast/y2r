@@ -80,6 +80,10 @@ module Y2R
           indent(node.to_ruby(context.indented(INDENT_STEP)))
         end
 
+        def indented_enclosed(node, context)
+          indent(node.to_ruby_enclosed(context.indented(INDENT_STEP)))
+        end
+
         def indent(s)
           s.gsub(/^(?=.)/, " " * INDENT_STEP)
         end
@@ -554,6 +558,31 @@ module Y2R
 
       class BinaryOperator < Node
         def to_ruby_no_comments(context)
+          if !has_line_breaking_comment?
+            to_ruby_no_comments_single_line(context)
+          else
+            to_ruby_no_comments_multi_line(context)
+          end
+        end
+
+        def single_line_width_no_comments
+          if !has_line_breaking_comment?
+            lhs_width = lhs.single_line_width_enclosed
+            rhs_width = rhs.single_line_width_enclosed
+
+            lhs_width + 1 + op.size + 1 + rhs_width
+          else
+            Float::INFINITY
+          end
+        end
+
+        private
+
+        def has_line_breaking_comment?
+          lhs.comment_after || rhs.comment_before
+        end
+
+        def to_ruby_no_comments_single_line(context)
           lhs_code = lhs.to_ruby_enclosed(context)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
@@ -563,11 +592,11 @@ module Y2R
           "#{lhs_code} #{op} #{rhs_code}"
         end
 
-        def single_line_width_no_comments
-          lhs_width = lhs.single_line_width_enclosed
-          rhs_width = rhs.single_line_width_enclosed
-
-          lhs_width + 1 + op.size + 1 + rhs_width
+        def to_ruby_no_comments_multi_line(context)
+          combine do |parts|
+            parts << lhs.to_ruby_enclosed(context.with_trailer(" #{op}"))
+            parts << indented_enclosed(rhs, context)
+          end
         end
       end
 
