@@ -2370,6 +2370,24 @@ module Y2R::AST
 
         ycp_node.compile(@context_empty).should be_nil
       end
+
+      it "adds UI import only once" do
+        ycp_node = YCP::Import.new(:name => "UI")
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Yast"),
+          :name     => "import",
+          :args     => [Ruby::Literal.new(:value => "UI")],
+          :block    => nil,
+          :parens   => true
+        )
+
+
+
+        ycp_node.compile(@context_empty).should == ruby_node
+        ycp_node.compile(@context_empty).should be_nil
+      end
+
     end
   end
 

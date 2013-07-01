@@ -763,10 +763,25 @@ module Y2R
       end
 
       class Import < Node
+        class << self
+          # we need it to avoid multiple import of UI namespace
+          attr_accessor :ui_imported
+        end
+
         def compile(context)
           # Using any SCR or WFM function results in an auto-import. We ignore
           # these auto-imports becasue neither SCR nor WFM are real modules.
           return nil if name == "SCR" || name == "WFM"
+
+          # UI is auto-imported, but once for each file. In final result should
+          # be only one UI import
+          if name == "UI"
+            if self.class.ui_imported
+              return nil
+            else
+              self.class.ui_imported = true
+            end
+          end
 
           Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => "Yast"),
