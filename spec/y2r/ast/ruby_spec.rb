@@ -3354,6 +3354,22 @@ module Y2R::AST::Ruby
         :entries => [@hash_entry_a_42, @hash_entry_b_43, @hash_entry_c_44]
       )
 
+      @node_aligned = Hash.new(
+        :entries => [
+          @hash_entry_a_42,
+          @hash_entry_aa_43,
+          @hash_entry_aaa_44
+        ]
+      )
+
+      @node_multiline = Hash.new(
+        :entries => [
+          @hash_entry_a_statements,
+          @hash_entry_b_statements,
+          @hash_entry_c_statements
+        ]
+      )
+
       @node_comments_before = Hash.new(
         :entries => [
           @hash_entry_a_42_comment_before,
@@ -3371,212 +3387,64 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line hash when the hash fits available space and all entries are single-line" do
-        @node_multiple.to_ruby_no_comments(@context_default).should ==
-          "{ :a => 42, :b => 43, :c => 44 }"
-      end
-
-      it "emits a multi-line hash when the hash doesn't fit available space" do
-        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => 43,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-      end
-
-      it "emits a multi-line hash when any entry is multi-line" do
-        # Using @statements is nonsense semantically, but it is a convenient
-        # multi-line node.
-        node1 = Hash.new(
-          :entries => [
-            @hash_entry_a_statements,
-            @hash_entry_b_43,
-            @hash_entry_c_44
-          ]
-        )
-        node2 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_statements,
-            @hash_entry_c_44
-          ]
-        )
-        node3 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_43,
-            @hash_entry_c_statements
-          ]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => a = 42",
-          "  b = 43",
-          "  c = 44,",
-          "  :b => 43,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => a = 42",
-          "  b = 43",
-          "  c = 44,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => 43,",
-          "  :c => a = 42",
-          "  b = 43",
-          "  c = 44",
-          "}"
-        ].join("\n")
-      end
-
-      it "emits a multi-line hash when any entry has comment before" do
-        node1 = Hash.new(
-          :entries => [
-            @hash_entry_a_42_comment_before,
-            @hash_entry_b_43,
-            @hash_entry_c_44
-          ]
-        )
-        node2 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_43_comment_before,
-            @hash_entry_c_44
-          ]
-        )
-        node3 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_43,
-            @hash_entry_c_44_comment_before
-          ]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  # before",
-          "  :a => 42,",
-          "  :b => 43,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  # before",
-          "  :b => 43,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => 43,",
-          "  # before",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-      end
-
-      it "emits a multi-line hash when any entry has comment after" do
-        node1 = Hash.new(
-          :entries => [
-            @hash_entry_a_42_comment_after,
-            @hash_entry_b_43,
-            @hash_entry_c_44
-          ]
-        )
-        node2 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_43_comment_after,
-            @hash_entry_c_44
-          ]
-        )
-        node3 = Hash.new(
-          :entries => [
-            @hash_entry_a_42,
-            @hash_entry_b_43,
-            @hash_entry_c_44_comment_after
-          ]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42, # after",
-          "  :b => 43,",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => 43, # after",
-          "  :c => 44",
-          "}"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "{",
-          "  :a => 42,",
-          "  :b => 43,",
-          "  :c => 44 # after",
-          "}"
-        ].join("\n")
-      end
-
-      describe "for single-line hashes" do
-        it "emits correct code for empty hashes" do
+      describe "with lot of space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_default).should == "{}"
-        end
 
-        it "emits correct code for hashes with one entry" do
           @node_one.to_ruby_no_comments(@context_default).should ==
             "{ :a => 42 }"
-        end
 
-        it "emits correct code for hashes with multiple entries" do
           @node_multiple.to_ruby_no_comments(@context_default).should ==
             "{ :a => 42, :b => 43, :c => 44 }"
-        end
 
-        it "passes correct available space info to entries" do
-          node = Hash.new(
-            :entries => [
-              check_context(@hash_entry_a_42, :width => 80, :shift => 2),
-              check_context(@hash_entry_b_43, :width => 80, :shift => 12),
-              check_context(@hash_entry_c_44, :width => 80, :shift => 22),
-            ]
-          )
+          @node_aligned.to_ruby_no_comments(@context_default).should ==
+            "{ :a => 42, :aa => 43, :aaa => 44 }"
 
-          node.to_ruby_no_comments(@context_default)
+          @node_multiline.to_ruby_no_comments(@context_default).should == [
+            "{",
+            "  :a => a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  :b => a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  :c => a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+
+          @node_comments_before.to_ruby_no_comments(@context_default).should == [
+            "{",
+            "  # before",
+            "  :a => 42,",
+            "  # before",
+            "  :b => 43,",
+            "  # before",
+            "  :c => 44",
+            "}"
+          ].join("\n")
+
+          @node_comments_after.to_ruby_no_comments(@context_default).should == [
+            "{",
+            "  :a => 42, # after",
+            "  :b => 43, # after",
+            "  :c => 44 # after",
+            "}"
+          ].join("\n")
         end
       end
 
-      describe "for multi-line hashes" do
-        it "emits correct code for empty hashes" do
+      describe "with no space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_narrow).should == "{}"
-        end
 
-        it "emits correct code for hashes with one entry" do
           @node_one.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a => 42",
            "}"
           ].join("\n")
-        end
 
-        it "emits correct code for hashes with multiple entries" do
           @node_multiple.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a => 42,",
@@ -3584,55 +3452,55 @@ module Y2R::AST::Ruby
            "  :c => 44",
            "}"
           ].join("\n")
-        end
 
-        it "emits correct code for hashes with entries with comment before" do
-          @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
-           "{",
-           "  # before",
-           "  :a => 42,",
-           "  # before",
-           "  :b => 43,",
-           "  # before",
-           "  :c => 44",
-           "}"
-          ].join("\n")
-        end
-
-        it "emits correct code for hashes with entries with comment after" do
-          @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
-           "{",
-           "  :a => 42, # after",
-           "  :b => 43, # after",
-           "  :c => 44 # after",
-           "}"
-          ].join("\n")
-        end
-
-        it "aligns arrows" do
-          node = Hash.new(
-            :entries => [
-              @hash_entry_a_42,
-              @hash_entry_aa_43,
-              @hash_entry_aaa_44
-            ]
-          )
-
-          node.to_ruby_no_comments(@context_narrow).should == [
+          @node_aligned.to_ruby_no_comments(@context_narrow).should == [
            "{",
            "  :a   => 42,",
            "  :aa  => 43,",
            "  :aaa => 44",
            "}"
           ].join("\n")
+
+          @node_multiline.to_ruby_no_comments(@context_narrow).should == [
+            "{",
+            "  :a => a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  :b => a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  :c => a = 42",
+            "  b = 43",
+            "  c = 44",
+            "}"
+          ].join("\n")
+
+          @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
+            "{",
+            "  # before",
+            "  :a => 42,",
+            "  # before",
+            "  :b => 43,",
+            "  # before",
+            "  :c => 44",
+            "}"
+          ].join("\n")
+
+          @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
+            "{",
+            "  :a => 42, # after",
+            "  :b => 43, # after",
+            "  :c => 44 # after",
+            "}"
+          ].join("\n")
         end
 
         it "passes correct available space info to entries" do
-          node1 = check_context(@hash_entry_a_42, :width => -2, :shift => 0)
-          node2 = check_context(@hash_entry_b_43, :width => -2, :shift => 0)
-          node3 = check_context(@hash_entry_c_44, :width => -2, :shift => 0)
-
-          node = Hash.new(:entries => [node1, node2, node3])
+          node = Hash.new(:entries => [
+            check_context(@hash_entry_a_42, :width => -2, :shift => 0),
+            check_context(@hash_entry_b_43, :width => -2, :shift => 0),
+            check_context(@hash_entry_c_44, :width => -2, :shift => 0)
+          ])
 
           node.to_ruby_no_comments(@context_narrow)
         end
@@ -3640,24 +3508,15 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for empty hashes" do
-        @node_empty.single_line_width_no_comments.should == 2
-      end
-
-      it "returns correct value for hashes with one entry" do
-        @node_one.single_line_width_no_comments.should == 12
-      end
-
-      it "returns correct value for hashes with multiple entries" do
+      it "returns correct value" do
+        @node_empty.single_line_width_no_comments.should    == 2
+        @node_one.single_line_width_no_comments.should      == 12
         @node_multiple.single_line_width_no_comments.should == 32
-      end
 
-      it "returns infinity for hashes with entries with comment before" do
+        @node_multiline.single_line_width_no_comments.should == Float::INFINITY
+
         @node_comments_before.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for hashes with entries with comment after" do
         @node_comments_after.single_line_width_no_comments.should ==
           Float::INFINITY
       end
