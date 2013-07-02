@@ -2538,6 +2538,14 @@ module Y2R::AST::Ruby
         :parens   => false
       )
 
+      @node_receiver_comment_after = MethodCall.new(
+        :receiver => @variable_a_comment_after,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
+
       @node_parens_no_args = MethodCall.new(
         :receiver => nil,
         :name     => "m",
@@ -2563,6 +2571,28 @@ module Y2R::AST::Ruby
         :receiver => nil,
         :name     => "M",
         :args     => [],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_args_comments_before = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [
+          @literal_42_comment_before,
+          @literal_43_comment_before,
+          @literal_44_comment_before
+        ],
+        :block    => nil,
+        :parens   => true
+      )
+      @node_parens_args_comments_after = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [
+          @literal_42_comment_after,
+          @literal_43_comment_after,
+          @literal_44_comment_after
+        ],
         :block    => nil,
         :parens   => true
       )
@@ -2634,6 +2664,13 @@ module Y2R::AST::Ruby
       it "emits correct code for method calls with a receiver" do
         @node_with_receiver.to_ruby_no_comments(@context_default).should ==
           "a.m"
+      end
+
+      it "emits correct code for method calls when receiver has comment after" do
+        @node_receiver_comment_after.to_ruby_no_comments(@context_default).should == [
+          "a. # after",
+          "  m"
+        ].join("\n")
       end
 
       it "passes correct available space info to receiver" do
@@ -2733,6 +2770,29 @@ module Y2R::AST::Ruby
             @node_parens_const.to_ruby_no_comments(@context_narrow).should == [
               "M(",
               ")"
+            ].join("\n")
+          end
+
+          it "emits correct code for method calls with arguments with comment before" do
+            @node_parens_args_comments_before.to_ruby_no_comments(@context_default).should == [
+             "m(",
+             "  # before",
+             "  42,",
+             "  # before",
+             "  43,",
+             "  # before",
+             "  44",
+             ")"
+            ].join("\n")
+          end
+
+          it "emits correct code for method calls with arguments with comment after" do
+            @node_parens_args_comments_after.to_ruby_no_comments(@context_default).should == [
+             "m(",
+             "  42, # after",
+             "  43, # after",
+             "  44 # after",
+             ")"
             ].join("\n")
           end
 
@@ -2864,6 +2924,11 @@ module Y2R::AST::Ruby
         @node_with_receiver.single_line_width_no_comments.should == 3
       end
 
+      it "returns infinity for method calls when receiver has comment after" do
+        @node_receiver_comment_after.single_line_width_no_comments.should ==
+          Float::INFINITY
+      end
+
       describe "on method calls with :parens => true" do
         it "returns correct value for method calls with no arguments" do
           @node_parens_no_args.single_line_width_no_comments.should == 1
@@ -2879,6 +2944,16 @@ module Y2R::AST::Ruby
 
         it "returns correct value for method calls with no receiver, const-like name and no arguments" do
           @node_parens_const.single_line_width_no_comments.should == 3
+        end
+
+        it "return infinity for method calls with arguments with comment before" do
+          @node_parens_args_comments_before.single_line_width_no_comments.should ==
+            Float::INFINITY
+        end
+
+        it "return infinity for method calls with arguments with comment after" do
+          @node_parens_args_comments_after.single_line_width_no_comments.should ==
+            Float::INFINITY
         end
 
         it "returns correct value for method calls without a block" do

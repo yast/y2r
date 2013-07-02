@@ -669,7 +669,11 @@ module Y2R
           # their impact on readability is minimal and handling them would
           # complicate already complex code.
 
-          receiver_code = receiver ? "#{receiver.to_ruby(context)}." : ""
+          receiver_code = receiver ? "#{receiver.to_ruby(context.with_trailer("."))}" : ""
+
+          if has_line_breaking_comment?
+            context = context.indented(INDENT_STEP)
+          end
 
           args_shift   = receiver_code.size + name.size
           args_context = context.shifted(args_shift)
@@ -683,14 +687,25 @@ module Y2R
           end
           block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
-          "#{receiver_code}#{name}#{args_code}#{block_code}"
+          if !has_line_breaking_comment?
+            "#{receiver_code}#{name}#{args_code}#{block_code}"
+          else
+            combine do |parts|
+              parts << receiver_code
+              parts << indent("#{name}#{args_code}#{block_code}")
+            end
+          end
         end
 
         def single_line_width_no_comments
-          receiver_width = receiver ? receiver.single_line_width + 1 : 0
-          args_width     = args_single_line_width
+          if !has_line_breaking_comment? && !args_have_comments?
+            receiver_width = receiver ? receiver.single_line_width + 1 : 0
+            args_width     = args_single_line_width
 
-          receiver_width + name.size + args_width
+            receiver_width + name.size + args_width
+          else
+            Float::INFINITY
+          end
         end
 
         protected
@@ -701,8 +716,16 @@ module Y2R
 
         private
 
+        def has_line_breaking_comment?
+          receiver && receiver.comment_after
+        end
+
+        def args_have_comments?
+          args.any? { |a| a.has_comment? }
+        end
+
         def emit_args(context, args_context)
-          if fits_current_line?(context) || !parens
+          if (fits_current_line?(context) && !args_have_comments?) || !parens
             emit_args_single_line(args_context)
           else
             emit_args_multi_line(args_context)
