@@ -1475,10 +1475,10 @@ module Y2R
         ]
         def compile(context)
           if from.no_const != to.no_const
-            if TYPES_WITH_SHORTCUT_CONVERSION.include?(to.to_s) && from.to_s == "any"
+            if compile_as_shortcut?
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "Convert"),
-                :name     => "to_#{to}",
+                :name     => "to_#{to.no_const}",
                 :args     => [child.compile(context)],
                 :block    => nil,
                 :parens   => true
@@ -1509,6 +1509,15 @@ module Y2R
           else
             child.compile(context)
           end
+        end
+
+        private
+
+        def compile_as_shortcut?
+          shortcut_exists = TYPES_WITH_SHORTCUT_CONVERSION.include?(to.no_const.to_s)
+          from_any        = from.no_const.to_s == "any"
+
+          from_any && shortcut_exists
         end
       end
 

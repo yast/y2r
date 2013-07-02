@@ -4430,6 +4430,21 @@ module Y2R::AST
           ruby_node
       end
 
+      it "returns correct AST node when the types are different, their constness differ and there is shortcut" do
+        ycp_node  = ycp_yepropagate("any", "const float")
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Convert"),
+          :name     => "to_float",
+          :args     => [@ruby_literal_42],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should ==
+          ruby_node
+      end
+
       it "returns correct AST node when when both the types and their constness are different" do
         ycp_node_from_const = ycp_yepropagate("const integer", "float")
         ycp_node_to_const   = ycp_yepropagate("integer", "const float")
