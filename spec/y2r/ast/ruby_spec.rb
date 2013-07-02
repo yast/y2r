@@ -448,51 +448,39 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code" do
-          @node.to_ruby_no_comments(@context_default).should == [
-            "class C < S",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44",
-            "end"
-          ].join("\n")
-        end
+      it "emits correct code" do
+        @node.to_ruby_no_comments(@context_default).should == [
+          "class C < S",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          "end"
+        ].join("\n")
       end
 
-      describe "formatting" do
-        it "passes correct available space info to superclass" do
-          node = Class.new(
-            :name       => "C",
-            :superclass => check_context(
-              @variable_S,
-              :width => 80,
-              :shift => 10
-            ),
-            :statements => @statements
-          )
+      it "passes correct available space info to superclass" do
+        node = Class.new(
+          :name       => "C",
+          :superclass => check_context(@variable_S, :width => 80, :shift => 10),
+          :statements => @statements
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
+      end
 
-        it "passes correct available space info to statements" do
-          node = Class.new(
-            :name       => "C",
-            :superclass => @variable_S,
-            :statements => check_context(
-              @statements,
-              :width => 78,
-              :shift => 0
-            ),
-          )
+      it "passes correct available space info to statements" do
+        node = Class.new(
+          :name       => "C",
+          :superclass => @variable_S,
+          :statements => check_context(@statements, :width => 78, :shift => 0),
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns infinity" do
+      it "returns correct value" do
         @node.single_line_width_no_comments.should == Float::INFINITY
       end
     end
