@@ -57,7 +57,13 @@ module Y2R
         end
 
         def to_ruby_enclosed(context)
-          enclose? ? "(#{to_ruby(context.shifted(1))})" : to_ruby(context)
+          if enclose?
+            wrap_code_with_comments context do |inner_context|
+             "(#{to_ruby_no_comments(inner_context.shifted(1))})"
+            end
+          else
+            to_ruby(context)
+          end
         end
 
         def single_line_width

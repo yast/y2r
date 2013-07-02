@@ -226,7 +226,7 @@ module Y2R::AST::Ruby
         false
       end
 
-      def to_ruby(context)
+      def to_ruby_no_comments(context)
         "ruby"
       end
 
@@ -240,7 +240,7 @@ module Y2R::AST::Ruby
         true
       end
 
-      def to_ruby(context)
+      def to_ruby_no_comments(context)
         "ruby"
       end
 
@@ -311,7 +311,7 @@ module Y2R::AST::Ruby
 
         describe "on nodes where #enclosed? returns true" do
           it "passes correct available space info to #to_ruby" do
-            @node_enclosed.should_receive(:to_ruby) do |context|
+            @node_enclosed.should_receive(:to_ruby_no_comments) do |context|
               context.width.should == 80
               context.shift.should == 1
               "ruby"
