@@ -751,12 +751,12 @@ module Yast
   class DefaultClient < Client
     def outer
       f1 = lambda { return 42 }
-      f2 = lambda { |a2, b2, c2|
+      f2 = lambda do |a2, b2, c2|
         a2 = deep_copy(a2)
         b2 = deep_copy(b2)
         c2 = deep_copy(c2)
         return 42
-      }
+      end
       f3 = lambda { |a2, b2, c2| return 42 }
       f1.call
       a = ["a"]
@@ -855,8 +855,8 @@ b6 = Ops.greater_or_equal(42, 43)
 ### Arithmetic Operators
 
 Y2R translates YCP arithmetic operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can't be used
-because their behavior differs from the behavior of YCP operators in some cases.
+module that implement their behavior. Equivalent Ruby operators can be used when
+it is safe - Y2R is sure that no operand is `nil`.
 
 #### YCP (fragment)
 
@@ -870,6 +870,13 @@ integer i3 = 42 - 43;
 integer i4 = 42 * 43;
 integer i5 = 42 / 43;
 integer i6 = 42 % 43;
+
+i2 = i + 43;
+i3 = i - 43;
+i4 = i * 43;
+i5 = i / 43;
+i6 = i % 43;
+
 ```
 
 #### Ruby (fragment)
@@ -877,18 +884,23 @@ integer i6 = 42 % 43;
 ```ruby
 i = 42
 i1 = Ops.unary_minus(i)
-i2 = Ops.add(42, 43)
-i3 = Ops.subtract(42, 43)
-i4 = Ops.multiply(42, 43)
-i5 = Ops.divide(42, 43)
-i6 = Ops.modulo(42, 43)
+i2 = 42 + 43
+i3 = 42 - 43
+i4 = 42 * 43
+i5 = 42 / 43
+i6 = 42 % 43
+i2 = Ops.add(i, 43)
+i3 = Ops.subtract(i, 43)
+i4 = Ops.multiply(i, 43)
+i5 = Ops.divide(i, 43)
+i6 = Ops.modulo(i, 43)
 ```
 
 ### Bitwise Operators
 
 Y2R translates YCP bitwise operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can't be used
-because their behavior differs from the behavior of YCP operators in some cases.
+module that implement their behavior. Equivalent Ruby operators can be used when
+it is safe - Y2R is sure that no operand is `nil`.
 
 #### YCP (fragment)
 
@@ -899,17 +911,32 @@ integer i3 = 42 | 43;
 integer i4 = 42 ^ 43;
 integer i5 = 42 << 43;
 integer i6 = 42 >> 43;
+integer i = 42;
+i1 = ~i;
+i2 = i & 43;
+i3 = i | 43;
+i4 = i ^ 43;
+i5 = i << 43;
+i6 = i >> 43;
+
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-i1 = Ops.bitwise_not(42)
-i2 = Ops.bitwise_and(42, 43)
-i3 = Ops.bitwise_or(42, 43)
-i4 = Ops.bitwise_xor(42, 43)
-i5 = Ops.shift_left(42, 43)
-i6 = Ops.shift_right(42, 43)
+i1 = ~42
+i2 = 42 & 43
+i3 = 42 | 43
+i4 = 42 ^ 43
+i5 = 42 << 43
+i6 = 42 >> 43
+i = 42
+i1 = Ops.bitwise_not(i)
+i2 = Ops.bitwise_and(i, 43)
+i3 = Ops.bitwise_or(i, 43)
+i4 = Ops.bitwise_xor(i, 43)
+i5 = Ops.shift_left(i, 43)
+i6 = Ops.shift_right(i, 43)
 ```
 
 ### Logical Operators
@@ -960,16 +987,23 @@ i = b ? 42 : 43
 Y2R translates YCP index operator as a call of a method in the `Yast::Ops`
 module that implements its behavior. There is no equivalent operator in Ruby.
 
+Single-element index is passed as it is, multiple-element index is passed as an 
+array. The default value is passed only if it is non-`nil`.
+
 #### YCP (fragment)
 
 ```ycp
 integer i = [42, 43, 44][1]:0;
+integer j = [[42, 43, 44]][0, 1]:0;
+integer k = [42, 43, 44][1]:nil;
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-i = Ops.index([42, 43, 44], [1], 0)
+i = Ops.index([42, 43, 44], 1, 0)
+j = Ops.index([[42, 43, 44]], [0, 1], 0)
+k = Ops.index([42, 43, 44], 1)
 ```
 
 ### Double Quote Operator
@@ -1070,14 +1104,16 @@ in Ruby.
 ```ycp
 list l = [42, 43, 44];
 
-l[0] = 45;
+l[0] = [45];
+l[0,0] = 42; 
 ```
 
 #### Ruby (fragment)
 
 ```ruby
 l = [42, 43, 44]
-Ops.assign(l, [0], 45)
+Ops.assign(l, 0, [45])
+Ops.assign(l, [0, 0], 42)
 ```
 
 ### `return` Statement
@@ -1135,14 +1171,14 @@ foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.maplist([42, 43, 44]) { |i|
+Builtins.maplist([42, 43, 44]) do |i|
   j = 42
   next j
-}
-Builtins.foreach([42, 43, 44]) { |i|
+end
+Builtins.foreach([42, 43, 44]) do |i|
   j = 42
   next
-}
+end
 ```
 
 ### `break` Statement
@@ -1376,12 +1412,12 @@ module Yast
       f5 = lambda { |a, b, c| return 42 }
       f6 = lambda { |a, b, c| return 42 }
       f7 = lambda { |a, b, c| return 42 }
-      f8 = lambda { |a, b, c|
+      f8 = lambda do |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)
         return 42
-      }
+      end
       nil
     end
   end

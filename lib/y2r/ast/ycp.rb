@@ -426,6 +426,14 @@ module Y2R
           false
         end
 
+        # `Ops` exists because YCP does not have exceptions and nil propagates
+        # to operation results. If we use a Ruby operator where the YaST program
+        # can produce `nil`, we would crash with an exception. If we know that 
+        # `nil` cannot be there, we ca use a plain ruby operator.
+        def never_nil?
+          false
+        end
+
         def needs_copy?
           false
         end
@@ -469,7 +477,7 @@ module Y2R
             :name     => "assign",
             :args     => [
               entry.compile(context),
-              arg.compile(context),
+              build_index(context),
               rhs.compile(context),
             ],
             :block    => nil,
@@ -478,6 +486,16 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        private
+
+        def build_index(context)
+          if arg.children.size == 1
+            arg.children.first.compile(context)
+          else
+            arg.compile(context)
+          end
+        end
       end
 
       class Break < Node
@@ -704,6 +722,10 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def never_nil?
+          return type != :void
+        end
       end
 
       class Continue < Node
@@ -980,10 +1002,6 @@ module Y2R
       end
 
       class IncludeBlock < Node
-        def name
-          nil
-        end
-
         def compile(context)
           class_statements = []
 
@@ -1093,6 +1111,11 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def never_nil?
+          #locale can be only with constant strings
+          return true
+        end
       end
 
       class Map < Node
@@ -1540,6 +1563,19 @@ module Y2R
           "||" => "||"
         }
 
+        OPS_TO_OPS_OPTIONAL = {
+          "+"  => "+",
+          "-"  => "-",
+          "*"  => "*",
+          "/"  => "/",
+          "%"  => "%",
+          "&"  => "&",
+          "|"  => "|",
+          "^"  => "^",
+          "<<" => "<<",
+          ">>" => ">>",
+        }
+
         OPS_TO_METHODS = {
           "+"  => "add",
           "-"  => "subtract",
@@ -1561,19 +1597,31 @@ module Y2R
               :rhs => rhs.compile(context)
             )
           elsif OPS_TO_METHODS[name]
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Ops"),
-              :name     => OPS_TO_METHODS[name],
-              :args     => [lhs.compile(context), rhs.compile(context)],
-              :block    => nil,
-              :parens   => true
-            )
+            if never_nil?
+              Ruby::BinaryOperator.new(
+                :op  => OPS_TO_OPS_OPTIONAL[name],
+                :lhs => lhs.compile(context),
+                :rhs => rhs.compile(context)
+              )
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Ops"),
+                :name     => OPS_TO_METHODS[name],
+                :args     => [lhs.compile(context), rhs.compile(context)],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             raise "Unknown binary operator: #{name.inspect}."
           end
         end
 
         transfers_comments :compile
+
+        def never_nil?
+          return lhs.never_nil? && rhs.never_nil?
+        end
       end
 
       class YEBracket < Node
@@ -1582,7 +1630,7 @@ module Y2R
           # when the value is missing. In other words, the default is evaluated
           # lazily. We need to emulate this laziness at least for the calls.
           if default.is_a?(Call)
-            args  = [value.compile(context), index.compile(context)]
+            args  = [value.compile(context), build_index(context)]
             block = Ruby::Block.new(
               :args       => [],
               :statements => default.compile(context)
@@ -1590,9 +1638,13 @@ module Y2R
           else
             args  = [
               value.compile(context),
-              index.compile(context),
-              default.compile(context),
+              build_index(context),
             ]
+
+            if !(default.is_a?(Const) && default.type == :void)
+              args << default.compile(context)
+            end
+
             block = nil
           end
 
@@ -1606,6 +1658,16 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        private
+
+        def build_index(context)
+          if index.children.size == 1
+            index.children.first.compile(context)
+          else
+            index.compile(context)
+          end
+        end
       end
 
       class YEIs < Node
@@ -1641,10 +1703,10 @@ module Y2R
         ]
         def compile(context)
           if from.no_const != to.no_const
-            if TYPES_WITH_SHORTCUT_CONVERSION.include?(to.to_s) && from.to_s == "any"
+            if compile_as_shortcut?
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "Convert"),
-                :name     => "to_#{to}",
+                :name     => "to_#{to.no_const}",
                 :args     => [child.compile(context)],
                 :block    => nil,
                 :parens   => true
@@ -1678,6 +1740,15 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        private
+
+        def compile_as_shortcut?
+          shortcut_exists = TYPES_WITH_SHORTCUT_CONVERSION.include?(to.no_const.to_s)
+          from_any        = from.no_const.to_s == "any"
+
+          from_any && shortcut_exists
+        end
       end
 
       class YEReference < Node
@@ -1862,11 +1933,20 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def never_nil?
+          return self.true.never_nil? && self.false.never_nil?
+        end
       end
 
       class YEUnary < Node
         OPS_TO_OPS = {
           "!"  => "!"
+        }
+
+        OPS_TO_OPS_OPTIONAL = {
+          "-"  => "-",
+          "~"  => "~",
         }
 
         OPS_TO_METHODS = {
@@ -1881,19 +1961,30 @@ module Y2R
               :expression => child.compile(context)
             )
           elsif OPS_TO_METHODS[name]
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Ops"),
-              :name     => OPS_TO_METHODS[name],
-              :args     => [child.compile(context)],
-              :block    => nil,
-              :parens   => true
-            )
+            if never_nil?
+              Ruby::UnaryOperator.new(
+                :op         => OPS_TO_OPS_OPTIONAL[name],
+                :expression => child.compile(context)
+              )
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Ops"),
+                :name     => OPS_TO_METHODS[name],
+                :args     => [child.compile(context)],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             raise "Unknown unary operator: #{name.inspect}."
           end
         end
 
         transfers_comments :compile
+
+        def never_nil?
+          return child.never_nil?
+        end
       end
     end
   end

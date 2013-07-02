@@ -722,7 +722,7 @@ module Y2R::AST
 
   describe YCP::Bracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node when args has single value" do
         ycp_node = YCP::Bracket.new(
           :entry => YCP::Variable.new(
             :category => :variable,
@@ -738,7 +738,33 @@ module Y2R::AST
           :name     => "assign",
           :args     => [
             Ruby::Variable.new(:name => "@l"),
-            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when args has multiple elements" do
+        ycp_node = YCP::Bracket.new(
+          :entry => YCP::Variable.new(
+            :category => :variable,
+            :ns       => nil,
+            :name     => "l"
+          ),
+          :arg   => YCP::List.new(:children => [@ycp_const_1, @ycp_const_1]),
+          :rhs   => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "assign",
+          :args     => [
+            Ruby::Variable.new(:name => "@l"),
+            Ruby::Array.new(:elements => [@ruby_literal_1, @ruby_literal_1]),
             @ruby_literal_0,
           ],
           :block    => nil,
@@ -3941,33 +3967,112 @@ module Y2R::AST
 
   describe YCP::YEBinary, :type => :ycp do
     describe "#compile" do
-      def ycp_ye_binary(name)
-        YCP::YEBinary.new(
-          :name => name,
-          :lhs  => @ycp_const_42,
-          :rhs  => @ycp_const_43
-        )
+      it "returns correct AST node when both sides are constant" do
+        def ycp_ye_binary(name)
+          YCP::YEBinary.new(
+            :name => name,
+            :lhs  => @ycp_const_42,
+            :rhs  => @ycp_const_43
+          )
+        end
+
+        def ruby_ops_call(name)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => name,
+            :args     => [@ruby_literal_42, @ruby_literal_43],
+            :block    => nil,
+            :parens   => true
+          )
+        end
+
+        def ruby_operator(name)
+          Ruby::BinaryOperator.new(
+            :op  => name,
+            :lhs => @ruby_literal_42,
+            :rhs => @ruby_literal_43
+          )
+        end
+
+        ycp_node_add         = ycp_ye_binary("+")
+        ycp_node_subtract    = ycp_ye_binary("-")
+        ycp_node_multiply    = ycp_ye_binary("*")
+        ycp_node_divide      = ycp_ye_binary("/")
+        ycp_node_modulo      = ycp_ye_binary("%")
+        ycp_node_bitwise_and = ycp_ye_binary("&")
+        ycp_node_bitwise_or  = ycp_ye_binary("|" )
+        ycp_node_bitwise_xor = ycp_ye_binary("^" )
+        ycp_node_shift_left  = ycp_ye_binary("<<")
+        ycp_node_shift_right = ycp_ye_binary(">>")
+        ycp_node_logical_and = ycp_ye_binary("&&")
+        ycp_node_logical_or  = ycp_ye_binary("||")
+
+        ruby_node_add         = ruby_operator("+")
+        ruby_node_subtract    = ruby_operator("-")
+        ruby_node_multiply    = ruby_operator("*")
+        ruby_node_divide      = ruby_operator("/")
+        ruby_node_modulo      = ruby_operator("%")
+        ruby_node_bitwise_and = ruby_operator("&")
+        ruby_node_bitwise_or  = ruby_operator("|")
+        ruby_node_bitwise_xor = ruby_operator("^")
+        ruby_node_shift_left  = ruby_operator("<<")
+        ruby_node_shift_right = ruby_operator(">>")
+        ruby_node_logical_and = ruby_operator("&&")
+        ruby_node_logical_or  = ruby_operator("||")
+
+        ycp_node_add.compile(@context_empty).should ==
+          ruby_node_add
+        ycp_node_subtract.compile(@context_empty).should ==
+          ruby_node_subtract
+        ycp_node_multiply.compile(@context_empty).should ==
+          ruby_node_multiply
+        ycp_node_divide.compile(@context_empty).should ==
+          ruby_node_divide
+        ycp_node_modulo.compile(@context_empty).should ==
+          ruby_node_modulo
+        ycp_node_bitwise_and.compile(@context_empty).should ==
+          ruby_node_bitwise_and
+        ycp_node_bitwise_or.compile(@context_empty).should ==
+          ruby_node_bitwise_or
+        ycp_node_bitwise_xor.compile(@context_empty).should ==
+          ruby_node_bitwise_xor
+        ycp_node_shift_left.compile(@context_empty).should ==
+          ruby_node_shift_left
+        ycp_node_shift_right.compile(@context_empty).should ==
+          ruby_node_shift_right
+        ycp_node_logical_and.compile(@context_empty).should ==
+          ruby_node_logical_and
+        ycp_node_logical_or.compile(@context_empty).should ==
+          ruby_node_logical_or
       end
 
-      def ruby_ops_call(name)
-        Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => name,
-          :args     => [@ruby_literal_42, @ruby_literal_43],
-          :block    => nil,
-          :parens   => true
-        )
-      end
+      it "returns correct AST node when at least one side is not constant" do
+        def ycp_ye_binary(name)
+          YCP::YEBinary.new(
+            :name => name,
+            :lhs  => @ycp_variable_boolean,
+            :rhs  => @ycp_const_43
+          )
+        end
 
-      def ruby_operator(name)
-        Ruby::BinaryOperator.new(
-          :op  => name,
-          :lhs => @ruby_literal_42,
-          :rhs => @ruby_literal_43
-        )
-      end
+        def ruby_ops_call(name)
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => name,
+            :args     => [@ruby_variable_i, @ruby_literal_43],
+            :block    => nil,
+            :parens   => true
+          )
+        end
 
-      it "returns correct AST node" do
+        def ruby_operator(name)
+          Ruby::BinaryOperator.new(
+            :op  => name,
+            :lhs => @ruby_variable_i,
+            :rhs => @ruby_literal_43
+          )
+        end
+
         ycp_node_add         = ycp_ye_binary("+")
         ycp_node_subtract    = ycp_ye_binary("-")
         ycp_node_multiply    = ycp_ye_binary("*")
@@ -4024,7 +4129,36 @@ module Y2R::AST
 
   describe YCP::YEBracket, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node when the default isn't a call" do
+      it "returns correct AST node when the default is nil" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => YCP::Const.new(:type => :void)
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when the default is not nil" do
         ycp_node = YCP::YEBracket.new(
           :value   => YCP::List.new(
             :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
@@ -4044,7 +4178,7 @@ module Y2R::AST
                 @ruby_literal_44
               ]
             ),
-            Ruby::Array.new(:elements => [@ruby_literal_1]),
+            @ruby_literal_1,
             @ruby_literal_0,
           ],
           :block    => nil,
@@ -4080,7 +4214,7 @@ module Y2R::AST
                 @ruby_literal_44
               ]
             ),
-            Ruby::Array.new(:elements => [@ruby_literal_1])
+            @ruby_literal_1
           ],
           :block    => Ruby::Block.new(
             :args       => [],
@@ -4097,6 +4231,75 @@ module Y2R::AST
 
         ycp_node.compile(@context_module).should == ruby_node
       end
+
+      it "returns correct AST node when the index has one element" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when index has multiple elements" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [YCP::List.new(
+              :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            )]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_0, @ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "index",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                Ruby::Array.new(
+                  :elements => [
+                    @ruby_literal_42,
+                    @ruby_literal_43,
+                    @ruby_literal_44
+                  ]
+                )
+              ]
+            ),
+            Ruby::Array.new(
+              :elements => [@ruby_literal_0, @ruby_literal_1]
+            ),
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
     end
   end
 
@@ -4189,6 +4392,21 @@ module Y2R::AST
 
       it "returns correct AST node when the types are different and there is shortcut" do
         ycp_node  = ycp_yepropagate("any", "float")
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Convert"),
+          :name     => "to_float",
+          :args     => [@ruby_literal_42],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should ==
+          ruby_node
+      end
+
+      it "returns correct AST node when the types are different, their constness differ and there is shortcut" do
+        ycp_node  = ycp_yepropagate("any", "const float")
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Convert"),
@@ -4436,43 +4654,72 @@ module Y2R::AST
 
   describe YCP::YEUnary, :type => :ycp do
     describe "#compile" do
-      def ycp_ye_unary(name)
-        YCP::YEUnary.new(:name => name, :child => @ycp_const_42)
+        it "returns correct AST node when child is not constant" do
+          def ycp_ye_unary(name)
+            YCP::YEUnary.new(:name => name, :child => @ycp_variable_boolean)
+          end
+
+          def ruby_ops_call(name)
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => name,
+              :args     => [@ruby_variable_i],
+              :block    => nil,
+              :parens   => true
+            )
+          end
+
+          def ruby_operator(name)
+            Ruby::UnaryOperator.new(
+              :op         => name,
+              :expression => @ruby_variable_i
+            )
+          end
+
+          ycp_node_unary_minus = ycp_ye_unary("-")
+          ycp_node_bitwise_not = ycp_ye_unary("~")
+          ycp_node_logical_not = ycp_ye_unary("!")
+
+          ruby_node_unary_minus = ruby_ops_call("unary_minus")
+          ruby_node_bitwise_not = ruby_ops_call("bitwise_not")
+          ruby_node_logical_not = ruby_operator("!")
+
+          ycp_node_unary_minus.compile(@context_empty).should ==
+            ruby_node_unary_minus
+          ycp_node_bitwise_not.compile(@context_empty).should ==
+            ruby_node_bitwise_not
+          ycp_node_logical_not.compile(@context_empty).should ==
+            ruby_node_logical_not
+        end
+
+        it "returns correct AST node when child is constant" do
+          def ycp_ye_unary(name)
+            YCP::YEUnary.new(:name => name, :child => @ycp_const_42)
+          end
+
+          def ruby_operator(name)
+            Ruby::UnaryOperator.new(
+              :op         => name,
+              :expression => @ruby_literal_42
+            )
+          end
+
+          ycp_node_unary_minus = ycp_ye_unary("-")
+          ycp_node_bitwise_not = ycp_ye_unary("~")
+          ycp_node_logical_not = ycp_ye_unary("!")
+
+          ruby_node_unary_minus = ruby_operator("-")
+          ruby_node_bitwise_not = ruby_operator("~")
+          ruby_node_logical_not = ruby_operator("!")
+
+          ycp_node_unary_minus.compile(@context_empty).should ==
+            ruby_node_unary_minus
+          ycp_node_bitwise_not.compile(@context_empty).should ==
+            ruby_node_bitwise_not
+          ycp_node_logical_not.compile(@context_empty).should ==
+            ruby_node_logical_not
       end
 
-      def ruby_ops_call(name)
-        Ruby::MethodCall.new(
-          :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => name,
-          :args     => [@ruby_literal_42],
-          :block    => nil,
-          :parens   => true
-        )
-      end
-
-      def ruby_operator(name)
-        Ruby::UnaryOperator.new(
-          :op         => name,
-          :expression => @ruby_literal_42
-        )
-      end
-
-      it "returns correct AST node" do
-        ycp_node_unary_minus = ycp_ye_unary("-")
-        ycp_node_bitwise_not = ycp_ye_unary("~")
-        ycp_node_logical_not = ycp_ye_unary("!")
-
-        ruby_node_unary_minus = ruby_ops_call("unary_minus")
-        ruby_node_bitwise_not = ruby_ops_call("bitwise_not")
-        ruby_node_logical_not = ruby_operator("!")
-
-        ycp_node_unary_minus.compile(@context_empty).should ==
-          ruby_node_unary_minus
-        ycp_node_bitwise_not.compile(@context_empty).should ==
-          ruby_node_bitwise_not
-        ycp_node_logical_not.compile(@context_empty).should ==
-          ruby_node_logical_not
-      end
     end
   end
 end

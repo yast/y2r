@@ -2776,11 +2776,11 @@ module Y2R::AST::Ruby
 
         it "emits correct code for method calls with a block" do
           @node_parens_with_block.to_ruby_no_comments(@context_default).should == [
-            "m {",
+            "m do",
             "  a = 42",
             "  b = 43",
             "  c = 44",
-            "}"
+            "end"
           ].join("\n")
         end
       end
@@ -2813,11 +2813,11 @@ module Y2R::AST::Ruby
 
         it "emits correct code for method calls with a block" do
           @node_no_parens_with_block.to_ruby_no_comments(@context_default).should == [
-            "m {",
+            "m do",
             "  a = 42",
             "  b = 43",
             "  c = 44",
-            "}"
+            "end"
           ].join("\n")
         end
 
@@ -2960,9 +2960,9 @@ module Y2R::AST::Ruby
         node = Block.new(:args => [], :statements => @assignment_a_42)
 
         node.to_ruby_no_comments(@context_narrow).should == [
-          "{",
+          "do",
           "  a = 42",
-          "}"
+          "end"
         ].join("\n")
       end
 
@@ -2970,11 +2970,11 @@ module Y2R::AST::Ruby
         node = Block.new(:args => [], :statements => @statements)
 
         node.to_ruby_no_comments(@context_default).should == [
-          "{",
+          "do",
           "  a = 42",
           "  b = 43",
           "  c = 44",
-          "}"
+          "end"
         ].join("\n")
       end
 
@@ -3024,40 +3024,40 @@ module Y2R::AST::Ruby
       describe "for multi-line blocks" do
         it "emits correct code for blocks with no arguments" do
           @node_multi_no_args.to_ruby_no_comments(@context_narrow).should == [
-            "{",
+            "do",
             "  a = 42",
             "  b = 43",
             "  c = 44",
-            "}"
+            "end"
           ].join("\n")
         end
 
         it "emits correct code for blocks with one argument" do
           @node_multi_one_arg.to_ruby_no_comments(@context_narrow).should == [
-            "{ |a|",
+            "do |a|",
             "  a = 42",
             "  b = 43",
             "  c = 44",
-            "}"
+            "end"
           ].join("\n")
         end
 
         it "emits correct code for blocks with multiple arguments" do
           @node_multi_multiple_args.to_ruby_no_comments(@context_narrow).should == [
-            "{ |a, b, c|",
+            "do |a, b, c|",
             "  a = 42",
             "  b = 43",
             "  c = 44",
-            "}"
+            "end"
           ].join("\n")
         end
 
         it "passes correct available space info to args" do
           node = Block.new(
             :args       => [
-              check_context(@variable_a, :width => 0, :shift => 3),
-              check_context(@variable_b, :width => 0, :shift => 6),
-              check_context(@variable_c, :width => 0, :shift => 9)
+              check_context(@variable_a, :width => 0, :shift => 4),
+              check_context(@variable_b, :width => 0, :shift => 7),
+              check_context(@variable_c, :width => 0, :shift => 10)
             ],
             :statements => @statements
           )
