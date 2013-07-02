@@ -3278,6 +3278,10 @@ module Y2R::AST::Ruby
         :elements => [@literal_42, @literal_43, @literal_44]
       )
 
+      @node_multiline = Array.new(
+        :elements => [@statements, @statements, @statements]
+      )
+
       @node_comments_before = Array.new(
         :elements => [
           @literal_42_comment_before,
@@ -3295,140 +3299,47 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line array when the array fits available space and all elements are single-line" do
-        @node_multiple.to_ruby_no_comments(@context_default).should ==
-          "[42, 43, 44]"
-      end
-
-      it "emits a multi-line array when the array doesn't fit available space" do
-        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
-          "[",
-          "  42,",
-          "  43,",
-          "  44",
-          "]"
-        ].join("\n")
-      end
-
-      it "emits a multi-line array when any element is multi-line" do
-        # Using @statements is nonsense semantically, but it is a convenient
-        # multi-line node.
-        node1 = Array.new(:elements => [@statements, @literal_43, @literal_44])
-        node2 = Array.new(:elements => [@literal_42, @statements, @literal_44])
-        node3 = Array.new(:elements => [@literal_42, @literal_43, @statements])
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44,",
-          "  43,",
-          "  44",
-          "]"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44,",
-          "  44",
-          "]"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  43,",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "]"
-        ].join("\n")
-      end
-
-      it "emits a multi-line array when any element has comment before" do
-        node1 = Array.new(
-          :elements => [@literal_42_comment_before, @literal_43, @literal_44]
-        )
-        node2 = Array.new(
-          :elements => [@literal_42, @literal_43_comment_before, @literal_44]
-        )
-        node3 = Array.new(
-          :elements => [@literal_42, @literal_43, @literal_44_comment_before]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  # before",
-          "  42,",
-          "  43,",
-          "  44",
-          "]"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  # before",
-          "  43,",
-          "  44",
-          "]"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  43,",
-          "  # before",
-          "  44",
-          "]"
-        ].join("\n")
-      end
-
-      it "emits a multi-line array when any element has comment after" do
-        node1 = Array.new(
-          :elements => [@literal_42_comment_after, @literal_43, @literal_44]
-        )
-        node2 = Array.new(
-          :elements => [@literal_42, @literal_43_comment_after, @literal_44]
-        )
-        node3 = Array.new(
-          :elements => [@literal_42, @literal_43, @literal_44_comment_after]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42, # after",
-          "  43,",
-          "  44",
-          "]"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  43, # after",
-          "  44",
-          "]"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "[",
-          "  42,",
-          "  43,",
-          "  44 # after",
-          "]"
-        ].join("\n")
-      end
-
-      describe "for single-line arrays" do
-        it "emits correct code for empty arrays" do
+      describe "with lot of space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_default).should == "[]"
-        end
 
-        it "emits correct code for arrays with one element" do
           @node_one.to_ruby_no_comments(@context_default).should == "[42]"
-        end
 
-        it "emits correct code for arrays with multiple elements" do
           @node_multiple.to_ruby_no_comments(@context_default).should ==
             "[42, 43, 44]"
+
+          @node_multiline.to_ruby_no_comments(@context_default).should == [
+            "[",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "]"
+          ].join("\n")
+
+          @node_comments_before.to_ruby_no_comments(@context_default).should == [
+           "[",
+           "  # before",
+           "  42,",
+           "  # before",
+           "  43,",
+           "  # before",
+           "  44",
+           "]"
+          ].join("\n")
+
+          @node_comments_after.to_ruby_no_comments(@context_default).should == [
+           "[",
+           "  42, # after",
+           "  43, # after",
+           "  44 # after",
+           "]"
+          ].join("\n")
         end
 
         it "passes correct available space info to elements" do
@@ -3444,30 +3355,38 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "for multi-line arrays" do
-        it "emits correct code for empty arrays" do
+      describe "with no space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_narrow).should == "[]"
-        end
 
-        it "emits correct code for arrays with one element" do
           @node_one.to_ruby_no_comments(@context_narrow).should == [
-           "[",
-           "  42",
-           "]"
+            "[",
+            "  42",
+            "]"
           ].join("\n")
-        end
 
-        it "emits correct code for arrays with multiple elements" do
           @node_multiple.to_ruby_no_comments(@context_narrow).should == [
-           "[",
-           "  42,",
-           "  43,",
-           "  44",
-           "]"
+            "[",
+            "  42,",
+            "  43,",
+            "  44",
+            "]"
           ].join("\n")
-        end
 
-        it "emits correct code for arrays with elements with comment before" do
+          @node_multiline.to_ruby_no_comments(@context_narrow).should == [
+            "[",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44,",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "]"
+          ].join("\n")
+
           @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
            "[",
            "  # before",
@@ -3478,9 +3397,7 @@ module Y2R::AST::Ruby
            "  44",
            "]"
           ].join("\n")
-        end
 
-        it "emits correct code for arrays with elements with comment after" do
           @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
            "[",
            "  42, # after",
@@ -3495,7 +3412,7 @@ module Y2R::AST::Ruby
             :elements => [
               check_context(@literal_42, :width => -2, :shift => 0),
               check_context(@literal_43, :width => -2, :shift => 0),
-              check_context(@literal_44, :width => -2, :shift => 0),
+              check_context(@literal_44, :width => -2, :shift => 0)
             ]
           )
 
@@ -3505,24 +3422,15 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for empty arrays" do
-        @node_empty.single_line_width_no_comments.should == 2
-      end
-
-      it "returns correct value for arrays with one element" do
-        @node_one.single_line_width_no_comments.should == 4
-      end
-
-      it "returns correct value for arrays with multiple elements" do
+      it "returns correct value" do
+        @node_empty.single_line_width_no_comments.should    == 2
+        @node_one.single_line_width_no_comments.should      == 4
         @node_multiple.single_line_width_no_comments.should == 12
-      end
 
-      it "returns infinity for arrays with elements with comment before" do
+        @node_multiline.single_line_width_no_comments.should == Float::INFINITY
+
         @node_comments_before.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for arrays with elements with comment after" do
         @node_comments_after.single_line_width_no_comments.should ==
           Float::INFINITY
       end
