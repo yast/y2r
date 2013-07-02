@@ -3265,64 +3265,27 @@ module Y2R::AST::Ruby
 
     describe "#to_ruby_no_comments" do
       describe "basics" do
-        it "emits correct code for nil literals" do
-          @node_nil.to_ruby_no_comments(@context_default).should == "nil"
-        end
-
-        it "emits correct code for true literals" do
-          @node_true.to_ruby_no_comments(@context_default).should == "true"
-        end
-
-        it "emits correct code for false literals" do
-          @node_false.to_ruby_no_comments(@context_default).should == "false"
-        end
-
-        it "emits correct code for integer literals" do
+        it "emits correct code" do
+          @node_nil.to_ruby_no_comments(@context_default).should     == "nil"
+          @node_true.to_ruby_no_comments(@context_default).should    == "true"
+          @node_false.to_ruby_no_comments(@context_default).should   == "false"
           @node_integer.to_ruby_no_comments(@context_default).should == "42"
-        end
-
-        it "emits correct code for float literals" do
-          @node_float.to_ruby_no_comments(@context_default).should == "42.0"
-        end
-
-        it "emits correct code for symbol literals" do
-          @node_symbol.to_ruby_no_comments(@context_default).should == ":abcd"
-        end
-
-        it "emits correct code for string literals" do
-          @node_string.to_ruby_no_comments(@context_default).should ==
-            "\"abcd\""
+          @node_float.to_ruby_no_comments(@context_default).should   == "42.0"
+          @node_symbol.to_ruby_no_comments(@context_default).should  == ":abcd"
+          @node_string.to_ruby_no_comments(@context_default).should  == "\"abcd\""
         end
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "emits correct code for nil literals" do
-        @node_nil.single_line_width_no_comments.should == 3
-      end
-
-      it "emits correct code for true literals" do
-        @node_true.single_line_width_no_comments.should == 4
-      end
-
-      it "emits correct code for false literals" do
-        @node_false.single_line_width_no_comments.should == 5
-      end
-
-      it "emits correct code for integer literals" do
+      it "returns correct value" do
+        @node_nil.single_line_width_no_comments.should     == 3
+        @node_true.single_line_width_no_comments.should    == 4
+        @node_false.single_line_width_no_comments.should   == 5
         @node_integer.single_line_width_no_comments.should == 2
-      end
-
-      it "emits correct code for float literals" do
-        @node_float.single_line_width_no_comments.should == 4
-      end
-
-      it "emits correct code for symbol literals" do
-        @node_symbol.single_line_width_no_comments.should == 5
-      end
-
-      it "emits correct code for string literals" do
-        @node_string.single_line_width_no_comments.should == 6
+        @node_float.single_line_width_no_comments.should   == 4
+        @node_symbol.single_line_width_no_comments.should  == 5
+        @node_string.single_line_width_no_comments.should  == 6
       end
     end
   end
