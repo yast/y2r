@@ -1566,36 +1566,27 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code for nexts without a value" do
-          @node_without_value.to_ruby_no_comments(@context_default).should ==
-            "next"
-        end
+      it "emits correct code" do
+        @node_without_value.to_ruby_no_comments(@context_default).should ==
+          "next"
 
-        it "emits correct code for nexts with a value" do
-          @node_with_value.to_ruby_no_comments(@context_default).should ==
-            "next 42"
-        end
+        @node_with_value.to_ruby_no_comments(@context_default).should ==
+          "next 42"
       end
 
-      describe "formatting" do
-        it "passes correct available space info to value" do
-          node = Next.new(
-            :value => check_context(@literal_42, :width => 80, :shift => 5)
-          )
+      it "passes correct available space info to value" do
+        node = Next.new(
+          :value => check_context(@literal_42, :width => 80, :shift => 5)
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for nexts without a value" do
+      it "returns correct value" do
         @node_without_value.single_line_width_no_comments.should == 4
-      end
-
-      it "returns correct value for nexts with a value" do
-        @node_with_value.single_line_width_no_comments.should == 7
+        @node_with_value.single_line_width_no_comments.should    == 7
       end
     end
   end
