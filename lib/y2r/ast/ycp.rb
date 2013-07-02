@@ -262,6 +262,14 @@ module Y2R
           false
         end
 
+        # `Ops` exists because YCP does not have exceptions and nil propagates
+        # to operation results. If we use a Ruby operator where the YaST program
+        # can produce `nil`, we would crash with an exception. If we know that 
+        # `nil` cannot be there, we ca use a plain ruby operator.
+        def never_nil?
+          false
+        end
+
         def needs_copy?
           false
         end
@@ -548,6 +556,10 @@ module Y2R
             else
               raise "Unknown const type: #{type.inspect}."
           end
+        end
+
+        def never_nil?
+          return type != :void
         end
       end
 
@@ -906,6 +918,11 @@ module Y2R
             :block    => nil,
             :parens   => true
           )
+        end
+
+        def never_nil?
+          #locale can be only with constant strings
+          return true
         end
       end
 
@@ -1324,6 +1341,19 @@ module Y2R
           "||" => "||"
         }
 
+        OPS_TO_OPS_OPTIONAL = {
+          "+"  => "+",
+          "-"  => "-",
+          "*"  => "*",
+          "/"  => "/",
+          "%"  => "%",
+          "&"  => "&",
+          "|"  => "|",
+          "^"  => "^",
+          "<<" => "<<",
+          ">>" => ">>",
+        }
+
         OPS_TO_METHODS = {
           "+"  => "add",
           "-"  => "subtract",
@@ -1345,16 +1375,28 @@ module Y2R
               :rhs => rhs.compile(context)
             )
           elsif OPS_TO_METHODS[name]
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Ops"),
-              :name     => OPS_TO_METHODS[name],
-              :args     => [lhs.compile(context), rhs.compile(context)],
-              :block    => nil,
-              :parens   => true
-            )
+            if never_nil?
+              Ruby::BinaryOperator.new(
+                :op  => OPS_TO_OPS_OPTIONAL[name],
+                :lhs => lhs.compile(context),
+                :rhs => rhs.compile(context)
+              )
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Ops"),
+                :name     => OPS_TO_METHODS[name],
+                :args     => [lhs.compile(context), rhs.compile(context)],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             raise "Unknown binary operator: #{name.inspect}."
           end
+        end
+
+        def never_nil?
+          return lhs.never_nil? && rhs.never_nil?
         end
       end
 
@@ -1644,11 +1686,20 @@ module Y2R
             :else      => self.false.compile(context)
           )
         end
+
+        def never_nil?
+          return self.true.never_nil? && self.false.never_nil?
+        end
       end
 
       class YEUnary < Node
         OPS_TO_OPS = {
           "!"  => "!"
+        }
+
+        OPS_TO_OPS_OPTIONAL = {
+          "-"  => "-",
+          "~"  => "~",
         }
 
         OPS_TO_METHODS = {
@@ -1663,16 +1714,27 @@ module Y2R
               :expression => child.compile(context)
             )
           elsif OPS_TO_METHODS[name]
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Ops"),
-              :name     => OPS_TO_METHODS[name],
-              :args     => [child.compile(context)],
-              :block    => nil,
-              :parens   => true
-            )
+            if never_nil?
+              Ruby::UnaryOperator.new(
+                :op         => OPS_TO_OPS_OPTIONAL[name],
+                :expression => child.compile(context)
+              )
+            else
+              Ruby::MethodCall.new(
+                :receiver => Ruby::Variable.new(:name => "Ops"),
+                :name     => OPS_TO_METHODS[name],
+                :args     => [child.compile(context)],
+                :block    => nil,
+                :parens   => true
+              )
+            end
           else
             raise "Unknown unary operator: #{name.inspect}."
           end
+        end
+
+        def never_nil?
+          return child.never_nil?
         end
       end
     end

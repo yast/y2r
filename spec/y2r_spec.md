@@ -849,8 +849,8 @@ b6 = Ops.greater_or_equal(42, 43)
 ### Arithmetic Operators
 
 Y2R translates YCP arithmetic operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can't be used
-because their behavior differs from the behavior of YCP operators in some cases.
+module that implement their behavior. Equivalent Ruby operators can be used when
+it is safe - Y2R is sure that no operand is `nil`.
 
 #### YCP (fragment)
 
@@ -864,6 +864,13 @@ integer i3 = 42 - 43;
 integer i4 = 42 * 43;
 integer i5 = 42 / 43;
 integer i6 = 42 % 43;
+
+i2 = i + 43;
+i3 = i - 43;
+i4 = i * 43;
+i5 = i / 43;
+i6 = i % 43;
+
 ```
 
 #### Ruby (fragment)
@@ -871,18 +878,23 @@ integer i6 = 42 % 43;
 ```ruby
 i = 42
 i1 = Ops.unary_minus(i)
-i2 = Ops.add(42, 43)
-i3 = Ops.subtract(42, 43)
-i4 = Ops.multiply(42, 43)
-i5 = Ops.divide(42, 43)
-i6 = Ops.modulo(42, 43)
+i2 = 42 + 43
+i3 = 42 - 43
+i4 = 42 * 43
+i5 = 42 / 43
+i6 = 42 % 43
+i2 = Ops.add(i, 43)
+i3 = Ops.subtract(i, 43)
+i4 = Ops.multiply(i, 43)
+i5 = Ops.divide(i, 43)
+i6 = Ops.modulo(i, 43)
 ```
 
 ### Bitwise Operators
 
 Y2R translates YCP bitwise operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can't be used
-because their behavior differs from the behavior of YCP operators in some cases.
+module that implement their behavior. Equivalent Ruby operators can be used when
+it is safe - Y2R is sure that no operand is `nil`.
 
 #### YCP (fragment)
 
@@ -893,17 +905,32 @@ integer i3 = 42 | 43;
 integer i4 = 42 ^ 43;
 integer i5 = 42 << 43;
 integer i6 = 42 >> 43;
+integer i = 42;
+i1 = ~i;
+i2 = i & 43;
+i3 = i | 43;
+i4 = i ^ 43;
+i5 = i << 43;
+i6 = i >> 43;
+
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-i1 = Ops.bitwise_not(42)
-i2 = Ops.bitwise_and(42, 43)
-i3 = Ops.bitwise_or(42, 43)
-i4 = Ops.bitwise_xor(42, 43)
-i5 = Ops.shift_left(42, 43)
-i6 = Ops.shift_right(42, 43)
+i1 = ~42
+i2 = 42 & 43
+i3 = 42 | 43
+i4 = 42 ^ 43
+i5 = 42 << 43
+i6 = 42 >> 43
+i = 42
+i1 = Ops.bitwise_not(i)
+i2 = Ops.bitwise_and(i, 43)
+i3 = Ops.bitwise_or(i, 43)
+i4 = Ops.bitwise_xor(i, 43)
+i5 = Ops.shift_left(i, 43)
+i6 = Ops.shift_right(i, 43)
 ```
 
 ### Logical Operators
