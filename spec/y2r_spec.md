@@ -746,12 +746,12 @@ module Yast
   class DefaultClient < Client
     def outer
       f1 = lambda { return 42 }
-      f2 = lambda { |a2, b2, c2|
+      f2 = lambda do |a2, b2, c2|
         a2 = deep_copy(a2)
         b2 = deep_copy(b2)
         c2 = deep_copy(c2)
         return 42
-      }
+      end
       f3 = lambda { |a2, b2, c2| return 42 }
       f1.call
       a = ["a"]
@@ -1164,14 +1164,14 @@ foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.maplist([42, 43, 44]) { |i|
+Builtins.maplist([42, 43, 44]) do |i|
   j = 42
   next j
-}
-Builtins.foreach([42, 43, 44]) { |i|
+end
+Builtins.foreach([42, 43, 44]) do |i|
   j = 42
   next
-}
+end
 ```
 
 ### `break` Statement
@@ -1411,12 +1411,12 @@ module Yast
       f5 = lambda { |a, b, c| return 42 }
       f6 = lambda { |a, b, c| return 42 }
       f7 = lambda { |a, b, c| return 42 }
-      f8 = lambda { |a, b, c|
+      f8 = lambda do |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)
         return 42
-      }
+      end
       nil
     end
   end
