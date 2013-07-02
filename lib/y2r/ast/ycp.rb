@@ -274,6 +274,15 @@ module Y2R
           false
         end
 
+        # In Ruby, methods return value of last expresion if no return statement
+        # is encountered. To match YaST's behavior in this case (returning nil),
+        # we need to append nil at the end, unless we are sure some statement in
+        # the method always causes early return. These early returns are detected
+        # using this method.
+        def always_returns?
+          false
+        end
+
         def compile_as_copy_if_needed(context)
           compile(context)
         end
@@ -475,7 +484,7 @@ module Y2R
 
             body_without_break = body.dup
             body_without_break.statements = body.statements[0..-2]
-          elsif body.statements.last.is_a?(Return)
+          elsif body.always_returns?
             body_without_break = body
           else
             raise NotImplementedError,
@@ -486,6 +495,10 @@ module Y2R
             :values => values.map { |v| v.compile(context) },
             :body   => body_without_break.compile(context)
           )
+        end
+
+        def always_returns?
+          body.always_returns?
         end
       end
 
@@ -583,6 +596,10 @@ module Y2R
 
           Ruby::Else.new(:body => body_without_break.compile(context))
         end
+
+        def always_returns?
+          body.always_returns?
+        end
       end
 
       class DefBlock < Node
@@ -596,6 +613,10 @@ module Y2R
               :statements => statements.map { |s| s.compile(inner_context) }
             )
           end
+        end
+
+        def always_returns?
+          statements.any? {|s| s.always_returns? }
         end
       end
 
@@ -692,7 +713,10 @@ module Y2R
         def build_main_def(context)
           if !other_statements.empty?
             main_statements = other_statements.map { |s| s.compile(context) }
-            main_statements << Ruby::Literal.new(:value => nil)
+
+            unless other_statements.any? {|s| s.always_returns? }
+              main_statements << Ruby::Literal.new(:value => nil)
+            end
 
             [
               Ruby::Def.new(
@@ -728,7 +752,7 @@ module Y2R
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
 
-            unless statements.statements.last.is_a? Ruby::Return
+            unless block.always_returns?
               statements.statements << Ruby::Literal.new(:value => nil)
             end
 
@@ -771,6 +795,13 @@ module Y2R
             :then      => then_compiled,
             :else      => else_compiled
           )
+        end
+
+        def always_returns?
+          result = self.then.always_returns?
+          result &&= self.else.always_returns? if self.else
+
+          result
         end
       end
 
@@ -1099,6 +1130,10 @@ module Y2R
               raise "Misplaced \"return\" statement."
           end
         end
+
+        def always_returns?
+          true
+        end
       end
 
       class StmtBlock < Node
@@ -1109,6 +1144,10 @@ module Y2R
             )
           end
         end
+
+        def always_returns?
+          statements.any? { |s| s.always_returns? }
+        end
       end
 
       class Switch < Node
@@ -1118,6 +1157,13 @@ module Y2R
             :whens      => cases.map { |c| c.compile(context) },
             :else       => default ? default.compile(context) : nil
           )
+        end
+
+        def always_returns?
+          result = cases.all? { |c| c.always_returns? }
+          result &&= default.always_returns? if default
+
+          result
         end
       end
 
