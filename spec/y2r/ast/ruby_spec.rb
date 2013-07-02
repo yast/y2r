@@ -3240,10 +3240,8 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code" do
-          @node.to_ruby_no_comments(@context_default).should == "self"
-        end
+      it "emits correct code" do
+        @node.to_ruby_no_comments(@context_default).should == "self"
       end
     end
 
