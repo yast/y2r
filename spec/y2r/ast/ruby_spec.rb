@@ -613,69 +613,57 @@ module Y2R::AST::Ruby
           @assignment_c_44
         ]
       )
+
+      @node_with_nils = Statements.new(
+        :statements => [
+          @assignment_a_42,
+          nil,
+          @assignment_b_43,
+          nil,
+          @assignment_c_44
+        ]
+      )
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code for statement lists with no statements" do
-          @node_empty.to_ruby_no_comments(@context_default).should == ""
-        end
+      it "emits correct code" do
+        @node_empty.to_ruby_no_comments(@context_default).should == ""
 
-        it "emits correct code for statement lists with one statement" do
-          @node_one.to_ruby_no_comments(@context_default).should == "a = 42"
-        end
+        @node_one.to_ruby_no_comments(@context_default).should == "a = 42"
 
-        it "emits correct code for statement lists with multiple statements" do
-          @node_multiple.to_ruby_no_comments(@context_default).should == [
-            "a = 42",
-            "b = 43",
-            "c = 44",
-          ].join("\n")
-        end
+        @node_multiple.to_ruby_no_comments(@context_default).should == [
+          "a = 42",
+          "b = 43",
+          "c = 44",
+        ].join("\n")
 
-        it "handles nils in the statement list correctly" do
-          node = Statements.new(
-            :statements => [
-              @assignment_a_42,
-              nil,
-              @assignment_b_43,
-              nil,
-              @assignment_c_44
-            ]
-          )
-
-          node.to_ruby_no_comments(@context_default).should == [
-            "a = 42",
-            "b = 43",
-            "c = 44",
-          ].join("\n")
-        end
+        @node_with_nils.to_ruby_no_comments(@context_default).should == [
+          "a = 42",
+          "b = 43",
+          "c = 44",
+        ].join("\n")
       end
 
-      describe "formatting" do
-        it "passes correct available space info to statements" do
-          node = Statements.new(
-            :statements => [
-              check_context(@assignment_c_44, :width => 80, :shift => 0)
-            ]
-          )
+      it "passes correct available space info to statements" do
+        node = Statements.new(
+          :statements => [
+            check_context(@assignment_a_42, :width => 80, :shift => 0),
+            check_context(@assignment_b_43, :width => 80, :shift => 0),
+            check_context(@assignment_c_44, :width => 80, :shift => 0)
+          ]
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for statement lists with no statements" do
-        @node_empty.single_line_width_no_comments.should == 0
-      end
-
-      it "returns correct value for statement lists with one statement" do
-        @node_one.single_line_width_no_comments.should == 6
-      end
-
-      it "returns infinity for statement lists with multiple statements" do
+      it "returns correct value" do
+        @node_empty.single_line_width_no_comments.should    == 0
+        @node_one.single_line_width_no_comments.should      == 6
         @node_multiple.single_line_width_no_comments.should == Float::INFINITY
+
+        @node_with_nils.single_line_width_no_comments.should == Float::INFINITY
       end
     end
   end
