@@ -1631,6 +1631,10 @@ module Y2R::AST::Ruby
         :expressions => [@literal_42, @literal_43, @literal_44]
       )
 
+      @node_multiline = Expressions.new(
+        :expressions => [@statements, @statements, @statements]
+      )
+
       @node_comments_before = Expressions.new(
         :expressions => [
           @literal_42_comment_before,
@@ -1648,139 +1652,47 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line expression list when the expression list fits available space and all expressions are single-line" do
-        @node_multiple.to_ruby_no_comments(@context_default).should ==
-          "(42; 43; 44)"
-      end
-
-      it "emits a multi-line expression list when the expression list doesn't fit available space" do
-        @node_multiple.to_ruby_no_comments(@context_narrow).should == [
-          "(",
-          "  42;",
-          "  43;",
-          "  44",
-          ")"
-        ].join("\n")
-      end
-
-      it "emits a multi-line expression list when any expression is multi-line" do
-        # Using @statements is nonsense semantically, but it is a convenient
-        # multi-line node.
-        node1 = Expressions.new(:expressions => [@statements, @literal_43, @literal_44])
-        node2 = Expressions.new(:expressions => [@literal_42, @statements, @literal_44])
-        node3 = Expressions.new(:expressions => [@literal_42, @literal_43, @statements])
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44;",
-          "  43;",
-          "  44",
-          ")"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44;",
-          "  44",
-          ")"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  43;",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          ")"
-        ].join("\n")
-      end
-
-      it "emits a multi-line expression list when any expression has comment before" do
-        node1 = Expressions.new(
-          :expressions => [@literal_42_comment_before, @literal_43, @literal_44]
-        )
-        node2 = Expressions.new(
-          :expressions => [@literal_42, @literal_43_comment_before, @literal_44]
-        )
-        node3 = Expressions.new(
-          :expressions => [@literal_42, @literal_43, @literal_44_comment_before]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  # before",
-          "  42;",
-          "  43;",
-          "  44",
-          ")"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  # before",
-          "  43;",
-          "  44",
-          ")"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  43;",
-          "  # before",
-          "  44",
-          ")"
-        ].join("\n")
-      end
-
-      it "emits a multi-line expression list when any expression has comment after" do
-        node1 = Expressions.new(
-          :expressions => [@literal_42_comment_after, @literal_43, @literal_44]
-        )
-        node2 = Expressions.new(
-          :expressions => [@literal_42, @literal_43_comment_after, @literal_44]
-        )
-        node3 = Expressions.new(
-          :expressions => [@literal_42, @literal_43, @literal_44_comment_after]
-        )
-
-        node1.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42; # after",
-          "  43;",
-          "  44",
-          ")"
-        ].join("\n")
-        node2.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  43; # after",
-          "  44",
-          ")"
-        ].join("\n")
-        node3.to_ruby_no_comments(@context_default).should == [
-          "(",
-          "  42;",
-          "  43;",
-          "  44 # after",
-          ")"
-        ].join("\n")
-      end
-
-      describe "for single-line expression lists" do
-        it "emits correct code for empty expression lists" do
+      describe "with lot of space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_default).should == "()"
-        end
 
-        it "emits correct code for expression lists with one expression" do
           @node_one.to_ruby_no_comments(@context_default).should == "(42)"
-        end
 
-        it "emits correct code for expression lists with multiple expressions" do
-          @node_multiple.to_ruby_no_comments(@context_default).should == "(42; 43; 44)"
+          @node_multiple.to_ruby_no_comments(@context_default).should ==
+            "(42; 43; 44)"
+
+          @node_multiline.to_ruby_no_comments(@context_default).should == [
+            "(",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44;",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44;",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            ")"
+          ].join("\n")
+
+          @node_comments_before.to_ruby_no_comments(@context_default).should == [
+           "(",
+           "  # before",
+           "  42;",
+           "  # before",
+           "  43;",
+           "  # before",
+           "  44",
+           ")"
+          ].join("\n")
+
+          @node_comments_after.to_ruby_no_comments(@context_default).should == [
+           "(",
+           "  42; # after",
+           "  43; # after",
+           "  44 # after",
+           ")"
+          ].join("\n")
         end
 
         it "passes correct available space info to expressions" do
@@ -1788,7 +1700,7 @@ module Y2R::AST::Ruby
             :expressions => [
               check_context(@literal_42, :width => 80, :shift => 1),
               check_context(@literal_43, :width => 80, :shift => 5),
-              check_context(@literal_44, :width => 80, :shift => 9),
+              check_context(@literal_44, :width => 80, :shift => 9)
             ]
           )
 
@@ -1796,30 +1708,38 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "for multi-line expression lists" do
-        it "emits correct code for empty expression lists" do
+      describe "with no space available" do
+        it "emits correct code" do
           @node_empty.to_ruby_no_comments(@context_narrow).should == "()"
-        end
 
-        it "emits correct code for expression lists with one expression" do
           @node_one.to_ruby_no_comments(@context_narrow).should == [
-           "(",
-           "  42",
-           ")"
+            "(",
+            "  42",
+            ")"
           ].join("\n")
-        end
 
-        it "emits correct code for expression lists with multiple expressions" do
           @node_multiple.to_ruby_no_comments(@context_narrow).should == [
-           "(",
-           "  42;",
-           "  43;",
-           "  44",
-           ")"
+            "(",
+            "  42;",
+            "  43;",
+            "  44",
+            ")"
           ].join("\n")
-        end
 
-        it "emits correct code for expression lists with expressions with comment before" do
+          @node_multiline.to_ruby_no_comments(@context_narrow).should == [
+            "(",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44;",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44;",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            ")"
+          ].join("\n")
+
           @node_comments_before.to_ruby_no_comments(@context_narrow).should == [
            "(",
            "  # before",
@@ -1830,9 +1750,7 @@ module Y2R::AST::Ruby
            "  44",
            ")"
           ].join("\n")
-        end
 
-        it "emits correct code for expression lists with expressions with comment after" do
           @node_comments_after.to_ruby_no_comments(@context_narrow).should == [
            "(",
            "  42; # after",
@@ -1847,7 +1765,7 @@ module Y2R::AST::Ruby
             :expressions => [
               check_context(@literal_42, :width => -2, :shift => 0),
               check_context(@literal_43, :width => -2, :shift => 0),
-              check_context(@literal_44, :width => -2, :shift => 0),
+              check_context(@literal_44, :width => -2, :shift => 0)
             ]
           )
 
@@ -1857,24 +1775,15 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for empty expression lists" do
-        @node_empty.single_line_width_no_comments.should == 2
-      end
-
-      it "returns correct value for expression lists with one expression" do
-        @node_one.single_line_width_no_comments.should == 4
-      end
-
-      it "returns correct value for expression lists with multiple expressions" do
+      it "returns correct value" do
+        @node_empty.single_line_width_no_comments.should    == 2
+        @node_one.single_line_width_no_comments.should      == 4
         @node_multiple.single_line_width_no_comments.should == 12
-      end
 
-      it "returns infinity for expression lists with expressions with comment before" do
+        @node_multiline.single_line_width_no_comments.should == Float::INFINITY
+
         @node_comments_before.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for expression lists with expressions with comment after" do
         @node_comments_after.single_line_width_no_comments.should ==
           Float::INFINITY
       end
