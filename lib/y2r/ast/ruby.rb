@@ -641,15 +641,15 @@ module Y2R
 
         def to_ruby_multi_line(context)
           args_code = if !args.empty?
-            " |#{list(args, ", ", context.shifted(3))}|"
+            " |#{list(args, ", ", context.shifted(4))}|"
           else
             ""
           end
 
           combine do |parts|
-            parts << "{#{args_code}"
+            parts << "do#{args_code}"
             parts << indented(statements, context)
-            parts << "}"
+            parts << "end"
           end
         end
       end
