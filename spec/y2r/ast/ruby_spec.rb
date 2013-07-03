@@ -1157,143 +1157,118 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code for empty case statements" do
-          @node_empty.to_ruby_no_comments(@context_default).should == [
-            "case 42",
-            "end"
-          ].join("\n")
-        end
+      it "emits correct code" do
+        @node_empty.to_ruby_no_comments(@context_default).should == [
+          "case 42",
+          "end"
+        ].join("\n")
 
-        it "emits correct code for case statements with one when clause and no else clause" do
-          @node_one_when_without_else.to_ruby_no_comments(@context_default).should == [
-            "case 42",
-            "  when 42",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "end"
-          ].join("\n")
-        end
+        @node_one_when_without_else.to_ruby_no_comments(@context_default).should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
 
-        it "emits correct code for case statements with one when clause and an else clause" do
-          @node_one_when_with_else.to_ruby_no_comments(@context_default).should == [
-            "case 42",
-            "  when 42",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  else",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "end"
-          ].join("\n")
-        end
+        @node_one_when_with_else.to_ruby_no_comments(@context_default).should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  else",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
 
-        it "emits correct code for case statements with multiple when clauses and no else clause" do
-          @node_multiple_whens_without_else.to_ruby_no_comments(@context_default).should == [
-            "case 42",
-            "  when 42",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  when 43",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  when 44",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "end"
-          ].join("\n")
-        end
+        @node_multiple_whens_without_else.to_ruby_no_comments(@context_default).should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 43",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 44",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
 
-        it "emits correct code for case statements with multiple when clauses and an else clause" do
-          @node_multiple_whens_with_else.to_ruby_no_comments(@context_default).should == [
-            "case 42",
-            "  when 42",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  when 43",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  when 44",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "  else",
-            "    a = 42",
-            "    b = 43",
-            "    c = 44",
-            "end"
-          ].join("\n")
-        end
+        @node_multiple_whens_with_else.to_ruby_no_comments(@context_default).should == [
+          "case 42",
+          "  when 42",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 43",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  when 44",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "  else",
+          "    a = 42",
+          "    b = 43",
+          "    c = 44",
+          "end"
+        ].join("\n")
       end
 
-      describe "formatting" do
-        it "passes correct available space info to expression" do
-          node = Case.new(
-            :expression => check_context(
-              @literal_42,
-              :width => 80,
-              :shift => 5
-            ),
-            :whens      => [],
-            :else       => nil
-          )
+      it "passes correct available space info to expression" do
+        node = Case.new(
+          :expression => check_context(@literal_42, :width => 80, :shift => 5),
+          :whens      => [],
+          :else       => nil
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
+      end
 
-        it "passes correct available space info to whens" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [
-              check_context(@when_42, :width => 78, :shift => 0)
-            ],
-            :else       => nil
-          )
+      it "passes correct available space info to whens" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [
+            check_context(@when_42, :width => 78, :shift => 0),
+            check_context(@when_43, :width => 78, :shift => 0),
+            check_context(@when_44, :width => 78, :shift => 0)
+          ],
+          :else       => nil
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
+      end
 
-        it "passes correct available space info to else" do
-          node = Case.new(
-            :expression => @literal_42,
-            :whens      => [],
-            :else       => check_context(@else, :width => 78, :shift => 0)
-          )
+      it "passes correct available space info to else" do
+        node = Case.new(
+          :expression => @literal_42,
+          :whens      => [],
+          :else       => check_context(@else, :width => 78, :shift => 0)
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns infinity for empty case statements" do
-        @node_empty.single_line_width_no_comments.should == Float::INFINITY
-      end
-
-      it "returns infinity for case statements with one when clause and no else clause" do
+      it "returns correct value" do
+        @node_empty.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_one_when_without_else.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for case statements with one when clause and an else clause" do
         @node_one_when_with_else.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for case statements with multiple when clauses and no else clause" do
         @node_multiple_whens_without_else.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity for case statements with multiple when clauses and an else clause" do
         @node_multiple_whens_with_else.single_line_width_no_comments.should ==
           Float::INFINITY
       end
