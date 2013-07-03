@@ -1685,17 +1685,45 @@ module Y2R
       end
 
       class YEIs < Node
+        KNOWN_SHORTCUTS = [
+          'any',
+          'boolean',
+          'byteblock',
+          'float',
+          'integer',
+          'list',
+          'locale',
+          'map',
+          'path',
+          'string',
+          'symbol',
+          'term',
+          'void',
+        ]
+
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => "is",
-            :args     => [
-              child.compile(context),
-              Ruby::Literal.new(:value => type.to_s)
-            ],
-            :block    => nil,
-            :parens   => true
-          )
+          if KNOWN_SHORTCUTS.include?(type.to_s)
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => "is_#{type}?",
+              :args     => [
+                child.compile(context)
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => "is",
+              :args     => [
+                child.compile(context),
+                Ruby::Literal.new(:value => type.to_s)
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+          end
         end
 
         transfers_comments :compile

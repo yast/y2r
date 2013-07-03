@@ -4305,10 +4305,10 @@ module Y2R::AST
 
   describe YCP::YEIs, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node for generic type" do
         ycp_node = YCP::YEIs.new(
           :child => @ycp_const_42,
-          :type  => YCP::Type.new("integer")
+          :type  => YCP::Type.new("integer()")
         )
 
         ruby_node = Ruby::MethodCall.new(
@@ -4316,7 +4316,26 @@ module Y2R::AST
           :name     => "is",
           :args     => [
             @ruby_literal_42,
-            Ruby::Literal.new(:value => "integer")
+            Ruby::Literal.new(:value => "integer()")
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when shortcut is known" do
+        ycp_node = YCP::YEIs.new(
+          :child => @ycp_const_42,
+          :type  => YCP::Type.new("integer")
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "is_integer?",
+          :args     => [
+            @ruby_literal_42
           ],
           :block    => nil,
           :parens   => true
