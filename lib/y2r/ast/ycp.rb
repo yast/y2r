@@ -761,6 +761,8 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -808,6 +810,8 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -1006,6 +1010,8 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -1147,6 +1153,8 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
