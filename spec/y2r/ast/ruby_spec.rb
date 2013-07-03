@@ -1288,57 +1288,49 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code for when clauses with one value" do
-          @node_one_value.to_ruby_no_comments(@context_default).should == [
-            "when 42",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44"
-          ].join("\n")
-        end
+      it "emits correct code" do
+        @node_one_value.to_ruby_no_comments(@context_default).should == [
+          "when 42",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
 
-        it "emits correct code for when clauses with multiple values" do
-          @node_multiple_values.to_ruby_no_comments(@context_default).should == [
-            "when 42, 43, 44",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44"
-          ].join("\n")
-        end
+        @node_multiple_values.to_ruby_no_comments(@context_default).should == [
+          "when 42, 43, 44",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
       end
 
-      describe "formatting" do
-        it "passes correct available space info to values" do
-          node = When.new(
-            :values => [
-              check_context(@literal_42, :width => 80, :shift => 5),
-              check_context(@literal_43, :width => 80, :shift => 9),
-              check_context(@literal_44, :width => 80, :shift => 13)
-            ],
-            :body   => @statements
-          )
+      it "passes correct available space info to values" do
+        node = When.new(
+          :values => [
+            check_context(@literal_42, :width => 80, :shift => 5),
+            check_context(@literal_43, :width => 80, :shift => 9),
+            check_context(@literal_44, :width => 80, :shift => 13)
+          ],
+          :body   => @statements
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
+      end
 
-        it "passes correct available space info to body" do
-          node = When.new(
-            :values => [@literal_42],
-            :body   => check_context(@statements, :width => 78, :shift => 0)
-          )
+      it "passes correct available space info to body" do
+        node = When.new(
+          :values => [@literal_42],
+          :body   => check_context(@statements, :width => 78, :shift => 0)
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns infinity for when clauses with one value" do
-        @node_one_value.single_line_width_no_comments.should == Float::INFINITY
-      end
-
-      it "returns infinity for when clauses with multiple values" do
+      it "returns correct value" do
+        @node_one_value.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_multiple_values.single_line_width_no_comments.should ==
           Float::INFINITY
       end
