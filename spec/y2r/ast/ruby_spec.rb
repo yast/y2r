@@ -51,6 +51,10 @@ module Y2R::AST::Ruby
       @literal_b   = Literal.new(:value => :b)
       @literal_c   = Literal.new(:value => :c)
 
+      @literal_a_comment_before = Literal.new(
+        :value          => :a,
+        :comment_before => "# before"
+      )
       @literal_a_comment_after = Literal.new(
         :value         => :a,
         :comment_after => "# after"
@@ -3408,6 +3412,10 @@ module Y2R::AST::Ruby
     before :each do
       @node = HashEntry.new(:key => @literal_a, :value => @literal_42)
 
+      @node_key_comment_before = HashEntry.new(
+        :key   => @literal_a_comment_before,
+        :value => @literal_42
+      )
       @node_key_comment_after = HashEntry.new(
         :key   => @literal_a_comment_after,
         :value => @literal_42
@@ -3416,38 +3424,37 @@ module Y2R::AST::Ruby
         :key   => @literal_a,
         :value => @literal_42_comment_before
       )
+      @node_value_comment_after = HashEntry.new(
+        :key   => @literal_a,
+        :value => @literal_42_comment_after
+      )
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line hash entry when key and value don't have any comments" do
+      it "emits correct code" do
         @node.to_ruby_no_comments(@context_default).should == ":a => 42"
-      end
 
-      it "emits a multi-line hash entry when key has comment after" do
+        @node_key_comment_before.to_ruby_no_comments(@context_default).should == [
+          "# before",
+          ":a => 42"
+        ].join("\n")
+
         @node_key_comment_after.to_ruby_no_comments(@context_default).should == [
           ":a => # after",
           "  42"
         ].join("\n")
-      end
 
-      it "emits a multi-line hash entry when value has comment before" do
         @node_value_comment_before.to_ruby_no_comments(@context_default).should == [
           ":a =>",
           "  # before",
           "  42"
         ].join("\n")
+
+        @node_value_comment_after.to_ruby_no_comments(@context_default).should ==
+          ":a => 42 # after"
       end
 
       describe "for single-line hash entries" do
-        it "emits correct code with no max_key_width set" do
-          @node.to_ruby_no_comments(@context_default).should == ":a => 42"
-        end
-
-        it "emits correct code with max_key_width set" do
-          @node.to_ruby_no_comments(@context_max_key_width).should ==
-            ":a   => 42"
-        end
-
         it "passes correct available space info to key" do
           node = HashEntry.new(
             :key   => check_context(@literal_a, :width => 80, :shift => 0),
@@ -3468,39 +3475,14 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line hash entries" do
-        it "emits correct code with no max_key_width set" do
-          @node_key_comment_after.to_ruby_no_comments(@context_default).should == [
-            ":a => # after",
-            "  42"
-          ].join("\n")
-        end
-
-        it "emits correct code with max_key_width set" do
-          @node_key_comment_after.to_ruby_no_comments(@context_max_key_width).should == [
-            ":a   => # after",
-            "  42"
-          ].join("\n")
-        end
-
-        it "emits correct code when key has comment after" do
-          @node_key_comment_after.to_ruby_no_comments(@context_default).should == [
-            ":a => # after",
-            "  42"
-          ].join("\n")
-        end
-
-        it "emits correct code when value has comment before" do
-          @node_value_comment_before.to_ruby_no_comments(@context_default).should == [
-            ":a =>",
-            "  # before",
-            "  42"
-          ].join("\n")
-        end
-
         it "passes correct available space info to key" do
           node = HashEntry.new(
-            :key   => check_context(@literal_a, :width => 80, :shift => 0),
-            :value => @literal_42_comment_before
+            :key   => check_context(
+              @literal_a_comment_after,
+              :width => 80,
+              :shift => 0
+            ),
+            :value => @literal_42
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -3508,8 +3490,12 @@ module Y2R::AST::Ruby
 
         it "passes correct available space info to value" do
           node = HashEntry.new(
-            :key   => @literal_a_comment_after,
-            :value => check_context(@literal_42, :width => 78, :shift => 0)
+            :key   => @literal_a,
+            :value => check_context(
+              @literal_42_comment_before,
+              :width => 78,
+              :shift => 0
+            )
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -3518,18 +3504,17 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value when key and value don't have any comments" do
+      it "returns correct value" do
         @node.single_line_width_no_comments.should == 8
-      end
 
-      it "returns infinity when key has comment after" do
+        @node_key_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_key_comment_after.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity when value has comment before" do
-        @node_key_comment_after.single_line_width_no_comments.should ==
+        @node_value_comment_before.single_line_width_no_comments.should ==
           Float::INFINITY
+        @node_value_comment_after.single_line_width_no_comments.should ==
+          16
       end
     end
   end
