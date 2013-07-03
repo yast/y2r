@@ -882,6 +882,7 @@ i6 = i % 43;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 i = 42
 i1 = Ops.unary_minus(i)
 i2 = 42 + 43
@@ -957,6 +958,7 @@ boolean b3 = true || false;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 b = true
 b1 = !b
 b2 = true && false
@@ -978,6 +980,7 @@ integer i = b ? 42 : 43;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 b = true
 i = b ? 42 : 43
 ```
@@ -1149,6 +1152,9 @@ module Yast
     def f1
       return
     end
+
+
+
     def f2
       return 42
     end
@@ -1171,6 +1177,7 @@ foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 #### Ruby (fragment)
 
 ```ruby
+# A variable prevents translating the block as YEReturn.
 Builtins.maplist([42, 43, 44]) do |i|
   j = 42
   next j
@@ -1710,6 +1717,9 @@ module Yast
       @j = 43
       nil
     end
+
+
+
     def f
       return 42
     end
@@ -1770,12 +1780,18 @@ module Yast
       @j = 43
       M()
     end
+
+
+
     def f
       return 42
     end
     def g
       return 43
     end
+
+
+
     def M
       Builtins.y2milestone("M1")
       nil

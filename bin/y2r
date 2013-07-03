@@ -19,7 +19,6 @@ Options:
       --extract-file <file>        Compile only code of specified included file.
       --report-file <file>         Report specified file as the compiled one.
       --dont-inline-include-files  Don't inline include files.
-  -c, --comments                   Transfer comments.
   -x, --xml                        Print just XML emitted by ycpc.
   -v, --version                    Print version information and exit.
   -h, --help                       Print help and exit.
@@ -60,7 +59,6 @@ begin
     :extracted_file            => options["--extract-file"],
     :reported_file             => options["--report-file"],
     :dont_inline_include_files => options["--dont-inline-include-files"],
-    :comments                  => options["--comments"],
     :xml                       => options["--xml"],
     :filename                  => ycp_file
   }

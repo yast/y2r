@@ -59,7 +59,7 @@ module Y2R
         xml_file.close
         begin
           begin
-            ENV["Y2PARSECOMMENTS"] = "1" if @options[:comments]
+            ENV["Y2PARSECOMMENTS"] = "1"
 
             cmd = [
               "ycpc",
@@ -104,7 +104,7 @@ module Y2R
       # Comment processing in ycpc is rough and comments often get attached to
       # wrong nodes. This is a deliberate decision because it is easier to fix
       # comments here than to do the right thing in ycpc.
-      fix_comments(root, nil) if @options[:comments]
+      fix_comments(root, nil)
 
       ast = element_to_node(root, nil)
       ast.filename = if @options[:reported_file]
@@ -576,16 +576,14 @@ module Y2R
           raise "Invalid element: <#{element.name}>."
       end
 
-      if @options[:comments]
-        comment_before = element["comment_before"]
-        if comment_before && comment_before !~ /\A[ \t]*\z/
-          node.comment_before = comment_before
-        end
+      comment_before = element["comment_before"]
+      if comment_before && comment_before !~ /\A[ \t]*\z/
+        node.comment_before = comment_before
+      end
 
-        comment_after = element["comment_after"]
-        if comment_after && comment_after !~ /\A[ \t]*$\z/
-          node.comment_after = comment_after
-        end
+      comment_after = element["comment_after"]
+      if comment_after && comment_after !~ /\A[ \t]*$\z/
+        node.comment_after = comment_after
       end
 
       node
