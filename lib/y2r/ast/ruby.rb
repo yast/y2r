@@ -59,7 +59,14 @@ module Y2R
         def to_ruby_enclosed(context)
           if enclose?
             wrap_code_with_comments context do |inner_context|
-             "(#{to_ruby_no_comments(inner_context.shifted(1))})"
+              passed_context = inner_context.shifted(1)
+
+              if pass_trailer?
+                trailer = ")#{inner_context.trailer}"
+                "(#{to_ruby_no_comments(passed_context.with_trailer(trailer))}"
+              else
+                "(#{to_ruby_no_comments(passed_context)})"
+              end
             end
           else
             to_ruby(context)
@@ -86,6 +93,10 @@ module Y2R
 
         def has_comment?
           starts_with_comment? || ends_with_comment?
+        end
+
+        def pass_trailer?
+          false
         end
 
         protected
@@ -145,7 +156,12 @@ module Y2R
         end
 
         def wrap_code_with_comments(context)
-          code = "#{yield(context.without_trailer)}#{context.trailer}"
+          code = if pass_trailer?
+            yield context
+          else
+            "#{yield(context.without_trailer)}#{context.trailer}"
+          end
+
           code = "#{comment_before}\n#{code}" if comment_before
           code = "#{code} #{comment_after}"   if comment_after
           code
@@ -538,6 +554,10 @@ module Y2R
           comment_after || rhs.ends_with_comment?
         end
 
+        def pass_trailer?
+          true
+        end
+
         private
 
         def has_line_breaking_comment?
@@ -545,7 +565,7 @@ module Y2R
         end
 
         def to_ruby_no_comments_single_line(context)
-          lhs_code = lhs.to_ruby(context)
+          lhs_code = lhs.to_ruby(context.without_trailer)
 
           rhs_shift   = lhs_code.size + 3
           rhs_context = context.shifted(rhs_shift)
@@ -573,6 +593,10 @@ module Y2R
 
         def ends_with_comment?
           comment_after || expression.ends_with_comment?
+        end
+
+        def pass_trailer?
+          true
         end
 
         protected
@@ -610,6 +634,10 @@ module Y2R
           comment_after || rhs.ends_with_comment?
         end
 
+        def pass_trailer?
+          true
+        end
+
         private
 
         def has_line_breaking_comment?
@@ -617,7 +645,7 @@ module Y2R
         end
 
         def to_ruby_no_comments_single_line(context)
-          lhs_code = lhs.to_ruby_enclosed(context)
+          lhs_code = lhs.to_ruby_enclosed(context.without_trailer)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
           rhs_context = context.shifted(rhs_shift)
@@ -663,6 +691,10 @@ module Y2R
           comment_after || self.else.ends_with_comment?
         end
 
+        def pass_trailer?
+          true
+        end
+
         private
 
         def has_line_breaking_comment?
@@ -673,10 +705,10 @@ module Y2R
         end
 
         def to_ruby_no_comments_single_line(context)
-          condition_code = condition.to_ruby_enclosed(context)
+          condition_code = condition.to_ruby_enclosed(context.without_trailer)
 
           then_shift   = condition_code.size + 3
-          then_context = context.shifted(then_shift)
+          then_context = context.shifted(then_shift).without_trailer
           then_code    = self.then.to_ruby_enclosed(then_context)
 
           else_shift   = then_shift + then_code.size + 3
@@ -712,7 +744,7 @@ module Y2R
           end
 
           args_shift   = receiver_code.size + name.size
-          args_context = context.shifted(args_shift)
+          args_context = context.shifted(args_shift).without_trailer
           args_code    = emit_args(context, args_context)
 
           if Code.multi_line?(args_code)
@@ -745,11 +777,27 @@ module Y2R
         end
 
         def starts_with_comment?
-          comment_before || (receiver && receiver.starts_with_comment?)
+          if parens
+            comment_before || (receiver && receiver.starts_with_comment?)
+          else
+            comment_before   # Ignore deep comments, like we do for statements.
+          end
         end
 
         def ends_with_comment?
-          comment_after || (block && block.ends_with_comment?)
+          if parens
+            comment_after || (block && block.ends_with_comment?)
+          else
+            comment_after   # Ignore deep comments, like we do for statements.
+          end
+        end
+
+        def pass_trailer?
+          if parens
+            block
+          else
+            false    # Ignore deep comments, like we do for statements.
+          end
         end
 
         protected
@@ -1074,6 +1122,10 @@ module Y2R
           comment_after || value.ends_with_comment?
         end
 
+        def pass_trailer?
+          true
+        end
+
         def key_width(context)
           key.to_ruby(context).size
         end
@@ -1092,7 +1144,7 @@ module Y2R
           context = context.dup
           context.max_key_width = nil
 
-          key_code = key.to_ruby(context)
+          key_code = key.to_ruby(context.without_trailer)
 
           spacing_code = if max_key_width
             " " * (max_key_width - key_code.size)
@@ -1116,7 +1168,7 @@ module Y2R
             context = context.dup
             context.max_key_width = nil
 
-            key_code = key.to_ruby_no_comments(context)
+            key_code = key.to_ruby_no_comments(context.without_trailer)
 
             spacing_code = if max_key_width
               " " * (max_key_width - key_code.size)
