@@ -530,6 +530,14 @@ module Y2R
           end
         end
 
+        def starts_with_comment?
+          comment_before || lhs.starts_with_comment?
+        end
+
+        def ends_with_comment?
+          comment_after || rhs.ends_with_comment?
+        end
+
         private
 
         def has_line_breaking_comment?
@@ -563,6 +571,10 @@ module Y2R
           op.size + expression.single_line_width_enclosed
         end
 
+        def ends_with_comment?
+          comment_after || expression.ends_with_comment?
+        end
+
         protected
 
         def enclose?
@@ -588,6 +600,14 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def starts_with_comment?
+          comment_before || lhs.starts_with_comment?
+        end
+
+        def ends_with_comment?
+          comment_after || rhs.ends_with_comment?
         end
 
         private
@@ -633,6 +653,14 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def starts_with_comment?
+          comment_before || condition.starts_with_comment?
+        end
+
+        def ends_with_comment?
+          comment_after || self.else.ends_with_comment?
         end
 
         private
@@ -714,6 +742,14 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def starts_with_comment?
+          comment_before || (receiver && receiver.starts_with_comment?)
+        end
+
+        def ends_with_comment?
+          comment_after || (block && block.ends_with_comment?)
         end
 
         protected
@@ -839,6 +875,10 @@ module Y2R
           else
             name.size
           end
+        end
+
+        def starts_with_comment?
+          comment_before || (receiver && receiver.starts_with_comment?)
         end
 
         protected
@@ -1024,6 +1064,14 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def starts_with_comment?
+          comment_before || key.starts_with_comment?
+        end
+
+        def ends_with_comment?
+          comment_after || value.ends_with_comment?
         end
 
         def key_width(context)
