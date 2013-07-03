@@ -172,7 +172,8 @@ module Y2R
             comment = remove_last_whitepsace_line(comment)
 
             if options[:whitespace] == :drop
-              comment = drop_whitespace_only_lines(comment)
+              comment = drop_leading_empty_lines(comment)
+              comment = drop_trailing_empty_lines(comment)
             end
 
             comment
@@ -184,7 +185,8 @@ module Y2R
             comment = strip_trailing_whitespace(comment)
 
             if options[:whitespace] == :drop
-              comment = drop_whitespace_only_lines(comment)
+              comment = drop_leading_empty_lines(comment)
+              comment = drop_trailing_empty_lines(comment)
             end
 
             comment
@@ -236,8 +238,12 @@ module Y2R
             fixed_comment
           end
 
-          def drop_whitespace_only_lines(comment)
-            comment.gsub(/^[ \t]*$/, "")
+          def drop_leading_empty_lines(comment)
+            comment.gsub(/\A\n*/, "")
+          end
+
+          def drop_trailing_empty_lines(comment)
+            comment.gsub(/\n*\z/, "")
           end
 
           def remove_last_whitepsace_line(comment)
