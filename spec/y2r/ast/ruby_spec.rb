@@ -1890,12 +1890,22 @@ module Y2R::AST::Ruby
 
   describe BinaryOperator, :type => :ruby do
     before :each do
-      @node = BinaryOperator.new(
+      @node_without_parens = BinaryOperator.new(
         :op  => "+",
         :lhs => @literal_42,
         :rhs => @literal_43
       )
+      @node_with_parens = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @binary_operator_42_plus_43,
+        :rhs => @binary_operator_44_plus_45
+      )
 
+      @node_lhs_comment_before = BinaryOperator.new(
+        :op  => "+",
+        :lhs => @literal_42_comment_before,
+        :rhs => @literal_43
+      )
       @node_lhs_comment_after = BinaryOperator.new(
         :op  => "+",
         :lhs => @literal_42_comment_after,
@@ -1906,39 +1916,42 @@ module Y2R::AST::Ruby
         :lhs => @literal_42,
         :rhs => @literal_43_comment_before
       )
-
-      @node_with_parens = BinaryOperator.new(
+      @node_rhs_comment_after = BinaryOperator.new(
         :op  => "+",
-        :lhs => @binary_operator_42_plus_43,
-        :rhs => @binary_operator_44_plus_45
+        :lhs => @literal_42,
+        :rhs => @literal_43_comment_after
       )
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line binary operator when lhs and rhs don't have any comments" do
-        @node.to_ruby_no_comments(@context_default).should == "42 + 43"
-      end
+      it "emits correct code" do
+        @node_without_parens.to_ruby_no_comments(@context_default).should ==
+          "42 + 43"
 
-      it "emits a multi-line binary operator when lhs has comment after" do
+        @node_with_parens.to_ruby_no_comments(@context_default).should ==
+          "(42 + 43) + (44 + 45)"
+
+        @node_lhs_comment_before.to_ruby_no_comments(@context_default).should == [
+          "# before",
+          "42 + 43"
+        ].join("\n")
+
         @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
           "42 + # after",
           "  43"
         ].join("\n")
-      end
 
-      it "emits a multi-line binary operator when rhs has comment before" do
         @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
           "42 +",
           "  # before",
           "  43"
         ].join("\n")
+
+        @node_rhs_comment_after.to_ruby_no_comments(@context_default).should ==
+          "42 + 43 # after"
       end
 
       describe "for single-line binary operators" do
-        it "emits correct code" do
-          @node.to_ruby_no_comments(@context_default).should == "42 + 43"
-        end
-
         it "passes correct available space info to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
@@ -1969,30 +1982,15 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line binary operators" do
-        it "emits correct code when lhs has comment after" do
-          @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
-            "42 + # after",
-            "  43"
-          ].join("\n")
-        end
-
-        it "emits correct code when rhs has comment before" do
-          @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
-            "42 +",
-            "  # before",
-            "  43"
-          ].join("\n")
-        end
-
         it "passes correct available space info to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
-              @literal_42,
+              @literal_42_comment_after,
               :width => 80,
               :shift => 0
             ),
-            :rhs => @literal_43_comment_before
+            :rhs => @literal_43
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -2001,9 +1999,9 @@ module Y2R::AST::Ruby
         it "passes correct available space info to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => @literal_42_comment_after,
+            :lhs => @literal_42,
             :rhs => check_context_enclosed(
-              @literal_43,
+              @literal_43_comment_before,
               :width => 78,
               :shift => 0
             )
@@ -2012,30 +2010,21 @@ module Y2R::AST::Ruby
           node.to_ruby_no_comments(@context_default)
         end
       end
-
-      it "encloses operands in parens when needed" do
-        @node_with_parens.to_ruby_no_comments(@context_default).should ==
-          "(42 + 43) + (44 + 45)"
-      end
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value when lhs and rhs don't have any comments" do
-        @node.single_line_width_no_comments.should == 7
-      end
+      it "returns correct value" do
+        @node_without_parens.single_line_width_no_comments.should == 7
+        @node_with_parens.single_line_width_no_comments.should    == 21
 
-      it "returns infinity when lhs has comment after" do
+        @node_lhs_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_lhs_comment_after.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity when rhs has comment before" do
-        @node_lhs_comment_after.single_line_width_no_comments.should ==
+        @node_rhs_comment_before.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns correct value when parens are needed" do
-        @node_with_parens.single_line_width_no_comments.should == 21
+        @node_rhs_comment_after.single_line_width_no_comments.should ==
+          15
       end
     end
   end
