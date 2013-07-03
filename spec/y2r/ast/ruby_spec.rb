@@ -1858,41 +1858,32 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      describe "basics" do
-        it "emits correct code" do
-          @node_without_parens.to_ruby_no_comments(@context_default).should ==
-            "+42"
-        end
+      it "emits correct code" do
+        @node_without_parens.to_ruby_no_comments(@context_default).should ==
+          "+42"
 
-        it "encloses operand in parens when needed" do
-          @node_with_parens.to_ruby_no_comments(@context_default).should ==
-            "+(42 + 43)"
-        end
+        @node_with_parens.to_ruby_no_comments(@context_default).should ==
+          "+(42 + 43)"
       end
 
-      describe "formatting" do
-        it "passes correct available space info to expression" do
-          node = UnaryOperator.new(
-            :op         => "+",
-            :expression => check_context_enclosed(
-              @literal_42,
-              :width => 80,
-              :shift => 1
-            ),
-          )
+      it "passes correct available space info to expression" do
+        node = UnaryOperator.new(
+          :op         => "+",
+          :expression => check_context_enclosed(
+            @literal_42,
+            :width => 80,
+            :shift => 1
+          ),
+        )
 
-          node.to_ruby_no_comments(@context_default)
-        end
+        node.to_ruby_no_comments(@context_default)
       end
     end
 
     describe "#single_line_width_no_comments" do
       it "returns correct value" do
         @node_without_parens.single_line_width_no_comments.should == 3
-      end
-
-      it "returns correct value when parens are needed" do
-        @node_with_parens.single_line_width_no_comments.should == 10
+        @node_with_parens.single_line_width_no_comments.should    == 10
       end
     end
   end
