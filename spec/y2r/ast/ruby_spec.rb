@@ -88,6 +88,10 @@ module Y2R::AST::Ruby
       @variable_c = Variable.new(:name => "c")
       @variable_S = Variable.new(:name => "S")
 
+      @variable_a_comment_before = Variable.new(
+        :name           => "a",
+        :comment_before => "# before"
+      )
       @variable_a_comment_after = Variable.new(
         :name          => "a",
         :comment_after => "# after"
@@ -1734,6 +1738,10 @@ module Y2R::AST::Ruby
         :rhs => @literal_42
       )
 
+      @node_lhs_comment_before = Assignment.new(
+        :lhs => @variable_a_comment_before,
+        :rhs => @literal_42
+      )
       @node_lhs_comment_after = Assignment.new(
         :lhs => @variable_a_comment_after,
         :rhs => @literal_42
@@ -1742,33 +1750,37 @@ module Y2R::AST::Ruby
         :lhs => @variable_a,
         :rhs => @literal_42_comment_before
       )
+      @node_rhs_comment_after = Assignment.new(
+        :lhs => @variable_a,
+        :rhs => @literal_42_comment_after
+      )
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line assignment when lhs and rhs don't have any comments" do
+      it "emits correct code" do
         @node.to_ruby_no_comments(@context_default).should == "a = 42"
-      end
 
-      it "emits a multi-line assignment when lhs has comment after" do
+        @node_lhs_comment_before.to_ruby_no_comments(@context_default).should == [
+          "# before",
+          "a = 42"
+        ].join("\n")
+
         @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
           "a = # after",
           "  42"
         ].join("\n")
-      end
 
-      it "emits a multi-line assignment when rhs has comment before" do
         @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
           "a =",
           "  # before",
           "  42"
         ].join("\n")
+
+        @node_rhs_comment_after.to_ruby_no_comments(@context_default).should ==
+          "a = 42 # after"
       end
 
       describe "for single-line assignments" do
-        it "emits correct code" do
-          @node.to_ruby_no_comments(@context_default).should == "a = 42"
-        end
-
         it "passes correct available space info to lhs" do
           node = Assignment.new(
             :lhs => check_context(@variable_a, :width => 80, :shift => 0),
@@ -1789,25 +1801,14 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line assignments" do
-        it "emits correct code when lhs has comment after" do
-          @node_lhs_comment_after.to_ruby_no_comments(@context_default).should == [
-            "a = # after",
-            "  42"
-          ].join("\n")
-        end
-
-        it "emits correct code when rhs has comment before" do
-          @node_rhs_comment_before.to_ruby_no_comments(@context_default).should == [
-            "a =",
-            "  # before",
-            "  42"
-          ].join("\n")
-        end
-
         it "passes correct available space info to lhs" do
           node = Assignment.new(
-            :lhs => check_context(@variable_a, :width => 80, :shift => 0),
-            :rhs => @literal_42_comment_before
+            :lhs => check_context(
+              @variable_a_comment_after,
+              :width => 80,
+              :shift => 0
+            ),
+            :rhs => @literal_42
           )
 
           node.to_ruby_no_comments(@context_default)
@@ -1815,9 +1816,9 @@ module Y2R::AST::Ruby
 
         it "passes correct available space info to rhs" do
           node = Assignment.new(
-            :lhs => @variable_a_comment_after,
+            :lhs => @variable_a,
             :rhs => check_context(
-              Block.new(:args => [], :statements => @statements),
+              @literal_42_comment_before,
               :width => 78,
               :shift => 0
             )
@@ -1829,18 +1830,17 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width" do
-      it "returns correct value when lhs and rhs don't have any comments" do
+      it "returns correct value" do
         @node.single_line_width_no_comments.should == 6
-      end
 
-      it "returns infinity when lhs has comment after" do
+        @node_lhs_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_lhs_comment_after.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
-
-      it "returns infinity when rhs has comment before" do
-        @node_lhs_comment_after.single_line_width_no_comments.should ==
+        @node_rhs_comment_before.single_line_width_no_comments.should ==
           Float::INFINITY
+        @node_rhs_comment_after.single_line_width_no_comments.should ==
+          14
       end
     end
   end
