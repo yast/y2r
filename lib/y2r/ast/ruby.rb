@@ -76,8 +76,16 @@ module Y2R
           enclose? ? 1 + single_line_width + 1 : single_line_width
         end
 
+        def starts_with_comment?
+          comment_before
+        end
+
+        def ends_with_comment?
+          comment_after
+        end
+
         def has_comment?
-          comment_before || comment_after
+          starts_with_comment? || ends_with_comment?
         end
 
         protected
@@ -525,7 +533,7 @@ module Y2R
         private
 
         def has_line_breaking_comment?
-          lhs.comment_after || rhs.comment_before
+          lhs.ends_with_comment? || rhs.starts_with_comment?
         end
 
         def to_ruby_no_comments_single_line(context)
@@ -585,7 +593,7 @@ module Y2R
         private
 
         def has_line_breaking_comment?
-          lhs.comment_after || rhs.comment_before
+          lhs.ends_with_comment? || rhs.starts_with_comment?
         end
 
         def to_ruby_no_comments_single_line(context)
@@ -630,10 +638,10 @@ module Y2R
         private
 
         def has_line_breaking_comment?
-          condition.comment_after ||
-            self.then.comment_before ||
-            self.then.comment_after ||
-            self.else.comment_before
+          condition.ends_with_comment? ||
+            self.then.starts_with_comment? ||
+            self.then.ends_with_comment? ||
+            self.else.starts_with_comment?
         end
 
         def to_ruby_no_comments_single_line(context)
@@ -717,7 +725,7 @@ module Y2R
         private
 
         def has_line_breaking_comment?
-          receiver && receiver.comment_after
+          receiver && receiver.ends_with_comment?
         end
 
         def args_have_comments?
@@ -842,7 +850,7 @@ module Y2R
         private
 
         def has_line_breaking_comment?
-          receiver && receiver.comment_after
+          receiver && receiver.ends_with_comment?
         end
 
         def to_ruby_no_comments_single_line(context)
@@ -1025,7 +1033,7 @@ module Y2R
         protected
 
         def has_line_breaking_comment?
-          key.comment_after || value.comment_before
+          key.ends_with_comment? || value.starts_with_comment?
         end
 
         def to_ruby_no_comments_single_line(context)
