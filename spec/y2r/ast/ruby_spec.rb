@@ -212,6 +212,8 @@ module Y2R::AST::Ruby
 
       @else = Else.new(:body => @statements)
 
+      @block = Block.new(:args => [], :statements => @statements)
+
       @context_default       = EmitterContext.new(:width => 80, :shift => 0)
       @context_narrow        = EmitterContext.new(:width => 0, :shift => 0)
       @context_max_key_width = EmitterContext.new(
@@ -2151,7 +2153,7 @@ module Y2R::AST::Ruby
         :receiver => nil,
         :name     => "m",
         :args     => [],
-        :block    => Block.new(:args => [], :statements => @statements),
+        :block    => @block,
         :parens   => true
       )
 
@@ -2194,7 +2196,7 @@ module Y2R::AST::Ruby
         :receiver => nil,
         :name     => "m",
         :args     => [],
-        :block    => Block.new(:args => [], :statements => @statements),
+        :block    => @block,
         :parens   => false
       )
     end
@@ -2420,11 +2422,7 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [],
-              :block    => check_context(
-                Block.new(:args => [], :statements => @statements),
-                :width => 80,
-                :shift => 3
-              ),
+              :block    => check_context(@block, :width => 80, :shift => 3),
               :parens   => true
             )
 
@@ -2454,11 +2452,7 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [],
-              :block    => check_context(
-                Block.new(:args => [], :statements => @statements),
-                :width => 0,
-                :shift => 1
-              ),
+              :block    => check_context(@block, :width => 0, :shift => 1),
               :parens   => true
             )
 
@@ -2489,11 +2483,7 @@ module Y2R::AST::Ruby
             :receiver => @variable_a,
             :name     => "m",
             :args     => [],
-            :block    => check_context(
-              Block.new(:args => [], :statements => @statements),
-              :width => 80,
-              :shift => 3
-            ),
+            :block    => check_context(@block, :width => 80, :shift => 3),
             :parens   => false
           )
 
