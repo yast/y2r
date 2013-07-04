@@ -1017,26 +1017,22 @@ module Y2R
 
       class Include < Node
         def compile(context)
-          if context.options[:dont_inline_include_files]
-            args = [
-              if context.options[:as_include_file]
-                Ruby::Variable.new(:name => "include_target")
-              else
-                Ruby::Self.new
-              end,
-              Ruby::Literal.new(:value => name.sub(/\.y(cp|h)$/, ".rb"))
-            ]
+          args = [
+            if context.options[:as_include_file]
+              Ruby::Variable.new(:name => "include_target")
+            else
+              Ruby::Self.new
+            end,
+            Ruby::Literal.new(:value => name.sub(/\.y(cp|h)$/, ".rb"))
+          ]
 
-            Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Yast"),
-              :name     => "include",
-              :args     => args,
-              :block    => nil,
-              :parens   => true
-            )
-          else
-            nil   # ycpc already included the file for us.
-          end
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Yast"),
+            :name     => "include",
+            :args     => args,
+            :block    => nil,
+            :parens   => true
+          )
         end
 
         transfers_comments :compile

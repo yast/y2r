@@ -184,7 +184,7 @@ module Y2R
             all_statements
           end
 
-          statements = if toplevel_block?(element) && @options[:dont_inline_include_files]
+          statements = if toplevel_block?(element)
             skip_include_statements(extracted_statements)
           else
             extracted_statements

@@ -485,18 +485,8 @@ module Y2R::AST
         :blocks => [YCP::FileBlock.new(:symbols => [@ycp_symbol_id])]
       )
 
-
-      @context_inline = YCP::CompilerContext.new(
-        :options => { :dont_inline_include_files => false }
-      )
-      @context_dont_inline = YCP::CompilerContext.new(
-        :options => { :dont_inline_include_files => true }
-      )
-      @context_dont_inline_as_include = YCP::CompilerContext.new(
-        :options => {
-          :as_include_file           => true,
-          :dont_inline_include_files => true
-        }
+      @context_as_include = YCP::CompilerContext.new(
+        :options => { :as_include_file => true }
       )
 
       # ----- Misc. -----
@@ -2379,50 +2369,38 @@ module Y2R::AST
 
   describe YCP::Include, :type => :ycp do
     describe "#compile" do
-      context "when include files are inlined" do
-        it "returns nil" do
+      context "when compiling as include file" do
+        it "returns correct AST node" do
           ycp_node = YCP::Include.new(:name => "i.ycp")
 
-          ycp_node.compile(@context_inline).should be_nil
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Yast"),
+            :name     => "include",
+            :args     => [
+              Ruby::Variable.new(:name => "include_target"),
+              Ruby::Literal.new(:value => "i.rb")
+            ],
+            :block    => nil,
+            :parens   => true
+          )
+
+          ycp_node.compile(@context_as_include).should == ruby_node
         end
       end
 
-      context "when include files aren't inlined" do
-        context "and compiling as include file" do
-          it "returns correct AST node" do
-            ycp_node = YCP::Include.new(:name => "i.ycp")
+      context "when not compiling as include file" do
+        it "returns correct AST node" do
+          ycp_node = YCP::Include.new(:name => "i.ycp")
 
-            ruby_node = Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Yast"),
-              :name     => "include",
-              :args     => [
-                Ruby::Variable.new(:name => "include_target"),
-                Ruby::Literal.new(:value => "i.rb")
-              ],
-              :block    => nil,
-              :parens   => true
-            )
+          ruby_node = Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Yast"),
+            :name     => "include",
+            :args     => [Ruby::Self.new, Ruby::Literal.new(:value => "i.rb")],
+            :block    => nil,
+            :parens   => true
+          )
 
-            ycp_node.compile(@context_dont_inline_as_include).should ==
-              ruby_node
-          end
-        end
-
-        context "and not compiling as include file" do
-          it "returns correct AST node" do
-            ycp_node = YCP::Include.new(:name => "i.ycp")
-
-            ruby_node = Ruby::MethodCall.new(
-              :receiver => Ruby::Variable.new(:name => "Yast"),
-              :name     => "include",
-              :args     => [Ruby::Self.new, Ruby::Literal.new(:value => "i.rb")],
-              :block    => nil,
-              :parens   => true
-            )
-
-            ycp_node.compile(@context_dont_inline).should ==
-              ruby_node
-          end
+          ycp_node.compile(@context_empty).should == ruby_node
         end
       end
     end
