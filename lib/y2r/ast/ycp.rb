@@ -29,6 +29,18 @@ module Y2R
           yield context
         end
 
+        def drop_whitespace
+          context = dup
+          context.whitespace = :drop
+          context
+        end
+
+        def keep_whitespace
+          context = dup
+          context.whitespace = :keep
+          context
+        end
+
         def module_name
           blocks.first.name
         end
@@ -121,6 +133,123 @@ module Y2R
         PATH    = Type.new("path")
 
         IMMUTABLE_TYPES = [BOOLEAN, INTEGER, SYMBOL, STRING, PATH]
+      end
+
+      # Contains utility functions related to comment processing.
+      module Comments
+        COMMENT_SPLITTING_REGEXP = /
+          \#[^\n]*(\n|$)         # one-line hash comment
+          |
+          \/\/[^\n]*(\n|$)       # one-line slash comment
+          |
+          \/\*                   # multi-line comment
+          (
+            [^*]|\*(?!\/)
+          )*
+          \*\/
+          |
+          ((?!\#|\/\/|\/\*).)+   # non-comment
+        /xm
+
+        class << self
+          def process_comment_before(comment, options)
+            comment = fix_delimiters(comment)
+            comment = strip_leading_whitespace(comment)
+            comment = strip_trailing_whitespace(comment)
+
+            # In many before comments, there is a line of whitespace caused by
+            # separation of the comment from the node it belongs to. For
+            # example, in this case, the comment and the node are separated by
+            # "\n  ":
+            #
+            #   {
+            #     /* Comment */
+            #     y2milestone("M1");
+            #   }
+            #
+            # We need to remove such lines of whitespace (but not touch any
+            # additional ones).
+            comment = remove_last_whitepsace_line(comment)
+
+            if options[:whitespace] == :drop
+              comment = drop_leading_empty_lines(comment)
+              comment = drop_trailing_empty_lines(comment)
+            end
+
+            comment
+          end
+
+          def process_comment_after(comment, options)
+            comment = fix_delimiters(comment)
+            comment = strip_leading_whitespace(comment)
+            comment = strip_trailing_whitespace(comment)
+
+            if options[:whitespace] == :drop
+              comment = drop_leading_empty_lines(comment)
+              comment = drop_trailing_empty_lines(comment)
+            end
+
+            comment
+          end
+
+          private
+
+          def strip_leading_whitespace(comment)
+            comment.gsub(/^[ \t]+/, "")
+          end
+
+          def strip_trailing_whitespace(comment)
+            comment.gsub(/[ \t]+$/, "")
+          end
+
+          def fix_delimiters(comment)
+            fixed_comment = ""
+
+            comment.scan(COMMENT_SPLITTING_REGEXP) do
+              segment = $&
+
+              case segment
+                when /\A\/\//   # one-line slash comment
+                  segment.sub!(/^\/\//, "#")
+
+                when /\A\/\*/    # multi-line comment
+                  is_doc_comment = segment =~ /\/\*\*\n/
+
+                  if is_doc_comment
+                    segment.sub!(/^\/\*\*\n/, "")   # leading "/**\n"
+                  else
+                    segment.sub!(/^\/\*/, "")       # leading "/*"
+                  end
+
+                  segment.sub!(/\*\/$/, "")         # trailing "*/"
+                  segment.sub!(/^[ \t]*\n/, "")     # leading empty lines
+                  segment.sub!(/(\n[ \t]*)$/, "")   # trailing empty lines
+
+                  if segment.split("\n").all? { |l| l =~ /^[ \t]*\*/ }
+                    segment.gsub!(/^[ \t]*\*/, "")
+                  end
+
+                  segment.gsub!(/^/, "#")
+              end
+
+              fixed_comment << segment
+            end
+
+            fixed_comment
+          end
+
+          def drop_leading_empty_lines(comment)
+            comment.gsub(/\A\n*/, "")
+          end
+
+          def drop_trailing_empty_lines(comment)
+            comment.gsub(/\n*\z/, "")
+          end
+
+          def remove_last_whitepsace_line(comment)
+            comment.sub(/\n[ \t]*\z/, "")
+          end
+        end
       end
 
       # Contains utility functions related to Ruby variables.
@@ -258,6 +387,47 @@ module Y2R
       end
 
       class Node < OpenStruct
+        class << self
+          def transfers_comments(*names)
+            names.each do |name|
+              name_without_comments = :"#{name}_without_comments"
+              name_with_comments    = :"#{name}_with_comments"
+
+              define_method name_with_comments do |context|
+                whitespace = context.whitespace
+                context = context.drop_whitespace if context.whitespace == :keep
+
+                node = send(name_without_comments, context)
+                if node
+                  if comment_before
+                    processed_comment_before = Comments.process_comment_before(
+                      comment_before,
+                      :whitespace => whitespace
+                    )
+                    unless processed_comment_before.empty?
+                      node.comment_before = processed_comment_before
+                    end
+                  end
+
+                  if comment_after
+                    processed_comment_after = Comments.process_comment_after(
+                      comment_after,
+                      :whitespace => whitespace
+                    )
+                    unless processed_comment_after.empty?
+                      node.comment_after = processed_comment_after
+                    end
+                  end
+                end
+                node
+              end
+
+              alias_method name_without_comments, name
+              alias_method name, name_with_comments
+            end
+          end
+        end
+
         def creates_local_scope?
           false
         end
@@ -300,21 +470,6 @@ module Y2R
             compile_statements(statements, inner_context)
           end
         end
-
-        def header_comment(filename, comment)
-          lines = []
-
-          lines << "Translated by Y2R (https://github.com/yast/y2r)."
-          lines << ""
-          lines << "Original file: #{filename}"
-
-          if comment
-            lines << ""
-            lines << comment
-          end
-
-          lines.join("\n")
-        end
       end
 
       # Sorted alphabetically.
@@ -326,6 +481,8 @@ module Y2R
             :rhs => child.compile_as_copy_if_needed(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class Bracket < Node
@@ -342,6 +499,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -371,6 +530,8 @@ module Y2R
               raise "Misplaced \"break\" statement."
           end
         end
+
+        transfers_comments :compile
       end
 
       class Builtin < Node
@@ -398,6 +559,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Call < Node
@@ -474,6 +637,8 @@ module Y2R
             call
           end
         end
+
+        transfers_comments :compile
       end
 
       class Case < Node
@@ -500,6 +665,8 @@ module Y2R
         def always_returns?
           body.always_returns?
         end
+
+        transfers_comments :compile
       end
 
       class Compare < Node
@@ -534,6 +701,8 @@ module Y2R
             raise "Unknown compare operator #{op}."
           end
         end
+
+        transfers_comments :compile
       end
 
       class Const < Node
@@ -571,6 +740,8 @@ module Y2R
           end
         end
 
+        transfers_comments :compile
+
         def never_nil?
           return type != :void
         end
@@ -580,6 +751,8 @@ module Y2R
         def compile(context)
           Ruby::Next.new
         end
+
+        transfers_comments :compile
       end
 
       class Default < Node
@@ -600,6 +773,8 @@ module Y2R
         def always_returns?
           body.always_returns?
         end
+
+        transfers_comments :compile
       end
 
       class DefBlock < Node
@@ -609,6 +784,8 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -618,6 +795,8 @@ module Y2R
         def always_returns?
           statements.any? {|s| s.always_returns? }
         end
+
+        transfers_comments :compile
       end
 
       class Do < Node
@@ -633,6 +812,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile
       end
 
       class Entry < Node
@@ -643,6 +824,8 @@ module Y2R
         def compile_as_ref(context)
           Ruby::Variable.new(:name => "#{name}_ref")
         end
+
+        transfers_comments :compile, :compile_as_ref
       end
 
       class FileBlock < Node
@@ -654,11 +837,14 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -672,7 +858,7 @@ module Y2R
                   )
                 ),
                 Ruby::MethodCall.new(
-                  :receiver => Ruby::MethodCall.new(
+                  :receiver       => Ruby::MethodCall.new(
                     :receiver => Ruby::ConstAccess.new(
                       :receiver => Ruby::Variable.new(:name => "Yast"),
                       :name     => class_name
@@ -682,16 +868,18 @@ module Y2R
                     :block    => nil,
                     :parens   => true
                   ),
-                  :name     => "main",
-                  :args     => [],
-                  :block    => nil,
-                  :parens   => true
+                  :name           => "main",
+                  :args           => [],
+                  :block          => nil,
+                  :parens         => true,
+                  :comment_before => ""
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -779,6 +967,8 @@ module Y2R
             end
           end
         end
+
+        transfers_comments :compile
       end
 
       class If < Node
@@ -803,6 +993,8 @@ module Y2R
 
           result
         end
+
+        transfers_comments :compile
       end
 
       class Import < Node
@@ -819,6 +1011,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Include < Node
@@ -844,6 +1038,8 @@ module Y2R
             nil   # ycpc already included the file for us.
           end
         end
+
+        transfers_comments :compile
       end
 
       class IncludeBlock < Node
@@ -851,11 +1047,14 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -868,10 +1067,11 @@ module Y2R
                   )
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -938,6 +1138,8 @@ module Y2R
             :elements => children.map { |ch| ch.compile(context) }
           )
         end
+
+        transfers_comments :compile
       end
 
       class Locale < Node
@@ -951,6 +1153,8 @@ module Y2R
           )
         end
 
+        transfers_comments :compile
+
         def never_nil?
           #locale can be only with constant strings
           return true
@@ -961,6 +1165,8 @@ module Y2R
         def compile(context)
           Ruby::Hash.new(:entries => children.map { |ch| ch.compile(context) })
         end
+
+        transfers_comments :compile
       end
 
       class MapElement < Node
@@ -970,6 +1176,8 @@ module Y2R
             :value => value.compile(context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class ModuleBlock < Node
@@ -982,6 +1190,8 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
@@ -996,14 +1206,15 @@ module Y2R
               )
             ),
             Ruby::Assignment.new(
-              :lhs => Ruby::Variable.new(:name => name),
-              :rhs => Ruby::MethodCall.new(
+              :lhs            => Ruby::Variable.new(:name => name),
+              :rhs            => Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "#{name}Class"),
                 :name     => "new",
                 :args     => [],
                 :block    => nil,
                 :parens   => true
-              )
+              ),
+              :comment_before => ""
             )
           ]
 
@@ -1018,6 +1229,7 @@ module Y2R
           end
 
           Ruby::Program.new(
+            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::MethodCall.new(
@@ -1028,16 +1240,18 @@ module Y2R
                   :parens   => false
                 ),
                 Ruby::Module.new(
-                  :name       => "Yast",
-                  :statements => Ruby::Statements.new(
+                  :name           => "Yast",
+                  :statements     => Ruby::Statements.new(
                     :statements => module_statements
-                  )
+                  ),
+                  :comment_before => ""
                 )
               ]
-            ),
-            :comment    => header_comment(filename, comment)
+            )
           )
         end
+
+        transfers_comments :compile
 
         private
 
@@ -1113,6 +1327,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile
       end
 
       class Return < Node
@@ -1134,11 +1350,15 @@ module Y2R
         def always_returns?
           true
         end
+
+        transfers_comments :compile
       end
 
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
+            inner_context = inner_context.keep_whitespace
+
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
             )
@@ -1148,6 +1368,8 @@ module Y2R
         def always_returns?
           statements.any? { |s| s.always_returns? }
         end
+
+        transfers_comments :compile
       end
 
       class Switch < Node
@@ -1165,6 +1387,8 @@ module Y2R
 
           result
         end
+
+        transfers_comments :compile
       end
 
       class Symbol < Node
@@ -1216,6 +1440,8 @@ module Y2R
             :parens   => true
           )
         end
+
+        transfers_comments :compile
       end
 
       class Textdomain < Node
@@ -1228,6 +1454,8 @@ module Y2R
             :parens   => false
           )
         end
+
+        transfers_comments :compile
       end
 
       class Typedef < Node
@@ -1269,6 +1497,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class Variable < Node
@@ -1338,6 +1568,8 @@ module Y2R
               raise "Unknown variable category: #{category.inspect}."
           end
         end
+
+        transfers_comments :compile
       end
 
       class While < Node
@@ -1351,6 +1583,8 @@ module Y2R
             :body      => compile_statements_inside_block(self.do, context)
           )
         end
+
+        transfers_comments :compile
       end
 
       class YCPCode < Node
@@ -1379,6 +1613,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class YEBinary < Node
@@ -1441,6 +1677,8 @@ module Y2R
           end
         end
 
+        transfers_comments :compile
+
         def never_nil?
           return lhs.never_nil? && rhs.never_nil?
         end
@@ -1479,6 +1717,8 @@ module Y2R
           )
         end
 
+        transfers_comments :compile
+
         private
 
         def build_index(context)
@@ -1491,18 +1731,48 @@ module Y2R
       end
 
       class YEIs < Node
+        KNOWN_SHORTCUTS = [
+          'any',
+          'boolean',
+          'byteblock',
+          'float',
+          'integer',
+          'list',
+          'locale',
+          'map',
+          'path',
+          'string',
+          'symbol',
+          'term',
+          'void',
+        ]
+
         def compile(context)
-          Ruby::MethodCall.new(
-            :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => "is",
-            :args     => [
-              child.compile(context),
-              Ruby::Literal.new(:value => type.to_s)
-            ],
-            :block    => nil,
-            :parens   => true
-          )
+          if KNOWN_SHORTCUTS.include?(type.to_s)
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => "is_#{type}?",
+              :args     => [
+                child.compile(context)
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+          else
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => "is",
+              :args     => [
+                child.compile(context),
+                Ruby::Literal.new(:value => type.to_s)
+              ],
+              :block    => nil,
+              :parens   => true
+            )
+          end
         end
+
+        transfers_comments :compile
       end
 
       class YEPropagate < Node
@@ -1557,6 +1827,8 @@ module Y2R
           end
         end
 
+        transfers_comments :compile
+
         private
 
         def compile_as_shortcut?
@@ -1597,6 +1869,8 @@ module Y2R
             )
           )
         end
+
+        transfers_comments :compile, :compile_as_setter, :compile_as_getter
       end
 
       class YEReturn < Node
@@ -1625,6 +1899,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile, :compile_as_block
       end
 
       class YETerm < Node
@@ -1731,6 +2007,8 @@ module Y2R
             )
           end
         end
+
+        transfers_comments :compile
       end
 
       class YETriple < Node
@@ -1741,6 +2019,8 @@ module Y2R
             :else      => self.false.compile(context)
           )
         end
+
+        transfers_comments :compile
 
         def never_nil?
           return self.true.never_nil? && self.false.never_nil?
@@ -1787,6 +2067,8 @@ module Y2R
             raise "Unknown unary operator: #{name.inspect}."
           end
         end
+
+        transfers_comments :compile
 
         def never_nil?
           return child.never_nil?

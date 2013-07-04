@@ -294,12 +294,12 @@ module Yast
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
-
     def f
       return
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -341,6 +341,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -373,6 +374,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -402,6 +404,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 # Original file: default.ycp
 
 require "ycp"
+
 module Yast
   class MClass < Module
     def main
@@ -410,10 +413,10 @@ module Yast
       @k = 42
       @l = @i
     end
-
     publish({ :variable => :k, :type => "integer" })
     publish({ :variable => :l, :type => "integer" })
   end
+
   M = MClass.new
   M.main
 end
@@ -451,6 +454,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -487,6 +491,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -557,6 +562,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -622,6 +628,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -683,23 +690,21 @@ module Yast
       )
       nil
     end
-
     def f1
       return 42
     end
-
     def f2(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
       return 42
     end
-
     def f3(a, b, c)
       return 42
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -772,6 +777,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -809,12 +815,12 @@ module Yast
       @fref.call
       nil
     end
-
     def f
       return
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -876,6 +882,7 @@ i6 = i % 43;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 i = 42
 i1 = Ops.unary_minus(i)
 i2 = 42 + 43
@@ -951,6 +958,7 @@ boolean b3 = true || false;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 b = true
 b1 = !b
 b2 = true && false
@@ -972,6 +980,7 @@ integer i = b ? 42 : 43;
 #### Ruby (fragment)
 
 ```ruby
+# Using a variable defeats constant propagation.
 b = true
 i = b ? 42 : 43
 ```
@@ -1066,6 +1075,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1143,11 +1153,14 @@ module Yast
       return
     end
 
+
+
     def f2
       return 42
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1164,6 +1177,7 @@ foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 #### Ruby (fragment)
 
 ```ruby
+# A variable prevents translating the block as YEReturn.
 Builtins.maplist([42, 43, 44]) do |i|
   j = 42
   next j
@@ -1311,31 +1325,24 @@ module Yast
     def f1
       return 42
     end
-
     def f2(a, b, c)
       return 42
     end
-
     def f3(a, b, c)
       return 42
     end
-
     def f4(a, b, c)
       return 42
     end
-
     def f5(a, b, c)
       return 42
     end
-
     def f6(a, b, c)
       return 42
     end
-
     def f7(a, b, c)
       return 42
     end
-
     def f8(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
@@ -1344,6 +1351,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1421,6 +1429,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1459,6 +1468,7 @@ module Yast
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1708,15 +1718,17 @@ module Yast
       nil
     end
 
+
+
     def f
       return 42
     end
-
     def g
       return 43
     end
   end
 end
+
 Yast::DefaultClient.new.main
 ```
 
@@ -1759,6 +1771,7 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 # Original file: default.ycp
 
 require "ycp"
+
 module Yast
   class MClass < Module
     def main
@@ -1768,22 +1781,25 @@ module Yast
       M()
     end
 
+
+
     def f
       return 42
     end
-
     def g
       return 43
     end
+
+
 
     def M
       Builtins.y2milestone("M1")
       nil
     end
-
     publish({ :variable => :j, :type => "integer" })
     publish({ :function => :g, :type => "integer ()" })
   end
+
   M = MClass.new
   M.main
 end

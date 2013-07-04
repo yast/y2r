@@ -184,8 +184,7 @@ module Y2R::AST
 
       @ycp_stmt_block = YCP::StmtBlock.new(
         :symbols    => [],
-        :statements => @ycp_statements,
-        :comment    => nil
+        :statements => @ycp_statements
       )
       @ycp_stmt_block_break = YCP::StmtBlock.new(
         :symbols    => [],
@@ -194,8 +193,7 @@ module Y2R::AST
           @ycp_assign_j_43,
           @ycp_assign_k_44,
           YCP::Break.new
-        ],
-        :comment    => nil
+        ]
       )
       @ycp_stmt_block_return = YCP::StmtBlock.new(
         :symbols    => [],
@@ -204,19 +202,16 @@ module Y2R::AST
           @ycp_assign_j_43,
           @ycp_assign_k_44,
           YCP::Return.new(:child => nil)
-        ],
-        :comment    => nil
+        ]
       )
 
       @ycp_def_block_args    = YCP::DefBlock.new(
         :symbols    => @ycp_symbols_private,
-        :statements => @ycp_statements,
-        :comment    => nil
+        :statements => @ycp_statements
       )
       @ycp_def_block_no_args = YCP::DefBlock.new(
         :symbols    => [],
-        :statements => @ycp_statements,
-        :comment    => nil
+        :statements => @ycp_statements
       )
 
       @ycp_case_42 = YCP::Case.new(
@@ -698,6 +693,33 @@ module Y2R::AST
     end
   end
 
+  describe YCP::Node, :type => :ycp do
+    describe ".transfers_comments" do
+      class YCP::TransferringNode < YCP::Node
+        def compile(context)
+          Ruby::Literal.new(:value => nil)
+        end
+
+        transfers_comments :compile
+      end
+
+      it "causes wrapped methods to transfer comments" do
+        ycp_node = YCP::TransferringNode.new(
+          :comment_before => "before",
+          :comment_after  => "after"
+        )
+
+        ruby_node = Ruby::Literal.new(
+          :value          => nil,
+          :comment_before => "before",
+          :comment_after  => "after"
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+    end
+  end
+
   describe YCP::Bracket, :type => :ycp do
     describe "#compile" do
       it "returns correct AST node when args has single value" do
@@ -895,8 +917,7 @@ module Y2R::AST
           :block =>  YCP::UnspecBlock.new(
             :args       => @ycp_symbols_private,
             :symbols    => @ycp_symbols_private,
-            :statements => @ycp_statements,
-            :comment    => nil
+            :statements => @ycp_statements
           )
         )
 
@@ -922,8 +943,7 @@ module Y2R::AST
           :block =>  YCP::UnspecBlock.new(
             :args       => @ycp_symbols_private,
             :symbols    => @ycp_symbols_private,
-            :statements => @ycp_statements,
-            :comment    => nil
+            :statements => @ycp_statements
           )
         )
 
@@ -1708,8 +1728,7 @@ module Y2R::AST
       it "returns correct AST node" do
         ycp_node = YCP::DefBlock.new(
           :symbols    => [],
-          :statements => @ycp_statements,
-          :comment    => nil
+          :statements => @ycp_statements
         )
 
         ruby_node = Ruby::Statements.new(
@@ -1885,8 +1904,9 @@ module Y2R::AST
 
   describe YCP::FileBlock, :type => :ycp do
     describe "#compile" do
-      def ruby_client_statements(statements, comment)
+      def ruby_client_statements(filename, statements)
         Ruby::Program.new(
+          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
@@ -1900,7 +1920,7 @@ module Y2R::AST
                 )
               ),
               Ruby::MethodCall.new(
-                :receiver => Ruby::MethodCall.new(
+                :receiver       => Ruby::MethodCall.new(
                   :receiver => Ruby::ConstAccess.new(
                     :receiver => Ruby::Variable.new(:name => "Yast"),
                     :name     => "CClient"
@@ -1910,14 +1930,14 @@ module Y2R::AST
                   :block    => nil,
                   :parens   => true
                 ),
-                :name     => "main",
-                :args     => [],
-                :block    => nil,
-                :parens   => true
+                :name           => "main",
+                :args           => [],
+                :block          => nil,
+                :parens         => true,
+                :comment_before => ""
               )
             ]
-          ),
-          :comment    => comment
+          )
         )
       end
 
@@ -1925,11 +1945,10 @@ module Y2R::AST
         ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
           :symbols    => [],
-          :statements => [],
-          :comment    => nil,
+          :statements => []
         )
 
-        ruby_node = ruby_client_statements([], @banner_comment_c)
+        ruby_node = ruby_client_statements("c.ycp", [])
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -1938,11 +1957,11 @@ module Y2R::AST
         ycp_node = YCP::FileBlock.new(
           :filename   => "c.ycp",
           :symbols    => [],
-          :statements => @ycp_statements,
-          :comment    => nil
+          :statements => @ycp_statements
         )
 
         ruby_node = ruby_client_statements(
+          "c.ycp",
           [
             Ruby::Def.new(
               :name       => "main",
@@ -1956,8 +1975,7 @@ module Y2R::AST
                 ]
               )
             )
-          ],
-          @banner_comment_c
+          ]
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -1971,27 +1989,13 @@ module Y2R::AST
             @ycp_fundef_f,
             @ycp_fundef_g,
             @ycp_fundef_h
-          ],
-          :comment    => nil
+          ]
         )
 
         ruby_node = ruby_client_statements(
-          [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          @banner_comment_c
+          "c.ycp",
+          [@ruby_def_f, @ruby_def_g, @ruby_def_h]
         )
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
-      it "returns correct AST node for blocks with a comment" do
-        ycp_node = YCP::FileBlock.new(
-          :filename   => "c.ycp",
-          :symbols    => [],
-          :statements => [],
-          :comment    => "comment",
-        )
-
-        ruby_node = ruby_client_statements([], "#@banner_comment_c\n\ncomment")
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2426,8 +2430,9 @@ module Y2R::AST
 
   describe YCP::IncludeBlock, :type => :ycp do
     describe "#compile" do
-      def ruby_include_statements(statements, comment)
+      def ruby_include_statements(filename, statements)
         Ruby::Program.new(
+          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
@@ -2440,8 +2445,7 @@ module Y2R::AST
                 )
               )
             ]
-          ),
-          :comment    => comment
+          )
         )
       end
 
@@ -2453,7 +2457,7 @@ module Y2R::AST
           :comment    => nil,
         )
 
-        ruby_node = ruby_include_statements([], @banner_comment_c)
+        ruby_node = ruby_include_statements("c.ycp", [])
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2467,14 +2471,14 @@ module Y2R::AST
         )
 
         ruby_node = ruby_include_statements(
+          "c.ycp",
           [
             Ruby::Def.new(
               :name       => "initialize_c",
               :args       => [Ruby::Variable.new(:name => "include_target")],
               :statements => @ruby_statements_non_empty
             )
-          ],
-          @banner_comment_c
+          ]
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2493,22 +2497,9 @@ module Y2R::AST
         )
 
         ruby_node = ruby_include_statements(
-          [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          @banner_comment_c
+          "c.ycp",
+          [@ruby_def_f, @ruby_def_g, @ruby_def_h]
         )
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
-      it "returns correct AST node for blocks with a comment" do
-        ycp_node = YCP::IncludeBlock.new(
-          :filename   => "c.ycp",
-          :symbols    => [],
-          :statements => [],
-          :comment    => "comment",
-        )
-
-        ruby_node = ruby_include_statements([], "#@banner_comment_c\n\ncomment")
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2602,7 +2593,7 @@ module Y2R::AST
 
   describe YCP::ModuleBlock, :type => :ycp do
     describe "#compile" do
-      def ruby_module_statements(statements, has_main_def, comment)
+      def ruby_module_statements(filename, statements, has_main_def)
         module_statements = [
           Ruby::Class.new(
             :name       => "MClass",
@@ -2612,14 +2603,15 @@ module Y2R::AST
             )
           ),
           Ruby::Assignment.new(
-            :lhs => Ruby::Variable.new(:name => "M"),
-            :rhs => Ruby::MethodCall.new(
+            :lhs            => Ruby::Variable.new(:name => "M"),
+            :rhs            => Ruby::MethodCall.new(
               :receiver => Ruby::Variable.new(:name => "MClass"),
               :name     => "new",
               :args     => [],
               :block    => nil,
               :parens   => true
-            )
+            ),
+            :comment_before => ""
           )
         ]
 
@@ -2634,6 +2626,7 @@ module Y2R::AST
         end
 
         Ruby::Program.new(
+          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::MethodCall.new(
@@ -2644,14 +2637,14 @@ module Y2R::AST
                 :parens   => false
               ),
               Ruby::Module.new(
-                :name       => "Yast",
-                :statements => Ruby::Statements.new(
+                :name           => "Yast",
+                :statements     => Ruby::Statements.new(
                   :statements => module_statements
-                )
+                ),
+                :comment_before => ""
               ),
             ]
-          ),
-          :comment    => comment
+          )
         )
       end
 
@@ -2688,10 +2681,10 @@ module Y2R::AST
           :name       => "M",
           :symbols    => [],
           :statements => [],
-          :comment    => nil
+          :filename   => "m.ycp"
         )
 
-        ruby_node = ruby_module_statements([], false, @banner_comment)
+        ruby_node = ruby_module_statements("m.ycp", [], false)
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
@@ -2701,17 +2694,17 @@ module Y2R::AST
           :name       => "M",
           :symbols    => @ycp_symbols_public,
           :statements => [],
-          :comment    => nil
+          :filename   => "m.ycp"
         )
 
         ruby_node = ruby_module_statements(
+          "m.ycp",
           [
             ruby_publish_call("a", false),
             ruby_publish_call("b", false),
             ruby_publish_call("c", false)
           ],
-          false,
-          @banner_comment
+          false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2722,10 +2715,11 @@ module Y2R::AST
           :name       => "M",
           :symbols    => [],
           :statements => @ycp_statements,
-          :comment    => nil
+          :filename   => "m.ycp"
         )
 
         ruby_node = ruby_module_statements(
+          "m.ycp",
           [
             Ruby::Def.new(
               :name       => "main",
@@ -2733,8 +2727,7 @@ module Y2R::AST
               :statements => @ruby_statements_non_empty
             )
           ],
-          true,
-          @banner_comment
+          true
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2749,13 +2742,13 @@ module Y2R::AST
             @ycp_fundef_g,
             @ycp_fundef_h
           ],
-          :comment    => nil
+          :filename   => "m.ycp"
         )
 
         ruby_node = ruby_module_statements(
+          "m.ycp",
           [@ruby_def_f, @ruby_def_g, @ruby_def_h],
-          false,
-          @banner_comment
+          false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2772,10 +2765,11 @@ module Y2R::AST
               :block => @ycp_def_block_no_args
             )
           ],
-          :comment    => nil
+          :filename   => "m.ycp"
         )
 
         ruby_node = ruby_module_statements(
+          "m.ycp",
           [
             Ruby::Def.new(
               :name       => "main",
@@ -2805,30 +2799,11 @@ module Y2R::AST
               )
             )
           ],
-          true,
-          @banner_comment
+          true
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
       end
-
-      it "returns correct AST node for blocks with a comment" do
-        ycp_node = YCP::ModuleBlock.new(
-          :name       => "M",
-          :symbols    => [],
-          :statements => [],
-          :comment    => "comment"
-        )
-
-        ruby_node = ruby_module_statements(
-          [],
-          false,
-          "#@banner_comment\n\ncomment"
-        )
-
-        ycp_node.compile(@context_empty).should == ruby_node
-      end
-
 
       it "raises an exception for blocks whose name isn't a Ruby class name" do
         ycp_node = YCP::ModuleBlock.new(
@@ -2854,10 +2829,10 @@ module Y2R::AST
             :name       => "M",
             :symbols    => @ycp_symbols_private,
             :statements => [],
-            :comment    => nil
+            :filename   => "m.ycp"
           )
 
-          ruby_node = ruby_module_statements([], false, @banner_comment)
+          ruby_node = ruby_module_statements("m.ycp", [], false)
 
           ycp_node.compile(context).should == ruby_node
         end
@@ -2874,17 +2849,17 @@ module Y2R::AST
             :name       => "M",
             :symbols    => @ycp_symbols_private,
             :statements => [],
-            :comment    => nil
+            :filename   => "m.ycp"
           )
 
           ruby_node = ruby_module_statements(
+            "m.ycp",
             [
               ruby_publish_call("a", true),
               ruby_publish_call("b", true),
               ruby_publish_call("c", true)
             ],
-            false,
-            @banner_comment
+            false
           )
 
           ycp_node.compile(context).should == ruby_node
@@ -4330,10 +4305,10 @@ module Y2R::AST
 
   describe YCP::YEIs, :type => :ycp do
     describe "#compile" do
-      it "returns correct AST node" do
+      it "returns correct AST node for generic type" do
         ycp_node = YCP::YEIs.new(
           :child => @ycp_const_42,
-          :type  => YCP::Type.new("integer")
+          :type  => YCP::Type.new("integer()")
         )
 
         ruby_node = Ruby::MethodCall.new(
@@ -4341,7 +4316,26 @@ module Y2R::AST
           :name     => "is",
           :args     => [
             @ruby_literal_42,
-            Ruby::Literal.new(:value => "integer")
+            Ruby::Literal.new(:value => "integer()")
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when shortcut is known" do
+        ycp_node = YCP::YEIs.new(
+          :child => @ycp_const_42,
+          :type  => YCP::Type.new("integer")
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "is_integer?",
+          :args     => [
+            @ruby_literal_42
           ],
           :block    => nil,
           :parens   => true
