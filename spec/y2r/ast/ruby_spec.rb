@@ -2562,48 +2562,40 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits a single-line block when the block fits available space and the statments are single-line" do
-        node = Block.new(:args => [], :statements => @assignment_a_42)
-
-        node.to_ruby_no_comments(@context_default).should == "{ a = 42 }"
-      end
-
-      it "emits a multi-line block when the block doesn't fit available space" do
-        node = Block.new(:args => [], :statements => @assignment_a_42)
-
-        node.to_ruby_no_comments(@context_narrow).should == [
-          "do",
-          "  a = 42",
-          "end"
-        ].join("\n")
-      end
-
-      it "emits a multi-line block when the statements are multi-line" do
-        node = Block.new(:args => [], :statements => @statements)
-
-        node.to_ruby_no_comments(@context_default).should == [
-          "do",
-          "  a = 42",
-          "  b = 43",
-          "  c = 44",
-          "end"
-        ].join("\n")
-      end
-
-      describe "for single-line blocks" do
-        it "emits correct code for blocks with no arguments" do
+      describe "with lot of space available" do
+        it "emits correct code" do
           @node_single_no_args.to_ruby_no_comments(@context_default).should ==
             "{ a = 42 }"
-        end
-
-        it "emits correct code for blocks with one argument" do
           @node_single_one_arg.to_ruby_no_comments(@context_default).should ==
-            "{ |a| a = 42 }"
-        end
 
-        it "emits correct code for blocks with multiple arguments" do
+            "{ |a| a = 42 }"
           @node_single_multiple_args.to_ruby_no_comments(@context_default).should ==
+
             "{ |a, b, c| a = 42 }"
+
+          @node_multi_no_args.to_ruby_no_comments(@context_narrow).should == [
+            "do",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_multi_one_arg.to_ruby_no_comments(@context_narrow).should == [
+            "do |a|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_multi_multiple_args.to_ruby_no_comments(@context_narrow).should == [
+            "do |a, b, c|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
         end
 
         it "passes correct available space info to args" do
@@ -2633,8 +2625,26 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "for multi-line blocks" do
-        it "emits correct code for blocks with no arguments" do
+      describe "with no space available" do
+        it "emits correct code" do
+          @node_single_no_args.to_ruby_no_comments(@context_narrow).should == [
+            "do",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
+          @node_single_one_arg.to_ruby_no_comments(@context_narrow).should == [
+            "do |a|",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
+          @node_single_multiple_args.to_ruby_no_comments(@context_narrow).should == [
+            "do |a, b, c|",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
           @node_multi_no_args.to_ruby_no_comments(@context_narrow).should == [
             "do",
             "  a = 42",
@@ -2642,9 +2652,7 @@ module Y2R::AST::Ruby
             "  c = 44",
             "end"
           ].join("\n")
-        end
 
-        it "emits correct code for blocks with one argument" do
           @node_multi_one_arg.to_ruby_no_comments(@context_narrow).should == [
             "do |a|",
             "  a = 42",
@@ -2652,9 +2660,7 @@ module Y2R::AST::Ruby
             "  c = 44",
             "end"
           ].join("\n")
-        end
 
-        it "emits correct code for blocks with multiple arguments" do
           @node_multi_multiple_args.to_ruby_no_comments(@context_narrow).should == [
             "do |a, b, c|",
             "  a = 42",
@@ -2671,7 +2677,7 @@ module Y2R::AST::Ruby
               check_context(@variable_b, :width => 0, :shift => 7),
               check_context(@variable_c, :width => 0, :shift => 10)
             ],
-            :statements => @statements
+            :statements => @assignment_a_42
           )
 
           node.to_ruby_no_comments(@context_narrow)
@@ -2680,7 +2686,11 @@ module Y2R::AST::Ruby
         it "passes correct available space info to statements" do
           node = Block.new(
             :args       => [],
-            :statements => check_context(@statements, :width => -2, :shift => 0)
+            :statements => check_context(
+              @assignment_a_42,
+              :width => -2,
+              :shift => 0
+            )
           )
 
           node.to_ruby_no_comments(@context_narrow)
@@ -2689,35 +2699,17 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      describe "for single-line blocks" do
-        it "returns correct value for blocks with no arguments" do
-          @node_single_no_args.single_line_width_no_comments.should == 10
-        end
+      it "returns correct value" do
+        @node_single_no_args.single_line_width_no_comments.should       == 10
+        @node_single_one_arg.single_line_width_no_comments.should       == 14
+        @node_single_multiple_args.single_line_width_no_comments.should == 20
 
-        it "returns correct value for blocks with one argument" do
-          @node_single_one_arg.single_line_width_no_comments.should == 14
-        end
-
-        it "returns correct value for blocks with multiple arguments" do
-          @node_single_multiple_args.single_line_width_no_comments.should == 20
-        end
-      end
-
-      describe "for multi-line blocks" do
-        it "returns infinity for blocks with no arguments" do
-          @node_multi_no_args.single_line_width_no_comments.should ==
-            Float::INFINITY
-        end
-
-        it "returns infinity for blocks with one argument" do
-          @node_multi_one_arg.single_line_width_no_comments.should ==
-            Float::INFINITY
-        end
-
-        it "returns infinity for blocks with multiple arguments" do
-          @node_multi_multiple_args.single_line_width_no_comments.should ==
-            Float::INFINITY
-        end
+        @node_multi_no_args.single_line_width_no_comments.should ==
+          Float::INFINITY
+        @node_multi_one_arg.single_line_width_no_comments.should ==
+          Float::INFINITY
+        @node_multi_multiple_args.single_line_width_no_comments.should ==
+          Float::INFINITY
       end
     end
   end
