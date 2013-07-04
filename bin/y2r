@@ -33,7 +33,11 @@ begin
     input_stream  = $stdin
     output_stream = $stdout
   else
-    ruby_file ||= ycp_file.sub(/\.[^.]*$/, ".rb")
+    if !ruby_file
+      extension = options["--xml"] ? ".xml" : ".rb"
+      ruby_file = ycp_file.sub(/\.[^.]*$/, extension)
+    end
+
     input_stream  = File.open(ycp_file,  "r")
     output_stream = File.open(ruby_file, "w")
   end
