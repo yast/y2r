@@ -55,8 +55,7 @@ module Y2R
               :name  => "k",
               :child => AST::YCP::Const.new(:type => :int, :value => "44")
             )
-          ],
-          :comment    => nil
+          ]
         )
 
         Parser.new(compile_options).parse(cleanup(<<-EOT)).should == ast
