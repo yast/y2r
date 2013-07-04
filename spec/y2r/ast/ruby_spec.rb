@@ -2075,6 +2075,13 @@ module Y2R::AST::Ruby
         :parens   => false
       )
 
+      @node_receiver_comment_before = MethodCall.new(
+        :receiver => @variable_a_comment_before,
+        :name     => "m",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
       @node_receiver_comment_after = MethodCall.new(
         :receiver => @variable_a_comment_after,
         :name     => "m",
@@ -2083,6 +2090,13 @@ module Y2R::AST::Ruby
         :parens   => false
       )
 
+      @node_parens_const = MethodCall.new(
+        :receiver => nil,
+        :name     => "M",
+        :args     => [],
+        :block    => nil,
+        :parens   => true
+      )
       @node_parens_no_args = MethodCall.new(
         :receiver => nil,
         :name     => "m",
@@ -2101,13 +2115,6 @@ module Y2R::AST::Ruby
         :receiver => nil,
         :name     => "m",
         :args     => [@literal_42, @literal_43, @literal_44],
-        :block    => nil,
-        :parens   => true
-      )
-      @node_parens_const = MethodCall.new(
-        :receiver => nil,
-        :name     => "M",
-        :args     => [],
         :block    => nil,
         :parens   => true
       )
@@ -2148,6 +2155,13 @@ module Y2R::AST::Ruby
         :parens   => true
       )
 
+      @node_no_parens_const = MethodCall.new(
+        :receiver => nil,
+        :name     => "M",
+        :args     => [],
+        :block    => nil,
+        :parens   => false
+      )
       @node_no_parens_no_args = MethodCall.new(
         :receiver => nil,
         :name     => "m",
@@ -2169,13 +2183,6 @@ module Y2R::AST::Ruby
         :block    => nil,
         :parens   => false
       )
-      @node_no_parens_const = MethodCall.new(
-        :receiver => nil,
-        :name     => "M",
-        :args     => [],
-        :block    => nil,
-        :parens   => false
-      )
       @node_no_parens_without_block = MethodCall.new(
         :receiver => nil,
         :name     => "m",
@@ -2193,21 +2200,189 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_no_comments" do
-      it "emits correct code for method calls without a receiver" do
-        @node_without_receiver.to_ruby_no_comments(@context_default).should ==
-          "m"
+      describe "with lot of space available" do
+        it "emits correct code" do
+          @node_without_receiver.to_ruby_no_comments(@context_default).should ==
+            "m"
+
+          @node_with_receiver.to_ruby_no_comments(@context_default).should ==
+            "a.m"
+
+          @node_receiver_comment_before.to_ruby_no_comments(@context_default).should == [
+            "# before",
+            "a.m"
+          ].join("\n")
+
+          @node_receiver_comment_after.to_ruby_no_comments(@context_default).should == [
+            "a. # after",
+            "  m"
+          ].join("\n")
+
+          @node_parens_const.to_ruby_no_comments(@context_default).should ==
+            "M()"
+
+          @node_parens_no_args.to_ruby_no_comments(@context_default).should ==
+            "m"
+
+          @node_parens_one_arg.to_ruby_no_comments(@context_default).should ==
+            "m(42)"
+
+          @node_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
+            "m(42, 43, 44)"
+
+          @node_parens_args_comments_before.to_ruby_no_comments(@context_default).should == [
+            "m(",
+            "  # before",
+            "  42,",
+            "  # before",
+            "  43,",
+            "  # before",
+            "  44",
+            ")"
+          ].join("\n")
+
+          @node_parens_args_comments_after.to_ruby_no_comments(@context_default).should == [
+            "m(",
+            "  42, # after",
+            "  43, # after",
+            "  44 # after",
+            ")"
+          ].join("\n")
+
+          @node_parens_without_block.to_ruby_no_comments(@context_default).should ==
+            "m"
+
+          @node_parens_with_block.to_ruby_no_comments(@context_default).should == [
+            "m do",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_no_parens_const.to_ruby_no_comments(@context_default).should ==
+            "M()"
+
+          @node_no_parens_no_args.to_ruby_no_comments(@context_default).should ==
+            "m"
+
+          @node_no_parens_one_arg.to_ruby_no_comments(@context_default).should ==
+            "m 42"
+
+          @node_no_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
+            "m 42, 43, 44"
+
+          @node_no_parens_without_block.to_ruby_no_comments(@context_default).should ==
+            "m"
+
+          @node_no_parens_with_block.to_ruby_no_comments(@context_default).should == [
+            "m do",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
 
-      it "emits correct code for method calls with a receiver" do
-        @node_with_receiver.to_ruby_no_comments(@context_default).should ==
-          "a.m"
-      end
+      describe "with no space available" do
+        it "emits correct code" do
+          @node_without_receiver.to_ruby_no_comments(@context_narrow).should ==
+            "m"
 
-      it "emits correct code for method calls when receiver has comment after" do
-        @node_receiver_comment_after.to_ruby_no_comments(@context_default).should == [
-          "a. # after",
-          "  m"
-        ].join("\n")
+          @node_with_receiver.to_ruby_no_comments(@context_narrow).should ==
+            "a.m"
+
+          @node_receiver_comment_before.to_ruby_no_comments(@context_narrow).should == [
+            "# before",
+            "a.m"
+          ].join("\n")
+
+          @node_receiver_comment_after.to_ruby_no_comments(@context_narrow).should == [
+            "a. # after",
+            "  m"
+          ].join("\n")
+
+          @node_parens_const.to_ruby_no_comments(@context_narrow).should == [
+            "M(",
+            ")"
+          ].join("\n")
+
+          @node_parens_no_args.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            ")"
+          ].join("\n")
+
+          @node_parens_one_arg.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            "  42",
+            ")"
+          ].join("\n")
+
+          @node_parens_multiple_args.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            "  42,",
+            "  43,",
+            "  44",
+            ")"
+          ].join("\n")
+
+          @node_parens_args_comments_before.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            "  # before",
+            "  42,",
+            "  # before",
+            "  43,",
+            "  # before",
+            "  44",
+            ")"
+          ].join("\n")
+
+          @node_parens_args_comments_after.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            "  42, # after",
+            "  43, # after",
+            "  44 # after",
+            ")"
+          ].join("\n")
+
+          @node_parens_without_block.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            ")"
+          ].join("\n")
+
+          @node_parens_with_block.to_ruby_no_comments(@context_narrow).should == [
+            "m(",
+            ") do",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_no_parens_const.to_ruby_no_comments(@context_narrow).should ==
+            "M()"
+
+          @node_no_parens_no_args.to_ruby_no_comments(@context_narrow).should ==
+            "m"
+
+          @node_no_parens_one_arg.to_ruby_no_comments(@context_narrow).should ==
+            "m 42"
+
+          @node_no_parens_multiple_args.to_ruby_no_comments(@context_narrow).should ==
+            "m 42, 43, 44"
+
+          @node_no_parens_without_block.to_ruby_no_comments(@context_narrow).should ==
+            "m"
+
+          @node_no_parens_with_block.to_ruby_no_comments(@context_narrow).should == [
+            "m do",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+        end
       end
 
       it "passes correct available space info to receiver" do
@@ -2224,26 +2399,6 @@ module Y2R::AST::Ruby
 
       describe "on method calls with :parens => true" do
         describe "for single-line method calls" do
-          it "emits correct code for method calls with no arguments" do
-            @node_parens_no_args.to_ruby_no_comments(@context_default).should ==
-              "m"
-          end
-
-          it "emits correct code for method calls with one argument" do
-            @node_parens_one_arg.to_ruby_no_comments(@context_default).should ==
-              "m(42)"
-          end
-
-          it "emits correct code for method calls with multiple arguments" do
-            @node_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
-              "m(42, 43, 44)"
-          end
-
-          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_parens_const.to_ruby_no_comments(@context_default).should ==
-              "M()"
-          end
-
           it "passes correct available space info to args" do
             node = MethodCall.new(
               :receiver => @variable_a,
@@ -2254,7 +2409,7 @@ module Y2R::AST::Ruby
                 check_context(@literal_44, :width => 80, :shift => 11)
               ],
               :block    => nil,
-              :parens   => false
+              :parens   => true
             )
 
             node.to_ruby_no_comments(@context_default)
@@ -2270,7 +2425,7 @@ module Y2R::AST::Ruby
                 :width => 80,
                 :shift => 3
               ),
-              :parens   => false
+              :parens   => true
             )
 
             node.to_ruby_no_comments(@context_default)
@@ -2278,61 +2433,6 @@ module Y2R::AST::Ruby
         end
 
         describe "for multi-line method calls" do
-          it "emits correct code for method calls with no arguments" do
-            @node_parens_no_args.to_ruby_no_comments(@context_narrow).should == [
-              "m(",
-              ")"
-            ].join("\n")
-          end
-
-          it "emits correct code for method calls with one argument" do
-            @node_parens_one_arg.to_ruby_no_comments(@context_narrow).should == [
-              "m(",
-              "  42",
-              ")"
-            ].join("\n")
-          end
-
-          it "emits correct code for method calls with multiple arguments" do
-            @node_parens_multiple_args.to_ruby_no_comments(@context_narrow).should == [
-              "m(",
-              "  42,",
-              "  43,",
-              "  44",
-              ")"
-            ].join("\n")
-          end
-
-          it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-            @node_parens_const.to_ruby_no_comments(@context_narrow).should == [
-              "M(",
-              ")"
-            ].join("\n")
-          end
-
-          it "emits correct code for method calls with arguments with comment before" do
-            @node_parens_args_comments_before.to_ruby_no_comments(@context_default).should == [
-             "m(",
-             "  # before",
-             "  42,",
-             "  # before",
-             "  43,",
-             "  # before",
-             "  44",
-             ")"
-            ].join("\n")
-          end
-
-          it "emits correct code for method calls with arguments with comment after" do
-            @node_parens_args_comments_after.to_ruby_no_comments(@context_default).should == [
-             "m(",
-             "  42, # after",
-             "  43, # after",
-             "  44 # after",
-             ")"
-            ].join("\n")
-          end
-
           it "passes correct available space info to args" do
             node = MethodCall.new(
               :receiver => @variable_a,
@@ -2365,59 +2465,9 @@ module Y2R::AST::Ruby
             node.to_ruby_no_comments(@context_narrow)
           end
         end
-
-        it "emits correct code for method calls without a block" do
-          @node_parens_without_block.to_ruby_no_comments(@context_default).should ==
-            "m"
-        end
-
-        it "emits correct code for method calls with a block" do
-          @node_parens_with_block.to_ruby_no_comments(@context_default).should == [
-            "m do",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44",
-            "end"
-          ].join("\n")
-        end
       end
 
       describe "on method calls with :parens => false" do
-        it "emits correct code for method calls with no arguments" do
-          @node_no_parens_no_args.to_ruby_no_comments(@context_default).should ==
-            "m"
-        end
-
-        it "emits correct code for method calls with one argument" do
-          @node_no_parens_one_arg.to_ruby_no_comments(@context_default).should ==
-            "m 42"
-        end
-
-        it "emits correct code for method calls with multiple arguments" do
-          @node_no_parens_multiple_args.to_ruby_no_comments(@context_default).should ==
-            "m 42, 43, 44"
-        end
-
-        it "emits correct code for method calls with no receiver, const-like name and no arguments" do
-          @node_no_parens_const.to_ruby_no_comments(@context_default).should ==
-            "M()"
-        end
-
-        it "emits correct code for method calls without a block" do
-          @node_no_parens_without_block.to_ruby_no_comments(@context_default).should ==
-            "m"
-        end
-
-        it "emits correct code for method calls with a block" do
-          @node_no_parens_with_block.to_ruby_no_comments(@context_default).should == [
-            "m do",
-            "  a = 42",
-            "  b = 43",
-            "  c = 44",
-            "end"
-          ].join("\n")
-        end
-
         it "passes correct available space info to args" do
           node = MethodCall.new(
             :receiver => @variable_a,
@@ -2453,81 +2503,38 @@ module Y2R::AST::Ruby
     end
 
     describe "#single_line_width_no_comments" do
-      it "returns correct value for method calls without a receiver" do
+      it "returns correct value" do
         @node_without_receiver.single_line_width_no_comments.should == 1
-      end
+        @node_with_receiver.single_line_width_no_comments.should    == 3
 
-      it "returns correct value for method calls with a receiver" do
-        @node_with_receiver.single_line_width_no_comments.should == 3
-      end
-
-      it "returns infinity for method calls when receiver has comment after" do
+        @node_receiver_comment_before.single_line_width_no_comments.should ==
+          Float::INFINITY
         @node_receiver_comment_after.single_line_width_no_comments.should ==
           Float::INFINITY
-      end
 
-      describe "on method calls with :parens => true" do
-        it "returns correct value for method calls with no arguments" do
-          @node_parens_no_args.single_line_width_no_comments.should == 1
-        end
+        @node_parens_const.single_line_width_no_comments.should ==
+          3
+        @node_parens_no_args.single_line_width_no_comments.should ==
+          1
+        @node_parens_one_arg.single_line_width_no_comments.should ==
+          5
+        @node_parens_multiple_args.single_line_width_no_comments.should ==
+          13
+        @node_parens_args_comments_before.single_line_width_no_comments.should ==
+          Float::INFINITY
+        @node_parens_args_comments_after.single_line_width_no_comments.should ==
+          Float::INFINITY
+        @node_parens_without_block.single_line_width_no_comments.should ==
+          1
+        @node_parens_with_block.single_line_width_no_comments.should ==
+          1
 
-        it "returns correct value for method calls with one argument" do
-          @node_parens_one_arg.single_line_width_no_comments.should == 5
-        end
-
-        it "returns correct value for method calls with multiple arguments" do
-          @node_parens_multiple_args.single_line_width_no_comments.should == 13
-        end
-
-        it "returns correct value for method calls with no receiver, const-like name and no arguments" do
-          @node_parens_const.single_line_width_no_comments.should == 3
-        end
-
-        it "return infinity for method calls with arguments with comment before" do
-          @node_parens_args_comments_before.single_line_width_no_comments.should ==
-            Float::INFINITY
-        end
-
-        it "return infinity for method calls with arguments with comment after" do
-          @node_parens_args_comments_after.single_line_width_no_comments.should ==
-            Float::INFINITY
-        end
-
-        it "returns correct value for method calls without a block" do
-          @node_parens_without_block.single_line_width_no_comments.should == 1
-        end
-
-        it "returns correct value for method calls with a block" do
-          @node_parens_with_block.single_line_width_no_comments.should == 1
-        end
-      end
-
-      describe "on method calls with :parens => false" do
-        it "returns correct value for method calls with no arguments" do
-          @node_no_parens_no_args.single_line_width_no_comments.should == 1
-        end
-
-        it "returns correct value for method calls with one argument" do
-          @node_no_parens_one_arg.single_line_width_no_comments.should == 4
-        end
-
-        it "returns correct value for method calls with multiple arguments" do
-          @node_no_parens_multiple_args.single_line_width_no_comments.should ==
-            12
-        end
-
-        it "returns correct value for method calls with no receiver, const-like name and no arguments" do
-          @node_no_parens_const.single_line_width_no_comments.should == 3
-        end
-
-        it "returns correct value for method calls without a block" do
-          @node_no_parens_without_block.single_line_width_no_comments.should ==
-            1
-        end
-
-        it "returns correct value for method calls with a block" do
-          @node_no_parens_with_block.single_line_width_no_comments.should == 1
-        end
+        @node_no_parens_const.single_line_width_no_comments.should         == 3
+        @node_no_parens_no_args.single_line_width_no_comments.should       == 1
+        @node_no_parens_one_arg.single_line_width_no_comments.should       == 4
+        @node_no_parens_multiple_args.single_line_width_no_comments.should == 12
+        @node_no_parens_without_block.single_line_width_no_comments.should == 1
+        @node_no_parens_with_block.single_line_width_no_comments.should    == 1
       end
     end
   end
