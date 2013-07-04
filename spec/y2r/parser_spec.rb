@@ -54,7 +54,7 @@ module Y2R
               :ns            => nil,
               :name          => "k",
               :child         => AST::YCP::Const.new(:type => :int, :value => "44"),
-							:comment_after => "\n"
+              :comment_after => " \n"
             )
           ]
         )

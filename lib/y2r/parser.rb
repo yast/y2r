@@ -6,7 +6,20 @@ require "tempfile"
 
 module Y2R
   class Parser
-    SKIPPED_ELEMENTS = [
+
+    # The lists of elements skipped during parsing and comment processing need
+    # to differ. Currently there are two reasons:
+    #
+    #   * When parsing, we want to skip <yconst>, because it's just a useless
+    #     wrapper. But when processing comments we don't want to skip it,
+    #     because this is the element to which comments are attached to for
+    #     various literals.
+    #
+    #   * When parsing, we don't want to skip <element>, because we need to
+    #     handle it specially in case it's inside <map>. But when processing
+    #     comments it's just a useless wrapper.
+
+    SKIPPED_ELEMENTS_PARSING = [
       "arg",
       "cond",
       "else",
@@ -21,6 +34,24 @@ module Y2R
       "until",
       "value",
       "yconst",
+      "ycp"
+    ]
+
+    SKIPPED_ELEMENTS_COMMENTS = [
+      "arg",
+      "cond",
+      "element",
+      "else",
+      "expr",
+      "false",
+      "key",
+      "lhs",
+      "rhs",
+      "stmt",
+      "then",
+      "true",
+      "until",
+      "value",
       "ycp"
     ]
 
@@ -113,7 +144,7 @@ module Y2R
 
     def fix_comments(element, last_element)
       # We don't want to attach any comments to these.
-      if SKIPPED_ELEMENTS.include?(element.name)
+      if SKIPPED_ELEMENTS_COMMENTS.include?(element.name)
         fix_comments(element.elements[0], last_element)
         return
       end
@@ -154,7 +185,7 @@ module Y2R
 
     def element_to_node(element, context)
       node = case element.name
-        when *SKIPPED_ELEMENTS
+        when *SKIPPED_ELEMENTS_PARSING
           element_to_node(element.elements[0], context)
 
         when "assign"
