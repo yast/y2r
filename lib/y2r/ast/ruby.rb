@@ -52,7 +52,7 @@ module Y2R
 
         def to_ruby(context)
           wrap_code_with_comments context do |inner_context|
-            to_ruby_no_comments(inner_context)
+            to_ruby_base(inner_context)
           end
         end
 
@@ -63,9 +63,9 @@ module Y2R
 
               if pass_trailer?
                 trailer = ")#{inner_context.trailer}"
-                "(#{to_ruby_no_comments(passed_context.with_trailer(trailer))}"
+                "(#{to_ruby_base(passed_context.with_trailer(trailer))}"
               else
-                "(#{to_ruby_no_comments(passed_context)})"
+                "(#{to_ruby_base(passed_context)})"
               end
             end
           else
@@ -75,7 +75,7 @@ module Y2R
 
         def single_line_width
           wrap_width_with_comments do
-            single_line_width_no_comments
+            single_line_width_base
           end
         end
 
@@ -148,7 +148,7 @@ module Y2R
         end
 
         def fits_current_line?(context)
-          single_line_width_no_comments <= context.width - context.shift
+          single_line_width_base <= context.width - context.shift
         end
 
         def enclose?
@@ -194,7 +194,7 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
 
@@ -206,7 +206,7 @@ module Y2R
       end
 
       class Class < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           superclass_shift  = 6 + name.size + 3
           superclass_context = context.shifted(superclass_shift)
           superclass_code    = superclass.to_ruby(superclass_context)
@@ -218,13 +218,13 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Module < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             parts << "module #{name}"
             parts << indented(statements, context)
@@ -232,13 +232,13 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Def < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           args_shift   = 4 + name.size + 1
           args_context = context.shifted(args_shift)
           args_code    = if !args.empty?
@@ -254,13 +254,13 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Statements < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             # The |compact| call is needed because some YCP AST nodes don't
             # translate into anything, meaning their |compile| method will
@@ -269,7 +269,7 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           case statements.size
             when 0
               0
@@ -282,7 +282,7 @@ module Y2R
       end
 
       class Begin < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             parts << "begin"
             parts << indented(statements, context)
@@ -290,21 +290,21 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class If < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if fits_current_line?(context)
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !self.else
             self.then.single_line_width + 4 + condition.single_line_width
           else
@@ -314,7 +314,7 @@ module Y2R
 
         private
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           then_code = self.then.to_ruby(context)
 
           condition_shift   = then_code.size + 4
@@ -324,7 +324,7 @@ module Y2R
           "#{then_code} if #{condition_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << "if #{condition.to_ruby(context.shifted(3))}"
             parts << indented(self.then, context)
@@ -338,15 +338,15 @@ module Y2R
       end
 
       class Unless < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if fits_current_line?(context)
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !self.else
             self.then.single_line_width + 8 + condition.single_line_width
           else
@@ -356,7 +356,7 @@ module Y2R
 
         private
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           then_code = self.then.to_ruby(context)
 
           condition_shift   = then_code.size + 8
@@ -366,7 +366,7 @@ module Y2R
           "#{then_code} unless #{condition_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << "unless #{condition.to_ruby(context.shifted(7))}"
             parts << indented(self.then, context)
@@ -380,7 +380,7 @@ module Y2R
       end
 
       class Case < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             parts << "case #{expression.to_ruby(context.shifted(5))}"
             whens.each do |whem|
@@ -391,39 +391,39 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class When < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             parts << "when #{list(values, ", ", context.shifted(5))}"
             parts << indented(body, context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Else < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           combine do |parts|
             parts << "else"
             parts << indented(body, context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class While < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "while #{condition.to_ruby(context.shifted(6))}"
@@ -435,13 +435,13 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Until < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !body.is_a?(Begin)
             combine do |parts|
               parts << "until #{condition.to_ruby(context.shifted(6))}"
@@ -453,37 +453,37 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           Float::INFINITY   # always multiline
         end
       end
 
       class Break < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           "break"
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           5
         end
       end
 
       class Next < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           value ? 5 + value.single_line_width : 4
         end
       end
 
       class Return < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           value ? 7 + value.single_line_width : 6
         end
       end
@@ -491,15 +491,15 @@ module Y2R
       # ===== Expressions =====
 
       class Expressions < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if (fits_current_line?(context) && !expressions_have_comments?) || expressions.empty?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !expressions_have_comments?
             1 + list_single_line_width(expressions, 2) + 1
           else
@@ -513,25 +513,25 @@ module Y2R
           expressions_have_comments = expressions.any? { |e| e.has_comment? }
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           "(#{list(expressions, "; ", context.shifted(1))})"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           wrapped_line_list(expressions, "(", ";", ")", context)
         end
       end
 
       class Assignment < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !has_line_breaking_comment?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !has_line_breaking_comment?
             lhs_width = lhs.single_line_width
             rhs_width = if rhs.is_a?(Variable)
@@ -564,7 +564,7 @@ module Y2R
           lhs.ends_with_comment? || rhs.starts_with_comment?
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           lhs_code = lhs.to_ruby(context.without_trailer)
 
           rhs_shift   = lhs_code.size + 3
@@ -574,7 +574,7 @@ module Y2R
           "#{lhs_code} = #{rhs_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << lhs.to_ruby(context.with_trailer(" ="))
             parts << indented(rhs, context)
@@ -583,11 +583,11 @@ module Y2R
       end
 
       class UnaryOperator < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           op.size + expression.single_line_width_enclosed
         end
 
@@ -607,15 +607,15 @@ module Y2R
       end
 
       class BinaryOperator < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !has_line_breaking_comment?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !has_line_breaking_comment?
             lhs_width = lhs.single_line_width_enclosed
             rhs_width = rhs.single_line_width_enclosed
@@ -644,7 +644,7 @@ module Y2R
           lhs.ends_with_comment? || rhs.starts_with_comment?
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           lhs_code = lhs.to_ruby_enclosed(context.without_trailer)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
@@ -654,7 +654,7 @@ module Y2R
           "#{lhs_code} #{op} #{rhs_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << lhs.to_ruby_enclosed(context.with_trailer(" #{op}"))
             parts << indented_enclosed(rhs, context)
@@ -663,15 +663,15 @@ module Y2R
       end
 
       class TernaryOperator < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !has_line_breaking_comment?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !has_line_breaking_comment?
             condition_width = condition.single_line_width_enclosed
             then_width      = self.then.single_line_width_enclosed
@@ -704,7 +704,7 @@ module Y2R
             self.else.starts_with_comment?
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           condition_code = condition.to_ruby_enclosed(context.without_trailer)
 
           then_shift   = condition_code.size + 3
@@ -718,7 +718,7 @@ module Y2R
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << condition.to_ruby_enclosed(context.with_trailer(" ?"))
             parts << indented_enclosed(self.then, context.with_trailer(" :"))
@@ -728,7 +728,7 @@ module Y2R
       end
 
       class MethodCall < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           # The algorithm for deciding whether the call should be split into
           # multile lines is based on seeing if the arguments fit into the
           # current line. That means we ignore the block part. This could lead
@@ -765,7 +765,7 @@ module Y2R
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !has_line_breaking_comment? && !args_have_comments?
             receiver_width = receiver ? receiver.single_line_width + 1 : 0
             args_width     = args_single_line_width
@@ -854,15 +854,15 @@ module Y2R
       end
 
       class Block < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if fits_current_line?(context)
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           args_width       = list_single_line_width(args, 2)
           statements_width = statements.single_line_width
 
@@ -875,7 +875,7 @@ module Y2R
 
         private
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           args_code = if !args.empty?
             " |#{list(args, ", ", context.shifted(3))}|"
           else
@@ -889,7 +889,7 @@ module Y2R
           "{#{args_code} #{statements_code} }"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           args_code = if !args.empty?
             " |#{list(args, ", ", context.shifted(4))}|"
           else
@@ -905,15 +905,15 @@ module Y2R
       end
 
       class ConstAccess < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !has_line_breaking_comment?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if receiver
             if !has_line_breaking_comment?
               receiver.single_line_width + 2 + name.size
@@ -941,11 +941,11 @@ module Y2R
           receiver && receiver.ends_with_comment?
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << receiver.to_ruby(context.with_trailer("::"))
             parts << indent(name)
@@ -954,11 +954,11 @@ module Y2R
       end
 
       class Variable < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           name
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           name.size
         end
 
@@ -970,11 +970,11 @@ module Y2R
       end
 
       class Self < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           "self"
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           4
         end
 
@@ -988,11 +988,11 @@ module Y2R
       # ===== Literals =====
 
       class Literal < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           value.inspect
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           value.inspect.size
         end
 
@@ -1004,15 +1004,15 @@ module Y2R
       end
 
       class Array < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if (fits_current_line?(context) && !elements_have_comments?) || elements.empty?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !elements_have_comments?
             1 + list_single_line_width(elements, 2) + 1
           else
@@ -1032,25 +1032,25 @@ module Y2R
           elements.any? { |e| e.has_comment? }
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           "[#{list(elements, ", ", context.shifted(1))}]"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           wrapped_line_list(elements, "[", ",", "]", context)
         end
       end
 
       class Hash < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if (fits_current_line?(context) && !entries_have_comments?) || entries.empty?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !entries.empty?
             if !entries_have_comments?
               2 + list_single_line_width(entries, 2) + 2
@@ -1074,7 +1074,7 @@ module Y2R
           entries.any? { |e| e.has_comment? }
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           if !entries.empty?
             "{ #{list(entries, ", ", context.shifted(2))} }"
           else
@@ -1082,7 +1082,7 @@ module Y2R
           end
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           max_key_width = entries.map do |entry|
             entry.key_width(context.indented(INDENT_STEP))
           end.max
@@ -1095,15 +1095,15 @@ module Y2R
       end
 
       class HashEntry < Node
-        def to_ruby_no_comments(context)
+        def to_ruby_base(context)
           if !has_line_breaking_comment?
-            to_ruby_no_comments_single_line(context)
+            to_ruby_base_single_line(context)
           else
-            to_ruby_no_comments_multi_line(context)
+            to_ruby_base_multi_line(context)
           end
         end
 
-        def single_line_width_no_comments
+        def single_line_width_base
           if !has_line_breaking_comment?
             key_width   = key.single_line_width_enclosed
             value_width = value.single_line_width_enclosed
@@ -1136,7 +1136,7 @@ module Y2R
           key.ends_with_comment? || value.starts_with_comment?
         end
 
-        def to_ruby_no_comments_single_line(context)
+        def to_ruby_base_single_line(context)
           max_key_width = context.max_key_width
 
           # We don't want to pass context.max_key_width to the key or value.
@@ -1159,7 +1159,7 @@ module Y2R
           "#{key_code}#{spacing_code} => #{value_code}"
         end
 
-        def to_ruby_no_comments_multi_line(context)
+        def to_ruby_base_multi_line(context)
           combine do |parts|
             max_key_width = context.max_key_width
 
@@ -1168,7 +1168,7 @@ module Y2R
             context = context.dup
             context.max_key_width = nil
 
-            key_code = key.to_ruby_no_comments(context.without_trailer)
+            key_code = key.to_ruby_base(context.without_trailer)
 
             spacing_code = if max_key_width
               " " * (max_key_width - key_code.size)
