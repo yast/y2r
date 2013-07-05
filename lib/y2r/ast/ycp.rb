@@ -988,10 +988,13 @@ module Y2R
         end
 
         def always_returns?
-          result = self.then.always_returns?
-          result &&= self.else.always_returns? if self.else
-
-          result
+          if self.then && self.else
+            self.then.always_returns? && self.else.always_returns?
+          else
+            # If there is just one branch present, execution can always
+            # continue because the branch may not be taken.
+            false
+          end
         end
 
         transfers_comments :compile
@@ -1378,10 +1381,14 @@ module Y2R
         end
 
         def always_returns?
-          result = cases.all? { |c| c.always_returns? }
-          result &&= default.always_returns? if default
-
-          result
+          if self.default
+            cases.all? { |c| c.always_returns? } && default.always_returns?
+          else
+            # If there is no default clause present, execution can always
+            # continue because the tested expression may not fit any of the
+            # cases.
+            false
+          end
         end
 
         transfers_comments :compile
