@@ -312,7 +312,7 @@ module Y2R::AST::Ruby
 
       describe "formatting" do
         describe "on nodes where #enclosed? returns false" do
-          it "passes correct available space info to #to_ruby" do
+          it "passes correct context to #to_ruby" do
             @node_not_enclosed.should_receive(:to_ruby) do |context|
               context.width.should == 80
               context.shift.should == 0
@@ -324,7 +324,7 @@ module Y2R::AST::Ruby
         end
 
         describe "on nodes where #enclosed? returns true" do
-          it "passes correct available space info to #to_ruby" do
+          it "passes correct context to #to_ruby" do
             @node_enclosed.should_receive(:to_ruby_base) do |context|
               context.width.should == 80
               context.shift.should == 1
@@ -430,7 +430,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Program.new(
           :filename   => "file.ycp",
           :statements => check_context(@statements, :width => 80, :shift => 0)
@@ -469,7 +469,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to superclass" do
+      it "passes correct context to superclass" do
         node = Class.new(
           :name       => "C",
           :superclass => check_context(@variable_S, :width => 80, :shift => 10),
@@ -479,7 +479,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Class.new(
           :name       => "C",
           :superclass => @variable_S,
@@ -513,7 +513,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Module.new(
           :name       => "M",
           :statements => check_context(@statements, :width => 78, :shift => 0),
@@ -576,7 +576,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to args" do
+      it "passes correct context to args" do
         node = Def.new(
           :name       => "m",
           :args       => [
@@ -590,7 +590,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Def.new(
           :name       => "m",
           :args       => [],
@@ -652,7 +652,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Statements.new(
           :statements => [
             check_context(@assignment_a_42, :width => 80, :shift => 0),
@@ -692,7 +692,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to statements" do
+      it "passes correct context to statements" do
         node = Begin.new(
           :statements => check_context(@statements, :width => 78, :shift => 0)
         )
@@ -754,7 +754,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line if statements" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = If.new(
             :condition => check_context(
               @literal_true,
@@ -768,7 +768,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = If.new(
             :condition => @literal_true,
             :then      => check_context(
@@ -784,7 +784,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line if statements" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = If.new(
             :condition => check_context(
               @literal_true,
@@ -798,7 +798,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = If.new(
             :condition => @literal_true,
             :then      => check_context(@statements, :width => 78, :shift => 0),
@@ -808,7 +808,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to else" do
+        it "passes correct context to else" do
           node = If.new(
             :condition => @literal_true,
             :then      => @statements,
@@ -879,7 +879,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line unless statements" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = Unless.new(
             :condition => check_context(
               @literal_true,
@@ -893,7 +893,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = Unless.new(
             :condition => @literal_true,
             :then      => check_context(
@@ -909,7 +909,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line unless statements" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = Unless.new(
             :condition => check_context(
               @literal_true,
@@ -923,7 +923,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = Unless.new(
             :condition => @literal_true,
             :then      => check_context(@statements, :width => 78, :shift => 0),
@@ -933,7 +933,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to else" do
+        it "passes correct context to else" do
           node = Unless.new(
             :condition => @literal_true,
             :then      => @statements,
@@ -1054,7 +1054,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to expression" do
+      it "passes correct context to expression" do
         node = Case.new(
           :expression => check_context(@literal_42, :width => 80, :shift => 5),
           :whens      => [],
@@ -1064,7 +1064,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to whens" do
+      it "passes correct context to whens" do
         node = Case.new(
           :expression => @literal_42,
           :whens      => [
@@ -1078,7 +1078,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to else" do
+      it "passes correct context to else" do
         node = Case.new(
           :expression => @literal_42,
           :whens      => [],
@@ -1134,7 +1134,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to values" do
+      it "passes correct context to values" do
         node = When.new(
           :values => [
             check_context(@literal_42, :width => 80, :shift => 5),
@@ -1147,7 +1147,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to body" do
+      it "passes correct context to body" do
         node = When.new(
           :values => [@literal_42],
           :body   => check_context(@statements, :width => 78, :shift => 0)
@@ -1180,7 +1180,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to body" do
+      it "passes correct context to body" do
         node = Else.new(
           :body => check_context(@statements, :width => 78, :shift => 0)
         )
@@ -1224,7 +1224,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to condition" do
+      it "passes correct context to condition" do
         node = While.new(
           :condition => check_context(@literal_true, :width => 80, :shift => 6),
           :body      => @statements
@@ -1233,7 +1233,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to body" do
+      it "passes correct context to body" do
         node = While.new(
           :condition => @literal_true,
           :body      => check_context(@statements, :width => 78, :shift => 0)
@@ -1279,7 +1279,7 @@ module Y2R::AST::Ruby
         ].join("\n")
       end
 
-      it "passes correct available space info to condition" do
+      it "passes correct context to condition" do
         node = Until.new(
           :condition => check_context(@literal_true, :width => 80, :shift => 6),
           :body      => @statements
@@ -1288,7 +1288,7 @@ module Y2R::AST::Ruby
         node.to_ruby_base(@context_default)
       end
 
-      it "passes correct available space info to body" do
+      it "passes correct context to body" do
         node = Until.new(
           :condition => @literal_true,
           :body      => check_context(@statements, :width => 78, :shift => 0)
@@ -1337,7 +1337,7 @@ module Y2R::AST::Ruby
         @node_with_value.to_ruby_base(@context_default).should == "next 42"
       end
 
-      it "passes correct available space info to value" do
+      it "passes correct context to value" do
         node = Next.new(
           :value => check_context(@literal_42, :width => 80, :shift => 5)
         )
@@ -1367,7 +1367,7 @@ module Y2R::AST::Ruby
         @node_with_value.to_ruby_base(@context_default).should == "return 42"
       end
 
-      it "passes correct available space info to value" do
+      it "passes correct context to value" do
         node = Return.new(
           :value => check_context(@literal_42, :width => 80, :shift => 7)
         )
@@ -1455,7 +1455,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to expressions" do
+        it "passes correct context to expressions" do
           node = Expressions.new(
             :expressions => [
               check_context(@literal_42, :width => 80, :shift => 1),
@@ -1520,7 +1520,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to expressions" do
+        it "passes correct context to expressions" do
           node = Expressions.new(
             :expressions => [
               check_context(@literal_42, :width => -2, :shift => 0),
@@ -1598,7 +1598,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line assignments" do
-        it "passes correct available space info to lhs" do
+        it "passes correct context to lhs" do
           node = Assignment.new(
             :lhs => check_context(@variable_a, :width => 80, :shift => 0),
             :rhs => @literal_42
@@ -1607,7 +1607,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to rhs" do
+        it "passes correct context to rhs" do
           node = Assignment.new(
             :lhs => @variable_a,
             :rhs => check_context(@literal_42, :width => 80, :shift => 4)
@@ -1618,7 +1618,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line assignments" do
-        it "passes correct available space info to lhs" do
+        it "passes correct context to lhs" do
           node = Assignment.new(
             :lhs => check_context(
               @variable_a_comment_after,
@@ -1631,7 +1631,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to rhs" do
+        it "passes correct context to rhs" do
           node = Assignment.new(
             :lhs => @variable_a,
             :rhs => check_context(
@@ -1681,7 +1681,7 @@ module Y2R::AST::Ruby
         @node_with_parens.to_ruby_base(@context_default).should == "+(42 + 43)"
       end
 
-      it "passes correct available space info to expression" do
+      it "passes correct context to expression" do
         node = UnaryOperator.new(
           :op         => "+",
           :expression => check_context_enclosed(
@@ -1766,7 +1766,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line binary operators" do
-        it "passes correct available space info to lhs" do
+        it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
@@ -1780,7 +1780,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to rhs" do
+        it "passes correct context to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => @literal_42,
@@ -1796,7 +1796,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line binary operators" do
-        it "passes correct available space info to lhs" do
+        it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
@@ -1810,7 +1810,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to rhs" do
+        it "passes correct context to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => @literal_42,
@@ -1932,7 +1932,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line ternary operators" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
               @literal_true,
@@ -1946,7 +1946,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => check_context_enclosed(
@@ -1960,7 +1960,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to else" do
+        it "passes correct context to else" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @literal_42,
@@ -1976,7 +1976,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line ternary operators" do
-        it "passes correct available space info to condition" do
+        it "passes correct context to condition" do
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
               @literal_true_comment_after,
@@ -1990,7 +1990,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to then" do
+        it "passes correct context to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => check_context_enclosed(
@@ -2004,7 +2004,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to else" do
+        it "passes correct context to else" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @literal_42,
@@ -2356,7 +2356,7 @@ module Y2R::AST::Ruby
         end
       end
 
-      it "passes correct available space info to receiver" do
+      it "passes correct context to receiver" do
         node = MethodCall.new(
           :receiver => check_context(@variable_a, :width => 80, :shift => 0),
           :name     => "m",
@@ -2370,7 +2370,7 @@ module Y2R::AST::Ruby
 
       describe "on method calls with :parens => true" do
         describe "for single-line method calls" do
-          it "passes correct available space info to args" do
+          it "passes correct context to args" do
             node = MethodCall.new(
               :receiver => @variable_a,
               :name     => "m",
@@ -2386,7 +2386,7 @@ module Y2R::AST::Ruby
             node.to_ruby_base(@context_default)
           end
 
-          it "passes correct available space info to block" do
+          it "passes correct context to block" do
             node = MethodCall.new(
               :receiver => @variable_a,
               :name     => "m",
@@ -2400,7 +2400,7 @@ module Y2R::AST::Ruby
         end
 
         describe "for multi-line method calls" do
-          it "passes correct available space info to args" do
+          it "passes correct context to args" do
             node = MethodCall.new(
               :receiver => @variable_a,
               :name     => "m",
@@ -2416,7 +2416,7 @@ module Y2R::AST::Ruby
             node.to_ruby_base(@context_narrow)
           end
 
-          it "passes correct available space info to block" do
+          it "passes correct context to block" do
             node = MethodCall.new(
               :receiver => @variable_a,
               :name     => "m",
@@ -2431,7 +2431,7 @@ module Y2R::AST::Ruby
       end
 
       describe "on method calls with :parens => false" do
-        it "passes correct available space info to args" do
+        it "passes correct context to args" do
           node = MethodCall.new(
             :receiver => @variable_a,
             :name     => "m",
@@ -2447,7 +2447,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to block" do
+        it "passes correct context to block" do
           node = MethodCall.new(
             :receiver => @variable_a,
             :name     => "m",
@@ -2564,7 +2564,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to args" do
+        it "passes correct context to args" do
           node = Block.new(
             :args       => [
               check_context(@variable_a, :width => 80, :shift => 3),
@@ -2577,7 +2577,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to statements" do
+        it "passes correct context to statements" do
           node = Block.new(
             :args       => [],
             :statements => check_context(
@@ -2636,7 +2636,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to args" do
+        it "passes correct context to args" do
           node = Block.new(
             :args       => [
               check_context(@variable_a, :width => 0, :shift => 4),
@@ -2649,7 +2649,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_narrow)
         end
 
-        it "passes correct available space info to statements" do
+        it "passes correct context to statements" do
           node = Block.new(
             :args       => [],
             :statements => check_context(
@@ -2716,7 +2716,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line const accesses" do
-        it "passes correct available space info to receiver" do
+        it "passes correct context to receiver" do
           node = ConstAccess.new(
             :receiver => check_context(@variable_a, :width => 80, :shift => 0),
             :name     => "C"
@@ -2727,7 +2727,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line const accesses" do
-        it "passes correct available space info to receiver" do
+        it "passes correct context to receiver" do
           node = ConstAccess.new(
             :receiver => check_context(
               @variable_a_comment_after,
@@ -2900,7 +2900,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to elements" do
+        it "passes correct context to elements" do
           node = Array.new(
             :elements => [
               check_context(@literal_42, :width => 80, :shift => 1),
@@ -2965,7 +2965,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to elements" do
+        it "passes correct context to elements" do
           node = Array.new(
             :elements => [
               check_context(@literal_42, :width => -2, :shift => 0),
@@ -3141,7 +3141,7 @@ module Y2R::AST::Ruby
           ].join("\n")
         end
 
-        it "passes correct available space info to entries" do
+        it "passes correct context to entries" do
           node = Hash.new(:entries => [
             check_context(@hash_entry_a_42, :width => -2, :shift => 0),
             check_context(@hash_entry_b_43, :width => -2, :shift => 0),
@@ -3214,7 +3214,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for single-line hash entries" do
-        it "passes correct available space info to key" do
+        it "passes correct context to key" do
           node = HashEntry.new(
             :key   => check_context(@literal_a, :width => 80, :shift => 0),
             :value => @literal_42
@@ -3223,7 +3223,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to value" do
+        it "passes correct context to value" do
           node = HashEntry.new(
             :key   => @literal_a,
             :value => check_context(@literal_42, :width => 80, :shift => 6)
@@ -3234,7 +3234,7 @@ module Y2R::AST::Ruby
       end
 
       describe "for multi-line hash entries" do
-        it "passes correct available space info to key" do
+        it "passes correct context to key" do
           node = HashEntry.new(
             :key   => check_context(
               @literal_a_comment_after,
@@ -3247,7 +3247,7 @@ module Y2R::AST::Ruby
           node.to_ruby_base(@context_default)
         end
 
-        it "passes correct available space info to value" do
+        it "passes correct context to value" do
           node = HashEntry.new(
             :key   => @literal_a,
             :value => check_context(
