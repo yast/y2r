@@ -19,6 +19,28 @@ module Y2R
         end
       end
 
+      # Operator priorities.
+      #
+      # Note the table is incomplete (because the AST is incomplete).
+      module Priority
+        ATOMIC         = 15   # atomic expressions (e.g. literals)
+        UNARY          = 14   # !, ~, + (unary)
+        POWER          = 13   # **
+        UNARY_MINUS    = 12   # - (unary)
+        MULTIPLY       = 11   # *, /, %
+        ADD            = 10   # +, -
+        SHIFT          = 9    # <<, >>
+        BITWISE_AND    = 8    # &
+        BITWISE_OR     = 7    # |, ^
+        COMPARE        = 6    # >, >=, <, <=
+        EQUAL          = 5    # <=>, ==, ===, !=, =~, !~
+        LOGICAL_AND    = 4    # &&
+        LOGICAL_OR     = 3    # ||
+        TERNARY        = 2    # ? :
+        ASSIGNMENT     = 1    # =
+        NONE           = 0    # lowest priority, nothing needs to be in parens
+      end
+
       # Context passed to the #to_ruby and related methods on nodes.
       class EmitterContext < OpenStruct
         def indented(n)
@@ -246,6 +268,10 @@ module Y2R
           Float::INFINITY   # always multiline
         end
 
+        def priority
+          Priority::NONE
+        end
+
         private
 
         def format_comment
@@ -269,6 +295,10 @@ module Y2R
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class Module < Node
@@ -282,6 +312,10 @@ module Y2R
 
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
+        end
+
+        def priority
+          Priority::NONE
         end
       end
 
@@ -300,6 +334,10 @@ module Y2R
 
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
+        end
+
+        def priority
+          Priority::NONE
         end
 
         private
@@ -350,6 +388,10 @@ module Y2R
           end
         end
 
+        def priority
+          Priority::NONE
+        end
+
         def starts_with_comment?
           comment_before ||
             (statements.size > 0 && statements.first.starts_with_comment?)
@@ -373,6 +415,10 @@ module Y2R
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class If < Node
@@ -394,6 +440,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::NONE
         end
 
         private
@@ -455,6 +505,10 @@ module Y2R
           end
         end
 
+        def priority
+          Priority::NONE
+        end
+
         private
 
         def has_line_breaking_comment?
@@ -499,6 +553,10 @@ module Y2R
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class When < Node
@@ -534,6 +592,10 @@ module Y2R
             parts << indented(body, context)
           end
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class Else < Node
@@ -546,6 +608,10 @@ module Y2R
 
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
+        end
+
+        def priority
+          Priority::NONE
         end
       end
 
@@ -565,6 +631,10 @@ module Y2R
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class Until < Node
@@ -583,6 +653,10 @@ module Y2R
         def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class Break < Node
@@ -592,6 +666,10 @@ module Y2R
 
         def single_line_width_base(context)
           5
+        end
+
+        def priority
+          Priority::NONE
         end
       end
 
@@ -629,6 +707,10 @@ module Y2R
             parts << ")"
           end
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       class Return < Node
@@ -665,6 +747,10 @@ module Y2R
             parts << ")"
           end
         end
+
+        def priority
+          Priority::NONE
+        end
       end
 
       # ===== Expressions =====
@@ -684,6 +770,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         private
@@ -719,6 +809,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::ASSIGNMENT
         end
 
         def starts_with_comment?
@@ -758,12 +852,23 @@ module Y2R
       end
 
       class UnaryOperator < Node
+        OPS_TO_PRIORITIES = {
+          "!" => Priority::UNARY,
+          "~" => Priority::UNARY,
+          "+" => Priority::UNARY,
+          "-" => Priority::UNARY_MINUS
+        }
+
         def to_ruby_base(context)
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
         def single_line_width_base(context)
           op.size + expression.single_line_width_enclosed(context)
+        end
+
+        def priority
+          OPS_TO_PRIORITIES[op]
         end
 
         def ends_with_comment?
@@ -782,6 +887,32 @@ module Y2R
       end
 
       class BinaryOperator < Node
+        OPS_TO_PRIORITIES = {
+          "**"  => Priority::POWER,
+          "*"   => Priority::MULTIPLY,
+          "/"   => Priority::MULTIPLY,
+          "%"   => Priority::MULTIPLY,
+          "+"   => Priority::ADD,
+          "-"   => Priority::ADD,
+          "<<"  => Priority::SHIFT,
+          ">>"  => Priority::SHIFT,
+          "&"   => Priority::BITWISE_AND,
+          "|"   => Priority::BITWISE_OR,
+          "^"   => Priority::BITWISE_OR,
+          ">"   => Priority::COMPARE,
+          ">="  => Priority::COMPARE,
+          "<"   => Priority::COMPARE,
+          "<="  => Priority::COMPARE,
+          "<=>" => Priority::EQUAL,
+          "=="  => Priority::EQUAL,
+          "===" => Priority::EQUAL,
+          "!="  => Priority::EQUAL,
+          "=~"  => Priority::EQUAL,
+          "!~"  => Priority::EQUAL,
+          "&&"  => Priority::LOGICAL_AND,
+          "||"  => Priority::LOGICAL_OR,
+        }
+
         def to_ruby_base(context)
           if (fits_current_line?(context) || rhs.hates_to_stand_alone?) &&
               !has_line_breaking_comment?
@@ -800,6 +931,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          OPS_TO_PRIORITIES[op]
         end
 
         def starts_with_comment?
@@ -858,6 +993,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::TERNARY
         end
 
         def starts_with_comment?
@@ -955,6 +1094,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          parens ? Priority::ATOMIC : Priority::NONE
         end
 
         def starts_with_comment?
@@ -1072,6 +1215,10 @@ module Y2R
           end
         end
 
+        def priority
+          Priority::ATOMIC
+        end
+
         private
 
         def args_have_comments?
@@ -1140,6 +1287,10 @@ module Y2R
           end
         end
 
+        def priority
+          Priority::ATOMIC
+        end
+
         def starts_with_comment?
           comment_before || (receiver && receiver.starts_with_comment?)
         end
@@ -1177,6 +1328,10 @@ module Y2R
           name.size
         end
 
+        def priority
+          Priority::ATOMIC
+        end
+
         def hates_to_stand_alone?
           true
         end
@@ -1195,6 +1350,10 @@ module Y2R
 
         def single_line_width_base(context)
           4
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         def hates_to_stand_alone?
@@ -1217,6 +1376,10 @@ module Y2R
 
         def single_line_width_base(context)
           value.inspect.size
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         def hates_to_stand_alone?
@@ -1249,6 +1412,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         def hates_to_stand_alone?
@@ -1295,6 +1462,10 @@ module Y2R
           else
             2
           end
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         def hates_to_stand_alone?
@@ -1352,6 +1523,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def priority
+          Priority::ATOMIC
         end
 
         def starts_with_comment?
