@@ -157,24 +157,24 @@ module Y2R
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
-            # In many before comments, there is a line of whitespace caused by
-            # separation of the comment from the node it belongs to. For
-            # example, in this case, the comment and the node are separated by
-            # "\n  ":
-            #
-            #   {
-            #     /* Comment */
-            #     y2milestone("M1");
-            #   }
-            #
-            # We need to remove such lines of whitespace (which are now empty
-            # because of whitespace stripping above), but not touch any
-            # additional ones).
-            comment = drop_trailing_empty_line(comment)
-
             if options[:whitespace] == :drop
               comment = drop_leading_empty_lines(comment)
               comment = drop_trailing_empty_lines(comment)
+            else
+              # In many before comments, there is a line of whitespace caused by
+              # separation of the comment from the node it belongs to. For
+              # example, in this case, the comment and the node are separated by
+              # "\n  ":
+              #
+              #   {
+              #     /* Comment */
+              #     y2milestone("M1");
+              #   }
+              #
+              # We need to remove such lines of whitespace (which are now empty
+              # because of whitespace stripping above), but not touch any
+              # additional ones).
+              comment = drop_trailing_empty_line(comment)
             end
 
             comment
