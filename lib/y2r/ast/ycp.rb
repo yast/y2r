@@ -167,9 +167,10 @@ module Y2R
             #     y2milestone("M1");
             #   }
             #
-            # We need to remove such lines of whitespace (but not touch any
+            # We need to remove such lines of whitespace (which are now empty
+            # because of whitespace stripping above), but not touch any
             # additional ones).
-            comment = remove_last_whitepsace_line(comment)
+            comment = drop_trailing_empty_line(comment)
 
             if options[:whitespace] == :drop
               comment = drop_leading_empty_lines(comment)
@@ -246,8 +247,8 @@ module Y2R
             comment.gsub(/\n*\z/, "")
           end
 
-          def remove_last_whitepsace_line(comment)
-            comment.sub(/\n[ \t]*\z/, "")
+          def drop_trailing_empty_line(comment)
+            comment.sub(/\n\z/, "")
           end
         end
       end
