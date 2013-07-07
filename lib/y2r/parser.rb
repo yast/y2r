@@ -571,15 +571,7 @@ module Y2R
           raise "Invalid element: <#{element.name}>."
       end
 
-      comment_before = element["comment_before"]
-      if comment_before && comment_before !~ /\A[ \t]*\z/
-        node.comment_before = comment_before
-      end
-
-      comment_after = element["comment_after"]
-      if comment_after && comment_after !~ /\A[ \t]*$\z/
-        node.comment_after = comment_after
-      end
+      transfer_comments(node, element)
 
       node
     end
@@ -671,6 +663,27 @@ module Y2R
       end
 
       filtered
+    end
+
+    def transfer_comments(node, element)
+      # We don't transfer comments consisting of only line whitespace. They
+      # represent indentation, in-expression spacing, etc. -- things we would
+      # ignore anyway later. By removing them here already we save some
+      # processing time in later stages.
+
+      comment_before = element["comment_before"]
+      if comment_before && !is_line_whitespace?(comment_before)
+        node.comment_before = comment_before
+      end
+
+      comment_after = element["comment_after"]
+      if comment_after && !is_line_whitespace?(comment_after)
+        node.comment_after = comment_after
+      end
+    end
+
+    def is_line_whitespace?(s)
+      s =~ /\A[ \t]*$\z/
     end
   end
 end
