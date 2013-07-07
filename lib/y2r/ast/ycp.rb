@@ -195,14 +195,6 @@ module Y2R
 
           private
 
-          def strip_leading_whitespace(comment)
-            comment.gsub(/^[ \t]+/, "")
-          end
-
-          def strip_trailing_whitespace(comment)
-            comment.gsub(/[ \t]+$/, "")
-          end
-
           def fix_delimiters(comment)
             fixed_comment = ""
 
@@ -237,6 +229,14 @@ module Y2R
             end
 
             fixed_comment
+          end
+
+          def strip_leading_whitespace(comment)
+            comment.gsub(/^[ \t]+/, "")
+          end
+
+          def strip_trailing_whitespace(comment)
+            comment.gsub(/[ \t]+$/, "")
           end
 
           def drop_leading_empty_lines(comment)
