@@ -291,9 +291,11 @@ creates an instance of the `Yast::FunRef` class.
 module Yast
   class DefaultClient < Client
     def main
+
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
+
     def f
       return
     end
@@ -334,6 +336,7 @@ Y2R translates YCP local variables as Ruby local variables.
 
 module Yast
   class DefaultClient < Client
+
     def f
       i = 42
       j = i
@@ -408,8 +411,10 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
+
       @i = 42
       @j = @i
+
       @k = 42
       @l = @i
     end
@@ -447,8 +452,10 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 
 module Yast
   class DefaultClient < Client
+
     def f
       i = 42
+
       b = lambda { i2 = 43 }
       nil
     end
@@ -484,8 +491,10 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 
 module Yast
   class DefaultClient < Client
+
     def f
       i = 42
+
       i2 = 43
       nil
     end
@@ -553,8 +562,10 @@ module Yast
     def main
       Builtins.time
       Builtins.random(100)
+
       SCR.Dir(path(".syseditor.section"))
       WFM.Args
+
       @f = Builtins::Float.abs(-42.0)
       @l = Builtins::List.reverse([42, 43, 44])
       @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
@@ -623,6 +634,7 @@ module Yast
   class DefaultClient < Client
     def main
       textdomain "helloworld"
+
       @s = _("Hello, world!")
       nil
     end
@@ -673,10 +685,13 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 module Yast
   class DefaultClient < Client
     def main
+
       f1
+
       @a = ["a"]
       @b = ["b"]
       @c = ["c"]
+
       f2(@a, @b, @c)
       (
         a_ref = arg_ref(@a);
@@ -690,15 +705,18 @@ module Yast
       )
       nil
     end
+
     def f1
       return 42
     end
+
     def f2(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
       return 42
     end
+
     def f3(a, b, c)
       return 42
     end
@@ -749,19 +767,26 @@ method on them.
 
 module Yast
   class DefaultClient < Client
+
     def outer
+
       f1 = lambda { return 42 }
+
       f2 = lambda do |a2, b2, c2|
         a2 = deep_copy(a2)
         b2 = deep_copy(b2)
         c2 = deep_copy(c2)
         return 42
       end
+
       f3 = lambda { |a2, b2, c2| return 42 }
+
       f1.call
+
       a = ["a"]
       b = ["b"]
       c = ["c"]
+
       f2.call(a, b, c)
       (
         a_ref = arg_ref(a);
@@ -811,10 +836,12 @@ on them.
 module Yast
   class DefaultClient < Client
     def main
+
       @fref = fun_ref(method(:f), "void ()")
       @fref.call
       nil
     end
+
     def f
       return
     end
@@ -884,12 +911,14 @@ i6 = i % 43;
 ```ruby
 # Using a variable defeats constant propagation.
 i = 42
+
 i1 = Ops.unary_minus(i)
 i2 = 42 + 43
 i3 = 42 - 43
 i4 = 42 * 43
 i5 = 42 / 43
 i6 = 42 % 43
+
 i2 = Ops.add(i, 43)
 i3 = Ops.subtract(i, 43)
 i4 = Ops.multiply(i, 43)
@@ -960,6 +989,7 @@ boolean b3 = true || false;
 ```ruby
 # Using a variable defeats constant propagation.
 b = true
+
 b1 = !b
 b2 = true && false
 b3 = true || false
@@ -1095,6 +1125,7 @@ i = 43;
 
 ```ruby
 i = 42
+
 i = 43
 ```
 
@@ -1115,6 +1146,7 @@ l[0,0] = 42;
 
 ```ruby
 l = [42, 43, 44]
+
 Ops.assign(l, 0, [45])
 Ops.assign(l, [0, 0], 42)
 ```
@@ -1149,6 +1181,7 @@ statement.
 
 module Yast
   class DefaultClient < Client
+
     def f1
       return
     end
@@ -1322,27 +1355,35 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 
 module Yast
   class DefaultClient < Client
+
     def f1
       return 42
     end
+
     def f2(a, b, c)
       return 42
     end
+
     def f3(a, b, c)
       return 42
     end
+
     def f4(a, b, c)
       return 42
     end
+
     def f5(a, b, c)
       return 42
     end
+
     def f6(a, b, c)
       return 42
     end
+
     def f7(a, b, c)
       return 42
     end
+
     def f8(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
@@ -1411,14 +1452,23 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 
 module Yast
   class DefaultClient < Client
+
     def outer
+
       f1 = lambda { return 42 }
+
       f2 = lambda { |a, b, c| return 42 }
+
       f3 = lambda { |a, b, c| return 42 }
+
       f4 = lambda { |a, b, c| return 42 }
+
       f5 = lambda { |a, b, c| return 42 }
+
       f6 = lambda { |a, b, c| return 42 }
+
       f7 = lambda { |a, b, c| return 42 }
+
       f8 = lambda do |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
@@ -1492,6 +1542,7 @@ else
 
 ```ruby
 Builtins.y2milestone("M1") if true
+
 if true
   Builtins.y2milestone("M2")
 else
@@ -1713,6 +1764,7 @@ module Yast
   class DefaultClient < Client
     def main
       Yast.import("String")
+
       @i = 42
       @j = 43
       nil
@@ -1723,6 +1775,7 @@ module Yast
     def f
       return 42
     end
+
     def g
       return 43
     end
@@ -1775,7 +1828,9 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
+
       Yast.import("String")
+
       @i = 42
       @j = 43
       M()
@@ -1786,6 +1841,7 @@ module Yast
     def f
       return 42
     end
+
     def g
       return 43
     end

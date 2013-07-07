@@ -160,6 +160,12 @@ module Y2R
             if options[:whitespace] == :drop
               comment = drop_leading_empty_lines(comment)
               comment = drop_trailing_empty_lines(comment)
+
+              # In whitespace-dropping mode we want to remove empty comments
+              # completely. Note that returning "" instead of nil would not be
+              # enough, at that would cause adding a newline into the generated
+              # code at some places.
+              comment = nil if comment.empty?
             else
               # In many before comments, there is a line of whitespace caused by
               # separation of the comment from the node it belongs to. For
@@ -188,6 +194,12 @@ module Y2R
             if options[:whitespace] == :drop
               comment = drop_leading_empty_lines(comment)
               comment = drop_trailing_empty_lines(comment)
+
+              # In whitespace-dropping mode we want to remove empty comments
+              # completely. Note that returning "" instead of nil would not be
+              # enough, at that would cause adding a newline into the generated
+              # code at some places.
+              comment = nil if comment.empty?
             end
 
             comment
@@ -405,7 +417,7 @@ module Y2R
                       comment_before,
                       :whitespace => whitespace
                     )
-                    unless processed_comment_before.empty?
+                    if processed_comment_before
                       node.comment_before = processed_comment_before
                     end
                   end
@@ -415,7 +427,7 @@ module Y2R
                       comment_after,
                       :whitespace => whitespace
                     )
-                    unless processed_comment_after.empty?
+                    if processed_comment_after
                       node.comment_after = processed_comment_after
                     end
                   end
