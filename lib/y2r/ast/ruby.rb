@@ -1127,7 +1127,7 @@ module Y2R
         end
 
         def key_width(context)
-          key.to_ruby(context).size
+          key.to_ruby_base(context).split("\n").last.size
         end
 
         protected
@@ -1147,7 +1147,7 @@ module Y2R
           key_code = key.to_ruby(context.without_trailer)
 
           spacing_code = if max_key_width
-            " " * (max_key_width - key_code.size)
+            " " * (max_key_width - key_width(context))
           else
             ""
           end
@@ -1171,7 +1171,7 @@ module Y2R
             key_code = key.to_ruby_base(context.without_trailer)
 
             spacing_code = if max_key_width
-              " " * (max_key_width - key_code.size)
+              " " * (max_key_width - key_width(context))
             else
               ""
             end
