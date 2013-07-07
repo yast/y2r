@@ -470,11 +470,37 @@ module Y2R
 
       class Next < Node
         def to_ruby_base(context)
-          "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
+          if !has_line_breaking_comment?
+            to_ruby_base_single_line(context)
+          else
+            to_ruby_base_multi_line(context)
+          end
         end
 
         def single_line_width_base
-          value ? 5 + value.single_line_width : 4
+          if !has_line_breaking_comment
+            value ? 5 + value.single_line_width : 4
+          else
+            Float::INFINITY
+          end
+        end
+
+        private
+
+        def has_line_breaking_comment?
+          value && value.starts_with_comment?
+        end
+
+        def to_ruby_base_single_line(context)
+          "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
+        end
+
+        def to_ruby_base_multi_line(context)
+          combine do |parts|
+            parts << "next ("
+            parts << indented(value, context)
+            parts << ")"
+          end
         end
       end
 
