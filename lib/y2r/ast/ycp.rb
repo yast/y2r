@@ -212,30 +212,8 @@ module Y2R
 
             comment.scan(COMMENT_SPLITTING_REGEXP) do
               segment = $&
-
-              case segment
-                when /\A\/\//   # one-line slash comment
-                  segment.sub!(/\A\/\//, "#")
-
-                when /\A\/\*/   # multi-line comment
-                  is_doc_comment = segment =~ /\A\/\*\*\n/
-
-                  if is_doc_comment
-                    segment.sub!(/\A\/\*\*\n/, "")   # leading "/**\n"
-                  else
-                    segment.sub!(/\A\/\*/, "")       # leading "/*"
-                  end
-
-                  segment.sub!(/\*\/\z/, "")         # trailing "*/"
-                  segment.sub!(/^[ \t]*\n/, "")      # leading empty lines
-                  segment.sub!(/(\n[ \t]*)$/, "")    # trailing empty lines
-
-                  if segment.split("\n").all? { |l| l =~ /^[ \t]*\*/ }
-                    segment.gsub!(/^[ \t]*\*/, "")
-                  end
-
-                  segment.gsub!(/^/, "#")
-              end
+              segment = fix_single_line_segment(segment) if segment =~ /\A\/\//
+              segment = fix_multi_line_segment(segment)  if segment =~ /\A\/\*/
 
               fixed_comment << segment
             end
@@ -261,6 +239,33 @@ module Y2R
 
           def drop_trailing_empty_line(s)
             s.sub(/\n\z/, "")
+          end
+
+          def fix_single_line_segment(segment)
+            segment.sub(/\A\/\//, "#")
+          end
+
+          def fix_multi_line_segment(segment)
+            # The [^*] part is needed to exclude license comments, which often
+            # begin with a line of stars.
+            is_doc_comment = segment =~ /\A\/\*\*[^*]/
+
+            # Remove delimiters and associated whitespace & newline.
+            segment = if is_doc_comment
+              segment.sub(/\A\/\*\*[ \t]*\n?/, "")
+            else
+              segment.sub(/\A\/\*[ \t]*\n?/, "")
+            end
+            segment = segment.sub(/\n?[ \t]*\*\/\z/, "")
+
+            # Prepend "#" delimiters. Handle "starred" comments specially.
+            if segment =~ /\A(^[ \t]*\*.*(\n|$))*\z/
+              segment = segment.gsub(/^[ \t]*\*/, "#")
+            else
+              segment = segment.gsub(/^/, "# ")
+            end
+
+            segment
           end
         end
       end
