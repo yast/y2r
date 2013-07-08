@@ -1152,6 +1152,10 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def empty?
+          children.empty?
+        end
       end
 
       class Locale < Node
@@ -1179,6 +1183,10 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def empty?
+          children.empty?
+        end
       end
 
       class MapElement < Node
@@ -1700,12 +1708,17 @@ module Y2R
         end
       end
 
+      # Forward declaration needed for |YEBracket::LAZY_DEFULT_CLASSES|.
+      class YETerm < Node
+      end
+
       class YEBracket < Node
         def compile(context)
           # In expressions like |m["foo"]:f()|, the |f| function is called only
           # when the value is missing. In other words, the default is evaluated
-          # lazily. We need to emulate this laziness at least for the calls.
-          if default.is_a?(Call)
+          # lazily. We need to emulate this laziness for calls and all
+          # expressions that can contain them.
+          if evaluate_default_lazily?
             args  = [value.compile(context), build_index(context)]
             block = Ruby::Block.new(
               :args       => [],
@@ -1736,6 +1749,15 @@ module Y2R
         transfers_comments :compile
 
         private
+
+        def evaluate_default_lazily?
+          is_call           = default.is_a?(Call)
+          is_non_empty_list = default.is_a?(List)   && !default.empty?
+          is_non_empty_map  = default.is_a?(Map)    && !default.empty?
+          is_non_empty_term = default.is_a?(YETerm) && !default.empty?
+
+          is_call || is_non_empty_list || is_non_empty_map || is_non_empty_term
+        end
 
         def build_index(context)
           if index.children.size == 1
@@ -2025,6 +2047,10 @@ module Y2R
         end
 
         transfers_comments :compile
+
+        def empty?
+          children.empty?
+        end
       end
 
       class YETriple < Node
