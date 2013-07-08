@@ -1397,6 +1397,13 @@ module Y2R::AST::Ruby
     before :each do
       @node_without_value = Return.new(:value => nil)
       @node_with_value    = Return.new(:value => @literal_42)
+
+      @node_value_comment_before = Return.new(
+        :value => @literal_42_comment_before
+      )
+      @node_value_comment_after = Return.new(
+        :value => @literal_42_comment_after
+      )
     end
 
     describe "#to_ruby_base" do
@@ -1404,14 +1411,41 @@ module Y2R::AST::Ruby
         @node_without_value.to_ruby_base(@context_default).should == "return"
 
         @node_with_value.to_ruby_base(@context_default).should == "return 42"
+
+        @node_value_comment_before.to_ruby_base(@context_default).should == [
+          "return (",
+          "  # before",
+          "  42",
+          ")"
+        ].join("\n")
+
+        @node_value_comment_after.to_ruby_base(@context_default).should == [
+          "return 42 # after"
+        ].join("\n")
       end
 
-      it "passes correct context to value" do
-        node = Return.new(
-          :value => check_context(@literal_42, :width => 80, :shift => 7)
-        )
+      describe "for single-line next statements" do
+        it "passes correct context to value" do
+          node = Return.new(
+            :value => check_context(@literal_42, :width => 80, :shift => 7)
+          )
 
-        node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_default)
+        end
+      end
+
+      describe "for multi-line next statements" do
+        it "passes correct context to value" do
+          node = Return.new(
+            :value => check_context(
+              @literal_42_comment_before,
+              :width => 78,
+              :shift => 0
+            )
+          )
+
+          node.to_ruby_base(@context_default)
+        end
       end
     end
 
@@ -1419,6 +1453,11 @@ module Y2R::AST::Ruby
       it "returns correct value" do
         @node_without_value.single_line_width_base.should == 6
         @node_with_value.single_line_width_base.should    == 9
+
+        @node_value_comment_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_value_comment_after.single_line_width_base.should ==
+          17
       end
     end
   end
