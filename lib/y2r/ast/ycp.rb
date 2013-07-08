@@ -215,20 +215,20 @@ module Y2R
 
               case segment
                 when /\A\/\//   # one-line slash comment
-                  segment.sub!(/^\/\//, "#")
+                  segment.sub!(/\A\/\//, "#")
 
                 when /\A\/\*/    # multi-line comment
-                  is_doc_comment = segment =~ /\/\*\*\n/
+                  is_doc_comment = segment =~ /\A\/\*\*\n/
 
                   if is_doc_comment
-                    segment.sub!(/^\/\*\*\n/, "")   # leading "/**\n"
+                    segment.sub!(/\A\/\*\*\n/, "")   # leading "/**\n"
                   else
-                    segment.sub!(/^\/\*/, "")       # leading "/*"
+                    segment.sub!(/\A\/\*/, "")       # leading "/*"
                   end
 
-                  segment.sub!(/\*\/$/, "")         # trailing "*/"
-                  segment.sub!(/^[ \t]*\n/, "")     # leading empty lines
-                  segment.sub!(/(\n[ \t]*)$/, "")   # trailing empty lines
+                  segment.sub!(/\*\/\z/, "")         # trailing "*/"
+                  segment.sub!(/^[ \t]*\n/, "")      # leading empty lines
+                  segment.sub!(/(\n[ \t]*)$/, "")    # trailing empty lines
 
                   if segment.split("\n").all? { |l| l =~ /^[ \t]*\*/ }
                     segment.gsub!(/^[ \t]*\*/, "")
