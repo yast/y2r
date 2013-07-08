@@ -243,24 +243,24 @@ module Y2R
             fixed_comment
           end
 
-          def strip_leading_whitespace(comment)
-            comment.gsub(/^[ \t]+/, "")
+          def strip_leading_whitespace(s)
+            s.gsub(/^[ \t]+/, "")
           end
 
-          def strip_trailing_whitespace(comment)
-            comment.gsub(/[ \t]+$/, "")
+          def strip_trailing_whitespace(s)
+            s.gsub(/[ \t]+$/, "")
           end
 
-          def drop_leading_empty_lines(comment)
-            comment.gsub(/\A\n*/, "")
+          def drop_leading_empty_lines(s)
+            s.gsub(/\A\n*/, "")
           end
 
-          def drop_trailing_empty_lines(comment)
-            comment.gsub(/\n*\z/, "")
+          def drop_trailing_empty_lines(s)
+            s.gsub(/\n*\z/, "")
           end
 
-          def drop_trailing_empty_line(comment)
-            comment.sub(/\n\z/, "")
+          def drop_trailing_empty_line(s)
+            s.sub(/\n\z/, "")
           end
         end
       end
