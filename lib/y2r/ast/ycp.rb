@@ -217,7 +217,7 @@ module Y2R
                 when /\A\/\//   # one-line slash comment
                   segment.sub!(/\A\/\//, "#")
 
-                when /\A\/\*/    # multi-line comment
+                when /\A\/\*/   # multi-line comment
                   is_doc_comment = segment =~ /\A\/\*\*\n/
 
                   if is_doc_comment
