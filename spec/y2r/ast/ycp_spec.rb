@@ -488,19 +488,6 @@ module Y2R::AST
       @context_as_include = YCP::CompilerContext.new(
         :options => { :as_include_file => true }
       )
-
-      # ----- Misc. -----
-
-      @banner_comment = [
-        "Translated by Y2R (https://github.com/yast/y2r).",
-        "",
-        "Original file: "
-      ].join("\n")
-      @banner_comment_c = [
-        "Translated by Y2R (https://github.com/yast/y2r).",
-        "",
-        "Original file: c.ycp"
-      ].join("\n")
     end
   end
 
