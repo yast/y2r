@@ -12,15 +12,17 @@ Usage: y2r [--include-path <path> ...] [--module-path <path> ...] [options]
            [<ycp_file>] [<ruby_file>]
 
 Options:
-  -I, --include-path <path>        Path where to find included files.
-  -M, --module-path <path>         Path where to find modules.
-      --export-private             Export also private symbols from translated modules.
-      --as-include-file            Compile as include file.
-      --extract-file <file>        Compile only code of specified included file.
-      --report-file <file>         Report specified file as the compiled one.
-  -x, --xml                        Print just XML emitted by ycpc.
-  -v, --version                    Print version information and exit.
-  -h, --help                       Print help and exit.
+  -I, --include-path <path>  Path where to find included files. Can be specified
+                             multiple times.
+  -M, --module-path <path>   Path where to find modules. Can be specified
+                             multiple times.
+      --export-private       Export also private symbols from translated modules.
+      --as-include-file      Compile as include file.
+      --extract-file <file>  Compile only code of specified included file.
+      --report-file <file>   Report specified file as the compiled one.
+  -x, --xml                  Print just XML emitted by ycpc.
+  -v, --version              Print version information and exit.
+  -h, --help                 Print help and exit.
 EOT
 
 begin
