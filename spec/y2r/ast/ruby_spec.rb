@@ -1514,22 +1514,22 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_comments_before.to_ruby_base(@context_default).should == [
-           "(",
-           "  # before",
-           "  42;",
-           "  # before",
-           "  43;",
-           "  # before",
-           "  44",
-           ")"
+            "(",
+            "  # before",
+            "  42;",
+            "  # before",
+            "  43;",
+            "  # before",
+            "  44",
+            ")"
           ].join("\n")
 
           @node_comments_after.to_ruby_base(@context_default).should == [
-           "(",
-           "  42; # after",
-           "  43; # after",
-           "  44 # after",
-           ")"
+            "(",
+            "  42; # after",
+            "  43; # after",
+            "  44 # after",
+            ")"
           ].join("\n")
         end
 
@@ -1579,22 +1579,22 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_comments_before.to_ruby_base(@context_narrow).should == [
-           "(",
-           "  # before",
-           "  42;",
-           "  # before",
-           "  43;",
-           "  # before",
-           "  44",
-           ")"
+            "(",
+            "  # before",
+            "  42;",
+            "  # before",
+            "  43;",
+            "  # before",
+            "  44",
+            ")"
           ].join("\n")
 
           @node_comments_after.to_ruby_base(@context_narrow).should == [
-           "(",
-           "  42; # after",
-           "  43; # after",
-           "  44 # after",
-           ")"
+            "(",
+            "  42; # after",
+            "  43; # after",
+            "  44 # after",
+            ")"
           ].join("\n")
         end
 
@@ -3055,22 +3055,22 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_comments_before.to_ruby_base(@context_default).should == [
-           "[",
-           "  # before",
-           "  42,",
-           "  # before",
-           "  43,",
-           "  # before",
-           "  44",
-           "]"
+            "[",
+            "  # before",
+            "  42,",
+            "  # before",
+            "  43,",
+            "  # before",
+            "  44",
+            "]"
           ].join("\n")
 
           @node_comments_after.to_ruby_base(@context_default).should == [
-           "[",
-           "  42, # after",
-           "  43, # after",
-           "  44 # after",
-           "]"
+            "[",
+            "  42, # after",
+            "  43, # after",
+            "  44 # after",
+            "]"
           ].join("\n")
         end
 
@@ -3120,22 +3120,22 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_comments_before.to_ruby_base(@context_narrow).should == [
-           "[",
-           "  # before",
-           "  42,",
-           "  # before",
-           "  43,",
-           "  # before",
-           "  44",
-           "]"
+            "[",
+            "  # before",
+            "  42,",
+            "  # before",
+            "  43,",
+            "  # before",
+            "  44",
+            "]"
           ].join("\n")
 
           @node_comments_after.to_ruby_base(@context_narrow).should == [
-           "[",
-           "  42, # after",
-           "  43, # after",
-           "  44 # after",
-           "]"
+            "[",
+            "  42, # after",
+            "  43, # after",
+            "  44 # after",
+            "]"
           ].join("\n")
         end
 
@@ -3260,25 +3260,25 @@ module Y2R::AST::Ruby
           @node_empty.to_ruby_base(@context_narrow).should == "{}"
 
           @node_one.to_ruby_base(@context_narrow).should == [
-           "{",
-           "  :a => 42",
-           "}"
+            "{",
+            "  :a => 42",
+            "}"
           ].join("\n")
 
           @node_multiple.to_ruby_base(@context_narrow).should == [
-           "{",
-           "  :a => 42,",
-           "  :b => 43,",
-           "  :c => 44",
-           "}"
+            "{",
+            "  :a => 42,",
+            "  :b => 43,",
+            "  :c => 44",
+            "}"
           ].join("\n")
 
           @node_aligned.to_ruby_base(@context_narrow).should == [
-           "{",
-           "  :a   => 42,",
-           "  :aa  => 43,",
-           "  :aaa => 44",
-           "}"
+            "{",
+            "  :a   => 42,",
+            "  :aa  => 43,",
+            "  :aaa => 44",
+            "}"
           ].join("\n")
 
           @node_multiline.to_ruby_base(@context_narrow).should == [
