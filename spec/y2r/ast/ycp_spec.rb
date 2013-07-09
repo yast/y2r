@@ -2334,7 +2334,7 @@ module Y2R::AST
           :name     => "import",
           :args     => [Ruby::Literal.new(:value => "M")],
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node

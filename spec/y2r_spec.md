@@ -1073,7 +1073,7 @@ import "String";
 #### Ruby (fragment)
 
 ```ruby
-Yast.import("String")
+Yast.import "String"
 ```
 
 ### `textdomain` Statement
@@ -1763,7 +1763,7 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
 module Yast
   class DefaultClient < Client
     def main
-      Yast.import("String")
+      Yast.import "String"
 
       @i = 42
       @j = 43
@@ -1829,7 +1829,7 @@ module Yast
   class MClass < Module
     def main
 
-      Yast.import("String")
+      Yast.import "String"
 
       @i = 42
       @j = 43

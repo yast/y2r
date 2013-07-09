@@ -1036,7 +1036,7 @@ module Y2R
             :name     => "import",
             :args     => [Ruby::Literal.new(:value => name)],
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
         end
 
