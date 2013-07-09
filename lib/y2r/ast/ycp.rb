@@ -14,6 +14,10 @@ module Y2R
       # Compilation context passed to nodes' |compile| method. It mainly tracks
       # the scope we're in and contains related helper methods.
       class CompilerContext < OpenStruct
+        def at_toplevel?
+          !blocks.any?(&:creates_local_scope?)
+        end
+
         def in?(klass)
           blocks.find { |b| b.is_a?(klass) } ? true : false
         end
@@ -1179,6 +1183,11 @@ module Y2R
 
       class Include < Node
         def compile(context)
+          if !context.at_toplevel?
+            raise NotImplementedError,
+                  "Non-toplevel includes are not supported."
+          end
+
           args = [
             if context.options[:as_include_file]
               Ruby::Variable.new(:name => "include_target")

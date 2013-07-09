@@ -425,6 +425,9 @@ module Y2R::AST
       # The following contexts are used in context-sensitive variable name
       # handling tests, so we fill-in at least some data needed by them.
 
+      @context_file = YCP::CompilerContext.new(
+        :blocks => [YCP::FileBlock.new]
+      )
       @context_module = YCP::CompilerContext.new(
         :blocks => [YCP::ModuleBlock.new(:name => "M")]
       )
@@ -490,7 +493,12 @@ module Y2R::AST
       )
 
       @context_as_include = YCP::CompilerContext.new(
+        :blocks  => [YCP::FileBlock.new],
         :options => { :as_include_file => true }
+      )
+      @context_not_as_include = YCP::CompilerContext.new(
+        :blocks  => [YCP::FileBlock.new],
+        :options => { :as_include_file => false }
       )
     end
   end
@@ -2421,8 +2429,16 @@ module Y2R::AST
             :parens   => false
           )
 
-          ycp_node.compile(@context_empty).should == ruby_node
+          ycp_node.compile(@context_not_as_include).should == ruby_node
         end
+      end
+
+      it "raises an exception for non-toplevel includes" do
+        ycp_node = YCP::Include.new(:name => "i.ycp")
+
+        lambda {
+          ycp_node.compile(@context_def_in_file)
+        }.should raise_error NotImplementedError, "Non-toplevel includes are not supported."
       end
     end
   end
