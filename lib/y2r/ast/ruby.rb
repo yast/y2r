@@ -586,11 +586,7 @@ module Y2R
         def single_line_width_base
           if !has_line_breaking_comment?
             lhs_width = lhs.single_line_width
-            rhs_width = if rhs.is_a?(Variable)
-              10 + rhs.single_line_width + 1
-            else
-              rhs.single_line_width
-            end
+            rhs_width = rhs.single_line_width
 
             lhs_width + 3 + rhs_width
           else
