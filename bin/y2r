@@ -71,5 +71,5 @@ begin
   input_stream.close
   output_stream.close
 rescue Docopt::Exit => e
-  puts e.message
+  $stderr.puts e.message
 end
