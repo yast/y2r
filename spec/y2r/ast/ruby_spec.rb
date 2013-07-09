@@ -2005,49 +2005,51 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_base" do
-      it "emits correct code" do
-        @node_without_parens.to_ruby_base(@context_default).should ==
-          "true ? 42 : 43"
+      describe "with lot of space available" do
+        it "emits correct code" do
+          @node_without_parens.to_ruby_base(@context_default).should ==
+            "true ? 42 : 43"
 
-        @node_with_parens.to_ruby_base(@context_default).should ==
-          "(true || false) ? (42 + 43) : (44 + 45)"
+          @node_with_parens.to_ruby_base(@context_default).should ==
+            "(true || false) ? (42 + 43) : (44 + 45)"
 
-        @node_condition_comment_before.to_ruby_base(@context_default).should == [
-          "# before",
-          "true ? 42 : 43"
-        ].join("\n")
+          @node_condition_comment_before.to_ruby_base(@context_default).should == [
+            "# before",
+            "true ?",
+            "  42 :",
+            "  43"
+          ].join("\n")
 
-        @node_condition_comment_after.to_ruby_base(@context_default).should == [
-          "true ? # after",
-          "  42 :",
-          "  43"
-        ].join("\n")
+          @node_condition_comment_after.to_ruby_base(@context_default).should == [
+            "true ? # after",
+            "  42 :",
+            "  43"
+          ].join("\n")
 
-        @node_then_comment_before.to_ruby_base(@context_default).should == [
-          "true ?",
-          "  # before",
-          "  42 :",
-          "  43"
-        ].join("\n")
+          @node_then_comment_before.to_ruby_base(@context_default).should == [
+            "true ?",
+            "  # before",
+            "  42 :",
+            "  43"
+          ].join("\n")
 
-        @node_then_comment_after.to_ruby_base(@context_default).should == [
-          "true ?",
-          "  42 : # after",
-          "  43"
-        ].join("\n")
+          @node_then_comment_after.to_ruby_base(@context_default).should == [
+            "true ?",
+            "  42 : # after",
+            "  43"
+          ].join("\n")
 
-        @node_else_comment_before.to_ruby_base(@context_default).should == [
-          "true ?",
-          "  42 :",
-          "  # before",
-          "  43"
-        ].join("\n")
+          @node_else_comment_before.to_ruby_base(@context_default).should == [
+            "true ?",
+            "  42 :",
+            "  # before",
+            "  43"
+          ].join("\n")
 
-        @node_else_comment_after.to_ruby_base(@context_default).should ==
-          "true ? 42 : 43 # after"
-      end
+          @node_else_comment_after.to_ruby_base(@context_default).should ==
+            "true ? 42 : 43 # after"
+        end
 
-      describe "for single-line ternary operators" do
         it "passes correct context to condition" do
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
@@ -2091,33 +2093,89 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "for multi-line ternary operators" do
+      describe "with no space available" do
+        it "emits correct code" do
+          @node_without_parens.to_ruby_base(@context_narrow).should == [
+            "true ?",
+            "  42 :",
+            "  43"
+          ].join("\n")
+
+          @node_with_parens.to_ruby_base(@context_narrow).should == [
+            "(true ||",
+            "  false) ?",
+            "  (42 +",
+            "    43) :",
+            "  (44 +",
+            "    45)"
+          ].join("\n")
+
+          @node_condition_comment_before.to_ruby_base(@context_narrow).should == [
+            "# before",
+            "true ?",
+            "  42 :",
+            "  43"
+          ].join("\n")
+
+          @node_condition_comment_after.to_ruby_base(@context_narrow).should == [
+            "true ? # after",
+            "  42 :",
+            "  43"
+          ].join("\n")
+
+          @node_then_comment_before.to_ruby_base(@context_narrow).should == [
+            "true ?",
+            "  # before",
+            "  42 :",
+            "  43"
+          ].join("\n")
+
+          @node_then_comment_after.to_ruby_base(@context_narrow).should == [
+            "true ?",
+            "  42 : # after",
+            "  43"
+          ].join("\n")
+
+          @node_else_comment_before.to_ruby_base(@context_narrow).should == [
+            "true ?",
+            "  42 :",
+            "  # before",
+            "  43"
+          ].join("\n")
+
+          @node_else_comment_after.to_ruby_base(@context_narrow).should == [
+            "true ?",
+            "  42 :",
+            "  43 # after"
+          ].join("\n")
+        end
+
         it "passes correct context to condition" do
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
-              @literal_true_comment_after,
-              :width => 80,
+              @literal_true,
+              :width => 0,
               :shift => 0
             ),
             :then      => @literal_42,
             :else      => @literal_43
           )
 
-          node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_narrow)
         end
 
         it "passes correct context to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => check_context_enclosed(
-              @literal_42_comment_before,
-              :width => 78,
+              @literal_42,
+              :width => -2,
               :shift => 0
             ),
             :else      => @literal_43
           )
 
-          node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_narrow)
         end
 
         it "passes correct context to else" do
@@ -2125,13 +2183,13 @@ module Y2R::AST::Ruby
             :condition => @literal_true,
             :then      => @literal_42,
             :else      => check_context_enclosed(
-              @literal_43_comment_before,
-              :width => 78,
+              @literal_43,
+              :width => -2,
               :shift => 0
             ),
           )
 
-          node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_narrow)
         end
       end
     end
