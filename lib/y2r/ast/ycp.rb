@@ -1855,17 +1855,13 @@ module Y2R
                 :name     => "convert",
                 :args     => [
                   child.compile(context),
-                  Ruby::Hash.new(
-                    :entries => [
-                      Ruby::HashEntry.new(
-                        :key   => Ruby::Literal.new(:value => :from),
-                        :value => Ruby::Literal.new(:value => from.no_const.to_s)
-                      ),
-                      Ruby::HashEntry.new(
-                        :key   => Ruby::Literal.new(:value => :to),
-                        :value => Ruby::Literal.new(:value => to.no_const.to_s)
-                      )
-                    ]
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => :from),
+                    :value => Ruby::Literal.new(:value => from.no_const.to_s)
+                  ),
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => :to),
+                    :value => Ruby::Literal.new(:value => to.no_const.to_s)
                   )
                 ],
                 :block    => nil,

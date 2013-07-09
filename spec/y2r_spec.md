@@ -517,7 +517,7 @@ string s = (string) a;
 #### Ruby (fragment)
 
 ```ruby
-f = Convert.convert(42, { :from => "integer", :to => "float" })
+f = Convert.convert(42, :from => "integer", :to => "float")
 a = "string"
 s = Convert.to_string(a)
 ```

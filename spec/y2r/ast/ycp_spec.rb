@@ -4319,18 +4319,14 @@ module Y2R::AST
           :name     => "convert",
           :args     => [
             @ruby_literal_42,
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :from),
-                  :value => Ruby::Literal.new(:value => from)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :to),
-                  :value => Ruby::Literal.new(:value => to)
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :from),
+							:value => Ruby::Literal.new(:value => from)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :to),
+							:value => Ruby::Literal.new(:value => to)
+						)
           ],
           :block    => nil,
           :parens   => true
