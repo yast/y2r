@@ -212,8 +212,13 @@ module Y2R
 
             comment.scan(COMMENT_SPLITTING_REGEXP) do
               segment = $&
-              segment = fix_single_line_segment(segment) if segment =~ /\A\/\//
-              segment = fix_multi_line_segment(segment)  if segment =~ /\A\/\*/
+              prefix  = $`.split("\n").last || ""
+
+              if segment =~ /\A\/\//
+                segment = fix_single_line_segment(segment)
+              elsif segment =~ /\A\/\*/
+                segment = fix_multi_line_segment(segment, prefix)
+              end
 
               fixed_comment << segment
             end
@@ -245,7 +250,7 @@ module Y2R
             segment.sub(/\A\/\//, "#")
           end
 
-          def fix_multi_line_segment(segment)
+          def fix_multi_line_segment(segment, prefix)
             # The [^*] part is needed to exclude license comments, which often
             # begin with a line of stars.
             is_doc_comment = segment =~ /\A\/\*\*[^*]/
@@ -262,7 +267,9 @@ module Y2R
             if segment =~ /\A(^[ \t]*\*.*(\n|$))*\z/
               segment = segment.gsub(/^[ \t]*\*/, "#")
             else
-              segment = segment.gsub(/^/, "# ")
+              segment = segment.
+                gsub(/^#{Regexp.quote(prefix)}/, "").
+                gsub(/^/, "# ")
             end
 
             segment
