@@ -1817,33 +1817,35 @@ module Y2R::AST::Ruby
     end
 
     describe "#to_ruby_base" do
-      it "emits correct code" do
-        @node_without_parens.to_ruby_base(@context_default).should == "42 + 43"
+      describe "with lot of space available" do
+        it "emits correct code" do
+          @node_without_parens.to_ruby_base(@context_default).should ==
+            "42 + 43"
 
-        @node_with_parens.to_ruby_base(@context_default).should ==
-          "(42 + 43) + (44 + 45)"
+          @node_with_parens.to_ruby_base(@context_default).should ==
+            "(42 + 43) + (44 + 45)"
 
-        @node_lhs_comment_before.to_ruby_base(@context_default).should == [
-          "# before",
-          "42 + 43"
-        ].join("\n")
+          @node_lhs_comment_before.to_ruby_base(@context_default).should == [
+            "# before",
+            "42 +",
+            "  43"
+          ].join("\n")
 
-        @node_lhs_comment_after.to_ruby_base(@context_default).should == [
-          "42 + # after",
-          "  43"
-        ].join("\n")
+          @node_lhs_comment_after.to_ruby_base(@context_default).should == [
+            "42 + # after",
+            "  43"
+          ].join("\n")
 
-        @node_rhs_comment_before.to_ruby_base(@context_default).should == [
-          "42 +",
-          "  # before",
-          "  43"
-        ].join("\n")
+          @node_rhs_comment_before.to_ruby_base(@context_default).should == [
+            "42 +",
+            "  # before",
+            "  43"
+          ].join("\n")
 
-        @node_rhs_comment_after.to_ruby_base(@context_default).should ==
-          "42 + 43 # after"
-      end
+          @node_rhs_comment_after.to_ruby_base(@context_default).should ==
+            "42 + 43 # after"
+        end
 
-      describe "for single-line binary operators" do
         it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
@@ -1873,19 +1875,55 @@ module Y2R::AST::Ruby
         end
       end
 
-      describe "for multi-line binary operators" do
+      describe "with no space available" do
+        it "emits correct code" do
+          @node_without_parens.to_ruby_base(@context_narrow).should == [
+            "42 +",
+            "  43"
+          ].join("\n")
+
+          @node_with_parens.to_ruby_base(@context_narrow).should == [
+            "(42 +",
+            "  43) +",
+            "  (44 +",
+            "    45)"
+          ].join("\n")
+
+          @node_lhs_comment_before.to_ruby_base(@context_narrow).should == [
+            "# before",
+            "42 +",
+            "  43"
+          ].join("\n")
+
+          @node_lhs_comment_after.to_ruby_base(@context_narrow).should == [
+            "42 + # after",
+            "  43"
+          ].join("\n")
+
+          @node_rhs_comment_before.to_ruby_base(@context_narrow).should == [
+            "42 +",
+            "  # before",
+            "  43"
+          ].join("\n")
+
+          @node_rhs_comment_after.to_ruby_base(@context_narrow).should == [
+            "42 +",
+            "  43 # after"
+          ].join("\n")
+        end
+
         it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
-              @literal_42_comment_after,
-              :width => 80,
+              @literal_42,
+              :width => 0,
               :shift => 0
             ),
             :rhs => @literal_43
           )
 
-          node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_narrow)
         end
 
         it "passes correct context to rhs" do
@@ -1893,13 +1931,13 @@ module Y2R::AST::Ruby
             :op  => "+",
             :lhs => @literal_42,
             :rhs => check_context_enclosed(
-              @literal_43_comment_before,
-              :width => 78,
+              @literal_43,
+              :width => -2,
               :shift => 0
             )
           )
 
-          node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_narrow)
         end
       end
     end
