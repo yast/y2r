@@ -65,11 +65,16 @@ begin
     :filename                  => ycp_file
   }
 
-  output_stream.write(Y2R.compile(input_stream.read, compile_options))
-  output_stream.write("\n")
-
-  input_stream.close
-  output_stream.close
+  begin
+    output_stream.write(Y2R.compile(input_stream.read, compile_options))
+    output_stream.write("\n")
+  rescue Y2R::Parser::SyntaxError, NotImplementedError => e
+    $stderr.puts e.message
+    exit 1
+  ensure
+    input_stream.close
+    output_stream.close
+  end
 rescue Docopt::Exit => e
   $stderr.puts e.message
   exit 1
