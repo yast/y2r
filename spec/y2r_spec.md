@@ -295,7 +295,6 @@ module Yast
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
-
     def f
       return
     end
@@ -336,7 +335,6 @@ Y2R translates YCP local variables as Ruby local variables.
 
 module Yast
   class DefaultClient < Client
-
     def f
       i = 42
       j = i
@@ -452,7 +450,6 @@ Y2R uses suffixes to disambiguate variable aliases in blocks.
 
 module Yast
   class DefaultClient < Client
-
     def f
       i = 42
 
@@ -491,7 +488,6 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 
 module Yast
   class DefaultClient < Client
-
     def f
       i = 42
 
@@ -705,7 +701,6 @@ module Yast
       )
       nil
     end
-
     def f1
       return 42
     end
@@ -767,9 +762,7 @@ method on them.
 
 module Yast
   class DefaultClient < Client
-
     def outer
-
       f1 = lambda { return 42 }
 
       f2 = lambda do |a2, b2, c2|
@@ -841,7 +834,6 @@ module Yast
       @fref.call
       nil
     end
-
     def f
       return
     end
@@ -1181,12 +1173,9 @@ statement.
 
 module Yast
   class DefaultClient < Client
-
     def f1
       return
     end
-
-
 
     def f2
       return 42
@@ -1355,7 +1344,6 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 
 module Yast
   class DefaultClient < Client
-
     def f1
       return 42
     end
@@ -1452,9 +1440,7 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 
 module Yast
   class DefaultClient < Client
-
     def outer
-
       f1 = lambda { return 42 }
 
       f2 = lambda { |a, b, c| return 42 }
@@ -1770,8 +1756,6 @@ module Yast
       nil
     end
 
-
-
     def f
       return 42
     end
@@ -1836,8 +1820,6 @@ module Yast
       M()
     end
 
-
-
     def f
       return 42
     end
@@ -1845,8 +1827,6 @@ module Yast
     def g
       return 43
     end
-
-
 
     def M
       Builtins.y2milestone("M1")

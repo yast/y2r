@@ -75,7 +75,6 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << ""
           lines << "module Yast"
           lines << "  class DefaultClient < Client"
-          lines << ""
           lines << "    def fragment_wrapper"
           lines << indent(code[0..-2], 3)
           lines << "      nil"
