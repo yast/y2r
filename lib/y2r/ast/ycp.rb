@@ -1450,7 +1450,7 @@ module Y2R
         end
 
         def compile_as_publish_call(context)
-          entries = [
+          args = [
             Ruby::HashEntry.new(
               :key   => Ruby::Literal.new(:value => category),
               :value => Ruby::Literal.new(:value => name.to_sym)
@@ -1462,7 +1462,7 @@ module Y2R
           ]
 
           unless global
-            entries << Ruby::HashEntry.new(
+            args << Ruby::HashEntry.new(
               :key   => Ruby::Literal.new(:value => :private),
               :value => Ruby::Literal.new(:value => true)
             )
@@ -1471,7 +1471,7 @@ module Y2R
           Ruby::MethodCall.new(
             :receiver => nil,
             :name     => "publish",
-            :args     => [Ruby::Hash.new(:entries => entries)],
+            :args     => args,
             :block    => nil,
             :parens   => true
           )

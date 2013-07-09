@@ -2614,7 +2614,7 @@ module Y2R::AST
       end
 
       def ruby_publish_call(name, private)
-        entries = [
+        args = [
           Ruby::HashEntry.new(
             :key   => Ruby::Literal.new(:value => :variable),
             :value => Ruby::Literal.new(:value => name.to_sym)
@@ -2626,7 +2626,7 @@ module Y2R::AST
         ]
 
         if private
-          entries << Ruby::HashEntry.new(
+          args << Ruby::HashEntry.new(
             :key   => Ruby::Literal.new(:value => :private),
             :value => Ruby::Literal.new(:value => true)
           )
@@ -2635,7 +2635,7 @@ module Y2R::AST
         Ruby::MethodCall.new(
           :receiver => nil,
           :name     => "publish",
-          :args     => [Ruby::Hash.new(:entries => entries)],
+          :args     => args,
           :block    => nil,
           :parens   => true
         )
@@ -3278,18 +3278,14 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :a)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :type),
-                  :value => Ruby::Literal.new(:value => "integer")
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :variable),
+							:value => Ruby::Literal.new(:value => :a)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :type),
+							:value => Ruby::Literal.new(:value => "integer")
+						)
           ],
           :block    => nil,
           :parens   => true
@@ -3310,22 +3306,18 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :a)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :type),
-                  :value => Ruby::Literal.new(:value => "integer")
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :private),
-                  :value => Ruby::Literal.new(:value => true)
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :variable),
+							:value => Ruby::Literal.new(:value => :a)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :type),
+							:value => Ruby::Literal.new(:value => "integer")
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :private),
+							:value => Ruby::Literal.new(:value => true)
+						)
           ],
           :block    => nil,
           :parens   => true
