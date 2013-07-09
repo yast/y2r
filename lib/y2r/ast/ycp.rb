@@ -1059,7 +1059,7 @@ module Y2R
             :name     => "include",
             :args     => args,
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
         end
 

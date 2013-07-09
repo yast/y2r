@@ -2368,7 +2368,7 @@ module Y2R::AST
               Ruby::Literal.new(:value => "i.rb")
             ],
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
 
           ycp_node.compile(@context_as_include).should == ruby_node
@@ -2384,7 +2384,7 @@ module Y2R::AST
             :name     => "include",
             :args     => [Ruby::Self.new, Ruby::Literal.new(:value => "i.rb")],
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
 
           ycp_node.compile(@context_empty).should == ruby_node
