@@ -1184,6 +1184,12 @@ module Y2R
 
         protected
 
+        def enclose?
+          false
+        end
+
+        private
+
         def has_line_breaking_comment?
           key.ends_with_comment? || value.starts_with_comment?
         end
@@ -1231,10 +1237,6 @@ module Y2R
             parts << key.to_ruby(context.with_trailer("#{spacing_code} =>"))
             parts << indented(value, context)
           end
-        end
-
-        def enclose?
-          false
         end
       end
     end
