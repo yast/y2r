@@ -34,6 +34,18 @@ module Y2R
           context
         end
 
+        def with_max_key_width(max_key_width)
+          context = dup
+          context.max_key_width = max_key_width
+          context
+        end
+
+        def without_max_key_width
+          context = dup
+          context.max_key_width = nil
+          context
+        end
+
         def with_trailer(trailer)
           context = dup
           context.trailer = trailer
@@ -1135,8 +1147,7 @@ module Y2R
             entry.key_width(context.indented(INDENT_STEP))
           end.max
 
-          entry_context = context.dup
-          entry_context.max_key_width = max_key_width
+          entry_context = context.with_max_key_width(max_key_width)
 
           wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
@@ -1195,8 +1206,7 @@ module Y2R
 
           # We don't want to pass context.max_key_width to the key or value.
           # There can be a hash there for which it could cause problems.
-          context = context.dup
-          context.max_key_width = nil
+          context = context.without_max_key_width
 
           key_code = key.to_ruby(context.without_trailer)
 
@@ -1219,8 +1229,7 @@ module Y2R
 
             # We don't want to pass context.max_key_width to the key or value.
             # There can be a hash there for which it could cause problems.
-            context = context.dup
-            context.max_key_width = nil
+            context = context.without_max_key_width
 
             key_code = key.to_ruby_base(context.without_trailer)
 
