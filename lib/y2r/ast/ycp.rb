@@ -29,15 +29,9 @@ module Y2R
           yield context
         end
 
-        def drop_whitespace
+        def with_whitespace(whitespace)
           context = dup
-          context.whitespace = :drop
-          context
-        end
-
-        def keep_whitespace
-          context = dup
-          context.whitespace = :keep
+          context.whitespace = whitespace
           context
         end
 
@@ -465,7 +459,7 @@ module Y2R
 
               define_method name_with_comments do |context|
                 whitespace = context.whitespace
-                context = context.drop_whitespace if context.whitespace == :keep
+                context = context.with_whitespace(:drop) if context.whitespace == :keep
 
                 node = send(name_without_comments, context)
                 if node
@@ -854,7 +848,7 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
+            inner_context = inner_context.with_whitespace(:keep)
 
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
@@ -907,7 +901,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
+            inner_context = inner_context.with_whitespace(:keep)
 
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1120,7 +1114,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
+            inner_context = inner_context.with_whitespace(:keep)
 
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1271,7 +1265,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
+            inner_context = inner_context.with_whitespace(:keep)
 
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1438,7 +1432,7 @@ module Y2R
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
+            inner_context = inner_context.with_whitespace(:keep)
 
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
