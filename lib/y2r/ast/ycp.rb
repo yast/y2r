@@ -94,11 +94,28 @@ module Y2R
         end
 
         def arg_types
-          types = []
-          type = ""
           nesting_level = 0
 
-          in_parens = @type.sub(/^[^(]*\((.*)\)[^)]*$/, '\1')
+          # at first get content of parens, it is not so easy, because ycp allows
+          # type any(any)(any) when only the last any is arguments
+          in_parens = ""
+          @type.each_char do |ch|
+            case ch
+            when '('
+              if nesting_level == 0
+                # reset content as we want content of last outer parens
+                in_parens = ""
+              end
+              nesting_level += 1
+            when ')'
+              nesting_level -= 1
+            else
+              in_parens += ch
+            end
+          end
+
+          types = []
+          type = ""
           in_parens.each_char do |ch|
             case ch
               when ","
