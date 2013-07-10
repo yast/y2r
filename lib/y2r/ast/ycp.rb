@@ -577,6 +577,12 @@ module Y2R
             compile_statements(statements, inner_context)
           end
         end
+
+        def compile_statements_with_whitespace(statements, context)
+          statement_context = context.with_whitespace(Comments::Whitespace::KEEP_ALL)
+
+          statements.map { |s| s.compile(statement_context) }
+        end
       end
 
       # Sorted alphabetically.
@@ -891,10 +897,11 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
-
             Ruby::Statements.new(
-              :statements => statements.map { |s| s.compile(inner_context) }
+              :statements => compile_statements_with_whitespace(
+                statements,
+                inner_context
+              )
             )
           end
         end
@@ -944,8 +951,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
-
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -1007,7 +1012,10 @@ module Y2R
 
         def build_main_def(context)
           if !other_statements.empty?
-            main_statements = other_statements.map { |s| s.compile(context) }
+            main_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             unless other_statements.any? {|s| s.always_returns? }
               main_statements << Ruby::Literal.new(:value => nil)
@@ -1028,7 +1036,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
       end
 
@@ -1157,8 +1165,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
-
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -1221,7 +1227,10 @@ module Y2R
 
         def build_initialize_method_def(context)
           if !other_statements.empty?
-            initialize_method_statements = other_statements.map { |s| s.compile(context) }
+            initialize_method_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             [
               Ruby::Def.new(
@@ -1238,7 +1247,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
       end
 
@@ -1308,8 +1317,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
-
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
@@ -1391,7 +1398,10 @@ module Y2R
 
         def build_main_def(context)
           if has_main_def?
-            main_statements = other_statements.map { |s| s.compile(context) }
+            main_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             if constructor
               main_statements << Ruby::MethodCall.new(
@@ -1418,7 +1428,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
 
         def build_publish_calls(context)
@@ -1475,10 +1485,11 @@ module Y2R
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
-
             Ruby::Statements.new(
-              :statements => statements.map { |s| s.compile(inner_context) }
+              :statements => compile_statements_with_whitespace(
+                statements,
+                inner_context
+              )
             )
           end
         end
