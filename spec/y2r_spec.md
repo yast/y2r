@@ -416,8 +416,8 @@ module Yast
       @k = 42
       @l = @i
     end
-    publish(:variable => :k, :type => "integer")
-    publish(:variable => :l, :type => "integer")
+    publish :variable => :k, :type => "integer"
+    publish :variable => :l, :type => "integer"
   end
 
   M = MClass.new
@@ -1832,8 +1832,8 @@ module Yast
       Builtins.y2milestone("M1")
       nil
     end
-    publish(:variable => :j, :type => "integer")
-    publish(:function => :g, :type => "integer ()")
+    publish :variable => :j, :type => "integer"
+    publish :function => :g, :type => "integer ()"
   end
 
   M = MClass.new

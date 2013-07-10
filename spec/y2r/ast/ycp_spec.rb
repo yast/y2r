@@ -2637,7 +2637,7 @@ module Y2R::AST
           :name     => "publish",
           :args     => args,
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
       end
 
@@ -3288,7 +3288,7 @@ module Y2R::AST
 						)
           ],
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
 
         ycp_node.compile_as_publish_call(@context_empty).should == ruby_node
@@ -3320,7 +3320,7 @@ module Y2R::AST
 						)
           ],
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
 
         ycp_node.compile_as_publish_call(@context_empty).should == ruby_node

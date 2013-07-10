@@ -1473,7 +1473,7 @@ module Y2R
             :name     => "publish",
             :args     => args,
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
         end
 
