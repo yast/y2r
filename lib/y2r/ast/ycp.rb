@@ -41,6 +41,20 @@ module Y2R
           context
         end
 
+        # elsif_mode is enabled iff the `If` node contain `If` node in its
+        # else branch. In this mode ifs are translated as `elsif`.
+        def enable_elsif
+          context = dup
+          context.elsif_mode = true
+          context
+        end
+
+        def disable_elsif
+          context = dup
+          context.elsif_mode = false
+          context
+        end
+
         def module_name
           blocks.first.name
         end
@@ -998,17 +1012,25 @@ module Y2R
 
       class If < Node
         def compile(context)
-          then_compiled = compile_statements(self.then, context)
-          else_compiled = if self.else
-            compile_statements(self.else, context)
+          then_context = context.disable_elsif
+          then_compiled = compile_statements(self.then, then_context)
+
+          if self.else
+            else_context = if self.else.is_a?(If)
+              context.enable_elsif
+            else
+              context.disable_elsif
+            end
+            else_compiled = compile_statements(self.else, else_context)
           else
-            nil
+            else_compiled = nil
           end
 
           Ruby::If.new(
             :condition => cond.compile(context),
             :then      => then_compiled,
-            :else      => else_compiled
+            :else      => else_compiled,
+            :elsif     => !!context.elsif_mode
           )
         end
 
