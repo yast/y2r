@@ -190,21 +190,47 @@ module Y2R
           ((?!\#|\/\/|\/\*).)+   # non-comment
         /xm
 
+        # Value of CompilerContext#whitespace.
+        class Whitespace < OpenStruct
+          def drop_before_above?
+            drop_before_above
+          end
+
+          def drop_before_below?
+            drop_before_below
+          end
+
+          def drop_after_above?
+            drop_after_above
+          end
+
+          def drop_after_below?
+            drop_after_below
+          end
+
+          KEEP_ALL = Whitespace.new
+          DROP_ALL = Whitespace.new(
+            :drop_before_above => true,
+            :drop_before_below => true,
+            :drop_after_above  => true,
+            :drop_after_below  => true
+          )
+        end
+
         class << self
           def process_comment_before(comment, options)
+            whitespace = options[:whitespace]
+
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
-            if options[:whitespace] == :drop
+            if whitespace.drop_before_above?
               comment = drop_leading_empty_lines(comment)
-              comment = drop_trailing_empty_lines(comment)
+            end
 
-              # In whitespace-dropping mode we want to remove empty comments
-              # completely. Note that returning "" instead of nil would not be
-              # enough, at that would cause adding a newline into the generated
-              # code at some places.
-              comment = nil if comment.empty?
+            if whitespace.drop_before_below?
+              comment = drop_trailing_empty_lines(comment)
             else
               # In many before comments, there is a line of whitespace caused by
               # separation of the comment from the node it belongs to. For
@@ -222,22 +248,37 @@ module Y2R
               comment = drop_trailing_empty_line(comment)
             end
 
+            # In whitespace-dropping mode we want to remove empty comments
+            # completely. Note that returning "" instead of nil would not be
+            # enough, at that would cause adding a newline into the generated
+            # code at some places.
+            if whitespace.drop_before_above? || whitespace.drop_before_below?
+              comment = nil if comment.empty?
+            end
+
             comment
           end
 
           def process_comment_after(comment, options)
+            whitespace = options[:whitespace]
+
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
-            if options[:whitespace] == :drop
+            if whitespace.drop_after_above?
               comment = drop_leading_empty_lines(comment)
-              comment = drop_trailing_empty_lines(comment)
+            end
 
-              # In whitespace-dropping mode we want to remove empty comments
-              # completely. Note that returning "" instead of nil would not be
-              # enough, at that would cause adding a newline into the generated
-              # code at some places.
+            if whitespace.drop_after_below?
+              comment = drop_trailing_empty_lines(comment)
+            end
+
+            # In whitespace-dropping mode we want to remove empty comments
+            # completely. Note that returning "" instead of nil would not be
+            # enough, at that would cause adding a newline into the generated
+            # code at some places.
+            if whitespace.drop_after_above? || whitespace.drop_before_below?
               comment = nil if comment.empty?
             end
 
@@ -459,7 +500,9 @@ module Y2R
 
               define_method name_with_comments do |context|
                 whitespace = context.whitespace
-                context = context.with_whitespace(:drop) if context.whitespace == :keep
+                if context.whitespace != Comments::Whitespace::DROP_ALL
+                  context = context.with_whitespace(Comments::Whitespace::DROP_ALL)
+                end
 
                 node = send(name_without_comments, context)
                 if node
@@ -848,7 +891,7 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(:keep)
+            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
 
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }
@@ -901,7 +944,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(:keep)
+            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
 
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1114,7 +1157,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(:keep)
+            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
 
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1265,7 +1308,7 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(:keep)
+            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
 
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
@@ -1432,7 +1475,7 @@ module Y2R
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.with_whitespace(:keep)
+            inner_context = inner_context.with_whitespace(Comments::Whitespace::KEEP_ALL)
 
             Ruby::Statements.new(
               :statements => statements.map { |s| s.compile(inner_context) }

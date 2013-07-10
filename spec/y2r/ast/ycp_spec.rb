@@ -368,6 +368,10 @@ module Y2R::AST
         :blocks  => [],
         :options => {}
       )
+      @context_whitespace      = YCP::CompilerContext.new(
+        :blocks     => [],
+        :whitespace => YCP::Comments::Whitespace::DROP_ALL
+      )
 
       @context_while           = YCP::CompilerContext.new(
         :blocks => [YCP::While.new]
@@ -692,7 +696,7 @@ module Y2R::AST
           :comment_after  => "after"
         )
 
-        ycp_node.compile(@context_empty).should == ruby_node
+        ycp_node.compile(@context_whitespace).should == ruby_node
       end
     end
   end
