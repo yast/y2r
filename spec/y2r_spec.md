@@ -338,7 +338,6 @@ module Yast
     def f
       i = 42
       j = i
-      nil
     end
   end
 end
@@ -454,7 +453,6 @@ module Yast
       i = 42
 
       b = lambda { i2 = 43 }
-      nil
     end
   end
 end
@@ -492,7 +490,6 @@ module Yast
       i = 42
 
       i2 = 43
-      nil
     end
   end
 end
@@ -791,7 +788,6 @@ module Yast
         c = c_ref.value;
         f3_result
       )
-      nil
     end
   end
 end
@@ -1461,7 +1457,6 @@ module Yast
         c = deep_copy(c)
         return 42
       end
-      nil
     end
   end
 end
@@ -1830,7 +1825,6 @@ module Yast
 
     def M
       Builtins.y2milestone("M1")
-      nil
     end
     publish({ :variable => :j, :type => "integer" })
     publish({ :function => :g, :type => "integer ()" })
