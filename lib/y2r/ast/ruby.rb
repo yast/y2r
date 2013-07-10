@@ -886,10 +886,12 @@ module Y2R
 
         def emit_args_single_line(context)
           if !args.empty?
+            arg_context = context.without_max_key_width
+
             if parens
-              "(#{list(args, ", ", context)})"
+              "(#{list(args, ", ", arg_context)})"
             else
-              " #{list(args, ", ", context)}"
+              " #{list(args, ", ", arg_context)}"
             end
           else
             !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
@@ -897,7 +899,19 @@ module Y2R
         end
 
         def emit_args_multi_line(context)
-          wrapped_line_list(args, "(", ",", ")", context)
+          entries = args.select { |a| a.is_a?(HashEntry) }
+
+          if !entries.empty?
+            max_key_width = entries.map do |entry|
+              entry.key_width(context.indented(INDENT_STEP))
+            end.max
+
+            arg_context = context.with_max_key_width(max_key_width)
+          else
+            arg_context = context.without_max_key_width
+          end
+
+          wrapped_line_list(args, "(", ",", ")", arg_context)
         end
 
         def args_single_line_width

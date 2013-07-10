@@ -2275,6 +2275,17 @@ module Y2R::AST::Ruby
         :block    => nil,
         :parens   => true
       )
+      @node_parens_aligned_args = MethodCall.new(
+        :receiver => nil,
+        :name     => "m",
+        :args     => [
+          @hash_entry_a_42,
+          @hash_entry_aa_43,
+          @hash_entry_aaa_44
+        ],
+        :block    => nil,
+        :parens   => true
+      )
       @node_parens_args_comments_before = MethodCall.new(
         :receiver => nil,
         :name     => "m",
@@ -2382,6 +2393,9 @@ module Y2R::AST::Ruby
           @node_parens_multiple_args.to_ruby_base(@context_default).should ==
             "m(42, 43, 44)"
 
+          @node_parens_aligned_args.to_ruby_base(@context_default).should ==
+            "m(:a => 42, :aa => 43, :aaa => 44)"
+
           @node_parens_args_comments_before.to_ruby_base(@context_default).should == [
             "m(",
             "  # before",
@@ -2472,6 +2486,14 @@ module Y2R::AST::Ruby
             "  42,",
             "  43,",
             "  44",
+            ")"
+          ].join("\n")
+
+          @node_parens_aligned_args.to_ruby_base(@context_narrow).should == [
+            "m(",
+            "  :a   => 42,",
+            "  :aa  => 43,",
+            "  :aaa => 44",
             ")"
           ].join("\n")
 
@@ -2653,6 +2675,8 @@ module Y2R::AST::Ruby
           5
         @node_parens_multiple_args.single_line_width_base.should ==
           13
+        @node_parens_aligned_args.single_line_width_base.should ==
+          34
         @node_parens_args_comments_before.single_line_width_base.should ==
           Float::INFINITY
         @node_parens_args_comments_after.single_line_width_base.should ==
