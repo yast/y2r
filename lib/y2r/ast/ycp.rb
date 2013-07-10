@@ -126,6 +126,34 @@ module Y2R
           types.map { |t| Type.new(t.strip) }
         end
 
+        def void_method?
+          return false unless @type =~ /^void/
+
+          # make difference between void(something)(something) and void(something),
+          # where something can also contain ()
+          nesting_level = 0
+          # detect if we found already parens on level 0. If we found another one
+          # then it means, that there is double parens and type is void(something)(something)
+          seen_right_paren = false
+          @type.each_char do |ch|
+            case ch
+              when '('
+                nesting_level += 1
+              when ')'
+                nesting_level -= 1
+                if nesting_level == 0
+                  if seen_right_paren
+                    return false
+                  else
+                    seen_right_paren = true
+                  end
+                end
+            end
+          end
+
+          true
+        end
+
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
@@ -965,7 +993,11 @@ module Y2R
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
 
-            unless block.always_returns?
+            fun_symbol = context.symbol_for(name)
+            # check for nil is needed only for testsuite, should not happen in real world
+            void_method = fun_symbol && fun_symbol.type.void_method?
+
+            if !block.always_returns? && !void_method
               statements.statements << Ruby::Literal.new(:value => nil)
             end
 
