@@ -291,7 +291,6 @@ creates an instance of the `Yast::FunRef` class.
 module Yast
   class DefaultClient < Client
     def main
-
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
@@ -408,7 +407,6 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
-
       @i = 42
       @j = @i
 
@@ -678,7 +676,6 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 module Yast
   class DefaultClient < Client
     def main
-
       f1
 
       @a = ["a"]
@@ -825,7 +822,6 @@ on them.
 module Yast
   class DefaultClient < Client
     def main
-
       @fref = fun_ref(method(:f), "void ()")
       @fref.call
       nil
@@ -1750,7 +1746,6 @@ module Yast
       @j = 43
       nil
     end
-
     def f
       return 42
     end
@@ -1807,14 +1802,12 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
-
       Yast.import "String"
 
       @i = 42
       @j = 43
       M()
     end
-
     def f
       return 42
     end

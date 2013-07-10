@@ -579,9 +579,30 @@ module Y2R
         end
 
         def compile_statements_with_whitespace(statements, context)
-          statement_context = context.with_whitespace(Comments::Whitespace::KEEP_ALL)
+          case statements.size
+            when 0
+              []
 
-          statements.map { |s| s.compile(statement_context) }
+            when 1
+              statement_context = context.with_whitespace(Comments::Whitespace.new(
+                :drop_before_above => true,
+                :drop_before_below => true
+              ))
+
+              [statements.first.compile(statement_context)]
+            else
+              first_context  = context.with_whitespace(Comments::Whitespace.new(
+                :drop_before_above => true
+              ))
+              middle_context = context.with_whitespace(Comments::Whitespace::KEEP_ALL)
+              last_context   = context.with_whitespace(Comments::Whitespace.new(
+                :drop_after_below => true
+              ))
+
+              [statements.first.compile(first_context)] +
+                statements[1..-2].map { |s| s.compile(middle_context) } +
+                [statements.last.compile(last_context)]
+            end
         end
       end
 
