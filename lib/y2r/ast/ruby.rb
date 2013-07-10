@@ -1135,8 +1135,10 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
+          entry_context = context.shifted(2).without_max_key_width
+
           if !entries.empty?
-            "{ #{list(entries, ", ", context.shifted(2))} }"
+            "{ #{list(entries, ", ", entry_context)} }"
           else
             "{}"
           end
@@ -1202,16 +1204,10 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          max_key_width = context.max_key_width
-
-          # We don't want to pass context.max_key_width to the key or value.
-          # There can be a hash there for which it could cause problems.
-          context = context.without_max_key_width
-
           key_code = key.to_ruby(context.without_trailer)
 
-          spacing_code = if max_key_width
-            " " * (max_key_width - key_width(context))
+          spacing_code = if context.max_key_width
+            " " * (context.max_key_width - key_width(context))
           else
             ""
           end
@@ -1225,16 +1221,10 @@ module Y2R
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
-            max_key_width = context.max_key_width
-
-            # We don't want to pass context.max_key_width to the key or value.
-            # There can be a hash there for which it could cause problems.
-            context = context.without_max_key_width
-
             key_code = key.to_ruby_base(context.without_trailer)
 
-            spacing_code = if max_key_width
-              " " * (max_key_width - key_width(context))
+            spacing_code = if context.max_key_width
+              " " * (context.max_key_width - key_width(context))
             else
               ""
             end
