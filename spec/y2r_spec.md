@@ -404,7 +404,7 @@ Y2R translates YCP variables at module toplevel as Ruby instance variables.
 #
 # Original file: default.ycp
 
-require "ycp"
+require "yast"
 
 module Yast
   class MClass < Module
@@ -1799,7 +1799,7 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 #
 # Original file: default.ycp
 
-require "ycp"
+require "yast"
 
 module Yast
   class MClass < Module

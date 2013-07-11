@@ -2631,7 +2631,7 @@ module Y2R::AST
               Ruby::MethodCall.new(
                 :receiver => nil,
                 :name     => "require",
-                :args     => [Ruby::Literal.new(:value => "ycp")],
+                :args     => [Ruby::Literal.new(:value => "yast")],
                 :block    => nil,
                 :parens   => false
               ),
