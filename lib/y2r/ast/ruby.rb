@@ -309,7 +309,7 @@ module Y2R
 
       class If < Node
         def to_ruby_base(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) && !self.elsif
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)
@@ -338,13 +338,23 @@ module Y2R
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
-            parts << "if #{condition.to_ruby(context.shifted(3))}"
+            if self.elsif
+              parts << "elsif #{condition.to_ruby(context.shifted(6))}"
+            else
+              parts << "if #{condition.to_ruby(context.shifted(3))}"
+            end
             parts << indented(self.then, context)
             if self.else
-              parts << "else"
-              parts << indented(self.else, context)
+              if self.else.elsif
+                parts << self.else.to_ruby(context)
+              else
+                parts << "else"
+                parts << indented(self.else, context)
+                parts << "end"
+              end
+            else
+              parts << "end"
             end
-            parts << "end"
           end
         end
       end
