@@ -29,15 +29,9 @@ module Y2R
           yield context
         end
 
-        def drop_whitespace
+        def with_whitespace(whitespace)
           context = dup
-          context.whitespace = :drop
-          context
-        end
-
-        def keep_whitespace
-          context = dup
-          context.whitespace = :keep
+          context.whitespace = whitespace
           context
         end
 
@@ -108,11 +102,30 @@ module Y2R
         end
 
         def arg_types
-          types = []
-          type = ""
           nesting_level = 0
 
-          in_parens = @type.sub(/^[^(]*\((.*)\)[^)]*$/, '\1')
+          # First, extract content of the parens with arguments. This is a bit
+          # tricky, as they don't have to be the first parens in the type
+          # specification. For example, a type of function returning a reference
+          # to a function returning integer looks like this:
+          #
+          #   integer()()
+          #
+          in_parens = ""
+          @type.each_char do |ch|
+            case ch
+              when '('
+                in_parens = "" if nesting_level == 0
+                nesting_level += 1
+              when ')'
+                nesting_level -= 1
+              else
+                in_parens += ch
+            end
+          end
+
+          types = []
+          type = ""
           in_parens.each_char do |ch|
             case ch
               when ","
@@ -140,6 +153,43 @@ module Y2R
           types.map { |t| Type.new(t.strip) }
         end
 
+        def void_method?
+          return false unless @type =~ /^void/
+
+          # We need to differ between two cases:
+          #
+          #  * |void(...)|      -- function returning |void|
+          #
+          #  * |void(...)(...)| -- function returning a reference to a function
+          #                        returning |void|
+          #
+          # We only want to return |true| in the first case. Note that |...| can
+          # also contain parens.
+          #
+          # The algorithm is simple -- go through the type specification and
+          # return |false| if second toplevel right paren is seen. If the end is
+          # reached without seeing one, return |true|.
+          nesting_level = 0
+          seen_right_paren = false
+          @type.each_char do |ch|
+            case ch
+              when '('
+                nesting_level += 1
+              when ')'
+                nesting_level -= 1
+                if nesting_level == 0
+                  if seen_right_paren
+                    return false
+                  else
+                    seen_right_paren = true
+                  end
+                end
+            end
+          end
+
+          true
+        end
+
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
@@ -165,21 +215,47 @@ module Y2R
           ((?!\#|\/\/|\/\*).)+   # non-comment
         /xm
 
+        # Value of CompilerContext#whitespace.
+        class Whitespace < OpenStruct
+          def drop_before_above?
+            drop_before_above
+          end
+
+          def drop_before_below?
+            drop_before_below
+          end
+
+          def drop_after_above?
+            drop_after_above
+          end
+
+          def drop_after_below?
+            drop_after_below
+          end
+
+          KEEP_ALL = Whitespace.new
+          DROP_ALL = Whitespace.new(
+            :drop_before_above => true,
+            :drop_before_below => true,
+            :drop_after_above  => true,
+            :drop_after_below  => true
+          )
+        end
+
         class << self
           def process_comment_before(comment, options)
+            whitespace = options[:whitespace]
+
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
-            if options[:whitespace] == :drop
+            if whitespace.drop_before_above?
               comment = drop_leading_empty_lines(comment)
-              comment = drop_trailing_empty_lines(comment)
+            end
 
-              # In whitespace-dropping mode we want to remove empty comments
-              # completely. Note that returning "" instead of nil would not be
-              # enough, at that would cause adding a newline into the generated
-              # code at some places.
-              comment = nil if comment.empty?
+            if whitespace.drop_before_below?
+              comment = drop_trailing_empty_lines(comment)
             else
               # In many before comments, there is a line of whitespace caused by
               # separation of the comment from the node it belongs to. For
@@ -197,22 +273,37 @@ module Y2R
               comment = drop_trailing_empty_line(comment)
             end
 
+            # In whitespace-dropping mode we want to remove empty comments
+            # completely. Note that returning "" instead of nil would not be
+            # enough, at that would cause adding a newline into the generated
+            # code at some places.
+            if whitespace.drop_before_above? || whitespace.drop_before_below?
+              comment = nil if comment.empty?
+            end
+
             comment
           end
 
           def process_comment_after(comment, options)
+            whitespace = options[:whitespace]
+
             comment = fix_delimiters(comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
-            if options[:whitespace] == :drop
+            if whitespace.drop_after_above?
               comment = drop_leading_empty_lines(comment)
-              comment = drop_trailing_empty_lines(comment)
+            end
 
-              # In whitespace-dropping mode we want to remove empty comments
-              # completely. Note that returning "" instead of nil would not be
-              # enough, at that would cause adding a newline into the generated
-              # code at some places.
+            if whitespace.drop_after_below?
+              comment = drop_trailing_empty_lines(comment)
+            end
+
+            # In whitespace-dropping mode we want to remove empty comments
+            # completely. Note that returning "" instead of nil would not be
+            # enough, at that would cause adding a newline into the generated
+            # code at some places.
+            if whitespace.drop_after_above? || whitespace.drop_before_below?
               comment = nil if comment.empty?
             end
 
@@ -434,7 +525,9 @@ module Y2R
 
               define_method name_with_comments do |context|
                 whitespace = context.whitespace
-                context = context.drop_whitespace if context.whitespace == :keep
+                if context.whitespace != Comments::Whitespace::DROP_ALL
+                  context = context.with_whitespace(Comments::Whitespace::DROP_ALL)
+                end
 
                 node = send(name_without_comments, context)
                 if node
@@ -473,7 +566,7 @@ module Y2R
 
         # `Ops` exists because YCP does not have exceptions and nil propagates
         # to operation results. If we use a Ruby operator where the YaST program
-        # can produce `nil`, we would crash with an exception. If we know that 
+        # can produce `nil`, we would crash with an exception. If we know that
         # `nil` cannot be there, we ca use a plain ruby operator.
         def never_nil?
           false
@@ -508,6 +601,33 @@ module Y2R
           context.inside self do |inner_context|
             compile_statements(statements, inner_context)
           end
+        end
+
+        def compile_statements_with_whitespace(statements, context)
+          case statements.size
+            when 0
+              []
+
+            when 1
+              statement_context = context.with_whitespace(Comments::Whitespace.new(
+                :drop_before_above => true,
+                :drop_before_below => true
+              ))
+
+              [statements.first.compile(statement_context)]
+            else
+              first_context  = context.with_whitespace(Comments::Whitespace.new(
+                :drop_before_above => true
+              ))
+              middle_context = context.with_whitespace(Comments::Whitespace::KEEP_ALL)
+              last_context   = context.with_whitespace(Comments::Whitespace.new(
+                :drop_after_below => true
+              ))
+
+              [statements.first.compile(first_context)] +
+                statements[1..-2].map { |s| s.compile(middle_context) } +
+                [statements.last.compile(last_context)]
+            end
         end
       end
 
@@ -823,16 +943,17 @@ module Y2R
 
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
-
             Ruby::Statements.new(
-              :statements => statements.map { |s| s.compile(inner_context) }
+              :statements => compile_statements_with_whitespace(
+                statements,
+                inner_context
+              )
             )
           end
         end
 
         def always_returns?
-          statements.any? {|s| s.always_returns? }
+          statements.any? { |s| s.always_returns? }
         end
 
         transfers_comments :compile
@@ -876,8 +997,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
-
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -939,7 +1058,10 @@ module Y2R
 
         def build_main_def(context)
           if !other_statements.empty?
-            main_statements = other_statements.map { |s| s.compile(context) }
+            main_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             unless other_statements.any? {|s| s.always_returns? }
               main_statements << Ruby::Literal.new(:value => nil)
@@ -960,7 +1082,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
       end
 
@@ -979,7 +1101,11 @@ module Y2R
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
 
-            unless block.always_returns?
+            fun_symbol = context.symbol_for(name)
+            # check for nil is needed only for testsuite, should not happen in real world
+            void_method = fun_symbol && fun_symbol.type.void_method?
+
+            if !block.always_returns? && !void_method
               statements.statements << Ruby::Literal.new(:value => nil)
             end
 
@@ -1093,8 +1219,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
-
             class_statements += build_initialize_method_def(inner_context)
             class_statements += build_other_defs(inner_context)
           end
@@ -1157,7 +1281,10 @@ module Y2R
 
         def build_initialize_method_def(context)
           if !other_statements.empty?
-            initialize_method_statements = other_statements.map { |s| s.compile(context) }
+            initialize_method_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             [
               Ruby::Def.new(
@@ -1174,7 +1301,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
       end
 
@@ -1244,8 +1371,6 @@ module Y2R
           class_statements = []
 
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
-
             class_statements += build_main_def(inner_context)
             class_statements += build_other_defs(inner_context)
             class_statements += build_publish_calls(inner_context)
@@ -1327,7 +1452,10 @@ module Y2R
 
         def build_main_def(context)
           if has_main_def?
-            main_statements = other_statements.map { |s| s.compile(context) }
+            main_statements = compile_statements_with_whitespace(
+              other_statements,
+              context
+            )
 
             if constructor
               main_statements << Ruby::MethodCall.new(
@@ -1354,7 +1482,7 @@ module Y2R
         end
 
         def build_other_defs(context)
-          fundef_statements.map { |t| t.compile(context) }
+          compile_statements_with_whitespace(fundef_statements, context)
         end
 
         def build_publish_calls(context)
@@ -1411,10 +1539,11 @@ module Y2R
       class StmtBlock < Node
         def compile(context)
           context.inside self do |inner_context|
-            inner_context = inner_context.keep_whitespace
-
             Ruby::Statements.new(
-              :statements => statements.map { |s| s.compile(inner_context) }
+              :statements => compile_statements_with_whitespace(
+                statements,
+                inner_context
+              )
             )
           end
         end
@@ -1472,7 +1601,7 @@ module Y2R
         end
 
         def compile_as_publish_call(context)
-          entries = [
+          args = [
             Ruby::HashEntry.new(
               :key   => Ruby::Literal.new(:value => category),
               :value => Ruby::Literal.new(:value => name.to_sym)
@@ -1484,7 +1613,7 @@ module Y2R
           ]
 
           unless global
-            entries << Ruby::HashEntry.new(
+            args << Ruby::HashEntry.new(
               :key   => Ruby::Literal.new(:value => :private),
               :value => Ruby::Literal.new(:value => true)
             )
@@ -1493,9 +1622,9 @@ module Y2R
           Ruby::MethodCall.new(
             :receiver => nil,
             :name     => "publish",
-            :args     => [Ruby::Hash.new(:entries => entries)],
+            :args     => args,
             :block    => nil,
-            :parens   => true
+            :parens   => false
           )
         end
 
@@ -1877,17 +2006,13 @@ module Y2R
                 :name     => "convert",
                 :args     => [
                   child.compile(context),
-                  Ruby::Hash.new(
-                    :entries => [
-                      Ruby::HashEntry.new(
-                        :key   => Ruby::Literal.new(:value => :from),
-                        :value => Ruby::Literal.new(:value => from.no_const.to_s)
-                      ),
-                      Ruby::HashEntry.new(
-                        :key   => Ruby::Literal.new(:value => :to),
-                        :value => Ruby::Literal.new(:value => to.no_const.to_s)
-                      )
-                    ]
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => :from),
+                    :value => Ruby::Literal.new(:value => from.no_const.to_s)
+                  ),
+                  Ruby::HashEntry.new(
+                    :key   => Ruby::Literal.new(:value => :to),
+                    :value => Ruby::Literal.new(:value => to.no_const.to_s)
                   )
                 ],
                 :block    => nil,
@@ -1985,7 +2110,7 @@ module Y2R
           :Center,
           :CheckBox,
           :CheckBoxFrame,
-          :ColoredLabel, 
+          :ColoredLabel,
           :ComboBox,
           :DateField,
           :DownloadProgress,

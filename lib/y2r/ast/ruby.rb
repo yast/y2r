@@ -34,6 +34,18 @@ module Y2R
           context
         end
 
+        def with_max_key_width(max_key_width)
+          context = dup
+          context.max_key_width = max_key_width
+          context
+        end
+
+        def without_max_key_width
+          context = dup
+          context.max_key_width = nil
+          context
+        end
+
         def with_trailer(trailer)
           context = dup
           context.trailer = trailer
@@ -884,10 +896,12 @@ module Y2R
 
         def emit_args_single_line(context)
           if !args.empty?
+            arg_context = context.without_max_key_width
+
             if parens
-              "(#{list(args, ", ", context)})"
+              "(#{list(args, ", ", arg_context)})"
             else
-              " #{list(args, ", ", context)}"
+              " #{list(args, ", ", arg_context)}"
             end
           else
             !receiver && name =~ /^[A-Z]/ && args.empty? ? "()" : ""
@@ -895,7 +909,19 @@ module Y2R
         end
 
         def emit_args_multi_line(context)
-          wrapped_line_list(args, "(", ",", ")", context)
+          entries = args.select { |a| a.is_a?(HashEntry) }
+
+          if !entries.empty?
+            max_key_width = entries.map do |entry|
+              entry.key_width(context.indented(INDENT_STEP))
+            end.max
+
+            arg_context = context.with_max_key_width(max_key_width)
+          else
+            arg_context = context.without_max_key_width
+          end
+
+          wrapped_line_list(args, "(", ",", ")", arg_context)
         end
 
         def args_single_line_width
@@ -1133,8 +1159,10 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
+          entry_context = context.shifted(2).without_max_key_width
+
           if !entries.empty?
-            "{ #{list(entries, ", ", context.shifted(2))} }"
+            "{ #{list(entries, ", ", entry_context)} }"
           else
             "{}"
           end
@@ -1145,8 +1173,7 @@ module Y2R
             entry.key_width(context.indented(INDENT_STEP))
           end.max
 
-          entry_context = context.dup
-          entry_context.max_key_width = max_key_width
+          entry_context = context.with_max_key_width(max_key_width)
 
           wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
@@ -1201,17 +1228,10 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          max_key_width = context.max_key_width
-
-          # We don't want to pass context.max_key_width to the key or value.
-          # There can be a hash there for which it could cause problems.
-          context = context.dup
-          context.max_key_width = nil
-
           key_code = key.to_ruby(context.without_trailer)
 
-          spacing_code = if max_key_width
-            " " * (max_key_width - key_width(context))
+          spacing_code = if context.max_key_width
+            " " * (context.max_key_width - key_width(context))
           else
             ""
           end
@@ -1225,17 +1245,10 @@ module Y2R
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
-            max_key_width = context.max_key_width
-
-            # We don't want to pass context.max_key_width to the key or value.
-            # There can be a hash there for which it could cause problems.
-            context = context.dup
-            context.max_key_width = nil
-
             key_code = key.to_ruby_base(context.without_trailer)
 
-            spacing_code = if max_key_width
-              " " * (max_key_width - key_width(context))
+            spacing_code = if context.max_key_width
+              " " * (context.max_key_width - key_width(context))
             else
               ""
             end

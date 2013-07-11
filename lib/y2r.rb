@@ -12,7 +12,7 @@ module Y2R
     if !options[:xml]
       ycp_context = AST::YCP::CompilerContext.new(
         :blocks     => [],
-        :whitespace => :drop,
+        :whitespace => AST::YCP::Comments::Whitespace::DROP_ALL,
         :options    => options,
         :elsif      => false
       )

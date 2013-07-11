@@ -291,7 +291,6 @@ creates an instance of the `Yast::FunRef` class.
 module Yast
   class DefaultClient < Client
     def main
-
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
@@ -338,7 +337,6 @@ module Yast
     def f
       i = 42
       j = i
-      nil
     end
   end
 end
@@ -409,15 +407,14 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
-
       @i = 42
       @j = @i
 
       @k = 42
       @l = @i
     end
-    publish({ :variable => :k, :type => "integer" })
-    publish({ :variable => :l, :type => "integer" })
+    publish :variable => :k, :type => "integer"
+    publish :variable => :l, :type => "integer"
   end
 
   M = MClass.new
@@ -454,7 +451,6 @@ module Yast
       i = 42
 
       b = lambda { i2 = 43 }
-      nil
     end
   end
 end
@@ -492,7 +488,6 @@ module Yast
       i = 42
 
       i2 = 43
-      nil
     end
   end
 end
@@ -517,7 +512,7 @@ string s = (string) a;
 #### Ruby (fragment)
 
 ```ruby
-f = Convert.convert(42, { :from => "integer", :to => "float" })
+f = Convert.convert(42, :from => "integer", :to => "float")
 a = "string"
 s = Convert.to_string(a)
 ```
@@ -681,7 +676,6 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 module Yast
   class DefaultClient < Client
     def main
-
       f1
 
       @a = ["a"]
@@ -791,7 +785,6 @@ module Yast
         c = c_ref.value;
         f3_result
       )
-      nil
     end
   end
 end
@@ -829,7 +822,6 @@ on them.
 module Yast
   class DefaultClient < Client
     def main
-
       @fref = fun_ref(method(:f), "void ()")
       @fref.call
       nil
@@ -1012,7 +1004,7 @@ i = b ? 42 : 43
 Y2R translates YCP index operator as a call of a method in the `Yast::Ops`
 module that implements its behavior. There is no equivalent operator in Ruby.
 
-Single-element index is passed as it is, multiple-element index is passed as an 
+Single-element index is passed as it is, multiple-element index is passed as an
 array. The default value is passed only if it is non-`nil`.
 
 #### YCP (fragment)
@@ -1131,7 +1123,7 @@ in Ruby.
 list l = [42, 43, 44];
 
 l[0] = [45];
-l[0,0] = 42; 
+l[0,0] = 42;
 ```
 
 #### Ruby (fragment)
@@ -1461,7 +1453,6 @@ module Yast
         c = deep_copy(c)
         return 42
       end
-      nil
     end
   end
 end
@@ -1755,7 +1746,6 @@ module Yast
       @j = 43
       nil
     end
-
     def f
       return 42
     end
@@ -1812,14 +1802,12 @@ require "ycp"
 module Yast
   class MClass < Module
     def main
-
       Yast.import "String"
 
       @i = 42
       @j = 43
       M()
     end
-
     def f
       return 42
     end
@@ -1830,10 +1818,9 @@ module Yast
 
     def M
       Builtins.y2milestone("M1")
-      nil
     end
-    publish({ :variable => :j, :type => "integer" })
-    publish({ :function => :g, :type => "integer ()" })
+    publish :variable => :j, :type => "integer"
+    publish :function => :g, :type => "integer ()"
   end
 
   M = MClass.new

@@ -368,6 +368,10 @@ module Y2R::AST
         :blocks  => [],
         :options => {}
       )
+      @context_whitespace      = YCP::CompilerContext.new(
+        :blocks     => [],
+        :whitespace => YCP::Comments::Whitespace::DROP_ALL
+      )
 
       @context_while           = YCP::CompilerContext.new(
         :blocks => [YCP::While.new]
@@ -692,7 +696,7 @@ module Y2R::AST
           :comment_after  => "after"
         )
 
-        ycp_node.compile(@context_empty).should == ruby_node
+        ycp_node.compile(@context_whitespace).should == ruby_node
       end
     end
   end
@@ -2644,7 +2648,7 @@ module Y2R::AST
       end
 
       def ruby_publish_call(name, private)
-        entries = [
+        args = [
           Ruby::HashEntry.new(
             :key   => Ruby::Literal.new(:value => :variable),
             :value => Ruby::Literal.new(:value => name.to_sym)
@@ -2656,7 +2660,7 @@ module Y2R::AST
         ]
 
         if private
-          entries << Ruby::HashEntry.new(
+          args << Ruby::HashEntry.new(
             :key   => Ruby::Literal.new(:value => :private),
             :value => Ruby::Literal.new(:value => true)
           )
@@ -2665,9 +2669,9 @@ module Y2R::AST
         Ruby::MethodCall.new(
           :receiver => nil,
           :name     => "publish",
-          :args     => [Ruby::Hash.new(:entries => entries)],
+          :args     => args,
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
       end
 
@@ -3308,21 +3312,17 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :a)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :type),
-                  :value => Ruby::Literal.new(:value => "integer")
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :variable),
+							:value => Ruby::Literal.new(:value => :a)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :type),
+							:value => Ruby::Literal.new(:value => "integer")
+						)
           ],
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
 
         ycp_node.compile_as_publish_call(@context_empty).should == ruby_node
@@ -3340,25 +3340,21 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :variable),
-                  :value => Ruby::Literal.new(:value => :a)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :type),
-                  :value => Ruby::Literal.new(:value => "integer")
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :private),
-                  :value => Ruby::Literal.new(:value => true)
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :variable),
+							:value => Ruby::Literal.new(:value => :a)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :type),
+							:value => Ruby::Literal.new(:value => "integer")
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :private),
+							:value => Ruby::Literal.new(:value => true)
+						)
           ],
           :block    => nil,
-          :parens   => true
+          :parens   => false
         )
 
         ycp_node.compile_as_publish_call(@context_empty).should == ruby_node
@@ -4357,18 +4353,14 @@ module Y2R::AST
           :name     => "convert",
           :args     => [
             @ruby_literal_42,
-            Ruby::Hash.new(
-              :entries => [
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :from),
-                  :value => Ruby::Literal.new(:value => from)
-                ),
-                Ruby::HashEntry.new(
-                  :key   => Ruby::Literal.new(:value => :to),
-                  :value => Ruby::Literal.new(:value => to)
-                )
-              ]
-            )
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :from),
+							:value => Ruby::Literal.new(:value => from)
+						),
+						Ruby::HashEntry.new(
+							:key   => Ruby::Literal.new(:value => :to),
+							:value => Ruby::Literal.new(:value => to)
+						)
           ],
           :block    => nil,
           :parens   => true
