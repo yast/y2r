@@ -928,7 +928,7 @@ module Y2R
         end
 
         def always_returns?
-          statements.any? {|s| s.always_returns? }
+          statements.any? { |s| s.always_returns? }
         end
 
         transfers_comments :compile
