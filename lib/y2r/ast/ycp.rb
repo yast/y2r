@@ -597,7 +597,7 @@ module Y2R
             when 1
               statement_context = context.with_whitespace(Comments::Whitespace.new(
                 :drop_before_above => true,
-                :drop_before_below => true
+                :drop_after_below  => true
               ))
 
               [statements.first.compile(statement_context)]
