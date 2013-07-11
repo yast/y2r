@@ -90,21 +90,23 @@ module Y2R
         def arg_types
           nesting_level = 0
 
-          # at first get content of parens, it is not so easy, because ycp allows
-          # type any(any)(any) when only the last any is arguments
+          # First, extract content of the parens with arguments. This is a bit
+          # tricky, as they don't have to be the first parens in the type
+          # specification. For example, a type of function returning a reference
+          # to a function returning integer looks like this:
+          #
+          #   integer()()
+          #
           in_parens = ""
           @type.each_char do |ch|
             case ch
-            when '('
-              if nesting_level == 0
-                # reset content as we want content of last outer parens
-                in_parens = ""
-              end
-              nesting_level += 1
-            when ')'
-              nesting_level -= 1
-            else
-              in_parens += ch
+              when '('
+                in_parens = "" if nesting_level == 0
+                nesting_level += 1
+              when ')'
+                nesting_level -= 1
+              else
+                in_parens += ch
             end
           end
 
@@ -140,11 +142,20 @@ module Y2R
         def void_method?
           return false unless @type =~ /^void/
 
-          # make difference between void(something)(something) and void(something),
-          # where something can also contain ()
+          # We need to differ between two cases:
+          #
+          #  * |void(...)|      -- function returning |void|
+          #
+          #  * |void(...)(...)| -- function returning a reference to a function
+          #                        returning |void|
+          #
+          # We only want to return |true| in the first case. Note that |...| can
+          # also contain parens.
+          #
+          # The algorithm is simple -- go through the type specification and
+          # return |false| if second toplevel right paren is seen. If the end is
+          # reached without seeing one, return |true|.
           nesting_level = 0
-          # detect if we found already parens on level 0. If we found another one
-          # then it means, that there is double parens and type is void(something)(something)
           seen_right_paren = false
           @type.each_char do |ch|
             case ch
