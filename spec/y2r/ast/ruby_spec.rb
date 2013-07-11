@@ -726,6 +726,16 @@ module Y2R::AST::Ruby
         :then      => @statements,
         :else      => @statements
       )
+
+      @node_with_elsif = If.new(
+        :condition => @literal_true,
+        :then      => @statements,
+        :else      => If.new(
+          :condition => @literal_true,
+          :then      => @assignment_a_42,
+          :elsif     => true
+        )
+      )
     end
 
     describe "#to_ruby_base" do
@@ -749,6 +759,16 @@ module Y2R::AST::Ruby
           "  a = 42",
           "  b = 43",
           "  c = 44",
+          "end"
+        ].join("\n")
+
+        @node_with_elsif.to_ruby_base(@context_default).should == [
+          "if true",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          "elsif true",
+          "  a = 42",
           "end"
         ].join("\n")
       end

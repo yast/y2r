@@ -13,7 +13,8 @@ module Y2R
       ycp_context = AST::YCP::CompilerContext.new(
         :blocks     => [],
         :whitespace => AST::YCP::Comments::Whitespace::DROP_ALL,
-        :options    => options
+        :options    => options,
+        :elsif      => false
       )
       ruby_context = AST::Ruby::EmitterContext.new(:width => 80, :shift => 0)
 

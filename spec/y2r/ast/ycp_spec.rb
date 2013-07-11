@@ -2272,7 +2272,8 @@ module Y2R::AST
         ruby_node = Ruby::If.new(
           :condition => @ruby_literal_true,
           :then      => @ruby_statements_empty,
-          :else      => nil
+          :else      => nil,
+          :elsif     => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2288,7 +2289,8 @@ module Y2R::AST
         ruby_node = Ruby::If.new(
           :condition => @ruby_literal_true,
           :then      => @ruby_statements_non_empty,
-          :else      => nil
+          :else      => nil,
+          :elsif     => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2304,7 +2306,8 @@ module Y2R::AST
         ruby_node = Ruby::If.new(
           :condition => @ruby_literal_true,
           :then      => @ruby_statements_empty,
-          :else      => @ruby_statements_non_empty
+          :else      => @ruby_statements_non_empty,
+          :elsif     => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
@@ -2320,7 +2323,34 @@ module Y2R::AST
         ruby_node = Ruby::If.new(
           :condition => @ruby_literal_true,
           :then      => @ruby_statements_non_empty,
-          :else      => @ruby_statements_non_empty
+          :else      => @ruby_statements_non_empty,
+          :elsif     => false
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node for if statements with else if" do
+        ycp_node = YCP::If.new(
+          :cond => @ycp_true,
+          :then => @ycp_stmt_block,
+          :else => YCP::If.new(
+            :cond => @ycp_true,
+            :then => @ycp_stmt_block,
+            :else => @ycp_stmt_block
+          )
+        )
+
+        ruby_node = Ruby::If.new(
+          :condition => @ruby_literal_true,
+          :then      => @ruby_statements_non_empty,
+          :else      => Ruby::If.new(
+            :condition => @ruby_literal_true,
+            :then      => @ruby_statements_non_empty,
+            :else      => @ruby_statements_non_empty,
+            :elsif     => true
+          ),
+          :elsif     => false
         )
 
         ycp_node.compile(@context_empty).should == ruby_node
