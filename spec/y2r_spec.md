@@ -56,6 +56,8 @@ Contents
     * [`repeat` Statement](#repeat-statement)
     * [Clients](#clients)
     * [Modules](#modules)
+  * [Other](#other)
+    * [Comments](#comments)
 
 Values
 ------
@@ -1826,4 +1828,73 @@ module Yast
   M = MClass.new
   M.main
 end
+```
+
+Other
+-----
+
+### Comments
+
+Y2R translates comments before statements and after them.
+
+#### YCP (fragment)
+
+```ycp
+// before
+y2milestone("M1"); // after
+```
+
+#### Ruby (fragment)
+
+```ruby
+# before
+Builtins.y2milestone("M1") # after
+```
+
+Y2R preserves whitespace between statements.
+
+#### YCP (fragment)
+
+```ycp
+y2milestone("M1");
+
+y2milestone("M2");
+```
+
+#### Ruby (fragment)
+
+```ruby
+Builtins.y2milestone("M1")
+
+Builtins.y2milestone("M2")
+```
+
+Y2R handles all kinds of comments correctly.
+
+#### YCP (fragment)
+
+```ycp
+{
+  # hash
+  // one line
+  /* multiple
+     lines */
+  /*
+   * multiple
+   * lines
+   */
+  y2milestone("M1");
+}
+```
+
+#### Ruby (fragment)
+
+```ruby
+# hash
+# one line
+# multiple
+#    lines
+# multiple
+# lines
+Builtins.y2milestone("M1")
 ```
