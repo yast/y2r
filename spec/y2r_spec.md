@@ -1004,7 +1004,7 @@ i = b ? 42 : 43
 Y2R translates YCP index operator as a call of a method in the `Yast::Ops`
 module that implements its behavior. There is no equivalent operator in Ruby.
 
-Single-element index is passed as it is, multiple-element index is passed as an 
+Single-element index is passed as it is, multiple-element index is passed as an
 array. The default value is passed only if it is non-`nil`.
 
 #### YCP (fragment)
@@ -1123,7 +1123,7 @@ in Ruby.
 list l = [42, 43, 44];
 
 l[0] = [45];
-l[0,0] = 42; 
+l[0,0] = 42;
 ```
 
 #### Ruby (fragment)

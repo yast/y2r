@@ -541,7 +541,7 @@ module Y2R
 
         # `Ops` exists because YCP does not have exceptions and nil propagates
         # to operation results. If we use a Ruby operator where the YaST program
-        # can produce `nil`, we would crash with an exception. If we know that 
+        # can produce `nil`, we would crash with an exception. If we know that
         # `nil` cannot be there, we ca use a plain ruby operator.
         def never_nil?
           false
@@ -2077,7 +2077,7 @@ module Y2R
           :Center,
           :CheckBox,
           :CheckBoxFrame,
-          :ColoredLabel, 
+          :ColoredLabel,
           :ComboBox,
           :DateField,
           :DownloadProgress,
