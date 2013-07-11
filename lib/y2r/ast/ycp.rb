@@ -303,7 +303,7 @@ module Y2R
             # completely. Note that returning "" instead of nil would not be
             # enough, at that would cause adding a newline into the generated
             # code at some places.
-            if whitespace.drop_after_above? || whitespace.drop_before_below?
+            if whitespace.drop_after_above? || whitespace.drop_after_below?
               comment = nil if comment.empty?
             end
 
@@ -611,7 +611,7 @@ module Y2R
             when 1
               statement_context = context.with_whitespace(Comments::Whitespace.new(
                 :drop_before_above => true,
-                :drop_before_below => true
+                :drop_after_below  => true
               ))
 
               [statements.first.compile(statement_context)]

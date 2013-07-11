@@ -118,24 +118,6 @@ module Y2R
         return
       end
 
-      # Consider code like this:
-      #
-      #   {
-      #     y2milestone("M1");
-      #   } <-- newline here
-      #
-      # In ycpc there is no node to attach the newline to as |comment_before|,
-      # so it is attached as |comment_after| to the |y2milestone| call. If it
-      # was kept there, it would clutter the generated code with additional
-      # newline at the end.
-      #
-      # To prevent all such situations, we remove all whitespace-only
-      # |comment_after| attributes at this point. If there is an actual comment,
-      # it is kept.
-      if element["comment_after"] && element["comment_after"] =~ /^\s*$/
-        element.attributes["comment_after"].remove
-      end
-
       # In general, ycpc collects comments and they end up as |comment_before|
       # at the next AST node that is created. In reality, parts of the comments
       # may belong to the previous node (passed as |last_element|).

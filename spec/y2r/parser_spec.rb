@@ -51,9 +51,10 @@ module Y2R
               :child => AST::YCP::Const.new(:type => :int, :value => "43")
             ),
             AST::YCP::Assign.new(
-              :ns    => nil,
-              :name  => "k",
-              :child => AST::YCP::Const.new(:type => :int, :value => "44")
+              :ns            => nil,
+              :name          => "k",
+              :child         => AST::YCP::Const.new(:type => :int, :value => "44"),
+							:comment_after => "\n"
             )
           ]
         )
