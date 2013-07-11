@@ -289,7 +289,7 @@ module Y2R
             # completely. Note that returning "" instead of nil would not be
             # enough, at that would cause adding a newline into the generated
             # code at some places.
-            if whitespace.drop_after_above? || whitespace.drop_before_below?
+            if whitespace.drop_after_above? || whitespace.drop_after_below?
               comment = nil if comment.empty?
             end
 
