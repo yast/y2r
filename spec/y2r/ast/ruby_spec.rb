@@ -808,8 +808,8 @@ module Y2R::AST::Ruby
           node = If.new(
             :condition => check_context(
               @literal_true,
-              :width => 80,
-              :shift => 3
+              :width => 78,
+              :shift => 1
             ),
             :then      => @statements,
             :else      => @statements
@@ -933,8 +933,8 @@ module Y2R::AST::Ruby
           node = Unless.new(
             :condition => check_context(
               @literal_true,
-              :width => 80,
-              :shift => 7
+              :width => 78,
+              :shift => 5
             ),
             :then      => @statements,
             :else      => @statements
@@ -1076,7 +1076,7 @@ module Y2R::AST::Ruby
 
       it "passes correct context to expression" do
         node = Case.new(
-          :expression => check_context(@literal_42, :width => 80, :shift => 5),
+          :expression => check_context(@literal_42, :width => 78, :shift => 3),
           :whens      => [],
           :else       => nil
         )
@@ -1246,7 +1246,7 @@ module Y2R::AST::Ruby
 
       it "passes correct context to condition" do
         node = While.new(
-          :condition => check_context(@literal_true, :width => 80, :shift => 6),
+          :condition => check_context(@literal_true, :width => 78, :shift => 4),
           :body      => @statements
         )
 
@@ -1301,7 +1301,7 @@ module Y2R::AST::Ruby
 
       it "passes correct context to condition" do
         node = Until.new(
-          :condition => check_context(@literal_true, :width => 80, :shift => 6),
+          :condition => check_context(@literal_true, :width => 78, :shift => 4),
           :body      => @statements
         )
 

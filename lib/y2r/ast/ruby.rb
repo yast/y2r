@@ -153,7 +153,19 @@ module Y2R
         end
 
         def header(keyword, expression, context)
-          "#{keyword} #{expression.to_ruby(context.shifted(keyword.size + 1))}"
+          # This whole thing is a bit hacky, but we can't help it if we don't
+          # want to rewrite how |indent| and |shift| work (which we don't this
+          # late).
+          #
+          # The basic idea is to pretend that the whole header is indented,
+          # emit the expression code, and than hack the first line.
+
+          expression_context = context.
+            indented(INDENT_STEP).
+            shifted(keyword.size + 1 - INDENT_STEP)
+          expression_code    = indent(expression.to_ruby(expression_context))
+
+          "#{keyword} #{expression_code[INDENT_STEP..-1]}"
         end
 
         def list_single_line_width(items, separator_width)
