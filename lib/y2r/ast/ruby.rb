@@ -693,8 +693,11 @@ module Y2R
       end
 
       class BinaryOperator < Node
+        LONELY_RHS_MIN_WIDTH = 6
+
         def to_ruby_base(context)
-          if fits_current_line?(context) && !has_line_breaking_comment?
+          if (fits_current_line?(context) || rhs.single_line_width <= LONELY_RHS_MIN_WIDTH) &&
+              !has_line_breaking_comment?
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)
