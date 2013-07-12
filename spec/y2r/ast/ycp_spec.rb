@@ -716,7 +716,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "assign",
+          :name     => "set",
           :args     => [
             Ruby::Variable.new(:name => "@l"),
             @ruby_literal_1,
@@ -742,7 +742,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "assign",
+          :name     => "set",
           :args     => [
             Ruby::Variable.new(:name => "@l"),
             Ruby::Array.new(:elements => [@ruby_literal_1, @ruby_literal_1]),

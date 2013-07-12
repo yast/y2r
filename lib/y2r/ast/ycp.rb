@@ -648,7 +648,7 @@ module Y2R
         def compile(context)
           Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => "assign",
+            :name     => "set",
             :args     => [
               entry.compile(context),
               build_index(context),

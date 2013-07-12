@@ -1131,8 +1131,8 @@ l[0,0] = 42;
 ```ruby
 l = [42, 43, 44]
 
-Ops.assign(l, 0, [45])
-Ops.assign(l, [0, 0], 42)
+Ops.set(l, 0, [45])
+Ops.set(l, [0, 0], 42)
 ```
 
 ### `return` Statement
