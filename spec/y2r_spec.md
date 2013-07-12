@@ -1018,9 +1018,9 @@ integer k = [42, 43, 44][1]:nil;
 #### Ruby (fragment)
 
 ```ruby
-i = Ops.index([42, 43, 44], 1, 0)
-j = Ops.index([[42, 43, 44]], [0, 1], 0)
-k = Ops.index([42, 43, 44], 1)
+i = Ops.get([42, 43, 44], 1, 0)
+j = Ops.get([[42, 43, 44]], [0, 1], 0)
+k = Ops.get([42, 43, 44], 1)
 ```
 
 ### Double Quote Operator

@@ -1902,7 +1902,7 @@ module Y2R
 
           Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => "Ops"),
-            :name     => "index",
+            :name     => "get",
             :args     => args,
             :block    => block,
             :parens   => true

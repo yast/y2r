@@ -4131,7 +4131,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "index",
+          :name     => "get",
           :args     => [
             Ruby::Array.new(
               :elements => [
@@ -4160,7 +4160,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "index",
+          :name     => "get",
           :args     => [
             Ruby::Array.new(
               :elements => [
@@ -4196,7 +4196,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "index",
+          :name     => "get",
           :args     => [
             Ruby::Array.new(
               :elements => [
@@ -4234,7 +4234,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "index",
+          :name     => "get",
           :args     => [
             Ruby::Array.new(
               :elements => [
@@ -4266,7 +4266,7 @@ module Y2R::AST
 
         ruby_node = Ruby::MethodCall.new(
           :receiver => Ruby::Variable.new(:name => "Ops"),
-          :name     => "index",
+          :name     => "get",
           :args     => [
             Ruby::Array.new(
               :elements => [
