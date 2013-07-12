@@ -152,6 +152,10 @@ module Y2R
           end
         end
 
+        def header(keyword, expression, context)
+          "#{keyword} #{expression.to_ruby(context.shifted(keyword.size + 1))}"
+        end
+
         def list_single_line_width(items, separator_width)
           items_width      = items.map(&:single_line_width).reduce(0, &:+)
           separators_width = separator_width * [items.size - 1, 0].max
@@ -339,9 +343,9 @@ module Y2R
         def to_ruby_base_multi_line(context)
           combine do |parts|
             if self.elsif
-              parts << "elsif #{condition.to_ruby(context.shifted(6))}"
+              parts << header("elsif", condition, context)
             else
-              parts << "if #{condition.to_ruby(context.shifted(3))}"
+              parts << header("if", condition, context)
             end
             parts << indented(self.then, context)
             if self.else
@@ -390,7 +394,7 @@ module Y2R
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
-            parts << "unless #{condition.to_ruby(context.shifted(7))}"
+            parts << header("unless", condition, context)
             parts << indented(self.then, context)
             if self.else
               parts << "else"
@@ -404,7 +408,7 @@ module Y2R
       class Case < Node
         def to_ruby_base(context)
           combine do |parts|
-            parts << "case #{expression.to_ruby(context.shifted(5))}"
+            parts << header("case", expression, context)
             whens.each do |whem|
               parts << indented(whem, context)
             end
@@ -448,7 +452,7 @@ module Y2R
         def to_ruby_base(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "while #{condition.to_ruby(context.shifted(6))}"
+              parts << header("while", condition, context)
               parts << indented(body, context)
               parts << "end"
             end
@@ -466,7 +470,7 @@ module Y2R
         def to_ruby_base(context)
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << "until #{condition.to_ruby(context.shifted(6))}"
+              parts << header("until", condition, context)
               parts << indented(body, context)
               parts << "end"
             end
