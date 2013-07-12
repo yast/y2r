@@ -176,8 +176,6 @@ s = "abcd"
 Y2R translates YCP paths as calls to the `Yast.path` method, which creates an
 instance of the `Yast::Path` class.
 
-TODO: What about encoding?
-
 #### YCP (fragment)
 
 ```ycp
