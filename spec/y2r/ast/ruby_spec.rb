@@ -60,10 +60,6 @@ module Y2R::AST::Ruby
         :comment_after => "# after"
       )
 
-      @literal_abcd  = Literal.new(:value => "abcd")
-      @literal_efgh  = Literal.new(:value => "efgh")
-      @literal_efghi = Literal.new(:value => "efghi")
-
       @literal_42 = Literal.new(:value => 42)
       @literal_43 = Literal.new(:value => 43)
       @literal_44 = Literal.new(:value => 44)
@@ -1818,17 +1814,6 @@ module Y2R::AST::Ruby
         :rhs => @binary_operator_44_plus_45
       )
 
-      @node_rhs_short = BinaryOperator.new(
-        :op  => "+",
-        :lhs => @literal_abcd,
-        :rhs => @literal_efgh
-      )
-      @node_rhs_long = BinaryOperator.new(
-        :op  => "+",
-        :lhs => @literal_abcd,
-        :rhs => @literal_efghi
-      )
-
       @node_lhs_comment_before = BinaryOperator.new(
         :op  => "+",
         :lhs => @literal_42_comment_before,
@@ -1860,12 +1845,6 @@ module Y2R::AST::Ruby
           @node_with_parens.to_ruby_base(@context_default).should ==
             "(42 + 43) + (44 + 45)"
 
-          @node_rhs_short.to_ruby_base(@context_default).should ==
-            "\"abcd\" + \"efgh\""
-
-          @node_rhs_long.to_ruby_base(@context_default).should ==
-            "\"abcd\" + \"efghi\""
-
           @node_lhs_comment_before.to_ruby_base(@context_default).should == [
             "# before",
             "42 + 43"
@@ -1890,11 +1869,11 @@ module Y2R::AST::Ruby
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
-              @literal_abcd,
+              @binary_operator_42_plus_43,
               :width => 80,
               :shift => 0
             ),
-            :rhs => @literal_efghi
+            :rhs => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_default)
@@ -1903,11 +1882,11 @@ module Y2R::AST::Ruby
         it "passes correct context to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => @literal_abcd,
+            :lhs => @binary_operator_42_plus_43,
             :rhs => check_context_enclosed(
-              @literal_efghi,
+              @binary_operator_44_plus_45,
               :width => 80,
-              :shift => 9
+              :shift => 12
             )
           )
 
@@ -1923,14 +1902,6 @@ module Y2R::AST::Ruby
           @node_with_parens.to_ruby_base(@context_narrow).should == [
             "(42 + 43) +",
             "  (44 + 45)"
-          ].join("\n")
-
-          @node_rhs_short.to_ruby_base(@context_narrow).should ==
-            "\"abcd\" + \"efgh\""
-
-          @node_rhs_long.to_ruby_base(@context_narrow).should == [
-            "\"abcd\" +",
-            "  \"efghi\""
           ].join("\n")
 
           @node_lhs_comment_before.to_ruby_base(@context_narrow).should == [
@@ -1950,8 +1921,7 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_rhs_comment_after.to_ruby_base(@context_narrow).should == [
-            "42 +",
-            "  43 # after"
+            "42 + 43 # after"
           ].join("\n")
         end
 
@@ -1959,11 +1929,11 @@ module Y2R::AST::Ruby
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => check_context_enclosed(
-              @literal_abcd,
+              @binary_operator_42_plus_43,
               :width => 0,
               :shift => 0
             ),
-            :rhs => @literal_efghi
+            :rhs => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_narrow)
@@ -1972,9 +1942,9 @@ module Y2R::AST::Ruby
         it "passes correct context to rhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => @literal_abcd,
+            :lhs => @binary_operator_42_plus_43,
             :rhs => check_context_enclosed(
-              @literal_efghi,
+              @binary_operator_44_plus_45,
               :width => -2,
               :shift => 0
             )
@@ -1989,9 +1959,6 @@ module Y2R::AST::Ruby
       it "returns correct value" do
         @node_without_parens.single_line_width_base.should == 7
         @node_with_parens.single_line_width_base.should    == 21
-
-        @node_rhs_short.single_line_width_base.should == 15
-        @node_rhs_long.single_line_width_base.should  == 16
 
         @node_lhs_comment_before.single_line_width_base.should ==
           Float::INFINITY

@@ -95,6 +95,10 @@ module Y2R
           enclose? ? 1 + single_line_width + 1 : single_line_width
         end
 
+        def hates_to_stand_alone?
+          false
+        end
+
         def starts_with_comment?
           comment_before
         end
@@ -695,10 +699,8 @@ module Y2R
       end
 
       class BinaryOperator < Node
-        LONELY_RHS_MIN_WIDTH = 6
-
         def to_ruby_base(context)
-          if (fits_current_line?(context) || rhs.single_line_width <= LONELY_RHS_MIN_WIDTH) &&
+          if (fits_current_line?(context) || rhs.hates_to_stand_alone?) &&
               !has_line_breaking_comment?
             to_ruby_base_single_line(context)
           else
@@ -1067,6 +1069,10 @@ module Y2R
           name.size
         end
 
+        def hates_to_stand_alone?
+          true
+        end
+
         protected
 
         def enclose?
@@ -1081,6 +1087,10 @@ module Y2R
 
         def single_line_width_base
           4
+        end
+
+        def hates_to_stand_alone?
+          true
         end
 
         protected
@@ -1099,6 +1109,14 @@ module Y2R
 
         def single_line_width_base
           value.inspect.size
+        end
+
+        def hates_to_stand_alone?
+          if value.is_a?(String) || value.is_a?(Symbol)
+            value.size <= 16
+          else
+            true
+          end
         end
 
         protected
@@ -1123,6 +1141,10 @@ module Y2R
           else
             Float::INFINITY
           end
+        end
+
+        def hates_to_stand_alone?
+          elements.empty?
         end
 
         protected
@@ -1165,6 +1187,10 @@ module Y2R
           else
             2
           end
+        end
+
+        def hates_to_stand_alone?
+          entries.empty?
         end
 
         protected
