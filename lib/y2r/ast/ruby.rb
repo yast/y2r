@@ -757,7 +757,8 @@ module Y2R
 
       class TernaryOperator < Node
         def to_ruby_base(context)
-          if fits_current_line?(context) && !has_line_breaking_comment?
+          if (fits_current_line?(context) || (self.then.hates_to_stand_alone? && self.else.hates_to_stand_alone?)) &&
+              !has_line_breaking_comment?
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)

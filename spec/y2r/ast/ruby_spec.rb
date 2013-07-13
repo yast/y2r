@@ -2028,9 +2028,7 @@ module Y2R::AST::Ruby
 
           @node_condition_comment_before.to_ruby_base(@context_default).should == [
             "# before",
-            "true ?",
-            "  42 :",
-            "  43"
+            "true ? 42 : 43"
           ].join("\n")
 
           @node_condition_comment_after.to_ruby_base(@context_default).should == [
@@ -2070,8 +2068,8 @@ module Y2R::AST::Ruby
               :width => 80,
               :shift => 0
             ),
-            :then      => @literal_42,
-            :else      => @literal_43
+            :then      => @binary_operator_42_plus_43,
+            :else      => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_default)
@@ -2081,11 +2079,11 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => check_context_enclosed(
-              @literal_42,
+              @binary_operator_42_plus_43,
               :width => 80,
               :shift => 7
             ),
-            :else      => @literal_43
+            :else      => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_default)
@@ -2094,11 +2092,11 @@ module Y2R::AST::Ruby
         it "passes correct context to else" do
           node = TernaryOperator.new(
             :condition => @literal_true,
-            :then      => @literal_42,
+            :then      => @binary_operator_42_plus_43,
             :else      => check_context_enclosed(
-              @literal_43,
+              @binary_operator_44_plus_45,
               :width => 80,
-              :shift => 12
+              :shift => 19
             ),
           )
 
@@ -2109,9 +2107,7 @@ module Y2R::AST::Ruby
       describe "with no space available" do
         it "emits correct code" do
           @node_without_parens.to_ruby_base(@context_narrow).should == [
-            "true ?",
-            "  42 :",
-            "  43"
+            "true ? 42 : 43"
           ].join("\n")
 
           @node_with_parens.to_ruby_base(@context_narrow).should == [
@@ -2122,9 +2118,7 @@ module Y2R::AST::Ruby
 
           @node_condition_comment_before.to_ruby_base(@context_narrow).should == [
             "# before",
-            "true ?",
-            "  42 :",
-            "  43"
+            "true ? 42 : 43"
           ].join("\n")
 
           @node_condition_comment_after.to_ruby_base(@context_narrow).should == [
@@ -2154,9 +2148,7 @@ module Y2R::AST::Ruby
           ].join("\n")
 
           @node_else_comment_after.to_ruby_base(@context_narrow).should == [
-            "true ?",
-            "  42 :",
-            "  43 # after"
+            "true ? 42 : 43 # after"
           ].join("\n")
         end
 
@@ -2167,8 +2159,8 @@ module Y2R::AST::Ruby
               :width => 0,
               :shift => 0
             ),
-            :then      => @literal_42,
-            :else      => @literal_43
+            :then      => @binary_operator_42_plus_43,
+            :else      => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_narrow)
@@ -2178,11 +2170,11 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => check_context_enclosed(
-              @literal_42,
+              @binary_operator_42_plus_43,
               :width => -2,
               :shift => 0
             ),
-            :else      => @literal_43
+            :else      => @binary_operator_44_plus_45
           )
 
           node.to_ruby_base(@context_narrow)
@@ -2191,9 +2183,9 @@ module Y2R::AST::Ruby
         it "passes correct context to else" do
           node = TernaryOperator.new(
             :condition => @literal_true,
-            :then      => @literal_42,
+            :then      => @binary_operator_42_plus_43,
             :else      => check_context_enclosed(
-              @literal_43,
+              @binary_operator_44_plus_45,
               :width => -2,
               :shift => 0
             ),
