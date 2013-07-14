@@ -125,14 +125,17 @@ module Y2R
       if last_element && comment_before
         if comment_before =~ /\n/
           after_part, before_part = comment_before.split("\n", 2)
-          last_element["comment_after"] = after_part unless after_part.empty?
-          if before_part.empty?
-            element.attributes["comment_before"].remove
-          else
-            element["comment_before"] = before_part
-          end
         else
-          last_element["comment_after"] = comment_before
+          after_part, before_part = comment_before, ""
+        end
+
+        if !after_part.empty?
+          last_element["comment_after"] = after_part
+        end
+
+        if !before_part.empty?
+          element["comment_before"] = before_part
+        else
           element.attributes["comment_before"].remove
         end
       end
