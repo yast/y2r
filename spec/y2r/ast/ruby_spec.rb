@@ -118,6 +118,17 @@ module Y2R::AST::Ruby
         :rhs => @literal_44
       )
 
+      @assignment_a_42_comment_before = Assignment.new(
+        :lhs            => @variable_a,
+        :rhs            => @literal_42,
+        :comment_before => "# before"
+      )
+      @assignment_a_42_comment_after = Assignment.new(
+        :lhs           => @variable_a,
+        :rhs           => @literal_42,
+        :comment_after => "# after"
+      )
+
       @binary_operator_true_or_false = BinaryOperator.new(
         :op  => "||",
         :lhs => @literal_true,
@@ -716,6 +727,27 @@ module Y2R::AST::Ruby
         :else      => nil
       )
 
+      @node_single_condition_comment_before = If.new(
+        :condition => @literal_true_comment_before,
+        :then      => @assignment_a_42,
+        :else      => nil
+      )
+      @node_single_condition_comment_after = If.new(
+        :condition => @literal_true_comment_after,
+        :then      => @assignment_a_42,
+        :else      => nil
+      )
+      @node_single_then_comment_before = If.new(
+        :condition => @literal_true,
+        :then      => @assignment_a_42_comment_before,
+        :else      => nil
+      )
+      @node_single_then_comment_after = If.new(
+        :condition => @literal_true,
+        :then      => @assignment_a_42_comment_after,
+        :else      => nil
+      )
+
       @node_multi_without_else = If.new(
         :condition => @literal_true,
         :then      => @statements,
@@ -741,6 +773,29 @@ module Y2R::AST::Ruby
     describe "#to_ruby_base" do
       it "emits correct code" do
         @node_single.to_ruby_base(@context_default).should == "a = 42 if true"
+
+        @node_single_condition_comment_before.to_ruby_base(@context_default).should == [
+          "if # before",
+          "  true",
+          "  a = 42",
+          "end"
+        ].join("\n")
+
+        @node_single_condition_comment_after.to_ruby_base(@context_default).should ==
+          "a = 42 if true # after"
+
+        @node_single_then_comment_before.to_ruby_base(@context_default).should == [
+          "if true",
+          "  # before",
+          "  a = 42",
+          "end"
+        ].join("\n")
+
+        @node_single_then_comment_after.to_ruby_base(@context_default).should == [
+          "if true",
+          "  a = 42 # after",
+          "end"
+        ].join("\n")
 
         @node_multi_without_else.to_ruby_base(@context_narrow).should == [
           "if true",
@@ -844,6 +899,15 @@ module Y2R::AST::Ruby
       it "returns correct value" do
         @node_single.single_line_width_base.should == 14
 
+        @node_single_condition_comment_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_single_condition_comment_after.single_line_width_base.should ==
+          22
+        @node_single_then_comment_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_single_then_comment_after.single_line_width_base.should ==
+          Float::INFINITY
+
         @node_multi_without_else.single_line_width_base.should ==
           Float::INFINITY
         @node_multi_with_else.single_line_width_base.should ==
@@ -857,6 +921,27 @@ module Y2R::AST::Ruby
       @node_single = Unless.new(
         :condition => @literal_true,
         :then      => @assignment_a_42,
+        :else      => nil
+      )
+
+      @node_single_condition_comment_before = Unless.new(
+        :condition => @literal_true_comment_before,
+        :then      => @assignment_a_42,
+        :else      => nil
+      )
+      @node_single_condition_comment_after = Unless.new(
+        :condition => @literal_true_comment_after,
+        :then      => @assignment_a_42,
+        :else      => nil
+      )
+      @node_single_then_comment_before = Unless.new(
+        :condition => @literal_true,
+        :then      => @assignment_a_42_comment_before,
+        :else      => nil
+      )
+      @node_single_then_comment_after = Unless.new(
+        :condition => @literal_true,
+        :then      => @assignment_a_42_comment_after,
         :else      => nil
       )
 
@@ -876,6 +961,29 @@ module Y2R::AST::Ruby
       it "emits correct code" do
         @node_single.to_ruby_base(@context_default).should ==
           "a = 42 unless true"
+
+        @node_single_condition_comment_before.to_ruby_base(@context_default).should == [
+          "unless # before",
+          "  true",
+          "  a = 42",
+          "end"
+        ].join("\n")
+
+        @node_single_condition_comment_after.to_ruby_base(@context_default).should ==
+          "a = 42 unless true # after"
+
+        @node_single_then_comment_before.to_ruby_base(@context_default).should == [
+          "unless true",
+          "  # before",
+          "  a = 42",
+          "end"
+        ].join("\n")
+
+        @node_single_then_comment_after.to_ruby_base(@context_default).should == [
+          "unless true",
+          "  a = 42 # after",
+          "end"
+        ].join("\n")
 
         @node_multi_without_else.to_ruby_base(@context_narrow).should == [
           "unless true",
@@ -968,6 +1076,15 @@ module Y2R::AST::Ruby
     describe "#single_line_width_base" do
       it "returns correct value" do
         @node_single.single_line_width_base.should == 18
+
+        @node_single_condition_comment_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_single_condition_comment_after.single_line_width_base.should ==
+          26
+        @node_single_then_comment_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_single_then_comment_after.single_line_width_base.should ==
+          Float::INFINITY
 
         @node_multi_without_else.single_line_width_base.should ==
           Float::INFINITY

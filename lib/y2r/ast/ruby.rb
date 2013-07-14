@@ -313,6 +313,16 @@ module Y2R
               Float::INFINITY   # always multiline
           end
         end
+
+        def starts_with_comment?
+          comment_before ||
+            (statements.size > 0 && statements.first.starts_with_comment?)
+        end
+
+        def ends_with_comment?
+          comment_after ||
+            (statements.size > 0 && statements.last.ends_with_comment?)
+        end
       end
 
       class Begin < Node
@@ -331,7 +341,8 @@ module Y2R
 
       class If < Node
         def to_ruby_base(context)
-          if fits_current_line?(context) && !self.elsif
+          if fits_current_line?(context) && !self.elsif &&
+              !has_line_breaking_comment?
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)
@@ -339,7 +350,7 @@ module Y2R
         end
 
         def single_line_width_base
-          if !self.else
+          if !self.else && !has_line_breaking_comment?
             self.then.single_line_width + 4 + condition.single_line_width
           else
             Float::INFINITY
@@ -347,6 +358,10 @@ module Y2R
         end
 
         private
+
+        def has_line_breaking_comment?
+          condition.starts_with_comment? || self.then.ends_with_comment?
+        end
 
         def to_ruby_base_single_line(context)
           then_code = self.then.to_ruby(context)
@@ -383,7 +398,7 @@ module Y2R
 
       class Unless < Node
         def to_ruby_base(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) && !has_line_breaking_comment?
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)
@@ -391,7 +406,7 @@ module Y2R
         end
 
         def single_line_width_base
-          if !self.else
+          if !self.else && !has_line_breaking_comment?
             self.then.single_line_width + 8 + condition.single_line_width
           else
             Float::INFINITY
@@ -399,6 +414,10 @@ module Y2R
         end
 
         private
+
+        def has_line_breaking_comment?
+          condition.starts_with_comment? || self.then.ends_with_comment?
+        end
 
         def to_ruby_base_single_line(context)
           then_code = self.then.to_ruby(context)
