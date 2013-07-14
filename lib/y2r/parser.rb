@@ -130,7 +130,11 @@ module Y2R
         end
 
         if !after_part.empty?
-          last_element["comment_after"] = after_part
+          if last_element["comment_after"]
+            last_element["comment_after"] = after_part + last_element["comment_after"]
+          else
+            last_element["comment_after"] = after_part
+          end
         end
 
         if !before_part.empty?
