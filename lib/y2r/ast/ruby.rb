@@ -155,12 +155,12 @@ module Y2R
 
         def wrapped_line_list(items, opener, separator, closer, context)
           combine do |parts|
-            parts << opener
+            parts << opener if opener
             items[0..-2].each do |item|
               parts << "#{indented(item, context.with_trailer(separator))}"
             end
             parts << "#{indented(items.last, context)}" unless items.empty?
-            parts << closer
+            parts << closer if closer
           end
         end
 
@@ -469,14 +469,36 @@ module Y2R
 
       class When < Node
         def to_ruby_base(context)
+          if !values_have_comments?
+            to_ruby_base_single_line(context)
+          else
+            to_ruby_base_multi_line(context)
+          end
+        end
+
+        def single_line_width_base
+          Float::INFINITY   # always multiline
+        end
+
+        private
+
+        def values_have_comments?
+          values.any? { |v| v.has_comment? }
+        end
+
+        def to_ruby_base_single_line(context)
           combine do |parts|
             parts << "when #{list(values, ", ", context.shifted(5))}"
             parts << indented(body, context)
           end
         end
 
-        def single_line_width_base
-          Float::INFINITY   # always multiline
+        def to_ruby_base_multi_line(context)
+          combine do |parts|
+            parts << "when"
+            parts << wrapped_line_list(values, nil, ",", nil, context)
+            parts << indented(body, context)
+          end
         end
       end
 

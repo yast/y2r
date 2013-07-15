@@ -1252,6 +1252,23 @@ module Y2R::AST::Ruby
         :values => [@literal_42, @literal_43, @literal_44],
         :body   => @statements
       )
+
+      @node_values_comments_before = When.new(
+        :values => [
+          @literal_42_comment_before,
+          @literal_43_comment_before,
+          @literal_44_comment_before
+        ],
+        :body   => @statements
+      )
+      @node_values_comments_after = When.new(
+        :values => [
+          @literal_42_comment_after,
+          @literal_43_comment_after,
+          @literal_44_comment_after
+        ],
+        :body   => @statements
+      )
     end
 
     describe "#to_ruby_base" do
@@ -1269,28 +1286,89 @@ module Y2R::AST::Ruby
           "  b = 43",
           "  c = 44"
         ].join("\n")
+
+        @node_values_comments_before.to_ruby_base(@context_default).should == [
+          "when",
+          "  # before",
+          "  42,",
+          "  # before",
+          "  43,",
+          "  # before",
+          "  44",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
+
+        @node_values_comments_after.to_ruby_base(@context_default).should == [
+          "when",
+          "  42, # after",
+          "  43, # after",
+          "  44 # after",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44"
+        ].join("\n")
       end
 
-      it "passes correct context to values" do
-        node = When.new(
-          :values => [
-            check_context(@literal_42, :width => 80, :shift => 5),
-            check_context(@literal_43, :width => 80, :shift => 9),
-            check_context(@literal_44, :width => 80, :shift => 13)
-          ],
-          :body   => @statements
-        )
+      describe "for single-line when clauses" do
+        it "passes correct context to values" do
+          node = When.new(
+            :values => [
+              check_context(@literal_42, :width => 80, :shift => 5),
+              check_context(@literal_43, :width => 80, :shift => 9),
+              check_context(@literal_44, :width => 80, :shift => 13)
+            ],
+            :body   => @statements
+          )
 
-        node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_default)
+        end
+
+        it "passes correct context to body" do
+          node = When.new(
+            :values => [@literal_42],
+            :body   => check_context(@statements, :width => 78, :shift => 0)
+          )
+
+          node.to_ruby_base(@context_default)
+        end
       end
 
-      it "passes correct context to body" do
-        node = When.new(
-          :values => [@literal_42],
-          :body   => check_context(@statements, :width => 78, :shift => 0)
-        )
+      describe "for multi-line when clauses" do
+        it "passes correct context to values" do
+          node = When.new(
+            :values => [
+              check_context(
+                @literal_42_comment_before,
+                :width => 78,
+                :shift => 0
+              ),
+              check_context(
+                @literal_43_comment_before,
+                :width => 78,
+                :shift => 0
+              ),
+              check_context(
+                @literal_44_comment_after,
+                :width => 78,
+                :shift => 0
+              )
+            ],
+            :body   => @statements
+          )
 
-        node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_default)
+        end
+
+        it "passes correct context to body" do
+          node = When.new(
+            :values => [@literal_42_comment_before],
+            :body   => check_context(@statements, :width => 78, :shift => 0)
+          )
+
+          node.to_ruby_base(@context_default)
+        end
       end
     end
 
@@ -1298,6 +1376,11 @@ module Y2R::AST::Ruby
       it "returns correct value" do
         @node_one_value.single_line_width_base.should       == Float::INFINITY
         @node_multiple_values.single_line_width_base.should == Float::INFINITY
+
+        @node_values_comments_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_values_comments_after.single_line_width_base.should ==
+          Float::INFINITY
       end
     end
   end
