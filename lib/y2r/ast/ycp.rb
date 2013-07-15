@@ -1519,7 +1519,13 @@ module Y2R
         end
 
         def build_other_defs(context)
-          compile_statements_with_whitespace(fundef_statements, context)
+          defs = compile_statements_with_whitespace(fundef_statements, context)
+
+          unless defs.empty?
+            defs.first.ensure_separated if has_main_def?
+          end
+
+          defs
         end
 
         def build_publish_calls(context)

@@ -1812,6 +1812,7 @@ module Yast
       @j = 43
       M()
     end
+
     def f
       return 42
     end
