@@ -1962,6 +1962,8 @@ module Y2R
 
         transfers_comments :compile
 
+        private
+
         def evaluate_default_lazily?
           is_call           = default.is_a?(Call)
           is_non_empty_list = default.is_a?(List)   && !default.empty?
@@ -1970,8 +1972,6 @@ module Y2R
 
           is_call || is_non_empty_list || is_non_empty_map || is_non_empty_term
         end
-
-        private
 
         def build_index(context)
           if index.children.size == 1
@@ -2042,10 +2042,7 @@ module Y2R
           "term",
         ]
         def compile(context)
-          types_differ             = from.no_const != to.no_const
-          wraps_autoconverting_get = child.is_a?(YEBracket) && !child.evaluate_default_lazily?
-
-          if types_differ && !wraps_autoconverting_get
+          if from.no_const != to.no_const
             if compile_as_shortcut?
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "Convert"),
