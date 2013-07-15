@@ -281,13 +281,9 @@ module Y2R
 
       class Def < Node
         def to_ruby_base(context)
-          args_shift   = 4 + name.size + 1
+          args_shift   = 4 + name.size
           args_context = context.shifted(args_shift)
-          args_code    = if !args.empty?
-            "(#{list(args, ", ", args_context)})"
-          else
-            ""
-          end
+          args_code    = emit_args(args_context)
 
           combine do |parts|
             parts << "def #{name}#{args_code}"
@@ -298,6 +294,32 @@ module Y2R
 
         def single_line_width_base
           Float::INFINITY   # always multiline
+        end
+
+        private
+
+        def args_have_comments?
+          args.any? { |a| a.has_comment? }
+        end
+
+        def emit_args(context)
+          if !args_have_comments?
+            emit_args_single_line(context)
+          else
+            emit_args_multi_line(context)
+          end
+        end
+
+        def emit_args_single_line(context)
+          if !args.empty?
+            "(#{list(args, ", ", context.shifted(1))})"
+          else
+            ""
+          end
+        end
+
+        def emit_args_multi_line(context)
+          wrapped_line_list(args, "(", ",", ")", context)
         end
       end
 

@@ -100,8 +100,25 @@ module Y2R::AST::Ruby
         :name           => "a",
         :comment_before => "# before"
       )
+      @variable_b_comment_before = Variable.new(
+        :name           => "b",
+        :comment_before => "# before"
+      )
+      @variable_c_comment_before = Variable.new(
+        :name           => "c",
+        :comment_before => "# before"
+      )
+
       @variable_a_comment_after = Variable.new(
         :name          => "a",
+        :comment_after => "# after"
+      )
+      @variable_b_comment_after = Variable.new(
+        :name          => "b",
+        :comment_after => "# after"
+      )
+      @variable_c_comment_after = Variable.new(
+        :name          => "c",
         :comment_after => "# after"
       )
 
@@ -558,6 +575,25 @@ module Y2R::AST::Ruby
         :args       => [@variable_a, @variable_b, @variable_c],
         :statements => @statements
       )
+
+      @node_args_comments_before = Def.new(
+        :name       => "m",
+        :args       => [
+          @variable_a_comment_before,
+          @variable_b_comment_before,
+          @variable_c_comment_before
+        ],
+        :statements => @statements
+      )
+      @node_args_comments_after = Def.new(
+        :name       => "m",
+        :args       => [
+          @variable_a_comment_after,
+          @variable_b_comment_after,
+          @variable_c_comment_after
+        ],
+        :statements => @statements
+      )
     end
 
     describe "#to_ruby_base" do
@@ -585,30 +621,97 @@ module Y2R::AST::Ruby
           "  c = 44",
           "end"
         ].join("\n")
+
+        @node_args_comments_before.to_ruby_base(@context_default).should == [
+          "def m(",
+          "  # before",
+          "  a,",
+          "  # before",
+          "  b,",
+          "  # before",
+          "  c",
+          ")",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          "end"
+        ].join("\n")
+
+        @node_args_comments_after.to_ruby_base(@context_default).should == [
+          "def m(",
+          "  a, # after",
+          "  b, # after",
+          "  c # after",
+          ")",
+          "  a = 42",
+          "  b = 43",
+          "  c = 44",
+          "end"
+        ].join("\n")
       end
 
-      it "passes correct context to args" do
-        node = Def.new(
-          :name       => "m",
-          :args       => [
-            check_context(@variable_a, :width => 80, :shift => 6),
-            check_context(@variable_b, :width => 80, :shift => 9),
-            check_context(@variable_c, :width => 80, :shift => 12),
-          ],
-          :statements => @statements
-        )
+      describe "for single-line method definitions" do
+        it "passes correct context to args" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [
+              check_context(@variable_a, :width => 80, :shift => 6),
+              check_context(@variable_b, :width => 80, :shift => 9),
+              check_context(@variable_c, :width => 80, :shift => 12),
+            ],
+            :statements => @statements
+          )
 
-        node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_default)
+        end
+
+        it "passes correct context to statements" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [],
+            :statements => check_context(@statements, :width => 78, :shift => 0),
+          )
+
+          node.to_ruby_base(@context_default)
+        end
       end
 
-      it "passes correct context to statements" do
-        node = Def.new(
-          :name       => "m",
-          :args       => [],
-          :statements => check_context(@statements, :width => 78, :shift => 0),
-        )
+      describe "for nulti-line method definitions" do
+        it "passes correct context to args" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [
+              check_context(
+                @variable_a_comment_before,
+                :width => 78,
+                :shift => 0
+              ),
+              check_context(
+                @variable_b_comment_before,
+                :width => 78,
+                :shift => 0
+              ),
+              check_context(
+                @variable_c_comment_before,
+                :width => 78,
+                :shift => 0
+              ),
+            ],
+            :statements => @statements
+          )
 
-        node.to_ruby_base(@context_default)
+          node.to_ruby_base(@context_default)
+        end
+
+        it "passes correct context to statements" do
+          node = Def.new(
+            :name       => "m",
+            :args       => [@variable_a_comment_before],
+            :statements => check_context(@statements, :width => 78, :shift => 0),
+          )
+
+          node.to_ruby_base(@context_default)
+        end
       end
     end
 
@@ -617,6 +720,11 @@ module Y2R::AST::Ruby
         @node_no_args.single_line_width_base.should       == Float::INFINITY
         @node_one_arg.single_line_width_base.should       == Float::INFINITY
         @node_multiple_args.single_line_width_base.should == Float::INFINITY
+
+        @node_args_comments_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_args_comments_after.single_line_width_base.should ==
+          Float::INFINITY
       end
     end
   end
