@@ -1034,7 +1034,7 @@ module Y2R
 
       class Block < Node
         def to_ruby_base(context)
-          if fits_current_line?(context)
+          if fits_current_line?(context) && !args_have_comments?
             to_ruby_base_single_line(context)
           else
             to_ruby_base_multi_line(context)
@@ -1042,24 +1042,28 @@ module Y2R
         end
 
         def single_line_width_base
-          args_width       = list_single_line_width(args, 2)
-          statements_width = statements.single_line_width
+          if !args_have_comments?
+            args_width       = list_single_line_width(args, 2)
+            statements_width = statements.single_line_width
 
-          if !args.empty?
-            3 + args_width + 2 + statements_width + 2
+            if !args.empty?
+              3 + args_width + 2 + statements_width + 2
+            else
+              2 + statements_width + 2
+            end
           else
-            2 + statements_width + 2
+            Float::INFINITY
           end
         end
 
         private
 
+        def args_have_comments?
+          args.any? { |a| a.has_comment? }
+        end
+
         def to_ruby_base_single_line(context)
-          args_code = if !args.empty?
-            " |#{list(args, ", ", context.shifted(3))}|"
-          else
-            ""
-          end
+          args_code = emit_args(context.shifted(1))
 
           statements_shift   = 1 + args_code.size + 1
           statements_context = context.shifted(statements_shift)
@@ -1069,17 +1073,33 @@ module Y2R
         end
 
         def to_ruby_base_multi_line(context)
-          args_code = if !args.empty?
-            " |#{list(args, ", ", context.shifted(4))}|"
-          else
-            ""
-          end
+          args_code = emit_args(context.shifted(2))
 
           combine do |parts|
             parts << "do#{args_code}"
             parts << indented(statements, context)
             parts << "end"
           end
+        end
+
+        def emit_args(context)
+          if !args_have_comments?
+            emit_args_single_line(context)
+          else
+            emit_args_multi_line(context)
+          end
+        end
+
+        def emit_args_single_line(context)
+          if !args.empty?
+            " |#{list(args, ", ", context.shifted(2))}|"
+          else
+            ""
+          end
+        end
+
+        def emit_args_multi_line(context)
+          wrapped_line_list(args, " |", ",", "|", context)
         end
       end
 

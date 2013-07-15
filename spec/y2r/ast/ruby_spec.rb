@@ -3021,6 +3021,23 @@ module Y2R::AST::Ruby
         :statements => @assignment_a_42
       )
 
+      @node_single_args_comments_before = Block.new(
+        :args       => [
+          @variable_a_comment_before,
+          @variable_b_comment_before,
+          @variable_c_comment_before
+        ],
+        :statements => @assignment_a_42
+      )
+      @node_single_args_comments_after = Block.new(
+        :args       => [
+          @variable_a_comment_after,
+          @variable_b_comment_after,
+          @variable_c_comment_after
+        ],
+        :statements => @assignment_a_42
+      )
+
       @node_multi_no_args = Block.new(
         :args       => [],
         :statements => @statements
@@ -3031,6 +3048,23 @@ module Y2R::AST::Ruby
       )
       @node_multi_multiple_args = Block.new(
         :args       => [@variable_a, @variable_b, @variable_c],
+        :statements => @statements
+      )
+
+      @node_multi_args_comments_before = Block.new(
+        :args       => [
+          @variable_a_comment_before,
+          @variable_b_comment_before,
+          @variable_c_comment_before
+        ],
+        :statements => @statements
+      )
+      @node_multi_args_comments_after = Block.new(
+        :args       => [
+          @variable_a_comment_after,
+          @variable_b_comment_after,
+          @variable_c_comment_after
+        ],
         :statements => @statements
       )
     end
@@ -3046,6 +3080,29 @@ module Y2R::AST::Ruby
           @node_single_multiple_args.to_ruby_base(@context_default).should ==
 
             "{ |a, b, c| a = 42 }"
+
+          @node_single_args_comments_before.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  # before",
+            "  a,",
+            "  # before",
+            "  b,",
+            "  # before",
+            "  c",
+            "|",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
+          @node_single_args_comments_after.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  a, # after",
+            "  b, # after",
+            "  c # after",
+            "|",
+            "  a = 42",
+            "end"
+          ].join("\n")
 
           @node_multi_no_args.to_ruby_base(@context_narrow).should == [
             "do",
@@ -3070,32 +3127,101 @@ module Y2R::AST::Ruby
             "  c = 44",
             "end"
           ].join("\n")
+
+          @node_multi_args_comments_before.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  # before",
+            "  a,",
+            "  # before",
+            "  b,",
+            "  # before",
+            "  c",
+            "|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_multi_args_comments_after.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  a, # after",
+            "  b, # after",
+            "  c # after",
+            "|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
         end
 
-        it "passes correct context to args" do
-          node = Block.new(
-            :args       => [
-              check_context(@variable_a, :width => 80, :shift => 3),
-              check_context(@variable_b, :width => 80, :shift => 6),
-              check_context(@variable_c, :width => 80, :shift => 9)
-            ],
-            :statements => @assignment_a_42
-          )
-
-          node.to_ruby_base(@context_default)
-        end
-
-        it "passes correct context to statements" do
-          node = Block.new(
-            :args       => [],
-            :statements => check_context(
-              @assignment_a_42,
-              :width => 80,
-              :shift => 2
+        describe "for blocks with uncommented args" do
+          it "passes correct context to args" do
+            node = Block.new(
+              :args       => [
+                check_context(@variable_a, :width => 80, :shift => 3),
+                check_context(@variable_b, :width => 80, :shift => 6),
+                check_context(@variable_c, :width => 80, :shift => 9)
+              ],
+              :statements => @assignment_a_42
             )
-          )
 
-          node.to_ruby_base(@context_default)
+            node.to_ruby_base(@context_default)
+          end
+
+          it "passes correct context to statements" do
+            node = Block.new(
+              :args       => [],
+              :statements => check_context(
+                @assignment_a_42,
+                :width => 80,
+                :shift => 2
+              )
+            )
+
+            node.to_ruby_base(@context_default)
+          end
+        end
+
+        describe "for blocks with commented args" do
+          it "passes correct context to args" do
+            node = Block.new(
+              :args       => [
+                check_context(
+                  @variable_a_comment_before,
+                  :width => 78,
+                  :shift => 0
+                ),
+                check_context(
+                  @variable_b_comment_before,
+                  :width => 78,
+                  :shift => 0
+                ),
+                check_context(
+                  @variable_c_comment_before,
+                  :width => 78,
+                  :shift => 0
+                )
+              ],
+              :statements => @assignment_a_42
+            )
+
+            node.to_ruby_base(@context_default)
+          end
+
+          it "passes correct context to statements" do
+            node = Block.new(
+              :args       => [@variable_a_comment_before],
+              :statements => check_context(
+                @assignment_a_42,
+                :width => 78,
+                :shift => 0
+              )
+            )
+
+            node.to_ruby_base(@context_default)
+          end
         end
       end
 
@@ -3119,6 +3245,29 @@ module Y2R::AST::Ruby
             "end"
           ].join("\n")
 
+          @node_single_args_comments_before.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  # before",
+            "  a,",
+            "  # before",
+            "  b,",
+            "  # before",
+            "  c",
+            "|",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
+          @node_single_args_comments_after.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  a, # after",
+            "  b, # after",
+            "  c # after",
+            "|",
+            "  a = 42",
+            "end"
+          ].join("\n")
+
           @node_multi_no_args.to_ruby_base(@context_narrow).should == [
             "do",
             "  a = 42",
@@ -3142,32 +3291,101 @@ module Y2R::AST::Ruby
             "  c = 44",
             "end"
           ].join("\n")
+
+          @node_multi_args_comments_before.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  # before",
+            "  a,",
+            "  # before",
+            "  b,",
+            "  # before",
+            "  c",
+            "|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
+
+          @node_multi_args_comments_after.to_ruby_base(@context_narrow).should == [
+            "do |",
+            "  a, # after",
+            "  b, # after",
+            "  c # after",
+            "|",
+            "  a = 42",
+            "  b = 43",
+            "  c = 44",
+            "end"
+          ].join("\n")
         end
 
-        it "passes correct context to args" do
-          node = Block.new(
-            :args       => [
-              check_context(@variable_a, :width => 0, :shift => 4),
-              check_context(@variable_b, :width => 0, :shift => 7),
-              check_context(@variable_c, :width => 0, :shift => 10)
-            ],
-            :statements => @assignment_a_42
-          )
-
-          node.to_ruby_base(@context_narrow)
-        end
-
-        it "passes correct context to statements" do
-          node = Block.new(
-            :args       => [],
-            :statements => check_context(
-              @assignment_a_42,
-              :width => -2,
-              :shift => 0
+        describe "for blocks with uncommented args" do
+          it "passes correct context to args" do
+            node = Block.new(
+              :args       => [
+                check_context(@variable_a, :width => 0, :shift => 4),
+                check_context(@variable_b, :width => 0, :shift => 7),
+                check_context(@variable_c, :width => 0, :shift => 10)
+              ],
+              :statements => @assignment_a_42
             )
-          )
 
-          node.to_ruby_base(@context_narrow)
+            node.to_ruby_base(@context_narrow)
+          end
+
+          it "passes correct context to statements" do
+            node = Block.new(
+              :args       => [],
+              :statements => check_context(
+                @assignment_a_42,
+                :width => -2,
+                :shift => 0
+              )
+            )
+
+            node.to_ruby_base(@context_narrow)
+          end
+        end
+
+        describe "for blocks with commented args" do
+          it "passes correct context to args" do
+            node = Block.new(
+              :args       => [
+                check_context(
+                  @variable_a_comment_before,
+                  :width => -2,
+                  :shift => 0
+                ),
+                check_context(
+                  @variable_b_comment_before,
+                  :width => -2,
+                  :shift => 0
+                ),
+                check_context(
+                  @variable_c_comment_before,
+                  :width => -2,
+                  :shift => 0
+                )
+              ],
+              :statements => @assignment_a_42
+            )
+
+            node.to_ruby_base(@context_narrow)
+          end
+
+          it "passes correct context to statements" do
+            node = Block.new(
+              :args       => [@variable_a_comment_before],
+              :statements => check_context(
+                @assignment_a_42,
+                :width => -2,
+                :shift => 0
+              )
+            )
+
+            node.to_ruby_base(@context_narrow)
+          end
         end
       end
     end
@@ -3178,11 +3396,21 @@ module Y2R::AST::Ruby
         @node_single_one_arg.single_line_width_base.should       == 14
         @node_single_multiple_args.single_line_width_base.should == 20
 
+        @node_single_args_comments_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_single_args_comments_after.single_line_width_base.should ==
+          Float::INFINITY
+
         @node_multi_no_args.single_line_width_base.should ==
           Float::INFINITY
         @node_multi_one_arg.single_line_width_base.should ==
           Float::INFINITY
         @node_multi_multiple_args.single_line_width_base.should ==
+          Float::INFINITY
+
+        @node_multi_args_comments_before.single_line_width_base.should ==
+          Float::INFINITY
+        @node_multi_args_comments_after.single_line_width_base.should ==
           Float::INFINITY
       end
     end
