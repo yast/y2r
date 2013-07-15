@@ -1535,7 +1535,15 @@ module Y2R
             symbols.select(&:global)
           end
 
-          exported_symbols.map { |s| s.compile_as_publish_call(context) }
+          calls = exported_symbols.map { |s| s.compile_as_publish_call(context) }
+
+          unless calls.empty?
+            if has_main_def? || !fundef_statements.empty?
+              calls.first.ensure_separated
+            end
+          end
+
+          calls
         end
       end
 
