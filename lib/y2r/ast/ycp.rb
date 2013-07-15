@@ -360,16 +360,33 @@ module Y2R
             # begin with a line of stars.
             is_doc_comment = segment =~ /\A\/\*\*[^*]/
 
+            is_starred = segment =~ /
+              \A
+              \/\*.*(\n|$)           # first line
+              (^[ \t]*\*.*(\n|$))*   # remaining lines
+              \z
+            /x
+
+            is_first_line_empty = segment =~ /\A\/\*\*?[ \t]*$/
+
             # Remove delimiters and associated whitespace & newline.
-            segment = if is_doc_comment
-              segment.sub(/\A\/\*\*[ \t]*\n?/, "")
+            segment = if is_starred && !is_first_line_empty
+              if is_doc_comment
+                segment.sub(/\A\/\*/, "")
+              else
+                segment.sub(/\A\//, "")
+              end
             else
-              segment.sub(/\A\/\*[ \t]*\n?/, "")
+              if is_doc_comment
+                segment.sub(/\A\/\*\*[ \t]*\n?/, "")
+              else
+                segment.sub(/\A\/\*[ \t]*\n?/, "")
+              end
             end
             segment = segment.sub(/\n?[ \t]*\*\/\z/, "")
 
             # Prepend "#" delimiters. Handle "starred" comments specially.
-            if segment =~ /\A(^[ \t]*\*.*(\n|$))*\z/
+            if is_starred
               segment = segment.gsub(/^[ \t]*\*/, "#")
             else
               segment = segment.
