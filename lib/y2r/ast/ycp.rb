@@ -1306,8 +1306,12 @@ module Y2R
           statements - fundef_statements
         end
 
+        def has_initialize_method_def?
+          !other_statements.empty?
+        end
+
         def build_initialize_method_def(context)
-          if !other_statements.empty?
+          if has_initialize_method_def?
             initialize_method_statements = compile_statements_with_whitespace(
               other_statements,
               context
@@ -1328,7 +1332,13 @@ module Y2R
         end
 
         def build_other_defs(context)
-          compile_statements_with_whitespace(fundef_statements, context)
+          defs = compile_statements_with_whitespace(fundef_statements, context)
+
+          unless defs.empty?
+            defs.first.ensure_separated if has_initialize_method_def?
+          end
+
+          defs
         end
       end
 
