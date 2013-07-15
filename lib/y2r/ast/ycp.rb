@@ -1073,8 +1073,12 @@ module Y2R
           statements - fundef_statements
         end
 
+        def has_main_def?
+          !other_statements.empty?
+        end
+
         def build_main_def(context)
-          if !other_statements.empty?
+          if has_main_def?
             main_statements = compile_statements_with_whitespace(
               other_statements,
               context
@@ -1099,7 +1103,13 @@ module Y2R
         end
 
         def build_other_defs(context)
-          compile_statements_with_whitespace(fundef_statements, context)
+          defs = compile_statements_with_whitespace(fundef_statements, context)
+
+          unless defs.empty?
+            defs.first.ensure_separated if has_main_def?
+          end
+
+          defs
         end
       end
 

@@ -294,6 +294,7 @@ module Yast
       @fref = fun_ref(method(:f), "void ()")
       nil
     end
+
     def f
       return
     end
@@ -695,6 +696,7 @@ module Yast
       )
       nil
     end
+
     def f1
       return 42
     end
@@ -826,6 +828,7 @@ module Yast
       @fref.call
       nil
     end
+
     def f
       return
     end
@@ -1746,6 +1749,7 @@ module Yast
       @j = 43
       nil
     end
+
     def f
       return 42
     end

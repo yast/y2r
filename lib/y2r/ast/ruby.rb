@@ -115,6 +115,14 @@ module Y2R
           false
         end
 
+        def ensure_separated
+          if comment_before && !comment_before.start_with?("\n")
+            self.comment_before = "\n#{comment_before}"
+          else
+            self.comment_before = ""
+          end
+        end
+
         protected
 
         def indented(node, context)
