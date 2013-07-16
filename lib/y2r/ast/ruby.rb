@@ -85,14 +85,18 @@ module Y2R
           end
         end
 
-        def single_line_width
+        def single_line_width(context)
           wrap_width_with_comments do
-            single_line_width_base
+            single_line_width_base(context)
           end
         end
 
-        def single_line_width_enclosed
-          enclose? ? 1 + single_line_width + 1 : single_line_width
+        def single_line_width_enclosed(context)
+          if enclose?
+            1 + single_line_width(context) + 1
+          else
+            single_line_width(context)
+          end
         end
 
         def hates_to_stand_alone?
@@ -182,15 +186,17 @@ module Y2R
           "#{keyword} #{expression_code[INDENT_STEP..-1]}#{separator_code}"
         end
 
-        def list_single_line_width(items, separator_width)
-          items_width      = items.map(&:single_line_width).reduce(0, &:+)
+        def list_single_line_width(items, separator_width, context)
+          items_width      = items.
+            map { |i| i.single_line_width(context) }.
+            reduce(0, &:+)
           separators_width = separator_width * [items.size - 1, 0].max
 
           items_width + separators_width
         end
 
         def fits_current_line?(context)
-          single_line_width_base <= context.width - context.shift
+          single_line_width_base(context) <= context.width - context.shift
         end
 
         def enclose?
@@ -236,7 +242,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
 
@@ -260,7 +266,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -274,7 +280,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -292,7 +298,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
 
@@ -333,12 +339,12 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           case statements.size
             when 0
               0
             when 1
-              statements.first.single_line_width
+              statements.first.single_line_width(context)
             else
               Float::INFINITY   # always multiline
           end
@@ -364,7 +370,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -379,9 +385,12 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !self.else && !has_line_breaking_comment?
-            self.then.single_line_width + 4 + condition.single_line_width
+            then_width      = self.then.single_line_width(context)
+            condition_width = condition.single_line_width(context)
+
+            then_width + 4 + condition_width
           else
             Float::INFINITY
           end
@@ -435,9 +444,12 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !self.else && !has_line_breaking_comment?
-            self.then.single_line_width + 8 + condition.single_line_width
+            then_width      = self.then.single_line_width(context)
+            condition_width = condition.single_line_width(context)
+
+            then_width + 8 + condition_width
           else
             Float::INFINITY
           end
@@ -484,7 +496,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -498,7 +510,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
 
@@ -532,7 +544,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -550,7 +562,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -568,7 +580,7 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           Float::INFINITY   # always multiline
         end
       end
@@ -578,7 +590,7 @@ module Y2R
           "break"
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           5
         end
       end
@@ -592,9 +604,9 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment
-            value ? 5 + value.single_line_width : 4
+            value ? 5 + value.single_line_width(context) : 4
           else
             Float::INFINITY
           end
@@ -628,9 +640,9 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment
-            value ? 7 + value.single_line_width : 6
+            value ? 7 + value.single_line_width(context) : 6
           else
             Float::INFINITY
           end
@@ -666,9 +678,9 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !expressions_have_comments?
-            1 + list_single_line_width(expressions, 2) + 1
+            1 + list_single_line_width(expressions, 2, context) + 1
           else
             Float::INFINITY
           end
@@ -698,10 +710,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment?
-            lhs_width = lhs.single_line_width
-            rhs_width = rhs.single_line_width
+            lhs_width = lhs.single_line_width(context)
+            rhs_width = rhs.single_line_width(context)
 
             lhs_width + 3 + rhs_width
           else
@@ -750,8 +762,8 @@ module Y2R
           "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
         end
 
-        def single_line_width_base
-          op.size + expression.single_line_width_enclosed
+        def single_line_width_base(context)
+          op.size + expression.single_line_width_enclosed(context)
         end
 
         def ends_with_comment?
@@ -779,10 +791,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment?
-            lhs_width = lhs.single_line_width_enclosed
-            rhs_width = rhs.single_line_width_enclosed
+            lhs_width = lhs.single_line_width_enclosed(context)
+            rhs_width = rhs.single_line_width_enclosed(context)
 
             lhs_width + 1 + op.size + 1 + rhs_width
           else
@@ -836,11 +848,11 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment?
-            condition_width = condition.single_line_width_enclosed
-            then_width      = self.then.single_line_width_enclosed
-            else_width      = self.else.single_line_width_enclosed
+            condition_width = condition.single_line_width_enclosed(context)
+            then_width      = self.then.single_line_width_enclosed(context)
+            else_width      = self.else.single_line_width_enclosed(context)
 
             condition_width + 3 + then_width + 3 + else_width
           else
@@ -930,10 +942,14 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment? && !args_have_comments?
-            receiver_width = receiver ? receiver.single_line_width + 1 : 0
-            args_width     = args_single_line_width
+            receiver_width = if receiver
+              receiver.single_line_width(context) + 1
+            else
+              0
+            end
+            args_width     = args_single_line_width(context)
 
             receiver_width + name.size + args_width
           else
@@ -1019,12 +1035,12 @@ module Y2R
           wrapped_line_list(args, "(", ",", ")", arg_context)
         end
 
-        def args_single_line_width
+        def args_single_line_width(context)
           if !args.empty?
             if parens
-              1 + list_single_line_width(args, 2) + 1
+              1 + list_single_line_width(args, 2, context) + 1
             else
-              1 + list_single_line_width(args, 2)
+              1 + list_single_line_width(args, 2, context)
             end
           else
             !receiver && name =~ /^[A-Z]/ && args.empty? ? 2 : 0
@@ -1041,10 +1057,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !args_have_comments?
-            args_width       = list_single_line_width(args, 2)
-            statements_width = statements.single_line_width
+            args_width       = list_single_line_width(args, 2, context)
+            statements_width = statements.single_line_width(context)
 
             if !args.empty?
               3 + args_width + 2 + statements_width + 2
@@ -1112,10 +1128,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if receiver
             if !has_line_breaking_comment?
-              receiver.single_line_width + 2 + name.size
+              receiver.single_line_width(context) + 2 + name.size
             else
               Float::INFINITY
             end
@@ -1157,7 +1173,7 @@ module Y2R
           name
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           name.size
         end
 
@@ -1177,7 +1193,7 @@ module Y2R
           "self"
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           4
         end
 
@@ -1199,7 +1215,7 @@ module Y2R
           value.inspect
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           value.inspect.size
         end
 
@@ -1227,9 +1243,9 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !elements_have_comments?
-            1 + list_single_line_width(elements, 2) + 1
+            1 + list_single_line_width(elements, 2, context) + 1
           else
             Float::INFINITY
           end
@@ -1269,10 +1285,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !entries.empty?
             if !entries_have_comments?
-              2 + list_single_line_width(entries, 2) + 2
+              2 + list_single_line_width(entries, 2, context) + 2
             else
               Float::INFINITY
             end
@@ -1327,10 +1343,10 @@ module Y2R
           end
         end
 
-        def single_line_width_base
+        def single_line_width_base(context)
           if !has_line_breaking_comment?
-            key_width   = key.single_line_width_enclosed
-            value_width = value.single_line_width_enclosed
+            key_width   = key.single_line_width_enclosed(context)
+            value_width = value.single_line_width_enclosed(context)
 
             key_width + 4 + value_width
           else

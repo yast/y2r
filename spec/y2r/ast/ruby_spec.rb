@@ -258,7 +258,7 @@ module Y2R::AST::Ruby
         "ruby"
       end
 
-      def single_line_width_base
+      def single_line_width_base(context)
         4
       end
     end
@@ -272,7 +272,7 @@ module Y2R::AST::Ruby
         "ruby"
       end
 
-      def single_line_width
+      def single_line_width(context)
         4
       end
     end
@@ -286,7 +286,7 @@ module Y2R::AST::Ruby
         "ruby"
       end
 
-      def single_line_width
+      def single_line_width(context)
         4
       end
     end
@@ -368,19 +368,20 @@ module Y2R::AST::Ruby
     describe "#single_line_width" do
       describe "on nodes without any comments" do
         it "returns width without any comments" do
-          @node_comment_none.single_line_width.should == 4
+          @node_comment_none.single_line_width(@context_default).should == 4
         end
       end
 
       describe "on nodes with comment before" do
         it "returns width with comment before" do
-          @node_comment_before.single_line_width.should == Float::INFINITY
+          @node_comment_before.single_line_width(@context_default).should ==
+            Float::INFINITY
         end
       end
 
       describe "on nodes with comment after" do
         it "returns width with comment after" do
-          @node_comment_after.single_line_width.should == 12
+          @node_comment_after.single_line_width(@context_default).should == 12
         end
       end
     end
@@ -388,13 +389,15 @@ module Y2R::AST::Ruby
     describe "#single_line_width_enclosed" do
       describe "on nodes where #enclosed? returns false" do
         it "returns correct value" do
-          @node_not_enclosed.single_line_width_enclosed.should == 4
+          @node_not_enclosed.single_line_width_enclosed(@context_default).should ==
+            4
         end
       end
 
       describe "on nodes where #enclosed? returns true" do
         it "returns correct value" do
-          @node_enclosed.single_line_width_enclosed.should == 6
+          @node_enclosed.single_line_width_enclosed(@context_default).should ==
+            6
         end
       end
     end
@@ -470,9 +473,12 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_comment_none.single_line_width_base.should   == Float::INFINITY
-        @node_comment_before.single_line_width_base.should == Float::INFINITY
-        @node_comment_after.single_line_width_base.should  == Float::INFINITY
+        @node_comment_none.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_comment_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_comment_after.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -520,7 +526,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == Float::INFINITY
+        @node.single_line_width_base(@context_default).should == Float::INFINITY
       end
     end
   end
@@ -553,7 +559,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == Float::INFINITY
+        @node.single_line_width_base(@context_default).should == Float::INFINITY
       end
     end
   end
@@ -717,13 +723,16 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_no_args.single_line_width_base.should       == Float::INFINITY
-        @node_one_arg.single_line_width_base.should       == Float::INFINITY
-        @node_multiple_args.single_line_width_base.should == Float::INFINITY
-
-        @node_args_comments_before.single_line_width_base.should ==
+        @node_no_args.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_args_comments_after.single_line_width_base.should ==
+        @node_one_arg.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_multiple_args.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+
+        @node_args_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_args_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -786,11 +795,15 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_empty.single_line_width_base.should    == 0
-        @node_one.single_line_width_base.should      == 6
-        @node_multiple.single_line_width_base.should == Float::INFINITY
+        @node_empty.single_line_width_base(@context_default).should ==
+          0
+        @node_one.single_line_width_base(@context_default).should ==
+          6
+        @node_multiple.single_line_width_base(@context_default).should ==
+          Float::INFINITY
 
-        @node_with_nils.single_line_width_base.should == Float::INFINITY
+        @node_with_nils.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -822,7 +835,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == Float::INFINITY
+        @node.single_line_width_base(@context_default).should == Float::INFINITY
       end
     end
   end
@@ -1005,20 +1018,20 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_single.single_line_width_base.should == 14
+        @node_single.single_line_width_base(@context_default).should == 14
 
-        @node_single_condition_comment_before.single_line_width_base.should ==
+        @node_single_condition_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_single_condition_comment_after.single_line_width_base.should ==
+        @node_single_condition_comment_after.single_line_width_base(@context_default).should ==
           22
-        @node_single_then_comment_before.single_line_width_base.should ==
+        @node_single_then_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_single_then_comment_after.single_line_width_base.should ==
+        @node_single_then_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
 
-        @node_multi_without_else.single_line_width_base.should ==
+        @node_multi_without_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_multi_with_else.single_line_width_base.should ==
+        @node_multi_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -1183,20 +1196,20 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_single.single_line_width_base.should == 18
+        @node_single.single_line_width_base(@context_default).should == 18
 
-        @node_single_condition_comment_before.single_line_width_base.should ==
+        @node_single_condition_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_single_condition_comment_after.single_line_width_base.should ==
+        @node_single_condition_comment_after.single_line_width_base(@context_default).should ==
           26
-        @node_single_then_comment_before.single_line_width_base.should ==
+        @node_single_then_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_single_then_comment_after.single_line_width_base.should ==
+        @node_single_then_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
 
-        @node_multi_without_else.single_line_width_base.should ==
+        @node_multi_without_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_multi_with_else.single_line_width_base.should ==
+        @node_multi_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -1336,15 +1349,15 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_empty.single_line_width_base.should ==
+        @node_empty.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_one_when_without_else.single_line_width_base.should ==
+        @node_one_when_without_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_one_when_with_else.single_line_width_base.should ==
+        @node_one_when_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_multiple_whens_without_else.single_line_width_base.should ==
+        @node_multiple_whens_without_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_multiple_whens_with_else.single_line_width_base.should ==
+        @node_multiple_whens_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -1482,12 +1495,14 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_one_value.single_line_width_base.should       == Float::INFINITY
-        @node_multiple_values.single_line_width_base.should == Float::INFINITY
-
-        @node_values_comments_before.single_line_width_base.should ==
+        @node_one_value.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_values_comments_after.single_line_width_base.should ==
+        @node_multiple_values.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+
+        @node_values_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_values_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -1519,7 +1534,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == Float::INFINITY
+        @node.single_line_width_base(@context_default).should == Float::INFINITY
       end
     end
   end
@@ -1573,8 +1588,10 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_common.single_line_width_base.should  == Float::INFINITY
-        @node_wrapper.single_line_width_base.should == Float::INFINITY
+        @node_common.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_wrapper.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -1628,8 +1645,10 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_common.single_line_width_base.should  == Float::INFINITY
-        @node_wrapper.single_line_width_base.should == Float::INFINITY
+        @node_common.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_wrapper.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -1647,7 +1666,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == 5
+        @node.single_line_width_base(@context_default).should == 5
       end
     end
   end
@@ -1710,12 +1729,12 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_value.single_line_width_base.should == 4
-        @node_with_value.single_line_width_base.should    == 7
+        @node_without_value.single_line_width_base(@context_default).should == 4
+        @node_with_value.single_line_width_base(@context_default).should    == 7
 
-        @node_value_comment_before.single_line_width_base.should ==
+        @node_value_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_value_comment_after.single_line_width_base.should ==
+        @node_value_comment_after.single_line_width_base(@context_default).should ==
           15
       end
     end
@@ -1779,12 +1798,12 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_value.single_line_width_base.should == 6
-        @node_with_value.single_line_width_base.should    == 9
+        @node_without_value.single_line_width_base(@context_default).should == 6
+        @node_with_value.single_line_width_base(@context_default).should    == 9
 
-        @node_value_comment_before.single_line_width_base.should ==
+        @node_value_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_value_comment_after.single_line_width_base.should ==
+        @node_value_comment_after.single_line_width_base(@context_default).should ==
           17
       end
     end
@@ -1942,14 +1961,17 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_empty.single_line_width_base.should    == 2
-        @node_one.single_line_width_base.should      == 4
-        @node_multiple.single_line_width_base.should == 12
+        @node_empty.single_line_width_base(@context_default).should    == 2
+        @node_one.single_line_width_base(@context_default).should      == 4
+        @node_multiple.single_line_width_base(@context_default).should == 12
 
-        @node_multiline.single_line_width_base.should == Float::INFINITY
+        @node_multiline.single_line_width_base(@context_default).should ==
+          Float::INFINITY
 
-        @node_comments_before.single_line_width_base.should == Float::INFINITY
-        @node_comments_after.single_line_width_base.should  == Float::INFINITY
+        @node_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_comments_after.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -2054,15 +2076,15 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width" do
       it "returns correct value" do
-        @node.single_line_width_base.should == 6
+        @node.single_line_width_base(@context_default).should == 6
 
-        @node_lhs_comment_before.single_line_width_base.should ==
+        @node_lhs_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_lhs_comment_after.single_line_width_base.should ==
+        @node_lhs_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_rhs_comment_before.single_line_width_base.should ==
+        @node_rhs_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_rhs_comment_after.single_line_width_base.should ==
+        @node_rhs_comment_after.single_line_width_base(@context_default).should ==
           14
       end
     end
@@ -2103,8 +2125,10 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base.should == 3
-        @node_with_parens.single_line_width_base.should    == 10
+        @node_without_parens.single_line_width_base(@context_default).should ==
+          3
+        @node_with_parens.single_line_width_base(@context_default).should ==
+          10
       end
     end
   end
@@ -2265,16 +2289,18 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base.should == 7
-        @node_with_parens.single_line_width_base.should    == 21
+        @node_without_parens.single_line_width_base(@context_default).should ==
+          7
+        @node_with_parens.single_line_width_base(@context_default).should ==
+          21
 
-        @node_lhs_comment_before.single_line_width_base.should ==
+        @node_lhs_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_lhs_comment_after.single_line_width_base.should ==
+        @node_lhs_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_rhs_comment_before.single_line_width_base.should ==
+        @node_rhs_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_rhs_comment_after.single_line_width_base.should ==
+        @node_rhs_comment_after.single_line_width_base(@context_default).should ==
           15
       end
     end
@@ -2506,20 +2532,22 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base.should == 14
-        @node_with_parens.single_line_width_base.should    == 39
+        @node_without_parens.single_line_width_base(@context_default).should ==
+          14
+        @node_with_parens.single_line_width_base(@context_default).should ==
+          39
 
-        @node_condition_comment_before.single_line_width_base.should ==
+        @node_condition_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_condition_comment_after.single_line_width_base.should ==
+        @node_condition_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_then_comment_before.single_line_width_base.should ==
+        @node_then_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_then_comment_after.single_line_width_base.should ==
+        @node_then_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_else_comment_before.single_line_width_base.should ==
+        @node_else_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_else_comment_after.single_line_width_base.should ==
+        @node_else_comment_after.single_line_width_base(@context_default).should ==
           22
       end
     end
@@ -2969,39 +2997,47 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_receiver.single_line_width_base.should == 1
-        @node_with_receiver.single_line_width_base.should    == 3
-
-        @node_receiver_comment_before.single_line_width_base.should ==
-          Float::INFINITY
-        @node_receiver_comment_after.single_line_width_base.should ==
-          Float::INFINITY
-
-        @node_parens_const.single_line_width_base.should ==
+        @node_without_receiver.single_line_width_base(@context_default).should ==
+          1
+        @node_with_receiver.single_line_width_base(@context_default).should ==
           3
-        @node_parens_no_args.single_line_width_base.should ==
+
+        @node_receiver_comment_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_receiver_comment_after.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+
+        @node_parens_const.single_line_width_base(@context_default).should ==
+          3
+        @node_parens_no_args.single_line_width_base(@context_default).should ==
           1
-        @node_parens_one_arg.single_line_width_base.should ==
+        @node_parens_one_arg.single_line_width_base(@context_default).should ==
           5
-        @node_parens_multiple_args.single_line_width_base.should ==
+        @node_parens_multiple_args.single_line_width_base(@context_default).should ==
           13
-        @node_parens_aligned_args.single_line_width_base.should ==
+        @node_parens_aligned_args.single_line_width_base(@context_default).should ==
           34
-        @node_parens_args_comments_before.single_line_width_base.should ==
+        @node_parens_args_comments_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_parens_args_comments_after.single_line_width_base.should ==
+        @node_parens_args_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_parens_without_block.single_line_width_base.should ==
+        @node_parens_without_block.single_line_width_base(@context_default).should ==
           1
-        @node_parens_with_block.single_line_width_base.should ==
+        @node_parens_with_block.single_line_width_base(@context_default).should ==
           1
 
-        @node_no_parens_const.single_line_width_base.should         == 3
-        @node_no_parens_no_args.single_line_width_base.should       == 1
-        @node_no_parens_one_arg.single_line_width_base.should       == 4
-        @node_no_parens_multiple_args.single_line_width_base.should == 12
-        @node_no_parens_without_block.single_line_width_base.should == 1
-        @node_no_parens_with_block.single_line_width_base.should    == 1
+        @node_no_parens_const.single_line_width_base(@context_default).should ==
+          3
+        @node_no_parens_no_args.single_line_width_base(@context_default).should ==
+          1
+        @node_no_parens_one_arg.single_line_width_base(@context_default).should ==
+          4
+        @node_no_parens_multiple_args.single_line_width_base(@context_default).should ==
+          12
+        @node_no_parens_without_block.single_line_width_base(@context_default).should ==
+          1
+        @node_no_parens_with_block.single_line_width_base(@context_default).should ==
+          1
       end
     end
   end
@@ -3392,25 +3428,28 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_single_no_args.single_line_width_base.should       == 10
-        @node_single_one_arg.single_line_width_base.should       == 14
-        @node_single_multiple_args.single_line_width_base.should == 20
+        @node_single_no_args.single_line_width_base(@context_default).should ==
+          10
+        @node_single_one_arg.single_line_width_base(@context_default).should ==
+          14
+        @node_single_multiple_args.single_line_width_base(@context_default).should ==
+          20
 
-        @node_single_args_comments_before.single_line_width_base.should ==
+        @node_single_args_comments_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_single_args_comments_after.single_line_width_base.should ==
-          Float::INFINITY
-
-        @node_multi_no_args.single_line_width_base.should ==
-          Float::INFINITY
-        @node_multi_one_arg.single_line_width_base.should ==
-          Float::INFINITY
-        @node_multi_multiple_args.single_line_width_base.should ==
+        @node_single_args_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
 
-        @node_multi_args_comments_before.single_line_width_base.should ==
+        @node_multi_no_args.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_multi_args_comments_after.single_line_width_base.should ==
+        @node_multi_one_arg.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_multi_multiple_args.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+
+        @node_multi_args_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_multi_args_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -3480,12 +3519,14 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_receiver.single_line_width_base.should == 1
-        @node_with_receiver.single_line_width_base.should    == 4
+        @node_without_receiver.single_line_width_base(@context_default).should ==
+          1
+        @node_with_receiver.single_line_width_base(@context_default).should ==
+          4
 
-        @node_receiver_comment_before.single_line_width_base.should ==
+        @node_receiver_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_receiver_comment_after.single_line_width_base.should ==
+        @node_receiver_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
     end
@@ -3504,7 +3545,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == 1
+        @node.single_line_width_base(@context_default).should == 1
       end
     end
   end
@@ -3522,7 +3563,7 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == 4
+        @node.single_line_width_base(@context_default).should == 4
       end
     end
   end
@@ -3554,13 +3595,13 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_nil.single_line_width_base.should     == 3
-        @node_true.single_line_width_base.should    == 4
-        @node_false.single_line_width_base.should   == 5
-        @node_integer.single_line_width_base.should == 2
-        @node_float.single_line_width_base.should   == 4
-        @node_symbol.single_line_width_base.should  == 5
-        @node_string.single_line_width_base.should  == 6
+        @node_nil.single_line_width_base(@context_default).should     == 3
+        @node_true.single_line_width_base(@context_default).should    == 4
+        @node_false.single_line_width_base(@context_default).should   == 5
+        @node_integer.single_line_width_base(@context_default).should == 2
+        @node_float.single_line_width_base(@context_default).should   == 4
+        @node_symbol.single_line_width_base(@context_default).should  == 5
+        @node_string.single_line_width_base(@context_default).should  == 6
       end
     end
   end
@@ -3717,14 +3758,17 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_empty.single_line_width_base.should    == 2
-        @node_one.single_line_width_base.should      == 4
-        @node_multiple.single_line_width_base.should == 12
+        @node_empty.single_line_width_base(@context_default).should    == 2
+        @node_one.single_line_width_base(@context_default).should      == 4
+        @node_multiple.single_line_width_base(@context_default).should == 12
 
-        @node_multiline.single_line_width_base.should == Float::INFINITY
+        @node_multiline.single_line_width_base(@context_default).should ==
+          Float::INFINITY
 
-        @node_comments_before.single_line_width_base.should == Float::INFINITY
-        @node_comments_after.single_line_width_base.should  == Float::INFINITY
+        @node_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_comments_after.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -3891,14 +3935,17 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_empty.single_line_width_base.should    == 2
-        @node_one.single_line_width_base.should      == 12
-        @node_multiple.single_line_width_base.should == 32
+        @node_empty.single_line_width_base(@context_default).should    == 2
+        @node_one.single_line_width_base(@context_default).should      == 12
+        @node_multiple.single_line_width_base(@context_default).should == 32
 
-        @node_multiline.single_line_width_base.should == Float::INFINITY
+        @node_multiline.single_line_width_base(@context_default).should ==
+          Float::INFINITY
 
-        @node_comments_before.single_line_width_base.should == Float::INFINITY
-        @node_comments_after.single_line_width_base.should  == Float::INFINITY
+        @node_comments_before.single_line_width_base(@context_default).should ==
+          Float::INFINITY
+        @node_comments_after.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end
@@ -4000,15 +4047,15 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node.single_line_width_base.should == 8
+        @node.single_line_width_base(@context_default).should == 8
 
-        @node_key_comment_before.single_line_width_base.should ==
+        @node_key_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_key_comment_after.single_line_width_base.should ==
+        @node_key_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_value_comment_before.single_line_width_base.should ==
+        @node_value_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
-        @node_value_comment_after.single_line_width_base.should ==
+        @node_value_comment_after.single_line_width_base(@context_default).should ==
           16
       end
     end
