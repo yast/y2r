@@ -3074,11 +3074,11 @@ module Y2R::AST::Ruby
         it "emits correct code" do
           @node_single_no_args.to_ruby_base(@context_default).should ==
             "{ a = 42 }"
+
           @node_single_one_arg.to_ruby_base(@context_default).should ==
-
             "{ |a| a = 42 }"
-          @node_single_multiple_args.to_ruby_base(@context_default).should ==
 
+          @node_single_multiple_args.to_ruby_base(@context_default).should ==
             "{ |a, b, c| a = 42 }"
 
           @node_single_args_comments_before.to_ruby_base(@context_narrow).should == [
