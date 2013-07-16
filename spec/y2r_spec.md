@@ -296,7 +296,7 @@ module Yast
     end
 
     def f
-      return
+      nil
     end
   end
 end
@@ -702,18 +702,18 @@ module Yast
     end
 
     def f1
-      return 42
+      42
     end
 
     def f2(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
-      return 42
+      42
     end
 
     def f3(a, b, c)
-      return 42
+      42
     end
   end
 end
@@ -763,16 +763,16 @@ method on them.
 module Yast
   class DefaultClient < Client
     def outer
-      f1 = lambda { return 42 }
+      f1 = lambda { 42 }
 
       f2 = lambda do |a2, b2, c2|
         a2 = deep_copy(a2)
         b2 = deep_copy(b2)
         c2 = deep_copy(c2)
-        return 42
+        42
       end
 
-      f3 = lambda { |a2, b2, c2| return 42 }
+      f3 = lambda { |a2, b2, c2| 42 }
 
       f1.call
 
@@ -835,7 +835,7 @@ module Yast
     end
 
     def f
-      return
+      nil
     end
   end
 end
@@ -1174,11 +1174,11 @@ statement.
 module Yast
   class DefaultClient < Client
     def f1
-      return
+      nil
     end
 
     def f2
-      return 42
+      42
     end
   end
 end
@@ -1202,11 +1202,11 @@ foreach(integer i, [42, 43, 44], { integer j = 42; return; });
 # A variable prevents translating the block as YEReturn.
 Builtins.maplist([42, 43, 44]) do |i|
   j = 42
-  next j
+  j
 end
 Builtins.foreach([42, 43, 44]) do |i|
   j = 42
-  next
+  nil
 end
 ```
 
@@ -1286,7 +1286,7 @@ foreach(integer i, [42, 43, 44], { continue; });
 #### Ruby (fragment)
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i| next }
+Builtins.foreach([42, 43, 44]) { |i| nil }
 ```
 
 ### Function Definitions
@@ -1345,38 +1345,38 @@ maintains pass-by-value semantics for all types except `boolean`, `integer` and
 module Yast
   class DefaultClient < Client
     def f1
-      return 42
+      42
     end
 
     def f2(a, b, c)
-      return 42
+      42
     end
 
     def f3(a, b, c)
-      return 42
+      42
     end
 
     def f4(a, b, c)
-      return 42
+      42
     end
 
     def f5(a, b, c)
-      return 42
+      42
     end
 
     def f6(a, b, c)
-      return 42
+      42
     end
 
     def f7(a, b, c)
-      return 42
+      42
     end
 
     def f8(a, b, c)
       a = deep_copy(a)
       b = deep_copy(b)
       c = deep_copy(c)
-      return 42
+      42
     end
   end
 end
@@ -1441,25 +1441,25 @@ pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
 module Yast
   class DefaultClient < Client
     def outer
-      f1 = lambda { return 42 }
+      f1 = lambda { 42 }
 
-      f2 = lambda { |a, b, c| return 42 }
+      f2 = lambda { |a, b, c| 42 }
 
-      f3 = lambda { |a, b, c| return 42 }
+      f3 = lambda { |a, b, c| 42 }
 
-      f4 = lambda { |a, b, c| return 42 }
+      f4 = lambda { |a, b, c| 42 }
 
-      f5 = lambda { |a, b, c| return 42 }
+      f5 = lambda { |a, b, c| 42 }
 
-      f6 = lambda { |a, b, c| return 42 }
+      f6 = lambda { |a, b, c| 42 }
 
-      f7 = lambda { |a, b, c| return 42 }
+      f7 = lambda { |a, b, c| 42 }
 
       f8 = lambda do |a, b, c|
         a = deep_copy(a)
         b = deep_copy(b)
         c = deep_copy(c)
-        return 42
+        42
       end
       nil
     end
@@ -1757,11 +1757,11 @@ module Yast
     end
 
     def f
-      return 42
+      42
     end
 
     def g
-      return 43
+      43
     end
   end
 end
@@ -1820,11 +1820,11 @@ module Yast
     end
 
     def f
-      return 42
+      42
     end
 
     def g
-      return 43
+      43
     end
 
     def M

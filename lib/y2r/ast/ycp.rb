@@ -613,6 +613,45 @@ module Y2R
                 [statements.last.compile(last_context)]
             end
         end
+
+        def optimize_last_statement(statements, klass)
+          if !statements.empty?
+            last = statements.last
+
+            last_optimized = if last.is_a?(klass)
+              value = last.value || Ruby::Literal.new(:value => nil)
+
+              # We can't optimize the |return| or |next| away if they have
+              # comments and we can't move them to the value because it has its
+              # own comments. (We don't want to mess with concatenating.)
+              can_optimize = true
+              can_optimize = false if last.comment_before && value.comment_before
+              can_optimize = false if last.comment_after  && value.comment_after
+
+              if can_optimize
+                value.comment_before = last.comment_before if last.comment_before
+                value.comment_after  = last.comment_after  if last.comment_after
+                value
+              else
+                last
+              end
+            else
+              last
+            end
+
+            statements[0..-2] + [last_optimized]
+          else
+            []
+          end
+        end
+
+        def optimize_return(statements)
+          optimize_last_statement(statements, Ruby::Return)
+        end
+
+        def optimize_next(statements)
+          optimize_last_statement(statements, Ruby::Next)
+        end
       end
 
       # Sorted alphabetically.
@@ -928,9 +967,8 @@ module Y2R
         def compile(context)
           context.inside self do |inner_context|
             Ruby::Statements.new(
-              :statements => compile_statements_with_whitespace(
-                statements,
-                inner_context
+              :statements => optimize_return(
+                compile_statements_with_whitespace(statements, inner_context)
               )
             )
           end
@@ -1060,7 +1098,7 @@ module Y2R
                 :name       => "main",
                 :args       => [],
                 :statements => Ruby::Statements.new(
-                  :statements => main_statements
+                  :statements => optimize_return(main_statements)
                 )
               )
             ]
@@ -1685,7 +1723,9 @@ module Y2R
               :block    => Ruby::Block.new(
                 :args       => [],
                 :statements => Ruby::Statements.new(
-                  :statements => statements.map { |s| s.compile(inner_context) }
+                  :statements => optimize_next(
+                    statements.map { |s| s.compile(inner_context) }
+                  )
                 )
               ),
               :parens   => true
@@ -1698,7 +1738,9 @@ module Y2R
             Ruby::Block.new(
               :args       => args.map { |a| a.compile(inner_context) },
               :statements => Ruby::Statements.new(
-                :statements => statements.map { |s| s.compile(inner_context) }
+                :statements => optimize_next(
+                  statements.map { |s| s.compile(inner_context) }
+                )
               )
             )
           end
