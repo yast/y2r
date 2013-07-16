@@ -3329,14 +3329,14 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :variable),
-							:value => Ruby::Literal.new(:value => :a)
-						),
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :type),
-							:value => Ruby::Literal.new(:value => "integer")
-						)
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :variable),
+              :value => Ruby::Literal.new(:value => :a)
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :type),
+              :value => Ruby::Literal.new(:value => "integer")
+            )
           ],
           :block    => nil,
           :parens   => false
@@ -3357,18 +3357,18 @@ module Y2R::AST
           :receiver => nil,
           :name     => "publish",
           :args     => [
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :variable),
-							:value => Ruby::Literal.new(:value => :a)
-						),
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :type),
-							:value => Ruby::Literal.new(:value => "integer")
-						),
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :private),
-							:value => Ruby::Literal.new(:value => true)
-						)
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :variable),
+              :value => Ruby::Literal.new(:value => :a)
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :type),
+              :value => Ruby::Literal.new(:value => "integer")
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :private),
+              :value => Ruby::Literal.new(:value => true)
+            )
           ],
           :block    => nil,
           :parens   => false
@@ -4370,14 +4370,14 @@ module Y2R::AST
           :name     => "convert",
           :args     => [
             @ruby_literal_42,
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :from),
-							:value => Ruby::Literal.new(:value => from)
-						),
-						Ruby::HashEntry.new(
-							:key   => Ruby::Literal.new(:value => :to),
-							:value => Ruby::Literal.new(:value => to)
-						)
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :from),
+              :value => Ruby::Literal.new(:value => from)
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :to),
+              :value => Ruby::Literal.new(:value => to)
+            )
           ],
           :block    => nil,
           :parens   => true
