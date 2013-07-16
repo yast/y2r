@@ -153,43 +153,6 @@ module Y2R
           types.map { |t| Type.new(t.strip) }
         end
 
-        def void_method?
-          return false unless @type =~ /^void/
-
-          # We need to differ between two cases:
-          #
-          #  * |void(...)|      -- function returning |void|
-          #
-          #  * |void(...)(...)| -- function returning a reference to a function
-          #                        returning |void|
-          #
-          # We only want to return |true| in the first case. Note that |...| can
-          # also contain parens.
-          #
-          # The algorithm is simple -- go through the type specification and
-          # return |false| if second toplevel right paren is seen. If the end is
-          # reached without seeing one, return |true|.
-          nesting_level = 0
-          seen_right_paren = false
-          @type.each_char do |ch|
-            case ch
-              when '('
-                nesting_level += 1
-              when ')'
-                nesting_level -= 1
-                if nesting_level == 0
-                  if seen_right_paren
-                    return false
-                  else
-                    seen_right_paren = true
-                  end
-                end
-            end
-          end
-
-          true
-        end
-
         BOOLEAN = Type.new("boolean")
         INTEGER = Type.new("integer")
         SYMBOL  = Type.new("symbol")
@@ -1128,11 +1091,7 @@ module Y2R
               arg.compile_as_copy_arg_call(inner_context)
             end + statements.statements
 
-            fun_symbol = context.symbol_for(name)
-            # check for nil is needed only for testsuite, should not happen in real world
-            void_method = fun_symbol && fun_symbol.type.void_method?
-
-            if !block.always_returns? && !void_method
+            unless block.always_returns?
               statements.statements << Ruby::Literal.new(:value => nil)
             end
 

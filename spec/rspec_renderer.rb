@@ -77,6 +77,7 @@ class RSpecRenderer < Redcarpet::Render::Base
           lines << "  class DefaultClient < Client"
           lines << "    def fragment_wrapper"
           lines << indent(code[0..-2], 3)
+          lines << "      nil"
           lines << "    end"
           lines << "  end"
           lines << "end"
