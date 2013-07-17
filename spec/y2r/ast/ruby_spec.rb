@@ -242,11 +242,20 @@ module Y2R::AST::Ruby
 
       @block = Block.new(:args => [], :statements => @statements)
 
-      @context_default       = EmitterContext.new(:width => 80, :shift => 0)
-      @context_narrow        = EmitterContext.new(:width => 0, :shift => 0)
+      @context_default = EmitterContext.new(
+        :width    => 80,
+        :shift    => 0,
+        :priority => Priority::NONE
+      )
+      @context_narrow = EmitterContext.new(
+        :width    => 0,
+        :shift    => 0,
+        :priority => Priority::NONE
+      )
       @context_max_key_width = EmitterContext.new(
         :width         => 0,
         :shift         => 0,
+        :priority      => Priority::NONE,
         :max_key_width => 4
       )
     end
@@ -464,7 +473,12 @@ module Y2R::AST::Ruby
       it "passes correct context to statements" do
         node = Program.new(
           :filename   => "file.ycp",
-          :statements => check_context(@statements, :width => 80, :shift => 0)
+          :statements => check_context(
+            @statements,
+            :width    => 80,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby(@context_default)
@@ -506,7 +520,12 @@ module Y2R::AST::Ruby
       it "passes correct context to superclass" do
         node = Class.new(
           :name       => "C",
-          :superclass => check_context(@variable_S, :width => 80, :shift => 10),
+          :superclass => check_context(
+            @variable_S,
+            :width    => 80,
+            :shift    => 10,
+            :priority => Priority::NONE
+          ),
           :statements => @statements
         )
 
@@ -517,7 +536,12 @@ module Y2R::AST::Ruby
         node = Class.new(
           :name       => "C",
           :superclass => @variable_S,
-          :statements => check_context(@statements, :width => 78, :shift => 0),
+          :statements => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          ),
         )
 
         node.to_ruby_base(@context_default)
@@ -550,7 +574,12 @@ module Y2R::AST::Ruby
       it "passes correct context to statements" do
         node = Module.new(
           :name       => "M",
-          :statements => check_context(@statements, :width => 78, :shift => 0),
+          :statements => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          ),
         )
 
         node.to_ruby_base(@context_default)
@@ -661,9 +690,24 @@ module Y2R::AST::Ruby
           node = Def.new(
             :name       => "m",
             :args       => [
-              check_context(@variable_a, :width => 80, :shift => 6),
-              check_context(@variable_b, :width => 80, :shift => 9),
-              check_context(@variable_c, :width => 80, :shift => 12),
+              check_context(
+                @variable_a,
+                :width    => 80,
+                :shift    => 6,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @variable_b,
+                :width    => 80,
+                :shift    => 9,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @variable_c,
+                :width    => 80,
+                :shift    => 12,
+                :priority => Priority::NONE
+              ),
             ],
             :statements => @statements
           )
@@ -675,7 +719,12 @@ module Y2R::AST::Ruby
           node = Def.new(
             :name       => "m",
             :args       => [],
-            :statements => check_context(@statements, :width => 78, :shift => 0),
+            :statements => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
           )
 
           node.to_ruby_base(@context_default)
@@ -689,18 +738,21 @@ module Y2R::AST::Ruby
             :args       => [
               check_context(
                 @variable_a_comment_before,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               ),
               check_context(
                 @variable_b_comment_before,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               ),
               check_context(
                 @variable_c_comment_before,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               ),
             ],
             :statements => @statements
@@ -713,7 +765,12 @@ module Y2R::AST::Ruby
           node = Def.new(
             :name       => "m",
             :args       => [@variable_a_comment_before],
-            :statements => check_context(@statements, :width => 78, :shift => 0),
+            :statements => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
           )
 
           node.to_ruby_base(@context_default)
@@ -783,9 +840,24 @@ module Y2R::AST::Ruby
       it "passes correct context to statements" do
         node = Statements.new(
           :statements => [
-            check_context(@assignment_a_42, :width => 80, :shift => 0),
-            check_context(@assignment_b_43, :width => 80, :shift => 0),
-            check_context(@assignment_c_44, :width => 80, :shift => 0)
+            check_context(
+              @assignment_a_42,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @assignment_b_43,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @assignment_c_44,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           ]
         )
 
@@ -826,7 +898,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to statements" do
         node = Begin.new(
-          :statements => check_context(@statements, :width => 78, :shift => 0)
+          :statements => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby_base(@context_default)
@@ -954,8 +1031,9 @@ module Y2R::AST::Ruby
           node = If.new(
             :condition => check_context(
               @literal_true,
-              :width => 80,
-              :shift => 10
+              :width    => 80,
+              :shift    => 10,
+              :priority => Priority::NONE
             ),
             :then      => @assignment_a_42,
             :else      => nil
@@ -969,8 +1047,9 @@ module Y2R::AST::Ruby
             :condition => @literal_true,
             :then      => check_context(
               @assignment_a_42,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
             ),
             :else      => nil
           )
@@ -984,8 +1063,9 @@ module Y2R::AST::Ruby
           node = If.new(
             :condition => check_context(
               @literal_true,
-              :width => 78,
-              :shift => 1
+              :width    => 78,
+              :shift    => 1,
+              :priority => Priority::NONE
             ),
             :then      => @statements,
             :else      => @statements
@@ -997,7 +1077,12 @@ module Y2R::AST::Ruby
         it "passes correct context to then" do
           node = If.new(
             :condition => @literal_true,
-            :then      => check_context(@statements, :width => 78, :shift => 0),
+            :then      => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
             :else      => @statements
           )
 
@@ -1008,7 +1093,12 @@ module Y2R::AST::Ruby
           node = If.new(
             :condition => @literal_true,
             :then      => @statements,
-            :else      => check_context(@statements, :width => 78, :shift => 0)
+            :else      => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1132,8 +1222,9 @@ module Y2R::AST::Ruby
           node = Unless.new(
             :condition => check_context(
               @literal_true,
-              :width => 80,
-              :shift => 14
+              :width    => 80,
+              :shift    => 14,
+              :priority => Priority::NONE
             ),
             :then      => @assignment_a_42,
             :else      => nil
@@ -1147,8 +1238,9 @@ module Y2R::AST::Ruby
             :condition => @literal_true,
             :then      => check_context(
               @assignment_a_42,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
             ),
             :else      => nil
           )
@@ -1162,8 +1254,9 @@ module Y2R::AST::Ruby
           node = Unless.new(
             :condition => check_context(
               @literal_true,
-              :width => 78,
-              :shift => 5
+              :width    => 78,
+              :shift    => 5,
+              :priority => Priority::NONE
             ),
             :then      => @statements,
             :else      => @statements
@@ -1175,7 +1268,12 @@ module Y2R::AST::Ruby
         it "passes correct context to then" do
           node = Unless.new(
             :condition => @literal_true,
-            :then      => check_context(@statements, :width => 78, :shift => 0),
+            :then      => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
             :else      => @statements
           )
 
@@ -1186,7 +1284,12 @@ module Y2R::AST::Ruby
           node = Unless.new(
             :condition => @literal_true,
             :then      => @statements,
-            :else      => check_context(@statements, :width => 78, :shift => 0)
+            :else      => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1314,7 +1417,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to expression" do
         node = Case.new(
-          :expression => check_context(@literal_42, :width => 78, :shift => 3),
+          :expression => check_context(
+            @literal_42,
+            :width    => 78,
+            :shift    => 3,
+            :priority => Priority::NONE
+          ),
           :whens      => [],
           :else       => nil
         )
@@ -1326,9 +1434,24 @@ module Y2R::AST::Ruby
         node = Case.new(
           :expression => @literal_42,
           :whens      => [
-            check_context(@when_42, :width => 78, :shift => 0),
-            check_context(@when_43, :width => 78, :shift => 0),
-            check_context(@when_44, :width => 78, :shift => 0)
+            check_context(
+              @when_42,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @when_43,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @when_44,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           ],
           :else       => nil
         )
@@ -1340,7 +1463,12 @@ module Y2R::AST::Ruby
         node = Case.new(
           :expression => @literal_42,
           :whens      => [],
-          :else       => check_context(@else, :width => 78, :shift => 0)
+          :else       => check_context(
+            @else,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby_base(@context_default)
@@ -1436,9 +1564,24 @@ module Y2R::AST::Ruby
         it "passes correct context to values" do
           node = When.new(
             :values => [
-              check_context(@literal_42, :width => 80, :shift => 5),
-              check_context(@literal_43, :width => 80, :shift => 9),
-              check_context(@literal_44, :width => 80, :shift => 13)
+              check_context(
+                @literal_42,
+                :width    => 80,
+                :shift    => 5,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => 80,
+                :shift    => 9,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => 80,
+                :shift    => 13,
+                :priority => Priority::NONE
+              )
             ],
             :body   => @statements
           )
@@ -1449,7 +1592,12 @@ module Y2R::AST::Ruby
         it "passes correct context to body" do
           node = When.new(
             :values => [@literal_42],
-            :body   => check_context(@statements, :width => 78, :shift => 0)
+            :body   => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1462,18 +1610,21 @@ module Y2R::AST::Ruby
             :values => [
               check_context(
                 @literal_42_comment_before,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               ),
               check_context(
                 @literal_43_comment_before,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               ),
               check_context(
                 @literal_44_comment_after,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               )
             ],
             :body   => @statements
@@ -1485,7 +1636,12 @@ module Y2R::AST::Ruby
         it "passes correct context to body" do
           node = When.new(
             :values => [@literal_42_comment_before],
-            :body   => check_context(@statements, :width => 78, :shift => 0)
+            :body   => check_context(
+              @statements,
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1525,7 +1681,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to body" do
         node = Else.new(
-          :body => check_context(@statements, :width => 78, :shift => 0)
+          :body => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby_base(@context_default)
@@ -1569,7 +1730,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to condition" do
         node = While.new(
-          :condition => check_context(@literal_true, :width => 78, :shift => 4),
+          :condition => check_context(
+            @literal_true,
+            :width    => 78,
+            :shift    => 4,
+            :priority => Priority::NONE
+          ),
           :body      => @statements
         )
 
@@ -1579,7 +1745,12 @@ module Y2R::AST::Ruby
       it "passes correct context to body" do
         node = While.new(
           :condition => @literal_true,
-          :body      => check_context(@statements, :width => 78, :shift => 0)
+          :body      => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby_base(@context_default)
@@ -1626,7 +1797,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to condition" do
         node = Until.new(
-          :condition => check_context(@literal_true, :width => 78, :shift => 4),
+          :condition => check_context(
+            @literal_true,
+            :width    => 78,
+            :shift    => 4,
+            :priority => Priority::NONE
+          ),
           :body      => @statements
         )
 
@@ -1636,7 +1812,12 @@ module Y2R::AST::Ruby
       it "passes correct context to body" do
         node = Until.new(
           :condition => @literal_true,
-          :body      => check_context(@statements, :width => 78, :shift => 0)
+          :body      => check_context(
+            @statements,
+            :width    => 78,
+            :shift    => 0,
+            :priority => Priority::NONE
+          )
         )
 
         node.to_ruby_base(@context_default)
@@ -1705,7 +1886,12 @@ module Y2R::AST::Ruby
       describe "for single-line next statements" do
         it "passes correct context to value" do
           node = Next.new(
-            :value => check_context(@literal_42, :width => 80, :shift => 5)
+            :value => check_context(
+              @literal_42,
+              :width    => 80,
+              :shift    => 5,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1717,8 +1903,9 @@ module Y2R::AST::Ruby
           node = Next.new(
             :value => check_context(
               @literal_42_comment_before,
-              :width => 78,
-              :shift => 0
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
             )
           )
 
@@ -1774,7 +1961,12 @@ module Y2R::AST::Ruby
       describe "for single-line next statements" do
         it "passes correct context to value" do
           node = Return.new(
-            :value => check_context(@literal_42, :width => 80, :shift => 7)
+            :value => check_context(
+              @literal_42,
+              :width    => 80,
+              :shift    => 7,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -1786,8 +1978,9 @@ module Y2R::AST::Ruby
           node = Return.new(
             :value => check_context(
               @literal_42_comment_before,
-              :width => 78,
-              :shift => 0
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
             )
           )
 
@@ -1883,9 +2076,24 @@ module Y2R::AST::Ruby
         it "passes correct context to expressions" do
           node = Expressions.new(
             :expressions => [
-              check_context(@literal_42, :width => 80, :shift => 1),
-              check_context(@literal_43, :width => 80, :shift => 5),
-              check_context(@literal_44, :width => 80, :shift => 9)
+              check_context(
+                @literal_42,
+                :width    => 80,
+                :shift    => 1,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => 80,
+                :shift    => 5,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => 80,
+                :shift    => 9,
+                :priority => Priority::NONE
+              )
             ]
           )
 
@@ -1948,9 +2156,24 @@ module Y2R::AST::Ruby
         it "passes correct context to expressions" do
           node = Expressions.new(
             :expressions => [
-              check_context(@literal_42, :width => -2, :shift => 0),
-              check_context(@literal_43, :width => -2, :shift => 0),
-              check_context(@literal_44, :width => -2, :shift => 0)
+              check_context(
+                @literal_42,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              )
             ]
           )
 
@@ -2028,7 +2251,12 @@ module Y2R::AST::Ruby
       describe "for single-line assignments" do
         it "passes correct context to lhs" do
           node = Assignment.new(
-            :lhs => check_context(@variable_a, :width => 80, :shift => 0),
+            :lhs => check_context(
+              @variable_a,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::ASSIGNMENT
+            ),
             :rhs => @literal_42
           )
 
@@ -2038,7 +2266,12 @@ module Y2R::AST::Ruby
         it "passes correct context to rhs" do
           node = Assignment.new(
             :lhs => @variable_a,
-            :rhs => check_context(@literal_42, :width => 80, :shift => 4)
+            :rhs => check_context(
+              @literal_42,
+              :width    => 80,
+              :shift    => 4,
+              :priority => Priority::ASSIGNMENT
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -2050,8 +2283,9 @@ module Y2R::AST::Ruby
           node = Assignment.new(
             :lhs => check_context(
               @variable_a_comment_after,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::ASSIGNMENT
             ),
             :rhs => @literal_42
           )
@@ -2064,8 +2298,9 @@ module Y2R::AST::Ruby
             :lhs => @variable_a,
             :rhs => check_context(
               @literal_42_comment_before,
-              :width => 78,
-              :shift => 0
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::ASSIGNMENT
             )
           )
 
@@ -2114,8 +2349,9 @@ module Y2R::AST::Ruby
           :op         => "+",
           :expression => check_context_enclosed(
             @literal_42,
-            :width => 80,
-            :shift => 1
+            :width    => 80,
+            :shift    => 1,
+            :priority => Priority::UNARY
           ),
         )
 
@@ -2202,8 +2438,9 @@ module Y2R::AST::Ruby
             :op  => "+",
             :lhs => check_context_enclosed(
               @binary_operator_42_plus_43,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::ADD
             ),
             :rhs => @binary_operator_44_plus_45
           )
@@ -2217,8 +2454,9 @@ module Y2R::AST::Ruby
             :lhs => @binary_operator_42_plus_43,
             :rhs => check_context_enclosed(
               @binary_operator_44_plus_45,
-              :width => 80,
-              :shift => 12
+              :width    => 80,
+              :shift    => 12,
+              :priority => Priority::ADD
             )
           )
 
@@ -2262,8 +2500,9 @@ module Y2R::AST::Ruby
             :op  => "+",
             :lhs => check_context_enclosed(
               @binary_operator_42_plus_43,
-              :width => 0,
-              :shift => 0
+              :width    => 0,
+              :shift    => 0,
+              :priority => Priority::ADD
             ),
             :rhs => @binary_operator_44_plus_45
           )
@@ -2277,8 +2516,9 @@ module Y2R::AST::Ruby
             :lhs => @binary_operator_42_plus_43,
             :rhs => check_context_enclosed(
               @binary_operator_44_plus_45,
-              :width => -2,
-              :shift => 0
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::ADD
             )
           )
 
@@ -2399,8 +2639,9 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
               @literal_true,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::TERNARY
             ),
             :then      => @binary_operator_42_plus_43,
             :else      => @binary_operator_44_plus_45
@@ -2414,8 +2655,9 @@ module Y2R::AST::Ruby
             :condition => @literal_true,
             :then      => check_context_enclosed(
               @binary_operator_42_plus_43,
-              :width => 80,
-              :shift => 7
+              :width    => 80,
+              :shift    => 7,
+              :priority => Priority::TERNARY
             ),
             :else      => @binary_operator_44_plus_45
           )
@@ -2429,8 +2671,9 @@ module Y2R::AST::Ruby
             :then      => @binary_operator_42_plus_43,
             :else      => check_context_enclosed(
               @binary_operator_44_plus_45,
-              :width => 80,
-              :shift => 19
+              :width    => 80,
+              :shift    => 19,
+              :priority => Priority::TERNARY
             ),
           )
 
@@ -2490,8 +2733,9 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => check_context_enclosed(
               @literal_true,
-              :width => 0,
-              :shift => 0
+              :width    => 0,
+              :shift    => 0,
+              :priority => Priority::TERNARY
             ),
             :then      => @binary_operator_42_plus_43,
             :else      => @binary_operator_44_plus_45
@@ -2505,8 +2749,9 @@ module Y2R::AST::Ruby
             :condition => @literal_true,
             :then      => check_context_enclosed(
               @binary_operator_42_plus_43,
-              :width => -2,
-              :shift => 0
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::TERNARY
             ),
             :else      => @binary_operator_44_plus_45
           )
@@ -2520,8 +2765,9 @@ module Y2R::AST::Ruby
             :then      => @binary_operator_42_plus_43,
             :else      => check_context_enclosed(
               @binary_operator_44_plus_45,
-              :width => -2,
-              :shift => 0
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::TERNARY
             ),
           )
 
@@ -2892,7 +3138,12 @@ module Y2R::AST::Ruby
 
       it "passes correct context to receiver" do
         node = MethodCall.new(
-          :receiver => check_context(@variable_a, :width => 80, :shift => 0),
+          :receiver => check_context(
+            @variable_a,
+            :width    => 80,
+            :shift    => 0,
+            :priority => Priority::ATOMIC
+          ),
           :name     => "m",
           :args     => [],
           :block    => nil,
@@ -2909,9 +3160,24 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [
-                check_context(@literal_42, :width => 80, :shift => 3),
-                check_context(@literal_43, :width => 80, :shift => 7),
-                check_context(@literal_44, :width => 80, :shift => 11)
+                check_context(
+                  @literal_42,
+                  :width    => 80,
+                  :shift    => 3,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @literal_43,
+                  :width    => 80,
+                  :shift    => 7,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @literal_44,
+                  :width    => 80,
+                  :shift    => 11,
+                  :priority => Priority::NONE
+                )
               ],
               :block    => nil,
               :parens   => true
@@ -2925,7 +3191,12 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [],
-              :block    => check_context(@block, :width => 80, :shift => 3),
+              :block    => check_context(
+                @block,
+                :width    => 80,
+                :shift    => 3,
+                :priority => Priority::NONE
+              ),
               :parens   => true
             )
 
@@ -2939,9 +3210,24 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [
-                check_context(@literal_42, :width => -2, :shift => 0),
-                check_context(@literal_43, :width => -2, :shift => 0),
-                check_context(@literal_44, :width => -2, :shift => 0)
+                check_context(
+                  @literal_42,
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @literal_43,
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @literal_44,
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
+                )
               ],
               :block    => nil,
               :parens   => true
@@ -2955,7 +3241,12 @@ module Y2R::AST::Ruby
               :receiver => @variable_a,
               :name     => "m",
               :args     => [],
-              :block    => check_context(@block, :width => 0, :shift => 1),
+              :block    => check_context(
+                @block,
+                :width    => 0,
+                :shift    => 1,
+                :priority => Priority::NONE
+              ),
               :parens   => true
             )
 
@@ -2970,9 +3261,24 @@ module Y2R::AST::Ruby
             :receiver => @variable_a,
             :name     => "m",
             :args     => [
-              check_context(@literal_42, :width => 80, :shift => 3),
-              check_context(@literal_43, :width => 80, :shift => 7),
-              check_context(@literal_44, :width => 80, :shift => 11)
+              check_context(
+                @literal_42,
+                :width    => 80,
+                :shift    => 3,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => 80,
+                :shift    => 7,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => 80,
+                :shift    => 11,
+                :priority => Priority::NONE
+              )
             ],
             :block    => nil,
             :parens   => false
@@ -2986,7 +3292,12 @@ module Y2R::AST::Ruby
             :receiver => @variable_a,
             :name     => "m",
             :args     => [],
-            :block    => check_context(@block, :width => 80, :shift => 3),
+            :block    => check_context(
+              @block,
+              :width    => 80,
+              :shift    => 3,
+              :priority => Priority::NONE
+            ),
             :parens   => false
           )
 
@@ -3196,9 +3507,24 @@ module Y2R::AST::Ruby
           it "passes correct context to args" do
             node = Block.new(
               :args       => [
-                check_context(@variable_a, :width => 80, :shift => 3),
-                check_context(@variable_b, :width => 80, :shift => 6),
-                check_context(@variable_c, :width => 80, :shift => 9)
+                check_context(
+                  @variable_a,
+                  :width    => 80,
+                  :shift    => 3,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @variable_b,
+                  :width    => 80,
+                  :shift    => 6,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @variable_c,
+                  :width    => 80,
+                  :shift    => 9,
+                  :priority => Priority::NONE
+                )
               ],
               :statements => @assignment_a_42
             )
@@ -3211,8 +3537,9 @@ module Y2R::AST::Ruby
               :args       => [],
               :statements => check_context(
                 @assignment_a_42,
-                :width => 80,
-                :shift => 2
+                :width    => 80,
+                :shift    => 2,
+                :priority => Priority::NONE
               )
             )
 
@@ -3226,18 +3553,21 @@ module Y2R::AST::Ruby
               :args       => [
                 check_context(
                   @variable_a_comment_before,
-                  :width => 78,
-                  :shift => 0
+                  :width    => 78,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 ),
                 check_context(
                   @variable_b_comment_before,
-                  :width => 78,
-                  :shift => 0
+                  :width    => 78,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 ),
                 check_context(
                   @variable_c_comment_before,
-                  :width => 78,
-                  :shift => 0
+                  :width    => 78,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 )
               ],
               :statements => @assignment_a_42
@@ -3251,8 +3581,9 @@ module Y2R::AST::Ruby
               :args       => [@variable_a_comment_before],
               :statements => check_context(
                 @assignment_a_42,
-                :width => 78,
-                :shift => 0
+                :width    => 78,
+                :shift    => 0,
+                :priority => Priority::NONE
               )
             )
 
@@ -3360,9 +3691,24 @@ module Y2R::AST::Ruby
           it "passes correct context to args" do
             node = Block.new(
               :args       => [
-                check_context(@variable_a, :width => 0, :shift => 4),
-                check_context(@variable_b, :width => 0, :shift => 7),
-                check_context(@variable_c, :width => 0, :shift => 10)
+                check_context(
+                  @variable_a,
+                  :width    => 0,
+                  :shift    => 4,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @variable_b,
+                  :width    => 0,
+                  :shift    => 7,
+                  :priority => Priority::NONE
+                ),
+                check_context(
+                  @variable_c,
+                  :width    => 0,
+                  :shift    => 10,
+                  :priority => Priority::NONE
+                )
               ],
               :statements => @assignment_a_42
             )
@@ -3375,8 +3721,9 @@ module Y2R::AST::Ruby
               :args       => [],
               :statements => check_context(
                 @assignment_a_42,
-                :width => -2,
-                :shift => 0
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
               )
             )
 
@@ -3390,18 +3737,21 @@ module Y2R::AST::Ruby
               :args       => [
                 check_context(
                   @variable_a_comment_before,
-                  :width => -2,
-                  :shift => 0
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 ),
                 check_context(
                   @variable_b_comment_before,
-                  :width => -2,
-                  :shift => 0
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 ),
                 check_context(
                   @variable_c_comment_before,
-                  :width => -2,
-                  :shift => 0
+                  :width    => -2,
+                  :shift    => 0,
+                  :priority => Priority::NONE
                 )
               ],
               :statements => @assignment_a_42
@@ -3415,8 +3765,9 @@ module Y2R::AST::Ruby
               :args       => [@variable_a_comment_before],
               :statements => check_context(
                 @assignment_a_42,
-                :width => -2,
-                :shift => 0
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
               )
             )
 
@@ -3493,7 +3844,12 @@ module Y2R::AST::Ruby
       describe "for single-line const accesses" do
         it "passes correct context to receiver" do
           node = ConstAccess.new(
-            :receiver => check_context(@variable_a, :width => 80, :shift => 0),
+            :receiver => check_context(
+              @variable_a,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::ATOMIC
+            ),
             :name     => "C"
           )
 
@@ -3506,8 +3862,9 @@ module Y2R::AST::Ruby
           node = ConstAccess.new(
             :receiver => check_context(
               @variable_a_comment_after,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::ATOMIC
             ),
             :name     => "C"
           )
@@ -3680,9 +4037,24 @@ module Y2R::AST::Ruby
         it "passes correct context to elements" do
           node = Array.new(
             :elements => [
-              check_context(@literal_42, :width => 80, :shift => 1),
-              check_context(@literal_43, :width => 80, :shift => 5),
-              check_context(@literal_44, :width => 80, :shift => 9)
+              check_context(
+                @literal_42,
+                :width    => 80,
+                :shift    => 1,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => 80,
+                :shift    => 5,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => 80,
+                :shift    => 9,
+                :priority => Priority::NONE
+              )
             ]
           )
 
@@ -3745,9 +4117,24 @@ module Y2R::AST::Ruby
         it "passes correct context to elements" do
           node = Array.new(
             :elements => [
-              check_context(@literal_42, :width => -2, :shift => 0),
-              check_context(@literal_43, :width => -2, :shift => 0),
-              check_context(@literal_44, :width => -2, :shift => 0)
+              check_context(
+                @literal_42,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_43,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              ),
+              check_context(
+                @literal_44,
+                :width    => -2,
+                :shift    => 0,
+                :priority => Priority::NONE
+              )
             ]
           )
 
@@ -3923,9 +4310,24 @@ module Y2R::AST::Ruby
 
         it "passes correct context to entries" do
           node = Hash.new(:entries => [
-            check_context(@hash_entry_a_42, :width => -2, :shift => 0),
-            check_context(@hash_entry_b_43, :width => -2, :shift => 0),
-            check_context(@hash_entry_c_44, :width => -2, :shift => 0)
+            check_context(
+              @hash_entry_a_42,
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @hash_entry_b_43,
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @hash_entry_c_44,
+              :width    => -2,
+              :shift    => 0,
+              :priority => Priority::NONE
+            )
           ])
 
           node.to_ruby_base(@context_narrow)
@@ -3999,7 +4401,12 @@ module Y2R::AST::Ruby
       describe "for single-line hash entries" do
         it "passes correct context to key" do
           node = HashEntry.new(
-            :key   => check_context(@literal_a, :width => 80, :shift => 0),
+            :key   => check_context(
+              @literal_a,
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
+            ),
             :value => @literal_42
           )
 
@@ -4009,7 +4416,12 @@ module Y2R::AST::Ruby
         it "passes correct context to value" do
           node = HashEntry.new(
             :key   => @literal_a,
-            :value => check_context(@literal_42, :width => 80, :shift => 6)
+            :value => check_context(
+              @literal_42,
+              :width    => 80,
+              :shift    => 6,
+              :priority => Priority::NONE
+            )
           )
 
           node.to_ruby_base(@context_default)
@@ -4021,8 +4433,9 @@ module Y2R::AST::Ruby
           node = HashEntry.new(
             :key   => check_context(
               @literal_a_comment_after,
-              :width => 80,
-              :shift => 0
+              :width    => 80,
+              :shift    => 0,
+              :priority => Priority::NONE
             ),
             :value => @literal_42
           )
@@ -4035,8 +4448,9 @@ module Y2R::AST::Ruby
             :key   => @literal_a,
             :value => check_context(
               @literal_42_comment_before,
-              :width => 78,
-              :shift => 0
+              :width    => 78,
+              :shift    => 0,
+              :priority => Priority::NONE
             )
           )
 

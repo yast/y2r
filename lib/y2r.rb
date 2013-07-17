@@ -16,7 +16,11 @@ module Y2R
         :options    => options,
         :elsif      => false
       )
-      ruby_context = AST::Ruby::EmitterContext.new(:width => 80, :shift => 0)
+      ruby_context = AST::Ruby::EmitterContext.new(
+        :width    => 80,
+        :shift    => 0,
+        :priority => AST::Ruby::Priority::NONE
+      )
 
       ast.compile(ycp_context).to_ruby(ruby_context)
     else

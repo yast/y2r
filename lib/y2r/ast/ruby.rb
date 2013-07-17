@@ -56,6 +56,12 @@ module Y2R
           context
         end
 
+        def with_priority(priority)
+          context = dup
+          context.priority = priority
+          context
+        end
+
         def with_max_key_width(max_key_width)
           context = dup
           context.max_key_width = max_key_width
@@ -251,7 +257,7 @@ module Y2R
         def to_ruby(context)
           combine do |parts|
             statements_code = wrap_code_with_comments context do |inner_context|
-              statements.to_ruby(inner_context)
+              statements.to_ruby(inner_context.with_priority(priority))
             end
 
             parts << "# encoding: utf-8"
@@ -282,12 +288,14 @@ module Y2R
       class Class < Node
         def to_ruby_base(context)
           superclass_shift  = 6 + name.size + 3
-          superclass_context = context.shifted(superclass_shift)
+          superclass_context = context.
+            shifted(superclass_shift).
+            with_priority(priority)
           superclass_code    = superclass.to_ruby(superclass_context)
 
           combine do |parts|
             parts << "class #{name} < #{superclass_code}"
-            parts << indented(statements, context)
+            parts << indented(statements, context.with_priority(priority))
             parts << "end"
           end
         end
@@ -305,7 +313,7 @@ module Y2R
         def to_ruby_base(context)
           combine do |parts|
             parts << "module #{name}"
-            parts << indented(statements, context)
+            parts << indented(statements, context.with_priority(priority))
             parts << "end"
           end
         end
@@ -322,12 +330,12 @@ module Y2R
       class Def < Node
         def to_ruby_base(context)
           args_shift   = 4 + name.size
-          args_context = context.shifted(args_shift)
+          args_context = context.shifted(args_shift).with_priority(priority)
           args_code    = emit_args(args_context)
 
           combine do |parts|
             parts << "def #{name}#{args_code}"
-            parts << indented(statements, context)
+            parts << indented(statements, context.with_priority(priority))
             parts << "end"
           end
         end
@@ -373,7 +381,9 @@ module Y2R
             # The |compact| call is needed because some YCP AST nodes don't
             # translate into anything, meaning their |compile| method will
             # return |nil|. These |nil|s may end up in statement lists.
-            statements.compact.each { |s| parts << s.to_ruby(context) }
+            statements.compact.each do |statement|
+              parts << statement.to_ruby(context.with_priority(priority))
+            end
           end
         end
 
@@ -407,7 +417,7 @@ module Y2R
         def to_ruby_base(context)
           combine do |parts|
             parts << "begin"
-            parts << indented(statements, context)
+            parts << indented(statements, context.with_priority(priority))
             parts << "end"
           end
         end
@@ -453,29 +463,33 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          then_code = self.then.to_ruby(context)
+          then_code = self.then.to_ruby(context.with_priority(priority))
 
           condition_shift   = then_code.size + 4
-          condition_context = context.shifted(condition_shift)
+          condition_context = context.
+            shifted(condition_shift).
+            with_priority(priority)
           condition_code    = condition.to_ruby(condition_context)
 
           "#{then_code} if #{condition_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          inner_context = context.with_priority(priority)
+
           combine do |parts|
             if self.elsif
-              parts << header("elsif", condition, context)
+              parts << header("elsif", condition, inner_context)
             else
-              parts << header("if", condition, context)
+              parts << header("if", condition, inner_context)
             end
-            parts << indented(self.then, context)
+            parts << indented(self.then, inner_context)
             if self.else
               if self.else.elsif
-                parts << self.else.to_ruby(context)
+                parts << self.else.to_ruby(inner_context)
               else
                 parts << "else"
-                parts << indented(self.else, context)
+                parts << indented(self.else, inner_context)
                 parts << "end"
               end
             else
@@ -516,22 +530,26 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          then_code = self.then.to_ruby(context)
+          then_code = self.then.to_ruby(context.with_priority(priority))
 
           condition_shift   = then_code.size + 8
-          condition_context = context.shifted(condition_shift)
+          condition_context = context.
+            shifted(condition_shift).
+            with_priority(priority)
           condition_code    = condition.to_ruby(condition_context)
 
           "#{then_code} unless #{condition_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          inner_context = context.with_priority(priority)
+
           combine do |parts|
-            parts << header("unless", condition, context)
-            parts << indented(self.then, context)
+            parts << header("unless", condition, inner_context)
+            parts << indented(self.then, inner_context)
             if self.else
               parts << "else"
-              parts << indented(self.else, context)
+              parts << indented(self.else, inner_context)
             end
             parts << "end"
           end
@@ -540,12 +558,14 @@ module Y2R
 
       class Case < Node
         def to_ruby_base(context)
+          inner_context = context.with_priority(priority)
+
           combine do |parts|
-            parts << header("case", expression, context)
+            parts << header("case", expression, inner_context)
             whens.each do |whem|
-              parts << indented(whem, context)
+              parts << indented(whem, inner_context)
             end
-            parts << indented(self.else, context) if self.else
+            parts << indented(self.else, inner_context) if self.else
             parts << "end"
           end
         end
@@ -579,17 +599,21 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
+          values_context = context.shifted(5).with_priority(priority)
+
           combine do |parts|
-            parts << "when #{list(values, ", ", context.shifted(5))}"
-            parts << indented(body, context)
+            parts << "when #{list(values, ", ", values_context)}"
+            parts << indented(body, context.with_priority(priority))
           end
         end
 
         def to_ruby_base_multi_line(context)
+          inner_context = context.with_priority(priority)
+
           combine do |parts|
             parts << "when"
-            parts << wrapped_line_list(values, nil, ",", nil, context)
-            parts << indented(body, context)
+            parts << wrapped_line_list(values, nil, ",", nil, inner_context)
+            parts << indented(body, inner_context)
           end
         end
 
@@ -602,7 +626,7 @@ module Y2R
         def to_ruby_base(context)
           combine do |parts|
             parts << "else"
-            parts << indented(body, context)
+            parts << indented(body, context.with_priority(priority))
           end
         end
 
@@ -617,14 +641,19 @@ module Y2R
 
       class While < Node
         def to_ruby_base(context)
+          inner_context = context.with_priority(priority)
+
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << header("while", condition, context)
-              parts << indented(body, context)
+              parts << header("while", condition, inner_context)
+              parts << indented(body, inner_context)
               parts << "end"
             end
           else
-            "#{body.to_ruby(context)} while #{condition.to_ruby(context)}"
+            body_code      = body.to_ruby(inner_context)
+            condition_code = condition.to_ruby(inner_context)
+
+            "#{body_code} while #{condition_code}"
           end
         end
 
@@ -639,14 +668,19 @@ module Y2R
 
       class Until < Node
         def to_ruby_base(context)
+          inner_context = context.with_priority(priority)
+
           if !body.is_a?(Begin)
             combine do |parts|
-              parts << header("until", condition, context)
-              parts << indented(body, context)
+              parts << header("until", condition, inner_context)
+              parts << indented(body, inner_context)
               parts << "end"
             end
           else
-            "#{body.to_ruby(context)} until #{condition.to_ruby(context)}"
+            body_code      = body.to_ruby(inner_context)
+            condition_code = condition.to_ruby(inner_context)
+
+            "#{body_code} until #{condition_code}"
           end
         end
 
@@ -697,13 +731,17 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          "next" + (value ? " #{value.to_ruby(context.shifted(5))}" : "")
+          if value
+            "next #{value.to_ruby(context.shifted(5).with_priority(priority))}"
+          else
+            "next"
+          end
         end
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << "next ("
-            parts << indented(value, context)
+            parts << indented(value, context.with_priority(priority))
             parts << ")"
           end
         end
@@ -737,13 +775,17 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          "return" + (value ? " #{value.to_ruby(context.shifted(7))}" : "")
+          if value
+            "return #{value.to_ruby(context.shifted(7).with_priority(priority))}"
+          else
+            "return"
+          end
         end
 
         def to_ruby_base_multi_line(context)
           combine do |parts|
             parts << "return ("
-            parts << indented(value, context)
+            parts << indented(value, context.with_priority(priority))
             parts << ")"
           end
         end
@@ -783,11 +825,15 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          "(#{list(expressions, "; ", context.shifted(1))})"
+          expressions_context = context.shifted(1).with_priority(Priority::NONE)
+
+          "(#{list(expressions, "; ", expressions_context)})"
         end
 
         def to_ruby_base_multi_line(context)
-          wrapped_line_list(expressions, "(", ";", ")", context)
+          expressions_context = context.with_priority(Priority::NONE)
+
+          wrapped_line_list(expressions, "(", ";", ")", expressions_context)
         end
       end
 
@@ -834,19 +880,26 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          lhs_code = lhs.to_ruby(context.without_trailer)
+          lhs_context = context.without_trailer.with_priority(priority)
+          lhs_code    = lhs.to_ruby(lhs_context)
 
           rhs_shift   = lhs_code.size + 3
-          rhs_context = context.shifted(rhs_shift)
+          rhs_context = context.shifted(rhs_shift).with_priority(priority)
           rhs_code    = rhs.to_ruby(rhs_context)
 
           "#{lhs_code} = #{rhs_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          lhs_context = context.with_trailer(" =").with_priority(priority)
+          lhs_code    = lhs.to_ruby(lhs_context)
+
+          rhs_context = context.with_priority(priority)
+          rhs_code    = indented(rhs, rhs_context)
+
           combine do |parts|
-            parts << lhs.to_ruby(context.with_trailer(" ="))
-            parts << indented(rhs, context)
+            parts << lhs_code
+            parts << rhs_code
           end
         end
       end
@@ -860,7 +913,9 @@ module Y2R
         }
 
         def to_ruby_base(context)
-          "#{op}#{expression.to_ruby_enclosed(context.shifted(op.size))}"
+          expressions_context = context.shifted(op.size).with_priority(priority)
+
+          "#{op}#{expression.to_ruby_enclosed(expressions_context)}"
         end
 
         def single_line_width_base(context)
@@ -956,19 +1011,26 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          lhs_code = lhs.to_ruby_enclosed(context.without_trailer)
+          lhs_context = context.without_trailer.with_priority(priority)
+          lhs_code    = lhs.to_ruby_enclosed(lhs_context)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
-          rhs_context = context.shifted(rhs_shift)
+          rhs_context = context.shifted(rhs_shift).with_priority(priority)
           rhs_code    = rhs.to_ruby_enclosed(rhs_context)
 
           "#{lhs_code} #{op} #{rhs_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          lhs_context = context.with_trailer(" #{op}").with_priority(priority)
+          lhs_code    = lhs.to_ruby_enclosed(lhs_context)
+
+          rhs_context = context.with_priority(priority)
+          rhs_code    = indented_enclosed(rhs, rhs_context)
+
           combine do |parts|
-            parts << lhs.to_ruby_enclosed(context.with_trailer(" #{op}"))
-            parts << indented_enclosed(rhs, context)
+            parts << lhs_code
+            parts << rhs_code
           end
         end
       end
@@ -1021,24 +1083,37 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          condition_code = condition.to_ruby_enclosed(context.without_trailer)
+          condition_context = context.without_trailer.with_priority(priority)
+          condition_code    = condition.to_ruby_enclosed(condition_context)
 
           then_shift   = condition_code.size + 3
-          then_context = context.shifted(then_shift).without_trailer
+          then_context = context.
+            shifted(then_shift).
+            without_trailer.
+            with_priority(priority)
           then_code    = self.then.to_ruby_enclosed(then_context)
 
           else_shift   = then_shift + then_code.size + 3
-          else_context = context.shifted(else_shift)
+          else_context = context.shifted(else_shift).with_priority(priority)
           else_code    = self.else.to_ruby_enclosed(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          condition_context = context.with_trailer(" ?").with_priority(priority)
+          condition_code    = condition.to_ruby_enclosed(condition_context)
+
+          then_context = context.with_trailer(" :").with_priority(priority)
+          then_code    = indented_enclosed(self.then, then_context)
+
+          else_context = context.with_priority(priority)
+          else_code    = indented_enclosed(self.else, else_context)
+
           combine do |parts|
-            parts << condition.to_ruby_enclosed(context.with_trailer(" ?"))
-            parts << indented_enclosed(self.then, context.with_trailer(" :"))
-            parts << indented_enclosed(self.else, context)
+            parts << condition_code
+            parts << then_code
+            parts << else_code
           end
         end
       end
@@ -1053,21 +1128,27 @@ module Y2R
           # their impact on readability is minimal and handling them would
           # complicate already complex code.
 
-          receiver_code = receiver ? "#{receiver.to_ruby(context.with_trailer("."))}" : ""
+          receiver_context = context.with_trailer(".").with_priority(Priority::ATOMIC)
+          receiver_code    = receiver ? "#{receiver.to_ruby(receiver_context)}" : ""
 
           if has_line_breaking_comment?
             context = context.indented(INDENT_STEP)
           end
 
           args_shift   = receiver_code.size + name.size
-          args_context = context.shifted(args_shift).without_trailer
+          args_context = context.
+            shifted(args_shift).
+            without_trailer.
+            with_priority(Priority::NONE)
           args_code    = emit_args(context, args_context)
 
           if Code.multi_line?(args_code)
-            block_context = context.shifted(1)
+            block_context = context.shifted(1).with_priority(Priority::NONE)
           else
             block_shift   = args_shift + args_code.size
-            block_context = context.shifted(block_shift)
+            block_context = context.
+              shifted(block_shift).
+              with_priority(Priority::NONE)
           end
           block_code    = block ? " #{block.to_ruby(block_context)}" : ""
 
@@ -1226,21 +1307,25 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          args_code = emit_args(context.shifted(1))
+          args_context = context.shifted(1).with_priority(Priority::NONE)
+          args_code    = emit_args(args_context)
 
           statements_shift   = 1 + args_code.size + 1
-          statements_context = context.shifted(statements_shift)
+          statements_context = context.
+            shifted(statements_shift).
+            with_priority(Priority::NONE)
           statements_code    = statements.to_ruby(statements_context)
 
           "{#{args_code} #{statements_code} }"
         end
 
         def to_ruby_base_multi_line(context)
-          args_code = emit_args(context.shifted(2))
+          args_context = context.shifted(2).with_priority(Priority::NONE)
+          args_code = emit_args(args_context)
 
           combine do |parts|
             parts << "do#{args_code}"
-            parts << indented(statements, context)
+            parts << indented(statements, context.with_priority(Priority::NONE))
             parts << "end"
           end
         end
@@ -1308,12 +1393,19 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          (receiver ? "#{receiver.to_ruby(context)}::" : "") + name
+          if receiver
+            "#{receiver.to_ruby(context.with_priority(priority))}::#{name}"
+          else
+            name
+          end
         end
 
         def to_ruby_base_multi_line(context)
+          receiver_context = context.with_trailer("::").with_priority(priority)
+          receiver_code    = receiver.to_ruby(receiver_context)
+
           combine do |parts|
-            parts << receiver.to_ruby(context.with_trailer("::"))
+            parts << receiver_code
             parts << indent(name)
           end
         end
@@ -1435,11 +1527,15 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          "[#{list(elements, ", ", context.shifted(1))}]"
+          elements_context = context.shifted(1).with_priority(Priority::NONE)
+
+          "[#{list(elements, ", ", elements_context)}]"
         end
 
         def to_ruby_base_multi_line(context)
-          wrapped_line_list(elements, "[", ",", "]", context)
+          elements_context = context.with_priority(Priority::NONE)
+
+          wrapped_line_list(elements, "[", ",", "]", elements_context)
         end
       end
 
@@ -1485,7 +1581,10 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          entry_context = context.shifted(2).without_max_key_width
+          entry_context = context.
+            shifted(2).
+            with_priority(Priority::NONE).
+            without_max_key_width
 
           if !entries.empty?
             "{ #{list(entries, ", ", entry_context)} }"
@@ -1499,7 +1598,9 @@ module Y2R
             entry.key_width(context.indented(INDENT_STEP))
           end.max
 
-          entry_context = context.with_max_key_width(max_key_width)
+          entry_context = context.
+            with_priority(Priority::NONE).
+            with_max_key_width(max_key_width)
 
           wrapped_line_list(entries, "{", ",", "}", entry_context)
         end
@@ -1558,7 +1659,8 @@ module Y2R
         end
 
         def to_ruby_base_single_line(context)
-          key_code = key.to_ruby(context.without_trailer)
+          key_context = context.without_trailer.with_priority(Priority::NONE)
+          key_code    = key.to_ruby(key_context)
 
           spacing_code = if context.max_key_width
             " " * (context.max_key_width - key_width(context))
@@ -1567,24 +1669,32 @@ module Y2R
           end
 
           value_shift   = key_code.size + spacing_code.size + 4
-          value_context = context.shifted(value_shift)
+          value_context = context.
+            shifted(value_shift).
+            with_priority(Priority::NONE)
           value_code    = value.to_ruby(value_context)
 
           "#{key_code}#{spacing_code} => #{value_code}"
         end
 
         def to_ruby_base_multi_line(context)
+          key_context = context.
+            with_trailer("#{spacing_code} =>").
+            with_priority(Priority::NONE)
+          key_code    = key.to_ruby(key_context)
+
+          spacing_code = if context.max_key_width
+            " " * (context.max_key_width - key_width(context))
+          else
+            ""
+          end
+
+          value_context = context.with_priority(Priority::NONE)
+          value_code    = indented(value, value_context)
+
           combine do |parts|
-            key_code = key.to_ruby_base(context.without_trailer)
-
-            spacing_code = if context.max_key_width
-              " " * (context.max_key_width - key_width(context))
-            else
-              ""
-            end
-
-            parts << key.to_ruby(context.with_trailer("#{spacing_code} =>"))
-            parts << indented(value, context)
+            parts << key_code
+            parts << value_code
           end
         end
       end
