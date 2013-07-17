@@ -812,18 +812,35 @@ module Y2R
             getters = reference_args_with_types.map do |arg, type|
               arg.compile_as_getter(context)
             end
-            result_var = Ruby::Variable.new(
-              :name => RubyVar.escape_local("#{name}_result")
-            )
 
-            Ruby::Expressions.new(
-              :expressions => [
-                *setters,
-                Ruby::Assignment.new(:lhs => result_var, :rhs => call),
-                *getters,
-                result_var
-              ]
-            )
+            case result
+              when :used
+                result_var = Ruby::Variable.new(
+                  :name => RubyVar.escape_local("#{name}_result")
+                )
+
+                Ruby::Expressions.new(
+                  :expressions => [
+                    *setters,
+                    Ruby::Assignment.new(:lhs => result_var, :rhs => call),
+                    *getters,
+                    result_var
+                  ]
+                )
+
+              when :unused
+                Ruby::Statements.new(
+                  :statements => [
+                    *setters,
+                    call,
+                    *getters,
+                  ]
+                )
+
+              else
+                raise "Unknown call result usage flag: #{result.inspect}."
+            end
+
           else
             call
           end

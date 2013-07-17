@@ -1206,7 +1206,7 @@ module Y2R::AST
         end
 
         describe "with reference arguments" do
-          it "returns correct AST node" do
+          it "returns correct AST node for calls where the result is used" do
             ycp_node = YCP::Call.new(
               :category => :function,
               :ns       => nil,
@@ -1296,6 +1296,98 @@ module Y2R::AST
                   )
                 ),
                 Ruby::Variable.new(:name => "f_result")
+              ]
+            )
+
+            ycp_node.compile(@context_for_references).should == ruby_node
+          end
+
+          it "returns correct AST node for calls where the result is unused" do
+            ycp_node = YCP::Call.new(
+              :category => :function,
+              :ns       => nil,
+              :name     => "f",
+              :result   => :unused,
+              :args     => [
+                YCP::YEReference.new(:child => @ycp_entry_a),
+                YCP::YEReference.new(:child => @ycp_entry_b),
+                YCP::YEReference.new(:child => @ycp_entry_c),
+              ],
+              :type     => YCP::Type.new("void (integer &, integer &, integer &)")
+            )
+
+            ruby_node = Ruby::Statements.new(
+              :statements => [
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_a_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_a],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_b_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_b],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_c_ref,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => nil,
+                    :name     => "arg_ref",
+                    :args     => [@ruby_variable_c],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::MethodCall.new(
+                  :receiver => nil,
+                  :name     => "f",
+                  :args     => [
+                    @ruby_variable_a_ref,
+                    @ruby_variable_b_ref,
+                    @ruby_variable_c_ref],
+                  :block    => nil,
+                  :parens   => true
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_a,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_a_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_b,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_b_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                ),
+                Ruby::Assignment.new(
+                  :lhs => @ruby_variable_c,
+                  :rhs => Ruby::MethodCall.new(
+                    :receiver => @ruby_variable_c_ref,
+                    :name     => "value",
+                    :args     => [],
+                    :block    => nil,
+                    :parens   => true
+                  )
+                )
               ]
             )
 

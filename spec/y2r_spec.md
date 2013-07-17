@@ -665,7 +665,9 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
   list c = ["c"];
 
   f2(a, b, c);
+
   f3(a, b, c);
+  integer d = f3(a, b, c);
 }
 ```
 
@@ -688,7 +690,15 @@ module Yast
       @c = ["c"]
 
       f2(@a, @b, @c)
-      (
+
+      a_ref = arg_ref(@a)
+      b_ref = arg_ref(@b)
+      c_ref = arg_ref(@c)
+      f3(a_ref, b_ref, c_ref)
+      @a = a_ref.value
+      @b = b_ref.value
+      @c = c_ref.value
+      @d = (
         a_ref = arg_ref(@a);
         b_ref = arg_ref(@b);
         c_ref = arg_ref(@c);
@@ -746,7 +756,9 @@ method on them.
     list c = ["c"];
 
     f2(a, b, c);
+
     f3(a, b, c);
+    integer d = f3(a, b, c);
   }
 }
 ```
@@ -781,7 +793,15 @@ module Yast
       c = ["c"]
 
       f2.call(a, b, c)
-      (
+
+      a_ref = arg_ref(a)
+      b_ref = arg_ref(b)
+      c_ref = arg_ref(c)
+      f3.call(a_ref, b_ref, c_ref)
+      a = a_ref.value
+      b = b_ref.value
+      c = c_ref.value
+      d = (
         a_ref = arg_ref(a);
         b_ref = arg_ref(b);
         c_ref = arg_ref(c);
