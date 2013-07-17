@@ -1964,32 +1964,23 @@ module Y2R
 
       class YEBracket < Node
         def compile(context)
-          # In expressions like |m["foo"]:f()|, the |f| function is called only
-          # when the value is missing. In other words, the default is evaluated
-          # lazily. We need to emulate this laziness for calls and all
-          # expressions that can contain them.
-          if evaluate_default_lazily?
-            args  = [value.compile(context), build_index(context)]
-            block = Ruby::Block.new(
-              :args       => [],
-              :statements => default.compile(context)
-            )
-          else
-            args  = [
-              value.compile(context),
-              build_index(context),
-            ]
-
-            if !(default.is_a?(Const) && default.type == :void)
-              args << default.compile(context)
-            end
-
-            block = nil
-          end
+          args, block = build_args_and_block(context)
 
           Ruby::MethodCall.new(
             :receiver => Ruby::Variable.new(:name => "Ops"),
             :name     => "get",
+            :args     => args,
+            :block    => block,
+            :parens   => true
+          )
+        end
+
+        def compile_as_shortcut(type, context)
+          args, block = build_args_and_block(context)
+
+          Ruby::MethodCall.new(
+            :receiver => Ruby::Variable.new(:name => "Ops"),
+            :name     => "get_#{type}",
             :args     => args,
             :block    => block,
             :parens   => true
@@ -2015,6 +2006,33 @@ module Y2R
           else
             index.compile(context)
           end
+        end
+
+        def build_args_and_block(context)
+          # In expressions like |m["foo"]:f()|, the |f| function is called only
+          # when the value is missing. In other words, the default is evaluated
+          # lazily. We need to emulate this laziness for calls and all
+          # expressions that can contain them.
+          if evaluate_default_lazily?
+            args  = [value.compile(context), build_index(context)]
+            block = Ruby::Block.new(
+              :args       => [],
+              :statements => default.compile(context)
+            )
+          else
+            args  = [
+              value.compile(context),
+              build_index(context),
+            ]
+
+            if !(default.is_a?(Const) && default.type == :void)
+              args << default.compile(context)
+            end
+
+            block = nil
+          end
+
+          [args, block]
         end
       end
 
@@ -2080,13 +2098,17 @@ module Y2R
         def compile(context)
           if from.no_const != to.no_const
             if compile_as_shortcut?
-              Ruby::MethodCall.new(
-                :receiver => Ruby::Variable.new(:name => "Convert"),
-                :name     => "to_#{to.no_const}",
-                :args     => [child.compile(context)],
-                :block    => nil,
-                :parens   => true
-              )
+              if child.is_a?(YEBracket)
+                child.compile_as_shortcut(to.no_const, context)
+              else
+                Ruby::MethodCall.new(
+                  :receiver => Ruby::Variable.new(:name => "Convert"),
+                  :name     => "to_#{to.no_const}",
+                  :args     => [child.compile(context)],
+                  :block    => nil,
+                  :parens   => true
+                )
+              end
             else
               Ruby::MethodCall.new(
                 :receiver => Ruby::Variable.new(:name => "Convert"),

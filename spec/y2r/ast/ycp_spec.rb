@@ -4420,6 +4420,184 @@ module Y2R::AST
       end
 
     end
+
+    describe "#compile_as_shortcut" do
+      it "returns correct AST node when the default is nil" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => YCP::Const.new(:type => :void)
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_integer",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_shortcut("integer", @context_empty).should ==
+          ruby_node
+      end
+
+      it "returns correct AST node when the default is not nil" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_integer",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_shortcut("integer", @context_empty).should ==
+          ruby_node
+      end
+
+      it "returns correct AST node when the default is a call" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => YCP::Call.new(
+            :category => :function,
+            :ns       => nil,
+            :name     => "f",
+            :result   => :used,
+            :args     => [],
+            :type     => YCP::Type.new("integer ()")
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_integer",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1
+          ],
+          :block    => Ruby::Block.new(
+            :args       => [],
+            :statements => Ruby::MethodCall.new(
+              :receiver => nil,
+              :name     => "f",
+              :args     => [],
+              :block    => nil,
+              :parens   => true
+            )
+          ),
+          :parens   => true
+        )
+
+        ycp_node.compile_as_shortcut("integer", @context_module).should ==
+          ruby_node
+      end
+
+      it "returns correct AST node when the index has one element" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_integer",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_shortcut("integer", @context_empty).should ==
+          ruby_node
+      end
+
+      it "returns correct AST node when index has multiple elements" do
+        ycp_node = YCP::YEBracket.new(
+          :value   => YCP::List.new(
+            :children => [YCP::List.new(
+              :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            )]
+          ),
+          :index   => YCP::List.new(:children => [@ycp_const_0, @ycp_const_1]),
+          :default => @ycp_const_0
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_integer",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                Ruby::Array.new(
+                  :elements => [
+                    @ruby_literal_42,
+                    @ruby_literal_43,
+                    @ruby_literal_44
+                  ]
+                )
+              ]
+            ),
+            Ruby::Array.new(
+              :elements => [@ruby_literal_0, @ruby_literal_1]
+            ),
+            @ruby_literal_0,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile_as_shortcut("integer", @context_empty).should == ruby_node
+      end
+    end
   end
 
   describe YCP::YEIs, :type => :ycp do
@@ -4565,6 +4743,88 @@ module Y2R::AST
           ruby_node_from_const
         ycp_node_to_const.compile(@context_empty).should ==
           ruby_node_to_const
+      end
+
+      it "returns correct AST node when child is an indexed access and there is shortcut" do
+        ycp_node = YCP::YEPropagate.new(
+          :from  => YCP::Type.new("any"),
+          :to    => YCP::Type.new("float"),
+          :child => YCP::YEBracket.new(
+            :value   => YCP::List.new(
+              :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            ),
+            :index   => YCP::List.new(:children => [@ycp_const_1]),
+            :default => YCP::Const.new(:type => :void)
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Ops"),
+          :name     => "get_float",
+          :args     => [
+            Ruby::Array.new(
+              :elements => [
+                @ruby_literal_42,
+                @ruby_literal_43,
+                @ruby_literal_44
+              ]
+            ),
+            @ruby_literal_1,
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
+      end
+
+      it "returns correct AST node when child is an indexed access and there is no shortcut" do
+        ycp_node = YCP::YEPropagate.new(
+          :from  => YCP::Type.new("integer"),
+          :to    => YCP::Type.new("float"),
+          :child => YCP::YEBracket.new(
+            :value   => YCP::List.new(
+              :children => [@ycp_const_42, @ycp_const_43, @ycp_const_44]
+            ),
+            :index   => YCP::List.new(:children => [@ycp_const_1]),
+            :default => YCP::Const.new(:type => :void)
+          )
+        )
+
+        ruby_node = Ruby::MethodCall.new(
+          :receiver => Ruby::Variable.new(:name => "Convert"),
+          :name     => "convert",
+          :args     => [
+            Ruby::MethodCall.new(
+              :receiver => Ruby::Variable.new(:name => "Ops"),
+              :name     => "get",
+              :args     => [
+                Ruby::Array.new(
+                  :elements => [
+                    @ruby_literal_42,
+                    @ruby_literal_43,
+                    @ruby_literal_44
+                  ]
+                ),
+                @ruby_literal_1,
+              ],
+              :block    => nil,
+              :parens   => true
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :from),
+              :value => Ruby::Literal.new(:value => "integer")
+            ),
+            Ruby::HashEntry.new(
+              :key   => Ruby::Literal.new(:value => :to),
+              :value => Ruby::Literal.new(:value => "float")
+            )
+          ],
+          :block    => nil,
+          :parens   => true
+        )
+
+        ycp_node.compile(@context_empty).should == ruby_node
       end
     end
   end
