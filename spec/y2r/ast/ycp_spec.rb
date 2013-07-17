@@ -984,6 +984,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1004,6 +1005,7 @@ module Y2R::AST
               :category => :function,
               :ns       => "M",
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1011,6 +1013,7 @@ module Y2R::AST
               :category => :function,
               :ns       => "N",
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1039,6 +1042,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1059,6 +1063,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
               :type     => YCP::Type.new("void (integer, integer, integer)")
             )
@@ -1091,6 +1096,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1098,6 +1104,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "F",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1105,6 +1112,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "_f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1112,6 +1120,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "end",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1158,6 +1167,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1178,6 +1188,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
               :type     => YCP::Type.new("void (integer, integer, integer)")
             )
@@ -1200,6 +1211,7 @@ module Y2R::AST
               :category => :function,
               :ns       => nil,
               :name     => "f",
+              :result   => :used,
               :args     => [
                 YCP::YEReference.new(:child => @ycp_entry_a),
                 YCP::YEReference.new(:child => @ycp_entry_b),
@@ -1328,6 +1340,7 @@ module Y2R::AST
               :category => :variable,
               :ns       => nil,
               :name     => "a",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1335,6 +1348,7 @@ module Y2R::AST
               :category => :variable,
               :ns       => nil,
               :name     => "A",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1342,6 +1356,7 @@ module Y2R::AST
               :category => :variable,
               :ns       => nil,
               :name     => "_a",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1349,6 +1364,7 @@ module Y2R::AST
               :category => :variable,
               :ns       => nil,
               :name     => "end",
+              :result   => :used,
               :args     => [],
               :type     => YCP::Type.new("void ()")
             )
@@ -1432,6 +1448,7 @@ module Y2R::AST
             :category => :variable,
             :ns       => nil,
             :name     => "f",
+            :result   => :used,
             :args     => [],
             :type     => YCP::Type.new("void ()")
           )
@@ -1452,6 +1469,7 @@ module Y2R::AST
             :category => :variable,
             :ns       => nil,
             :name     => "f",
+            :result   => :used,
             :args     => [@ycp_const_42, @ycp_const_43, @ycp_const_44],
             :type     => YCP::Type.new("void (integer, integer, integer)")
           )
@@ -4206,6 +4224,7 @@ module Y2R::AST
             :category => :function,
             :ns       => nil,
             :name     => "f",
+            :result   => :used,
             :args     => [],
             :type     => YCP::Type.new("integer ()")
           )

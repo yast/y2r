@@ -283,6 +283,7 @@ module Y2R
             :ns       => element["ns"],
             :name     => element["name"],
             :category => element["category"].to_sym,
+            :result   => element["result"] == "unused" ? :unused : :used,
             :args     => extract_collection(element, "args", context),
             :type     => AST::YCP::Type.new(element["type"])
           )
