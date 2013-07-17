@@ -322,6 +322,12 @@ module Y2R
             segment.sub(/\A\/\//, "#")
           end
 
+          def process_doc_comment(segment)
+            # TODO: Process the original doc comment so that it works with YARD.
+
+            segment
+          end
+
           def fix_multi_line_segment(segment, prefix)
             # The [^*] part is needed to exclude license comments, which often
             # begin with a line of stars.
@@ -360,6 +366,9 @@ module Y2R
                 gsub(/^#{Regexp.quote(prefix)}/, "").
                 gsub(/^/, "# ")
             end
+
+            # Process doc comments.
+            segment = process_doc_comment(segment) if is_doc_comment
 
             segment
           end
