@@ -91,39 +91,18 @@ module Y2R
         INDENT_STEP = 2
 
         def to_ruby(context)
-          wrap_code_with_comments context do |inner_context|
-            to_ruby_base(inner_context)
-          end
-        end
-
-        def to_ruby_enclosed(context)
-          if enclose?
-            wrap_code_with_comments context do |inner_context|
-              passed_context = inner_context.shifted(1)
-
-              if pass_trailer?
-                trailer = ")#{inner_context.trailer}"
-                "(#{to_ruby_base(passed_context.with_trailer(trailer))}"
-              else
-                "(#{to_ruby_base(passed_context)})"
-              end
+          wrap_code_with_comments context do |comments_context|
+            wrap_code_with_parens comments_context do |parens_context|
+              to_ruby_base(parens_context)
             end
-          else
-            to_ruby(context)
           end
         end
 
         def single_line_width(context)
-          wrap_width_with_comments do
-            single_line_width_base(context)
-          end
-        end
-
-        def single_line_width_enclosed(context)
-          if enclose?
-            1 + single_line_width(context) + 1
-          else
-            single_line_width(context)
+          wrap_width_with_comments context do |comments_context|
+            wrap_width_with_parens comments_context do |parens_context|
+              single_line_width_base(parens_context)
+            end
           end
         end
 
@@ -159,10 +138,6 @@ module Y2R
 
         def indented(node, context)
           indent(node.to_ruby(context.indented(INDENT_STEP)))
-        end
-
-        def indented_enclosed(node, context)
-          indent(node.to_ruby_enclosed(context.indented(INDENT_STEP)))
         end
 
         def indent(s)
@@ -227,8 +202,21 @@ module Y2R
           single_line_width_base(context) <= context.width - context.shift
         end
 
-        def enclose?
-          true
+        def enclose_in_parens?(context)
+          priority < context.priority
+        end
+
+        def wrap_code_with_parens(context)
+          if enclose_in_parens?(context)
+            if pass_trailer?
+              trailer = ")#{context.trailer}"
+              "(#{yield(context.shifted(1).with_trailer(trailer))}"
+            else
+              "(#{yield(context.shifted(1))})"
+            end
+          else
+            yield context
+          end
         end
 
         def wrap_code_with_comments(context)
@@ -243,8 +231,12 @@ module Y2R
           code
         end
 
-        def wrap_width_with_comments
-          width = yield
+        def wrap_width_with_parens(context)
+          enclose_in_parens?(context) ? 1 + yield(context) + 1 : yield(context)
+        end
+
+        def wrap_width_with_comments(context)
+          width = yield(context)
           width += Float::INFINITY        if comment_before
           width += 1 + comment_after.size if comment_after
           width
@@ -256,8 +248,10 @@ module Y2R
       class Program < Node
         def to_ruby(context)
           combine do |parts|
-            statements_code = wrap_code_with_comments context do |inner_context|
-              statements.to_ruby(inner_context.with_priority(priority))
+            statements_code = wrap_code_with_comments context do |comments_context|
+              wrap_code_with_parens comments_context do |parens_context|
+                statements.to_ruby(parens_context.with_priority(priority))
+              end
             end
 
             parts << "# encoding: utf-8"
@@ -933,13 +927,13 @@ module Y2R
         def to_ruby_base(context)
           expressions_context = context.shifted(op.size).with_priority(priority)
 
-          "#{op}#{expression.to_ruby_enclosed(expressions_context)}"
+          "#{op}#{expression.to_ruby(expressions_context)}"
         end
 
         def single_line_width_base(context)
           inner_context = context.with_priority(priority)
 
-          op.size + expression.single_line_width_enclosed(inner_context)
+          op.size + expression.single_line_width(inner_context)
         end
 
         def priority
@@ -952,12 +946,6 @@ module Y2R
 
         def pass_trailer?
           true
-        end
-
-        protected
-
-        def enclose?
-          false
         end
       end
 
@@ -1001,8 +989,8 @@ module Y2R
           if !has_line_breaking_comment?
             inner_context = context.with_priority(priority)
 
-            lhs_width = lhs.single_line_width_enclosed(inner_context)
-            rhs_width = rhs.single_line_width_enclosed(inner_context)
+            lhs_width = lhs.single_line_width(inner_context)
+            rhs_width = rhs.single_line_width(inner_context)
 
             lhs_width + 1 + op.size + 1 + rhs_width
           else
@@ -1034,21 +1022,21 @@ module Y2R
 
         def to_ruby_base_single_line(context)
           lhs_context = context.without_trailer.with_priority(priority)
-          lhs_code    = lhs.to_ruby_enclosed(lhs_context)
+          lhs_code    = lhs.to_ruby(lhs_context)
 
           rhs_shift   = lhs_code.size + 1 + op.size + 1
           rhs_context = context.shifted(rhs_shift).with_priority(priority)
-          rhs_code    = rhs.to_ruby_enclosed(rhs_context)
+          rhs_code    = rhs.to_ruby(rhs_context)
 
           "#{lhs_code} #{op} #{rhs_code}"
         end
 
         def to_ruby_base_multi_line(context)
           lhs_context = context.with_trailer(" #{op}").with_priority(priority)
-          lhs_code    = lhs.to_ruby_enclosed(lhs_context)
+          lhs_code    = lhs.to_ruby(lhs_context)
 
           rhs_context = context.with_priority(priority)
-          rhs_code    = indented_enclosed(rhs, rhs_context)
+          rhs_code    = indented(rhs, rhs_context)
 
           combine do |parts|
             parts << lhs_code
@@ -1071,9 +1059,9 @@ module Y2R
           if !has_line_breaking_comment?
             inner_context = context.with_priority(priority)
 
-            condition_width = condition.single_line_width_enclosed(inner_context)
-            then_width      = self.then.single_line_width_enclosed(inner_context)
-            else_width      = self.else.single_line_width_enclosed(inner_context)
+            condition_width = condition.single_line_width(inner_context)
+            then_width      = self.then.single_line_width(inner_context)
+            else_width      = self.else.single_line_width(inner_context)
 
             condition_width + 3 + then_width + 3 + else_width
           else
@@ -1108,31 +1096,31 @@ module Y2R
 
         def to_ruby_base_single_line(context)
           condition_context = context.without_trailer.with_priority(priority)
-          condition_code    = condition.to_ruby_enclosed(condition_context)
+          condition_code    = condition.to_ruby(condition_context)
 
           then_shift   = condition_code.size + 3
           then_context = context.
             shifted(then_shift).
             without_trailer.
             with_priority(priority)
-          then_code    = self.then.to_ruby_enclosed(then_context)
+          then_code    = self.then.to_ruby(then_context)
 
           else_shift   = then_shift + then_code.size + 3
           else_context = context.shifted(else_shift).with_priority(priority)
-          else_code    = self.else.to_ruby_enclosed(else_context)
+          else_code    = self.else.to_ruby(else_context)
 
           "#{condition_code} ? #{then_code} : #{else_code}"
         end
 
         def to_ruby_base_multi_line(context)
           condition_context = context.with_trailer(" ?").with_priority(priority)
-          condition_code    = condition.to_ruby_enclosed(condition_context)
+          condition_code    = condition.to_ruby(condition_context)
 
           then_context = context.with_trailer(" :").with_priority(priority)
-          then_code    = indented_enclosed(self.then, then_context)
+          then_code    = indented(self.then, then_context)
 
           else_context = context.with_priority(priority)
-          else_code    = indented_enclosed(self.else, else_context)
+          else_code    = indented(self.else, else_context)
 
           combine do |parts|
             parts << condition_code
@@ -1230,12 +1218,6 @@ module Y2R
           else
             false    # Ignore deep comments, like we do for statements.
           end
-        end
-
-        protected
-
-        def enclose?
-          !parens
         end
 
         private
@@ -1412,12 +1394,6 @@ module Y2R
           comment_before || (receiver && receiver.starts_with_comment?)
         end
 
-        protected
-
-        def enclose?
-          false
-        end
-
         private
 
         def has_line_breaking_comment?
@@ -1459,12 +1435,6 @@ module Y2R
         def hates_to_stand_alone?
           true
         end
-
-        protected
-
-        def enclose?
-          false
-        end
       end
 
       class Self < Node
@@ -1482,12 +1452,6 @@ module Y2R
 
         def hates_to_stand_alone?
           true
-        end
-
-        protected
-
-        def enclose?
-          false
         end
       end
 
@@ -1512,12 +1476,6 @@ module Y2R
           else
             true
           end
-        end
-
-        protected
-
-        def enclose?
-          false
         end
       end
 
@@ -1546,12 +1504,6 @@ module Y2R
 
         def hates_to_stand_alone?
           elements.empty?
-        end
-
-        protected
-
-        def enclose?
-          false
         end
 
         private
@@ -1604,12 +1556,6 @@ module Y2R
           entries.empty?
         end
 
-        protected
-
-        def enclose?
-          false
-        end
-
         private
 
         def entries_have_comments?
@@ -1655,8 +1601,8 @@ module Y2R
           if !has_line_breaking_comment?
             inner_context = context.with_priority(Priority::NONE)
 
-            key_width   = key.single_line_width_enclosed(inner_context)
-            value_width = value.single_line_width_enclosed(inner_context)
+            key_width   = key.single_line_width(inner_context)
+            value_width = value.single_line_width(inner_context)
 
             key_width + 4 + value_width
           else
@@ -1682,12 +1628,6 @@ module Y2R
 
         def key_width(context)
           key.to_ruby_base(context).split("\n").last.size
-        end
-
-        protected
-
-        def enclose?
-          false
         end
 
         private

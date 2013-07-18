@@ -16,20 +16,6 @@ def check_context(node, expected_context)
   node_copy
 end
 
-def check_context_enclosed(node, expected_context)
-  node_copy = node.dup
-
-  node_copy.should_receive(:to_ruby_enclosed) do |context|
-    expected_context.each_pair do |key, value|
-      context.send(key).should == value
-    end
-
-    node.to_ruby(context)
-  end
-
-  node_copy
-end
-
 module Y2R::AST::Ruby
   RSpec.configure do |c|
     c.before :each, :type => :ruby do
@@ -270,40 +256,13 @@ module Y2R::AST::Ruby
       def single_line_width_base(context)
         4
       end
-    end
 
-    class NotEnclosedNode < Node
-      def enclose?
-        false
-      end
-
-      def to_ruby_base(context)
-        "ruby"
-      end
-
-      def single_line_width(context)
-        4
-      end
-    end
-
-    class EnclosedNode < Node
-      def enclose?
-        true
-      end
-
-      def to_ruby_base(context)
-        "ruby"
-      end
-
-      def single_line_width(context)
-        4
+      def priority
+        Priority::ATOMIC
       end
     end
 
     before :each do
-      @node_not_enclosed = NotEnclosedNode.new
-      @node_enclosed     = EnclosedNode.new
-
       @node_comment_none   = CommentedNode.new
       @node_comment_before = CommentedNode.new(:comment_before => "# before")
       @node_comment_after  = CommentedNode.new(:comment_after => "# after")
@@ -332,48 +291,6 @@ module Y2R::AST::Ruby
       end
     end
 
-    describe "#to_ruby_enclosed" do
-      describe "basics" do
-        describe "on nodes where #enclosed? returns false" do
-          it "returns code that is not enclosed in parens" do
-            @node_not_enclosed.to_ruby_enclosed(@context_default).should == "ruby"
-          end
-        end
-
-        describe "on nodes where #enclosed? returns true" do
-          it "returns code that is enclosed in parens" do
-            @node_enclosed.to_ruby_enclosed(@context_default).should == "(ruby)"
-          end
-        end
-      end
-
-      describe "formatting" do
-        describe "on nodes where #enclosed? returns false" do
-          it "passes correct context to #to_ruby" do
-            @node_not_enclosed.should_receive(:to_ruby) do |context|
-              context.width.should == 80
-              context.shift.should == 0
-              "ruby"
-            end
-
-            @node_not_enclosed.to_ruby_enclosed(@context_default)
-          end
-        end
-
-        describe "on nodes where #enclosed? returns true" do
-          it "passes correct context to #to_ruby" do
-            @node_enclosed.should_receive(:to_ruby_base) do |context|
-              context.width.should == 80
-              context.shift.should == 1
-              "ruby"
-            end
-
-            @node_enclosed.to_ruby_enclosed(@context_default)
-          end
-        end
-      end
-    end
-
     describe "#single_line_width" do
       describe "on nodes without any comments" do
         it "returns width without any comments" do
@@ -391,22 +308,6 @@ module Y2R::AST::Ruby
       describe "on nodes with comment after" do
         it "returns width with comment after" do
           @node_comment_after.single_line_width(@context_default).should == 12
-        end
-      end
-    end
-
-    describe "#single_line_width_enclosed" do
-      describe "on nodes where #enclosed? returns false" do
-        it "returns correct value" do
-          @node_not_enclosed.single_line_width_enclosed(@context_default).should ==
-            4
-        end
-      end
-
-      describe "on nodes where #enclosed? returns true" do
-        it "returns correct value" do
-          @node_enclosed.single_line_width_enclosed(@context_default).should ==
-            6
         end
       end
     end
@@ -2327,11 +2228,11 @@ module Y2R::AST::Ruby
 
   describe UnaryOperator, :type => :ruby do
     before :each do
-      @node_without_parens = UnaryOperator.new(
+      @node_simple = UnaryOperator.new(
         :op         => "+",
         :expression => @literal_42,
       )
-      @node_with_parens = UnaryOperator.new(
+      @node_complex = UnaryOperator.new(
         :op         => "+",
         :expression => @binary_operator_42_plus_43,
       )
@@ -2339,15 +2240,15 @@ module Y2R::AST::Ruby
 
     describe "#to_ruby_base" do
       it "emits correct code" do
-        @node_without_parens.to_ruby_base(@context_default).should == "+42"
+        @node_simple.to_ruby_base(@context_default).should == "+42"
 
-        @node_with_parens.to_ruby_base(@context_default).should == "+(42 + 43)"
+        @node_complex.to_ruby_base(@context_default).should == "+(42 + 43)"
       end
 
       it "passes correct context to expression" do
         node = UnaryOperator.new(
           :op         => "+",
-          :expression => check_context_enclosed(
+          :expression => check_context(
             @literal_42,
             :width    => 80,
             :shift    => 1,
@@ -2361,22 +2262,20 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base(@context_default).should ==
-          3
-        @node_with_parens.single_line_width_base(@context_default).should ==
-          10
+        @node_simple.single_line_width_base(@context_default).should  == 3
+        @node_complex.single_line_width_base(@context_default).should == 10
       end
     end
   end
 
   describe BinaryOperator, :type => :ruby do
     before :each do
-      @node_without_parens = BinaryOperator.new(
+      @node_simple = BinaryOperator.new(
         :op  => "+",
         :lhs => @literal_42,
         :rhs => @literal_43
       )
-      @node_with_parens = BinaryOperator.new(
+      @node_complex = BinaryOperator.new(
         :op  => "+",
         :lhs => @binary_operator_42_plus_43,
         :rhs => @binary_operator_44_plus_45
@@ -2407,11 +2306,10 @@ module Y2R::AST::Ruby
     describe "#to_ruby_base" do
       describe "with lot of space available" do
         it "emits correct code" do
-          @node_without_parens.to_ruby_base(@context_default).should ==
-            "42 + 43"
+          @node_simple.to_ruby_base(@context_default).should == "42 + 43"
 
-          @node_with_parens.to_ruby_base(@context_default).should ==
-            "(42 + 43) + (44 + 45)"
+          @node_complex.to_ruby_base(@context_default).should ==
+            "42 + 43 + 44 + 45"
 
           @node_lhs_comment_before.to_ruby_base(@context_default).should == [
             "# before",
@@ -2436,7 +2334,7 @@ module Y2R::AST::Ruby
         it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => check_context_enclosed(
+            :lhs => check_context(
               @binary_operator_42_plus_43,
               :width    => 80,
               :shift    => 0,
@@ -2452,10 +2350,10 @@ module Y2R::AST::Ruby
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => @binary_operator_42_plus_43,
-            :rhs => check_context_enclosed(
+            :rhs => check_context(
               @binary_operator_44_plus_45,
               :width    => 80,
-              :shift    => 12,
+              :shift    => 10,
               :priority => Priority::ADD
             )
           )
@@ -2466,12 +2364,12 @@ module Y2R::AST::Ruby
 
       describe "with no space available" do
         it "emits correct code" do
-          @node_without_parens.to_ruby_base(@context_narrow).should ==
+          @node_simple.to_ruby_base(@context_narrow).should ==
             "42 + 43"
 
-          @node_with_parens.to_ruby_base(@context_narrow).should == [
-            "(42 + 43) +",
-            "  (44 + 45)"
+          @node_complex.to_ruby_base(@context_narrow).should == [
+            "42 + 43 +",
+            "  44 + 45"
           ].join("\n")
 
           @node_lhs_comment_before.to_ruby_base(@context_narrow).should == [
@@ -2498,7 +2396,7 @@ module Y2R::AST::Ruby
         it "passes correct context to lhs" do
           node = BinaryOperator.new(
             :op  => "+",
-            :lhs => check_context_enclosed(
+            :lhs => check_context(
               @binary_operator_42_plus_43,
               :width    => 0,
               :shift    => 0,
@@ -2514,7 +2412,7 @@ module Y2R::AST::Ruby
           node = BinaryOperator.new(
             :op  => "+",
             :lhs => @binary_operator_42_plus_43,
-            :rhs => check_context_enclosed(
+            :rhs => check_context(
               @binary_operator_44_plus_45,
               :width    => -2,
               :shift    => 0,
@@ -2529,10 +2427,8 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base(@context_default).should ==
-          7
-        @node_with_parens.single_line_width_base(@context_default).should ==
-          21
+        @node_simple.single_line_width_base(@context_default).should  == 7
+        @node_complex.single_line_width_base(@context_default).should == 17
 
         @node_lhs_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
@@ -2548,12 +2444,12 @@ module Y2R::AST::Ruby
 
   describe TernaryOperator, :type => :ruby do
     before :each do
-      @node_without_parens = TernaryOperator.new(
+      @node_simple = TernaryOperator.new(
         :condition => @literal_true,
         :then      => @literal_42,
         :else      => @literal_43
       )
-      @node_with_parens = TernaryOperator.new(
+      @node_complex = TernaryOperator.new(
         :condition  => @binary_operator_true_or_false,
         :then       => @binary_operator_42_plus_43,
         :else       => @binary_operator_44_plus_45
@@ -2594,11 +2490,11 @@ module Y2R::AST::Ruby
     describe "#to_ruby_base" do
       describe "with lot of space available" do
         it "emits correct code" do
-          @node_without_parens.to_ruby_base(@context_default).should ==
+          @node_simple.to_ruby_base(@context_default).should ==
             "true ? 42 : 43"
 
-          @node_with_parens.to_ruby_base(@context_default).should ==
-            "(true || false) ? (42 + 43) : (44 + 45)"
+          @node_complex.to_ruby_base(@context_default).should ==
+            "true || false ? 42 + 43 : 44 + 45"
 
           @node_condition_comment_before.to_ruby_base(@context_default).should == [
             "# before",
@@ -2637,7 +2533,7 @@ module Y2R::AST::Ruby
 
         it "passes correct context to condition" do
           node = TernaryOperator.new(
-            :condition => check_context_enclosed(
+            :condition => check_context(
               @literal_true,
               :width    => 80,
               :shift    => 0,
@@ -2653,7 +2549,7 @@ module Y2R::AST::Ruby
         it "passes correct context to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
-            :then      => check_context_enclosed(
+            :then      => check_context(
               @binary_operator_42_plus_43,
               :width    => 80,
               :shift    => 7,
@@ -2669,10 +2565,10 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @binary_operator_42_plus_43,
-            :else      => check_context_enclosed(
+            :else      => check_context(
               @binary_operator_44_plus_45,
               :width    => 80,
-              :shift    => 19,
+              :shift    => 17,
               :priority => Priority::TERNARY
             ),
           )
@@ -2683,14 +2579,14 @@ module Y2R::AST::Ruby
 
       describe "with no space available" do
         it "emits correct code" do
-          @node_without_parens.to_ruby_base(@context_narrow).should == [
+          @node_simple.to_ruby_base(@context_narrow).should == [
             "true ? 42 : 43"
           ].join("\n")
 
-          @node_with_parens.to_ruby_base(@context_narrow).should == [
-            "(true || false) ?",
-            "  (42 + 43) :",
-            "  (44 + 45)"
+          @node_complex.to_ruby_base(@context_narrow).should == [
+            "true || false ?",
+            "  42 + 43 :",
+            "  44 + 45"
           ].join("\n")
 
           @node_condition_comment_before.to_ruby_base(@context_narrow).should == [
@@ -2731,7 +2627,7 @@ module Y2R::AST::Ruby
 
         it "passes correct context to condition" do
           node = TernaryOperator.new(
-            :condition => check_context_enclosed(
+            :condition => check_context(
               @literal_true,
               :width    => 0,
               :shift    => 0,
@@ -2747,7 +2643,7 @@ module Y2R::AST::Ruby
         it "passes correct context to then" do
           node = TernaryOperator.new(
             :condition => @literal_true,
-            :then      => check_context_enclosed(
+            :then      => check_context(
               @binary_operator_42_plus_43,
               :width    => -2,
               :shift    => 0,
@@ -2763,7 +2659,7 @@ module Y2R::AST::Ruby
           node = TernaryOperator.new(
             :condition => @literal_true,
             :then      => @binary_operator_42_plus_43,
-            :else      => check_context_enclosed(
+            :else      => check_context(
               @binary_operator_44_plus_45,
               :width    => -2,
               :shift    => 0,
@@ -2778,10 +2674,8 @@ module Y2R::AST::Ruby
 
     describe "#single_line_width_base" do
       it "returns correct value" do
-        @node_without_parens.single_line_width_base(@context_default).should ==
-          14
-        @node_with_parens.single_line_width_base(@context_default).should ==
-          39
+        @node_simple.single_line_width_base(@context_default).should  == 14
+        @node_complex.single_line_width_base(@context_default).should == 33
 
         @node_condition_comment_before.single_line_width_base(@context_default).should ==
           Float::INFINITY
