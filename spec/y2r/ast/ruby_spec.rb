@@ -1779,9 +1779,8 @@ module Y2R::AST::Ruby
           ")"
         ].join("\n")
 
-        @node_value_comment_after.to_ruby_base(@context_default).should == [
+        @node_value_comment_after.to_ruby_base(@context_default).should ==
           "next 42 # after"
-        ].join("\n")
       end
 
       describe "for single-line next statements" do
@@ -1854,9 +1853,8 @@ module Y2R::AST::Ruby
           ")"
         ].join("\n")
 
-        @node_value_comment_after.to_ruby_base(@context_default).should == [
+        @node_value_comment_after.to_ruby_base(@context_default).should ==
           "return 42 # after"
-        ].join("\n")
       end
 
       describe "for single-line next statements" do
@@ -2388,9 +2386,8 @@ module Y2R::AST::Ruby
             "  43"
           ].join("\n")
 
-          @node_rhs_comment_after.to_ruby_base(@context_narrow).should == [
+          @node_rhs_comment_after.to_ruby_base(@context_narrow).should ==
             "42 + 43 # after"
-          ].join("\n")
         end
 
         it "passes correct context to lhs" do
@@ -2579,9 +2576,7 @@ module Y2R::AST::Ruby
 
       describe "with no space available" do
         it "emits correct code" do
-          @node_simple.to_ruby_base(@context_narrow).should == [
-            "true ? 42 : 43"
-          ].join("\n")
+          @node_simple.to_ruby_base(@context_narrow).should == "true ? 42 : 43"
 
           @node_complex.to_ruby_base(@context_narrow).should == [
             "true || false ?",
@@ -2620,9 +2615,8 @@ module Y2R::AST::Ruby
             "  43"
           ].join("\n")
 
-          @node_else_comment_after.to_ruby_base(@context_narrow).should == [
+          @node_else_comment_after.to_ruby_base(@context_narrow).should ==
             "true ? 42 : 43 # after"
-          ].join("\n")
         end
 
         it "passes correct context to condition" do
