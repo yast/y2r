@@ -4153,6 +4153,31 @@ module Y2R::AST::Ruby
             "}"
           ].join("\n")
         end
+
+        it "passes correct context to entries" do
+          node = Hash.new(:entries => [
+            check_context(
+              @hash_entry_a_42,
+              :width    => 80,
+              :shift    => 2,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @hash_entry_b_43,
+              :width    => 80,
+              :shift    => 12,
+              :priority => Priority::NONE
+            ),
+            check_context(
+              @hash_entry_c_44,
+              :width    => 80,
+              :shift    => 22,
+              :priority => Priority::NONE
+            )
+          ])
+
+          node.to_ruby_base(@context_default)
+        end
       end
 
       describe "with no space available" do
