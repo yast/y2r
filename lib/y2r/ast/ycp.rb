@@ -2082,7 +2082,7 @@ module Y2R
       end
 
       class YEPropagate < Node
-        # Is identical to list of shortcuts in ruby-bindings ycp/convert.rb
+        # Needs to be in sync with |Yast::Ops::SHORTCUT_TYPES| in Ruby bindings.
         TYPES_WITH_SHORTCUT_CONVERSION = [
           "boolean",
           "float",
@@ -2095,6 +2095,7 @@ module Y2R
           "symbol",
           "term",
         ]
+
         def compile(context)
           if from.no_const != to.no_const
             if compile_as_shortcut?
