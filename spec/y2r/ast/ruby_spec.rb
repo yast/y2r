@@ -3828,6 +3828,10 @@ module Y2R::AST::Ruby
       @node_float   = Literal.new(:value => 42.0)
       @node_symbol  = Literal.new(:value => :abcd)
       @node_string  = Literal.new(:value => "abcd")
+
+      @node_string_long_multi_line = Literal.new(
+        :value => "abcdefghijklmnop\nabcdefghijklmnop\nabcdefghijklmnop"
+      )
     end
 
     describe "#to_ruby_base" do
@@ -3840,6 +3844,12 @@ module Y2R::AST::Ruby
           @node_float.to_ruby_base(@context_default).should   == "42.0"
           @node_symbol.to_ruby_base(@context_default).should  == ":abcd"
           @node_string.to_ruby_base(@context_default).should  == "\"abcd\""
+
+          @node_string_long_multi_line.to_ruby_base(@context_default).should == [
+            "\"abcdefghijklmnop\\n\" +",
+            "  \"abcdefghijklmnop\\n\" +",
+            "  \"abcdefghijklmnop\""
+          ].join("\n")
         end
       end
     end
@@ -3853,6 +3863,9 @@ module Y2R::AST::Ruby
         @node_float.single_line_width_base(@context_default).should   == 4
         @node_symbol.single_line_width_base(@context_default).should  == 5
         @node_string.single_line_width_base(@context_default).should  == 6
+
+        @node_string_long_multi_line.single_line_width_base(@context_default).should ==
+          Float::INFINITY
       end
     end
   end

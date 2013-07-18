@@ -1471,15 +1471,35 @@ module Y2R
 
       class Literal < Node
         def to_ruby_base(context)
-          value.inspect
+          if is_long_multi_line_string?
+            combine do |parts|
+              lines = value.lines.to_a
+
+              parts << "#{lines.first.inspect} +"
+              lines[1..-2].each do |line|
+                parts << indent("#{line.inspect} +")
+              end
+              parts << indent("#{lines.last.inspect}")
+            end
+          else
+            value.inspect
+          end
         end
 
         def single_line_width_base(context)
-          value.inspect.size
+          if is_long_multi_line_string?
+            Float::INFINITY
+          else
+            value.inspect.size
+          end
         end
 
         def priority
-          Priority::ATOMIC
+          if is_long_multi_line_string?
+            Priority::ADD
+          else
+            Priority::ATOMIC
+          end
         end
 
         def hates_to_stand_alone?
@@ -1488,6 +1508,12 @@ module Y2R
           else
             true
           end
+        end
+
+        private
+
+        def is_long_multi_line_string?
+          value.is_a?(String) && value.size > 40 && value.lines.count > 2
         end
       end
 
