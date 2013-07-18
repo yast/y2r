@@ -1014,6 +1014,18 @@ module Y2R
           true
         end
 
+        protected
+
+        def enclose_in_parens?(context)
+          # YCP allows |a == b == c|, Ruby does not. We ensure |(a == b) == c|
+          # gets emitted instead.
+          if priority == Priority::EQUAL && context.priority == Priority::EQUAL
+            true
+          else
+            super context
+          end
+        end
+
         private
 
         def has_line_breaking_comment?
