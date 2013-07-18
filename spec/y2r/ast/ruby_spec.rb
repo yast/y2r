@@ -16,6 +16,20 @@ def check_to_ruby_context(node, expected_context)
   node_copy
 end
 
+def check_single_line_width_context(node, expected_context)
+  node_copy = node.dup
+
+  node_copy.should_receive(:single_line_width) do |context|
+    expected_context.each_pair do |key, value|
+      context.send(key).should == value
+    end
+
+    node.single_line_width(context)
+  end
+
+  node_copy
+end
+
 module Y2R::AST::Ruby
   RSpec.configure do |c|
     c.before :each, :type => :ruby do
@@ -778,6 +792,19 @@ module Y2R::AST::Ruby
         @node_with_nils.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to statements" do
+        node = Statements.new(
+          :statements => [
+            check_single_line_width_context(
+              @assignment_a_42,
+              :priority => Priority::NONE
+            )
+          ]
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -1025,6 +1052,32 @@ module Y2R::AST::Ruby
         @node_multi_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to condition" do
+        node = If.new(
+          :condition => check_single_line_width_context(
+            @assignment_a_42,
+            :priority => Priority::NONE
+          ),
+          :then      => @statements,
+          :else      => nil
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to then" do
+        node = If.new(
+          :condition => @literal_true,
+          :then      => check_single_line_width_context(
+            @assignment_a_42,
+            :priority => Priority::NONE
+          ),
+          :else      => nil
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -1215,6 +1268,32 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_multi_with_else.single_line_width_base(@context_default).should ==
           Float::INFINITY
+      end
+
+      it "passes correct context to condition" do
+        node = Unless.new(
+          :condition => check_single_line_width_context(
+            @assignment_a_42,
+            :priority => Priority::NONE
+          ),
+          :then      => @statements,
+          :else      => nil
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to then" do
+        node = Unless.new(
+          :condition => @literal_true,
+          :then      => check_single_line_width_context(
+            @assignment_a_42,
+            :priority => Priority::NONE
+          ),
+          :else      => nil
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -1824,6 +1903,17 @@ module Y2R::AST::Ruby
         @node_value_comment_after.single_line_width_base(@context_default).should ==
           15
       end
+
+      it "passes correct context to value" do
+        node = Next.new(
+          :value => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::NONE
+          )
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -1897,6 +1987,17 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_value_comment_after.single_line_width_base(@context_default).should ==
           17
+      end
+
+      it "passes correct context to value" do
+        node = Return.new(
+          :value => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::NONE
+          )
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -2095,6 +2196,27 @@ module Y2R::AST::Ruby
         @node_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to expressions" do
+        node = Expressions.new(
+          :expressions => [
+            check_single_line_width_context(
+              @literal_42,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_43,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_44,
+              :priority => Priority::NONE
+            )
+          ]
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -2221,6 +2343,30 @@ module Y2R::AST::Ruby
         @node_rhs_comment_after.single_line_width_base(@context_default).should ==
           14
       end
+
+      it "passes correct context to lhs" do
+        node = Assignment.new(
+          :lhs => check_single_line_width_context(
+            @variable_a,
+            :priority => Priority::ASSIGNMENT
+          ),
+          :rhs => @literal_42
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to rhs" do
+        node = Assignment.new(
+          :lhs => @variable_a,
+          :rhs => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::ASSIGNMENT
+          )
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -2262,6 +2408,18 @@ module Y2R::AST::Ruby
       it "returns correct value" do
         @node_simple.single_line_width_base(@context_default).should  == 3
         @node_complex.single_line_width_base(@context_default).should == 10
+      end
+
+      it "passes correct context to expression" do
+        node = UnaryOperator.new(
+          :op         => "+",
+          :expression => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::UNARY
+          ),
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -2435,6 +2593,32 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_rhs_comment_after.single_line_width_base(@context_default).should ==
           15
+      end
+
+      it "passes correct context to lhs" do
+        node = BinaryOperator.new(
+          :op  => "+",
+          :lhs => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::ADD
+          ),
+          :rhs => @literal_43
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to rhs" do
+        node = BinaryOperator.new(
+          :op  => "+",
+          :lhs => @literal_42,
+          :rhs => check_single_line_width_context(
+            @literal_43,
+            :priority => Priority::ADD
+          )
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -2683,6 +2867,45 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_else_comment_after.single_line_width_base(@context_default).should ==
           22
+      end
+
+      it "passes correct context to condition" do
+        node = TernaryOperator.new(
+          :condition => check_single_line_width_context(
+            @literal_true,
+            :priority => Priority::TERNARY
+          ),
+          :then      => @literal_42,
+          :else      => @literal_43
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to then" do
+        node = TernaryOperator.new(
+          :condition => @literal_true,
+          :then      => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::TERNARY
+          ),
+          :else      => @literal_43
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to else" do
+        node = TernaryOperator.new(
+          :condition => @literal_true,
+          :then      => @literal_42,
+          :else      => check_single_line_width_context(
+            @literal_43,
+            :priority => Priority::TERNARY
+          ),
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -3238,6 +3461,46 @@ module Y2R::AST::Ruby
         @node_no_parens_with_block.single_line_width_base(@context_default).should ==
           1
       end
+
+      it "passes correct context to receiver" do
+        node = MethodCall.new(
+          :receiver => check_single_line_width_context(
+            @variable_a,
+            :priority => Priority::ATOMIC
+          ),
+          :name     => "m",
+          :args     => [],
+          :block    => nil,
+          :parens   => false
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to args" do
+        node = MethodCall.new(
+          :receiver => @variable_a,
+          :name     => "m",
+          :args     => [
+            check_single_line_width_context(
+              @literal_42,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_43,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_44,
+              :priority => Priority::NONE
+            )
+          ],
+          :block    => nil,
+          :parens   => false
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -3691,6 +3954,40 @@ module Y2R::AST::Ruby
         @node_multi_args_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to args" do
+        node = Block.new(
+          :args       => [
+            check_single_line_width_context(
+              @variable_a,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @variable_b,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @variable_c,
+              :priority => Priority::NONE
+            )
+          ],
+          :statements => @assignment_a_42
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to statements" do
+        node = Block.new(
+          :args       => [],
+          :statements => check_single_line_width_context(
+            @assignment_a_42,
+            :priority => Priority::NONE
+          )
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -3773,6 +4070,18 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_receiver_comment_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
+      end
+
+      it "passes correct context to receiver" do
+        node = ConstAccess.new(
+          :receiver => check_single_line_width_context(
+            @variable_a,
+            :priority => Priority::ATOMIC
+          ),
+          :name     => "C"
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
@@ -4058,6 +4367,27 @@ module Y2R::AST::Ruby
         @node_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to elements" do
+        node = Array.new(
+          :elements => [
+            check_single_line_width_context(
+              @literal_42,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_43,
+              :priority => Priority::NONE
+            ),
+            check_single_line_width_context(
+              @literal_44,
+              :priority => Priority::NONE
+            )
+          ]
+        )
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -4275,6 +4605,25 @@ module Y2R::AST::Ruby
         @node_comments_after.single_line_width_base(@context_default).should ==
           Float::INFINITY
       end
+
+      it "passes correct context to entries" do
+        node = Hash.new(:entries => [
+          check_single_line_width_context(
+            @hash_entry_a_42,
+            :priority => Priority::NONE
+          ),
+          check_single_line_width_context(
+            @hash_entry_b_43,
+            :priority => Priority::NONE
+          ),
+          check_single_line_width_context(
+            @hash_entry_c_44,
+            :priority => Priority::NONE
+          )
+        ])
+
+        node.single_line_width_base(@context_default)
+      end
     end
   end
 
@@ -4397,6 +4746,30 @@ module Y2R::AST::Ruby
           Float::INFINITY
         @node_value_comment_after.single_line_width_base(@context_default).should ==
           16
+      end
+
+      it "passes correct context to key" do
+        node = HashEntry.new(
+          :key   => check_single_line_width_context(
+            @literal_a,
+            :priority => Priority::NONE
+          ),
+          :value => @literal_42
+        )
+
+        node.single_line_width_base(@context_default)
+      end
+
+      it "passes correct context to value" do
+        node = HashEntry.new(
+          :key   => @literal_a,
+          :value => check_single_line_width_context(
+            @literal_42,
+            :priority => Priority::NONE
+          )
+        )
+
+        node.single_line_width_base(@context_default)
       end
     end
   end
