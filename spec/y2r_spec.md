@@ -292,6 +292,7 @@ module Yast
   class DefaultClient < Client
     def main
       @fref = fun_ref(method(:f), "void ()")
+
       nil
     end
 
@@ -338,6 +339,7 @@ module Yast
     def f
       i = 42
       j = i
+
       nil
     end
   end
@@ -371,6 +373,7 @@ module Yast
     def main
       @i = 42
       @j = @i
+
       nil
     end
   end
@@ -454,6 +457,7 @@ module Yast
       i = 42
 
       b = lambda { i2 = 43 }
+
       nil
     end
   end
@@ -492,6 +496,7 @@ module Yast
       i = 42
 
       i2 = 43
+
       nil
     end
   end
@@ -565,6 +570,7 @@ module Yast
       @f = Builtins::Float.abs(-42.0)
       @l = Builtins::List.reverse([42, 43, 44])
       @s = Builtins::Multiset.union([42, 43, 44], [45, 46, 47])
+
       nil
     end
   end
@@ -632,6 +638,7 @@ module Yast
       textdomain "helloworld"
 
       @s = _("Hello, world!")
+
       nil
     end
   end
@@ -708,6 +715,7 @@ module Yast
         @c = c_ref.value;
         f3_result
       )
+
       nil
     end
 
@@ -811,6 +819,7 @@ module Yast
         c = c_ref.value;
         f3_result
       )
+
       nil
     end
   end
@@ -851,6 +860,7 @@ module Yast
     def main
       @fref = fun_ref(method(:f), "void ()")
       @fref.call
+
       nil
     end
 
@@ -1113,6 +1123,7 @@ module Yast
   class DefaultClient < Client
     def main
       textdomain "users"
+
       nil
     end
   end
@@ -1481,6 +1492,7 @@ module Yast
         c = deep_copy(c)
         42
       end
+
       nil
     end
   end
@@ -1520,6 +1532,7 @@ module Yast
       Builtins.y2milestone("M1")
       Builtins.y2milestone("M2")
       Builtins.y2milestone("M3")
+
       nil
     end
   end
@@ -1773,6 +1786,7 @@ module Yast
 
       @i = 42
       @j = 43
+
       nil
     end
 
@@ -1849,6 +1863,7 @@ module Yast
 
     def M
       Builtins.y2milestone("M1")
+
       nil
     end
 

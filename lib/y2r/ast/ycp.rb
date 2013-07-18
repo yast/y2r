@@ -1118,7 +1118,10 @@ module Y2R
             )
 
             unless other_statements.any? {|s| s.always_returns? }
-              main_statements << Ruby::Literal.new(:value => nil)
+              main_statements << Ruby::Literal.new(
+                :value          => nil,
+                :comment_before => ""
+              )
             end
 
             [
@@ -1162,7 +1165,10 @@ module Y2R
             end + statements.statements
 
             unless block.always_returns?
-              statements.statements << Ruby::Literal.new(:value => nil)
+              statements.statements << Ruby::Literal.new(
+                :value          => nil,
+                :comment_before => ""
+              )
             end
 
             if !context.in?(DefBlock)

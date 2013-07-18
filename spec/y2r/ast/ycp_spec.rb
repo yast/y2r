@@ -249,6 +249,11 @@ module Y2R::AST
 
       @ruby_literal_nil = Ruby::Literal.new(:value => nil)
 
+      @ruby_literal_nil_separated = Ruby::Literal.new(
+        :value          => nil,
+        :comment_before => ""
+      )
+
       @ruby_literal_true = Ruby::Literal.new(:value => true)
 
       @ruby_literal_a = Ruby::Literal.new(:value => :a)
@@ -330,7 +335,7 @@ module Y2R::AST
             @ruby_assignment_i_42,
             @ruby_assignment_j_43,
             @ruby_assignment_k_44,
-            @ruby_literal_nil
+            @ruby_literal_nil_separated
           ]
         )
       )
@@ -342,7 +347,7 @@ module Y2R::AST
             @ruby_assignment_i_42,
             @ruby_assignment_j_43,
             @ruby_assignment_k_44,
-            @ruby_literal_nil
+            @ruby_literal_nil_separated
           ]
         )
       )
@@ -354,7 +359,7 @@ module Y2R::AST
             @ruby_assignment_i_42,
             @ruby_assignment_j_43,
             @ruby_assignment_k_44,
-            @ruby_literal_nil
+            @ruby_literal_nil_separated
           ]
         )
       )
@@ -2070,7 +2075,7 @@ module Y2R::AST
                   @ruby_assignment_i_42,
                   @ruby_assignment_j_43,
                   @ruby_assignment_k_44,
-                  @ruby_literal_nil
+                  @ruby_literal_nil_separated
                 ]
               )
             )
@@ -2163,7 +2168,7 @@ module Y2R::AST
                 @ruby_assignment_i_42,
                 @ruby_assignment_j_43,
                 @ruby_assignment_k_44,
-                @ruby_literal_nil
+                @ruby_literal_nil_separated
               ]
             )
           )
@@ -2183,7 +2188,7 @@ module Y2R::AST
                 @ruby_assignment_i_42,
                 @ruby_assignment_j_43,
                 @ruby_assignment_k_44,
-                @ruby_literal_nil
+                @ruby_literal_nil_separated
               ]
             )
           )
@@ -2199,7 +2204,7 @@ module Y2R::AST
                 @ruby_assignment_i_42,
                 @ruby_assignment_j_43,
                 @ruby_assignment_k_44,
-                @ruby_literal_nil
+                @ruby_literal_nil_separated
               ]
             )
           )
@@ -2226,7 +2231,7 @@ module Y2R::AST
                     @ruby_assignment_i_42,
                     @ruby_assignment_j_43,
                     @ruby_assignment_k_44,
-                    @ruby_literal_nil
+                    @ruby_literal_nil_separated
                   ]
                 )
               ),
@@ -2314,7 +2319,7 @@ module Y2R::AST
                     @ruby_assignment_i_42,
                     @ruby_assignment_j_43,
                     @ruby_assignment_k_44,
-                    @ruby_literal_nil
+                    @ruby_literal_nil_separated
                   ]
                 )
               ),
@@ -2342,7 +2347,7 @@ module Y2R::AST
                     @ruby_assignment_i_42,
                     @ruby_assignment_j_43,
                     @ruby_assignment_k_44,
-                    @ruby_literal_nil
+                    @ruby_literal_nil_separated
                   ]
                 )
               ),
@@ -2365,7 +2370,7 @@ module Y2R::AST
                     @ruby_assignment_i_42,
                     @ruby_assignment_j_43,
                     @ruby_assignment_k_44,
-                    @ruby_literal_nil
+                    @ruby_literal_nil_separated
                   ]
                 )
               ),
@@ -2919,7 +2924,7 @@ module Y2R::AST
                   @ruby_assignment_i_42,
                   @ruby_assignment_j_43,
                   @ruby_assignment_k_44,
-                  @ruby_literal_nil
+                  @ruby_literal_nil_separated
                 ]
               ),
               :comment_before => ""
