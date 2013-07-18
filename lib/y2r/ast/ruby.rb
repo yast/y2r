@@ -184,9 +184,7 @@ module Y2R
             shifted(keyword.size + 1 - INDENT_STEP)
           expression_code    = indent(expression.to_ruby(expression_context))
 
-          separator_code = expression_code.lines.count >= 4 ? "\n" : ""
-
-          "#{keyword} #{expression_code[INDENT_STEP..-1]}#{separator_code}"
+          "#{keyword} #{expression_code[INDENT_STEP..-1]}"
         end
 
         def list_single_line_width(items, separator_width, context)
