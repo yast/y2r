@@ -210,10 +210,10 @@ module Y2R
         end
 
         class << self
-          def process_comment_before(comment, options)
+          def process_comment_before(node, comment, options)
             whitespace = options[:whitespace]
 
-            comment = fix_delimiters(comment)
+            comment = fix_delimiters(node, comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
@@ -251,10 +251,10 @@ module Y2R
             comment
           end
 
-          def process_comment_after(comment, options)
+          def process_comment_after(node, comment, options)
             whitespace = options[:whitespace]
 
-            comment = fix_delimiters(comment)
+            comment = fix_delimiters(node, comment)
             comment = strip_leading_whitespace(comment)
             comment = strip_trailing_whitespace(comment)
 
@@ -279,7 +279,7 @@ module Y2R
 
           private
 
-          def fix_delimiters(comment)
+          def fix_delimiters(node, comment)
             fixed_comment = ""
 
             comment.scan(COMMENT_SPLITTING_REGEXP) do
@@ -287,9 +287,9 @@ module Y2R
               prefix  = $`.split("\n").last || ""
 
               if segment =~ /\A\/\//
-                segment = fix_single_line_segment(segment)
+                segment = fix_single_line_segment(node, segment)
               elsif segment =~ /\A\/\*/
-                segment = fix_multi_line_segment(segment, prefix)
+                segment = fix_multi_line_segment(node, segment, prefix)
               end
 
               fixed_comment << segment
@@ -318,17 +318,17 @@ module Y2R
             s.sub(/\n\z/, "")
           end
 
-          def fix_single_line_segment(segment)
+          def fix_single_line_segment(node, segment)
             segment.sub(/\A\/\//, "#")
           end
 
-          def process_doc_comment(segment)
+          def process_doc_comment(node, segment)
             # TODO: Process the original doc comment so that it works with YARD.
 
             segment
           end
 
-          def fix_multi_line_segment(segment, prefix)
+          def fix_multi_line_segment(node, segment, prefix)
             # The [^*] part is needed to exclude license comments, which often
             # begin with a line of stars.
             is_doc_comment = segment =~ /\A\/\*\*[^*]/
@@ -368,7 +368,7 @@ module Y2R
             end
 
             # Process doc comments.
-            segment = process_doc_comment(segment) if is_doc_comment
+            segment = process_doc_comment(node, segment) if is_doc_comment
 
             segment
           end
@@ -526,6 +526,7 @@ module Y2R
                 if node
                   if comment_before
                     processed_comment_before = Comments.process_comment_before(
+                      self,
                       comment_before,
                       :whitespace => whitespace
                     )
@@ -536,6 +537,7 @@ module Y2R
 
                   if comment_after
                     processed_comment_after = Comments.process_comment_after(
+                      self,
                       comment_after,
                       :whitespace => whitespace
                     )
