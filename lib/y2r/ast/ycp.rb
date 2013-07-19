@@ -598,7 +598,29 @@ module Y2R
           end
         end
 
+        def remove_duplicate_imports(statements)
+          seen_imports = []
+
+          statements.select do |statement|
+            if statement.is_a?(Import)
+              if seen_imports.include?(statement.name)
+                false
+              else
+                seen_imports << statement.name
+                true
+              end
+            else
+              true
+            end
+          end
+        end
+
         def compile_statements_with_whitespace(statements, context)
+          # There is a duplicate import removal logic in ycpc, but it doesn't
+          # work for auto-iports such as UI. As a result, we need to do the
+          # deduplication again ourselves.
+          statements = remove_duplicate_imports(statements)
+
           case statements.size
             when 0
               []
