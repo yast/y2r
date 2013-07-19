@@ -21,7 +21,7 @@ def compile_options
   include_paths = if ENV["Y2R_INCLUDE_PATH"]
     ENV["Y2R_INCLUDE_PATH"].split(":")
   else
-    nil
+    [File.dirname(__FILE__) + "/include"]
   end
 
   {

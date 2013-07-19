@@ -1,13 +1,19 @@
 Y2R Compiler Specification
 ==========================
 
-This document specifies how [Y2R](https://github.com/yast/y2r) translates
+This document describes how [Y2R](https://github.com/yast/y2r) translates
 various
 [YCP](http://doc.opensuse.org/projects/YaST/SLES10/tdg/Book-YCPLanguage.html)
 constructs into Ruby. It serves both as a human-readable documentation and as an
 executable specification. Technically, this is implemented by translating this
 document from [Markdown](http://daringfireball.net/projects/markdown/) into
 [RSpec](http://rspec.info/).
+
+Note the specification is incomplete in that it only covers main aspects of the
+translation and not all the details. Making it 100% complete would be much more
+effort than we can spend now and it would also make it pretty much unreadable.
+Most of the omitted details are documented using unit tests in RSpec (see the
+`spec` directory).
 
 Contents
 --------
@@ -28,32 +34,35 @@ Contents
     * [Function References](#function-references)
   * [Expressions](#expressions)
     * [Variables](#variables)
-    * [Type Conversions](#type-conversions)
-    * [Builtin Calls](#builtin-calls)
-    * [`_` Calls](#_-calls)
-    * [Function Calls](#function-calls)
-    * [Function References Calling](#function-references-calling)
+    * [Equality Operators](#equality-operators)
     * [Comparison Operators](#comparison-operators)
     * [Arithmetic Operators](#arithmetic-operators)
     * [Bitwise Operators](#bitwise-operators)
     * [Logical Operators](#logical-operators)
     * [Ternary Operator](#ternary-operator)
     * [Index Operator](#index-operator)
+    * [`is` Operator](#is-operator)
     * [Double Quote Operator](#double-quote-operator)
+    * [Type Conversions](#type-conversions)
+    * [`_` Calls](#_-calls)
+    * [Builtin Calls](#builtin-calls)
+    * [Function Calls](#function-calls)
   * [Statements](#statements)
-    * [`import` Statement](#import-statement)
-    * [`textdomain` Statement](#textdomain-statement)
     * [Assignments](#assignments)
+    * [`textdomain` Statement](#textdomain-statement)
+    * [`import` Statement](#import-statement)
+    * [`include` Statement](#include-statement)
     * [`return` Statement](#return-statement)
     * [`break` Statement](#break-statement)
     * [`continue` Statement](#continue-statement)
-    * [Function Definitions](#function-definitions)
     * [Statement Blocks](#statement-blocks)
     * [`if` Statement](#if-statement)
     * [`switch` Statement](#switch-statement)
     * [`while` Statement](#while-statement)
     * [`do` Statement](#do-statement)
     * [`repeat` Statement](#repeat-statement)
+    * [Function Definitions](#function-definitions)
+  * [Files](#files)
     * [Clients](#clients)
     * [Modules](#modules)
   * [Other](#other)
@@ -62,12 +71,13 @@ Contents
 Values
 ------
 
-Y2R translates most YCP values into their Ruby eqivalents. Those that don't have
-any are translated as instances of special classes.
+Y2R translates most YCP values into their Ruby equivalents. Those that don't
+have any are translated as instances of special classes defined in [YaST Ruby
+bindings](https://github.com/yast/yast-ruby-bindings).
 
 ### Voids
 
-Y2R translates YCP `nil` as Ruby `nil`.
+Y2R translates YCP `nil`s as Ruby `nil`s.
 
 #### YCP (fragment)
 
@@ -83,7 +93,7 @@ v = nil
 
 ### Booleans
 
-Y2R translates YCP booleans as Ruby booelans.
+Y2R translates YCP booleans as Ruby booleans.
 
 #### YCP (fragment)
 
@@ -108,7 +118,6 @@ integers can overflow while `Fixnum`s are just converted into `Bignum`s).
 
 ```ycp
 integer i = 42;
-
 ```
 
 #### Ruby (fragment)
@@ -125,15 +134,15 @@ level so the conversion is lossless.
 #### YCP (fragment)
 
 ```ycp
-float f1 = 42.;
-float f2 = 42.1;
+float f1 = 42.0;   // regular syntax
+float f2 = 42.;    // somewhat unusual syntax
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-f1 = 42.0
-f2 = 42.1
+f1 = 42.0 # regular syntax
+f2 = 42.0 # somewhat unusual syntax
 ```
 
 ### Symbols
@@ -157,7 +166,7 @@ s = :abcd
 ### Strings
 
 Y2R translates YCP strings as Ruby strings. YCP strings use UTF-8 internally and
-tre translated code is in UTF-8 too, so the conversion is lossless.
+the translated code is in UTF-8 too, so the conversion is lossless.
 
 #### YCP (fragment)
 
@@ -173,8 +182,8 @@ s = "abcd"
 
 ### Paths
 
-Y2R translates YCP paths as calls to the `Yast.path` method, which creates an
-instance of the `Yast::Path` class.
+Y2R translates YCP paths as `path` calls. This method creates an instance of the
+`Yast::Path` class, which represents a YCP path.
 
 #### YCP (fragment)
 
@@ -226,16 +235,14 @@ m2 = { :a => 42, :b => 43, :c => 44 }
 
 ### Terms
 
-Y2R translates YCP terms as calls to the `Yast.term` method, which creates an
-instance of the `Yast::Term` class. If term is from list of known UI terms, then
-its shortcut is created.
+Y2R translates YCP terms as `term` calls. This method creates an instance of the
+`Yast::Term` class, which represents a YCP term.
 
 #### YCP (fragment)
 
 ```ycp
 term t1 = `a();
 term t2 = `a(42, 43, 44);
-term ui = `HBox(`opt(`disabled), `Empty());
 ```
 
 #### Ruby (fragment)
@@ -243,7 +250,22 @@ term ui = `HBox(`opt(`disabled), `Empty());
 ```ruby
 t1 = term(:a)
 t2 = term(:a, 42, 43, 44)
-ui = HBox(Opt(:disabled), Empty())
+```
+
+Y2R translates some widely used terms as calls to shortcut methods instead of
+`term` calls. This is mainly used for terms used to describe the UI (it makes
+its description significantly shorter).
+
+#### YCP (fragment)
+
+```ycp
+term t = `HBox(`opt(`disabled), `Empty());
+```
+
+#### Ruby (fragment)
+
+```ruby
+t = HBox(Opt(:disabled), Empty())
 ```
 
 ### Blocks
@@ -264,8 +286,9 @@ b = lambda { Builtins.y2milestone("M1") }
 
 ### Function References
 
-Y2R translates YCP function references as calls to the `fun_ref` method, which
-creates an instance of the `Yast::FunRef` class.
+Y2R translates YCP function references as `fun_ref` calls. This method creates
+an instance of the `Yast::FunRef` class, which represents a YCP function
+reference.
 
 #### YCP (complete code)
 
@@ -275,7 +298,7 @@ creates an instance of the `Yast::FunRef` class.
     return;
   }
 
-  void () fref = f;
+  void() r = f;
 }
 ```
 
@@ -291,7 +314,7 @@ creates an instance of the `Yast::FunRef` class.
 module Yast
   class DefaultClient < Client
     def main
-      @fref = fun_ref(method(:f), "void ()")
+      @r = fun_ref(method(:f), "void ()")
 
       nil
     end
@@ -308,172 +331,27 @@ Yast::DefaultClient.new.main
 Expressions
 -----------
 
-Y2R translates YCP expressions into Ruby expressions.
-
 ### Variables
 
-Y2R translates YCP local variables as Ruby local variables.
+Y2R translates YCP variables as Ruby variables.
 
 #### YCP (complete code)
 
 ```ycp
 {
-  void f() {
-    integer i = 42;
-    integer j = i;
-  }
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def f
-      i = 42
-      j = i
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
-```
-
-Y2R translates YCP variables at client toplevel as Ruby instance variables.
-
-#### YCP (complete code)
-
-```ycp
-{
+  # global variable - toplevel
   integer i = 42;
-  integer j = i;
-}
-```
 
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def main
-      @i = 42
-      @j = @i
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
-```
-
-Y2R translates YCP variables at module toplevel as Ruby instance variables.
-
-#### YCP (complete code)
-
-```ycp
-{
-  module "M";
-
-  integer i = 42;
-  integer j = i;
-
-  global integer k = 42;
-  global integer l = i;
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-require "yast"
-
-module Yast
-  class MClass < Module
-    def main
-      @i = 42
-      @j = @i
-
-      @k = 42
-      @l = @i
-    end
-
-    publish :variable => :k, :type => "integer"
-    publish :variable => :l, :type => "integer"
-  end
-
-  M = MClass.new
-  M.main
-end
-```
-
-Y2R uses suffixes to disambiguate variable aliases in blocks.
-
-#### YCP (complete code)
-
-```ycp
-{
-  void f() {
-    integer i = 42;
-
-    block<void> b = { integer i = 43; };
+  # global variable - nested
+  {
+    integer i = 43;
   }
-}
-```
 
-#### Error Message
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def f
-      i = 42
-
-      b = lambda { i2 = 43 }
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
-```
-
-Y2R uses suffixes to disambiguate variable aliases in statement blocks.
-#### YCP (complete code)
-
-```ycp
-{
   void f() {
+    # local variable - toplevel
     integer i = 42;
 
+    # local variable - nested
     {
       integer i = 43;
     }
@@ -481,7 +359,7 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 }
 ```
 
-#### Error Message
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -492,9 +370,21 @@ Y2R uses suffixes to disambiguate variable aliases in statement blocks.
 
 module Yast
   class DefaultClient < Client
+    def main
+      # global variable - toplevel
+      @i = 42
+
+      # global variable - nested
+      @i2 = 43
+
+      nil
+    end
+
     def f
+      # local variable - toplevel
       i = 42
 
+      # local variable - nested
       i2 = 43
 
       nil
@@ -505,33 +395,390 @@ end
 Yast::DefaultClient.new.main
 ```
 
-### Type Conversions
+### Equality Operators
 
-Y2R translates YCP type conversions as calls of the `Yast::Convert.convert`
-method or shortcut `Yast::Convert.to_<type>` if given shortcut exists.
-
+Y2R translates YCP equality operators as equivalent Ruby operators. This is
+possible because they work the same for YCP types that have Ruby equivalents and
+because Ruby bindings define them appropriately on all classes representing YCP
+types that don't have Ruby equivalents.
 
 #### YCP (fragment)
 
 ```ycp
-float f  = (float) 42;
-any a    = "string";
-string s = (string) a;
+boolean b1 = 42 == 43;
+boolean b2 = 42 != 43;
+```
+
+#### Ruby (fragment)
+
+```ruby
+b1 = 42 == 43
+b2 = 42 != 43
+```
+
+### Comparison Operators
+
+Y2R translates YCP comparison operators as `Ops.*` calls. This is necessary
+because any operand can be `nil` and Ruby comparison operators behave
+differently from YCP ones in that case.
+
+#### YCP (fragment)
+
+```ycp
+boolean b1 = 42 < 43;
+boolean b2 = 42 > 43;
+boolean b3 = 42 <= 43;
+boolean b4 = 42 >= 43;
+```
+
+#### Ruby (fragment)
+
+```ruby
+b1 = Ops.less_than(42, 43)
+b2 = Ops.greater_than(42, 43)
+b3 = Ops.less_or_equal(42, 43)
+b4 = Ops.greater_or_equal(42, 43)
+```
+
+### Arithmetic Operators
+
+Y2R translates YCP arithmetic operators as equivalent Ruby operators when it is
+sure that no operand is `nil`. This is possible because YCP and Ruby operators
+behave identically in that case.
+
+#### YCP (fragment)
+
+```ycp
+integer i1 = -42;
+integer i2 = 42 + 43;
+integer i3 = 42 - 43;
+integer i4 = 42 * 43;
+integer i5 = 42 / 43;
+integer i6 = 42 % 43;
+```
+
+#### Ruby (fragment)
+
+```ruby
+i1 = -42
+i2 = 42 + 43
+i3 = 42 - 43
+i4 = 42 * 43
+i5 = 42 / 43
+i6 = 42 % 43
+```
+
+Y2R translates YCP arithmetic operators as `Ops.*` calls when it is not sure
+that no operand is `nil`. This is necessary because Ruby operators may behave
+differently from the YCP ones in that case.
+
+#### YCP (fragment)
+
+```ycp
+integer a = 42;
+integer b = 43;
+
+integer i1 = -a;
+integer i2 = a + b;
+integer i3 = a - b;
+integer i4 = a * b;
+integer i5 = a / b;
+integer i6 = a % b;
+```
+
+#### Ruby (fragment)
+
+```ruby
+a = 42
+b = 43
+
+i1 = Ops.unary_minus(a)
+i2 = Ops.add(a, b)
+i3 = Ops.subtract(a, b)
+i4 = Ops.multiply(a, b)
+i5 = Ops.divide(a, b)
+i6 = Ops.modulo(a, b)
+```
+
+### Bitwise Operators
+
+Y2R translates YCP bitwise operators as equivalent Ruby operators when it is
+sure that no operand is `nil`. This is possible because YCP and Ruby operators
+behave identically in that case.
+
+#### YCP (fragment)
+
+```ycp
+integer i1 = ~42;
+integer i2 = 42 & 43;
+integer i3 = 42 | 43;
+integer i4 = 42 ^ 43;
+integer i5 = 42 << 43;
+integer i6 = 42 >> 43;
+```
+
+#### Ruby (fragment)
+
+```ruby
+i1 = ~42
+i2 = 42 & 43
+i3 = 42 | 43
+i4 = 42 ^ 43
+i5 = 42 << 43
+i6 = 42 >> 43
+```
+
+Y2R translates YCP bitwise operators as `Ops.*` calls when it is not sure that
+no operand is `nil`. This is necessary because Ruby operators may behave
+differently from the YCP ones in that case.
+
+#### YCP (fragment)
+
+```ycp
+integer a = 42;
+integer b = 43;
+
+integer i1 = ~a;
+integer i2 = a & b;
+integer i3 = a | b;
+integer i4 = a ^ b;
+integer i5 = a << b;
+integer i6 = a >> b;
+```
+
+#### Ruby (fragment)
+
+```ruby
+a = 42
+b = 43
+
+i1 = Ops.bitwise_not(a)
+i2 = Ops.bitwise_and(a, b)
+i3 = Ops.bitwise_or(a, b)
+i4 = Ops.bitwise_xor(a, b)
+i5 = Ops.shift_left(a, b)
+i6 = Ops.shift_right(a, b)
+```
+
+### Logical Operators
+
+Y2R translates YCP logical operators as Ruby logical operators.
+
+#### YCP (fragment)
+
+```ycp
+boolean b1 = !true;
+boolean b2 = true && false;
+boolean b3 = true || false;
+```
+
+#### Ruby (fragment)
+
+```ruby
+b1 = !true
+b2 = true && false
+b3 = true || false
+```
+
+### Ternary Operator
+
+Y2R translates YCP ternary operators as Ruby ternary operators.
+
+#### YCP (fragment)
+
+```ycp
+integer i = true ? 42 : 43;
+```
+
+#### Ruby (fragment)
+
+```ruby
+i = true ? 42 : 43
+```
+
+### Index Operator
+
+Y2R translates YCP index operators as `Ops.get` calls when no conversion is
+needed.
+
+#### YCP (complete code)
+
+```ycp
+{
+  integer f() {
+    return 0;
+  }
+
+  // single-element index, nil default
+  integer i = [42, 43, 44][1]:nil;
+
+  // multi-element index, nil default
+  integer j = [[42, 43, 44], [45, 46, 47], [48, 49, 50]][1, 2]:nil;
+
+  // single-element index, non-nil eagerly-evaluated default
+  integer k = [42, 43, 44][1]:0;
+
+  // single-element index, non-nil lazily-evaluated default
+  integer l = [42, 43, 44][1]:f();
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def main
+      # single-element index, nil default
+      @i = Ops.get([42, 43, 44], 1)
+
+      # multi-element index, nil default
+      @j = Ops.get([[42, 43, 44], [45, 46, 47], [48, 49, 50]], [1, 2])
+
+      # single-element index, non-nil eagerly-evaluated default
+      @k = Ops.get([42, 43, 44], 1, 0)
+
+      # single-element index, non-nil lazily-evaluated default
+      @l = Ops.get([42, 43, 44], 1) { f }
+
+      nil
+    end
+
+    def f
+      0
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Y2R translates YCP index operators as appropriate `Ops.get_*` calls when
+conversion is needed and the shortcut methods exists.
+
+#### YCP (fragment)
+
+```ycp
+list<any> l = [42.0, 43.0, 44.0];
+integer i = l[1]:0;
+```
+
+#### Ruby (fragment)
+
+```ruby
+l = [42.0, 43.0, 44.0]
+i = Ops.get_integer(l, 1, 0)
+```
+
+### `is` Operator
+
+Y2R translates YCP `is` operators as `Ops.is` calls when no shortcut method
+exists.
+
+#### YCP (fragment)
+
+```ycp
+boolean b = is(42, list<integer>);
+```
+
+#### Ruby (fragment)
+
+```ruby
+b = Ops.is(42, "list <integer>")
+```
+
+Y2R translates YCP `is` operators as appropriate `Ops.is_*` calls when the
+shortcut method exists.
+
+```ycp
+boolean b = is(42, integer);
+```
+
+#### Ruby (fragment)
+
+```ruby
+b = Ops.is_integer?(42)
+```
+
+### Double Quote Operator
+
+Y2R translates YCP double quote operators as Ruby lambdas.
+
+#### YCP (fragment)
+
+```ycp
+block<integer> b = ``(42);
+```
+
+#### Ruby (fragment)
+
+```ruby
+b = lambda { 42 }
+```
+
+### Type Conversions
+
+Y2R translates YCP type conversions as `Convert.convert` calls when no shortcut
+method exists.
+
+#### YCP (fragment)
+
+```ycp
+float f = (float) 42;
 ```
 
 #### Ruby (fragment)
 
 ```ruby
 f = Convert.convert(42, :from => "integer", :to => "float")
+```
+
+Y2R translates YCP type conversions from `any` as appropriate `Convert.to_*`
+calls when the shortcut method exists.
+
+```ycp
+any a = "string";
+string s = (string) a;
+```
+
+#### Ruby (fragment)
+
+```ruby
 a = "string"
 s = Convert.to_string(a)
 ```
 
+### `_` Calls
+
+Y2R translates YCP `_` calls as `_` calls.
+
+#### YCP (fragment)
+
+```ycp
+textdomain "helloworld";
+
+string s = _("Hello, world!");
+```
+
+#### Ruby (fragment)
+
+```ruby
+textdomain "helloworld"
+
+s = _("Hello, world!")
+```
+
 ### Builtin Calls
 
-Y2R translates YCP builtin calls as calls of methods in the `Yast::Builtins`,
-`Yast::SCR` and `Yast::WFM` modules. These reimplement the behavior of all YCP
-builtins in Ruby.
+Y2R translates YCP builtin calls as `Builtins.*`, `SCR.*` and `WFM.*` calls.
+These reimplement behavior of all YCP builtins in Ruby or proxy to the
+underlying C/C++ implementation.
 
 #### YCP (complete code)
 
@@ -609,17 +856,19 @@ maplist(integer i, [42, 43, 44], ``(i * i));
 Builtins.maplist([42, 43, 44]) { |i| Ops.multiply(i, i) }
 ```
 
-### `_` Calls
+### Function Calls
 
-Y2R translates YCP `_` calls as calls of the `_` method.
+Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 
 #### YCP (complete code)
 
 ```ycp
 {
-  textdomain "helloworld";
+  integer f(integer a, integer b, integer c) {
+    return a + b + c;
+  }
 
-  string s = _("Hello, world!");
+  integer i = f(1, 2, 3);
 }
 ```
 
@@ -635,103 +884,13 @@ Y2R translates YCP `_` calls as calls of the `_` method.
 module Yast
   class DefaultClient < Client
     def main
-      textdomain "helloworld"
-
-      @s = _("Hello, world!")
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
-```
-
-### Function Calls
-
-Y2R translates YCP function calls of toplevel functions as Ruby method calls.
-
-```ycp
-{
-  integer f1() {
-    return 42;
-  }
-
-  integer f2(list a, list b, list c) {
-    return 42;
-  }
-
-  integer f3(list& a, list& b, list& c) {
-    return 42;
-  }
-
-  f1();
-
-  list a = ["a"];
-  list b = ["b"];
-  list c = ["c"];
-
-  f2(a, b, c);
-
-  f3(a, b, c);
-  integer d = f3(a, b, c);
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def main
-      f1
-
-      @a = ["a"]
-      @b = ["b"]
-      @c = ["c"]
-
-      f2(@a, @b, @c)
-
-      a_ref = arg_ref(@a)
-      b_ref = arg_ref(@b)
-      c_ref = arg_ref(@c)
-      f3(a_ref, b_ref, c_ref)
-      @a = a_ref.value
-      @b = b_ref.value
-      @c = c_ref.value
-      @d = (
-        a_ref = arg_ref(@a);
-        b_ref = arg_ref(@b);
-        c_ref = arg_ref(@c);
-        f3_result = f3(a_ref, b_ref, c_ref);
-        @a = a_ref.value;
-        @b = b_ref.value;
-        @c = c_ref.value;
-        f3_result
-      )
+      @i = f(1, 2, 3)
 
       nil
     end
 
-    def f1
-      42
-    end
-
-    def f2(a, b, c)
-      a = deep_copy(a)
-      b = deep_copy(b)
-      c = deep_copy(c)
-      42
-    end
-
-    def f3(a, b, c)
-      42
+    def f(a, b, c)
+      Ops.add(Ops.add(a, b), c)
     end
   end
 end
@@ -744,29 +903,12 @@ method on them.
 
 ```ycp
 {
-  void outer() {
-    integer f1() {
-      return 42;
+  void wrapper() {
+    integer f(integer a, integer b, integer c) {
+      return a + b + c;
     }
 
-    integer f2(list a, list b, list c) {
-      return 42;
-    }
-
-    integer f3(list& a, list& b, list& c) {
-      return 42;
-    }
-
-    f1();
-
-    list a = ["a"];
-    list b = ["b"];
-    list c = ["c"];
-
-    f2(a, b, c);
-
-    f3(a, b, c);
-    integer d = f3(a, b, c);
+    integer i = f(1, 2, 3);
   }
 }
 ```
@@ -782,355 +924,138 @@ method on them.
 
 module Yast
   class DefaultClient < Client
-    def outer
-      f1 = lambda { 42 }
+    def wrapper
+      f = lambda { |a, b, c| Ops.add(Ops.add(a, b), c) }
 
-      f2 = lambda do |a2, b2, c2|
-        a2 = deep_copy(a2)
-        b2 = deep_copy(b2)
-        c2 = deep_copy(c2)
-        42
-      end
+      i = f.call(1, 2, 3)
 
-      f3 = lambda { |a2, b2, c2| 42 }
+      nil
+    end
+  end
+end
 
-      f1.call
+Yast::DefaultClient.new.main
+```
 
-      a = ["a"]
-      b = ["b"]
-      c = ["c"]
+Y2R translates YCP function reference calls as invoking the `call` method on
+them.
 
-      f2.call(a, b, c)
+#### YCP (complete code)
 
-      a_ref = arg_ref(a)
-      b_ref = arg_ref(b)
-      c_ref = arg_ref(c)
-      f3.call(a_ref, b_ref, c_ref)
-      a = a_ref.value
-      b = b_ref.value
-      c = c_ref.value
-      d = (
-        a_ref = arg_ref(a);
-        b_ref = arg_ref(b);
-        c_ref = arg_ref(c);
-        f3_result = f3.call(a_ref, b_ref, c_ref);
-        a = a_ref.value;
-        b = b_ref.value;
-        c = c_ref.value;
-        f3_result
+```ycp
+{
+  integer f(integer a, integer b, integer c) {
+    return a + b + c;
+  }
+
+  integer(integer, integer, integer) r = f;
+
+  integer i = r(1, 2, 3);
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def main
+      @r = fun_ref(method(:f), "integer (integer, integer, integer)")
+
+      @i = @r.call(1, 2, 3)
+
+      nil
+    end
+
+    def f(a, b, c)
+      Ops.add(Ops.add(a, b), c)
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Y2R translates YCP function calls with arguments passed by reference as
+sequences of statements that emulate YCP behavior in Ruby.
+
+#### YCP (complete code)
+
+```ycp
+{
+  integer f(integer& a, integer& b, integer& c) {
+    return a + b + c;
+  }
+
+  integer a = 1;
+  integer b = 2;
+  integer c = 3;
+
+  // called as a statement
+  f(a, b, c);
+
+  // called as an expression
+  integer i = f(a, b, c);
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def main
+      @a = 1
+      @b = 2
+      @c = 3
+
+      # called as a statement
+      a_ref = arg_ref(@a)
+      b_ref = arg_ref(@b)
+      c_ref = arg_ref(@c)
+      f(a_ref, b_ref, c_ref)
+      @a = a_ref.value
+      @b = b_ref.value
+      @c = c_ref.value
+
+      # called as an expression
+      @i = (
+        a_ref = arg_ref(@a);
+        b_ref = arg_ref(@b);
+        c_ref = arg_ref(@c);
+        f_result = f(a_ref, b_ref, c_ref);
+        @a = a_ref.value;
+        @b = b_ref.value;
+        @c = c_ref.value;
+        f_result
       )
 
       nil
     end
-  end
-end
 
-Yast::DefaultClient.new.main
-```
-
-### Function References Calling
-
-Y2R translates calling of YCP Function References as invoking the `call` method
-on them.
-
-#### YCP (complete code)
-
-```ycp
-{
-  void f() {
-    return;
-  }
-
-  void () fref = f;
-  fref();
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def main
-      @fref = fun_ref(method(:f), "void ()")
-      @fref.call
-
-      nil
-    end
-
-    def f
-      nil
+    def f(a, b, c)
+      Ops.add(Ops.add(a.value, b.value), c.value)
     end
   end
 end
 
 Yast::DefaultClient.new.main
-```
-
-### Comparison Operators
-
-Y2R translates YCP comparison operators as calls of methods in the `Yast::Ops`
-module that implement their behavior or ruby equivalent if behavior is same in
-all cases.
-
-#### YCP (fragment)
-
-```ycp
-boolean b1 = 42 == 43;
-boolean b2 = 42 != 43;
-boolean b3 = 42 < 43;
-boolean b4 = 42 > 43;
-boolean b5 = 42 <= 43;
-boolean b6 = 42 >= 43;
-```
-
-#### Ruby (fragment)
-
-```ruby
-b1 = 42 == 43
-b2 = 42 != 43
-b3 = Ops.less_than(42, 43)
-b4 = Ops.greater_than(42, 43)
-b5 = Ops.less_or_equal(42, 43)
-b6 = Ops.greater_or_equal(42, 43)
-```
-
-### Arithmetic Operators
-
-Y2R translates YCP arithmetic operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can be used when
-it is safe - Y2R is sure that no operand is `nil`.
-
-#### YCP (fragment)
-
-```ycp
-# Using a variable defeats constant propagation.
-integer i  = 42;
-
-integer i1 = -i;
-integer i2 = 42 + 43;
-integer i3 = 42 - 43;
-integer i4 = 42 * 43;
-integer i5 = 42 / 43;
-integer i6 = 42 % 43;
-
-i2 = i + 43;
-i3 = i - 43;
-i4 = i * 43;
-i5 = i / 43;
-i6 = i % 43;
-
-```
-
-#### Ruby (fragment)
-
-```ruby
-# Using a variable defeats constant propagation.
-i = 42
-
-i1 = Ops.unary_minus(i)
-i2 = 42 + 43
-i3 = 42 - 43
-i4 = 42 * 43
-i5 = 42 / 43
-i6 = 42 % 43
-
-i2 = Ops.add(i, 43)
-i3 = Ops.subtract(i, 43)
-i4 = Ops.multiply(i, 43)
-i5 = Ops.divide(i, 43)
-i6 = Ops.modulo(i, 43)
-```
-
-### Bitwise Operators
-
-Y2R translates YCP bitwise operators as calls of methods in the `Yast::Ops`
-module that implement their behavior. Equivalent Ruby operators can be used when
-it is safe - Y2R is sure that no operand is `nil`.
-
-#### YCP (fragment)
-
-```ycp
-integer i1 = ~42;
-integer i2 = 42 & 43;
-integer i3 = 42 | 43;
-integer i4 = 42 ^ 43;
-integer i5 = 42 << 43;
-integer i6 = 42 >> 43;
-integer i = 42;
-i1 = ~i;
-i2 = i & 43;
-i3 = i | 43;
-i4 = i ^ 43;
-i5 = i << 43;
-i6 = i >> 43;
-
-```
-
-#### Ruby (fragment)
-
-```ruby
-i1 = ~42
-i2 = 42 & 43
-i3 = 42 | 43
-i4 = 42 ^ 43
-i5 = 42 << 43
-i6 = 42 >> 43
-i = 42
-i1 = Ops.bitwise_not(i)
-i2 = Ops.bitwise_and(i, 43)
-i3 = Ops.bitwise_or(i, 43)
-i4 = Ops.bitwise_xor(i, 43)
-i5 = Ops.shift_left(i, 43)
-i6 = Ops.shift_right(i, 43)
-```
-
-### Logical Operators
-
-Y2R translates YCP logical operators to their Ruby equivalents.
-
-#### YCP (fragment)
-
-```ycp
-# Using a variable defeats constant propagation.
-boolean b = true;
-
-boolean b1 = !b;
-boolean b2 = true && false;
-boolean b3 = true || false;
-```
-
-#### Ruby (fragment)
-
-```ruby
-# Using a variable defeats constant propagation.
-b = true
-
-b1 = !b
-b2 = true && false
-b3 = true || false
-```
-
-### Ternary Operator
-
-Y2R translates YCP ternary operator as Ruby ternary operator.
-
-#### YCP (fragment)
-
-```ycp
-# Using a variable defeats constant propagation.
-boolean b = true;
-integer i = b ? 42 : 43;
-```
-
-#### Ruby (fragment)
-
-```ruby
-# Using a variable defeats constant propagation.
-b = true
-i = b ? 42 : 43
-```
-
-### Index Operator
-
-Y2R translates YCP index operator as a call of a method in the `Yast::Ops`
-module that implements its behavior. There is no equivalent operator in Ruby.
-
-Single-element index is passed as it is, multiple-element index is passed as an
-array. The default value is passed only if it is non-`nil`.
-
-#### YCP (fragment)
-
-```ycp
-integer i = [42, 43, 44][1]:0;
-integer j = [[42, 43, 44]][0, 1]:0;
-integer k = [42, 43, 44][1]:nil;
-```
-
-#### Ruby (fragment)
-
-```ruby
-i = Ops.get([42, 43, 44], 1, 0)
-j = Ops.get([[42, 43, 44]], [0, 1], 0)
-k = Ops.get([42, 43, 44], 1)
-```
-
-### Double Quote Operator
-
-Y2R translates YCP double quote operator as a Ruby lambda.
-
-#### YCP (fragment)
-
-```ycp
-block<integer> b = ``(42);
-```
-
-#### Ruby (fragment)
-
-```ruby
-b = lambda { 42 }
 ```
 
 Statements
 ----------
-
-Y2R translates YCP statements into Ruby statements.
-
-### `import` Statement
-
-Y2R translates YCP `import` statement as a `Yast.import` call.
-
-#### YCP (fragment)
-
-```ycp
-import "String";
-```
-
-#### Ruby (fragment)
-
-```ruby
-Yast.import "String"
-```
-
-### `textdomain` Statement
-
-Y2R translates YCP `textdomain` statement as a call to set the text domain.
-
-#### YCP (complete code)
-
-```ycp
-{
-  textdomain "users";
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def main
-      textdomain "users"
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
-```
 
 ### Assignments
 
@@ -1152,16 +1077,17 @@ i = 42
 i = 43
 ```
 
-Y2R translates YCP assignments with brackets as a call of a method in the
-`Yast::Ops` module that implements its behavior. There is no equivalent operator
-in Ruby.
+Y2R translates YCP assignments with brackets as `Ops.set` calls.
 
 #### YCP (fragment)
 
 ```ycp
 list l = [42, 43, 44];
 
+// single-element index
 l[0] = [45];
+
+// multi-element index
 l[0,0] = 42;
 ```
 
@@ -1170,25 +1096,102 @@ l[0,0] = 42;
 ```ruby
 l = [42, 43, 44]
 
+# single-element index
 Ops.set(l, 0, [45])
+
+# multi-element index
 Ops.set(l, [0, 0], 42)
 ```
 
-### `return` Statement
+### `textdomain` Statement
 
-Y2R translates YCP `return` statement inside functions as Ruby `return`
-statement.
+Y2R translates YCP `textdomain` statements as `textdomain` calls.
+
+#### YCP (fragment)
+
+```ycp
+{
+  textdomain "users";
+}
+```
+
+#### Ruby (fragment)
+
+```ruby
+textdomain "users"
+```
+
+### `import` Statement
+
+Y2R translates YCP `import` statements as `Yast.import` calls.
+
+#### YCP (fragment)
+
+```ycp
+import "String";
+```
+
+#### Ruby (fragment)
+
+```ruby
+Yast.import "String"
+```
+
+### `include` Statement
+
+Y2R translates YCP `include` statements as `Yast.include` calls.
 
 #### YCP (complete code)
 
 ```ycp
 {
+  include "include.ycp";
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def main
+      Yast.include self, "include.rb"
+
+      nil
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+### `return` Statement
+
+Y2R translates YCP `return` statements inside functions as Ruby `return`
+statements.
+
+#### YCP (complete code)
+
+```ycp
+{
+  // return without value
   void f1() {
     return;
+
+    y2milestone("M1");   // prevent optimizing the return away
   }
 
+  // return with value
   integer f2() {
     return 42;
+
+    y2milestone("M1");   // prevent optimizing the return away
   }
 }
 ```
@@ -1204,12 +1207,18 @@ statement.
 
 module Yast
   class DefaultClient < Client
+    # return without value
     def f1
-      nil
+      return
+
+      Builtins.y2milestone("M1") # prevent optimizing the return away
     end
 
+    # return with value
     def f2
-      42
+      return 42
+
+      Builtins.y2milestone("M1") # prevent optimizing the return away
     end
   end
 end
@@ -1217,53 +1226,49 @@ end
 Yast::DefaultClient.new.main
 ```
 
-Y2R translates YCP `return` statement inside block as Ruby `next` statement.
+Y2R translates YCP `return` statements inside blocks as Ruby `next` statements.
 
 #### YCP (fragment)
 
 ```ycp
-# A variable prevents translating the block as YEReturn.
-maplist(integer i, [42, 43, 44], { integer j = 42; return j; });
-foreach(integer i, [42, 43, 44], { integer j = 42; return; });
+// return without value
+maplist(integer i, [42, 43, 44], {
+  return 42;
+
+  y2milestone("M1");   // prevent optimizing the return away
+});
+
+// return with value
+foreach(integer i, [42, 43, 44], {
+  return;
+
+  y2milestone("M1");   // prevent optimizing the return away
+});
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-# A variable prevents translating the block as YEReturn.
-Builtins.maplist([42, 43, 44]) do |i|
-  j = 42
-  j
-end
+# return without value
+Builtins.maplist([42, 43, 44]) { |i| 42 }
+
+# return with value
 Builtins.foreach([42, 43, 44]) do |i|
-  j = 42
-  nil
+  next
+  Builtins.y2milestone("M1") # prevent optimizing the return away
 end
 ```
 
 ### `break` Statement
 
-Y2R translates YCP `break` statement inside a while statement as Ruby `next`
-statement.
+Y2R translates YCP `break` statements inside loops as Ruby `next`
+statements.
 
 ```ycp
 while (true) {
   break;
 }
-```
 
-#### Ruby (fragment)
-
-```ruby
-while true
-  break
-end
-```
-
-Y2R translates YCP `break` statement inside a repeat statement as Ruby `next`
-statement.
-
-```ycp
 repeat {
   break;
 } until(true);
@@ -1272,13 +1277,15 @@ repeat {
 #### Ruby (fragment)
 
 ```ruby
+while true
+  break
+end
 begin
   break
 end until true
 ```
 
-Y2R translates YCP `break` statement inside block as Ruby `raise` statement that
-raises `Yast::Break`.
+Y2R translates YCP `break` statements inside blocks as `raise Break` calls.
 
 ```ycp
 foreach(integer i, [42, 43, 44], { break; });
@@ -1292,12 +1299,16 @@ Builtins.foreach([42, 43, 44]) { |i| raise Break }
 
 ### `continue` Statement
 
-Y2R translates YCP `continue` statement inside loops as Ruby `next` statement.
+Y2R translates YCP `continue` statements inside loops as Ruby `next` statements.
 
 ```ycp
 while (true) {
   continue;
 }
+
+repeat {
+  continue;
+} until(true);
 ```
 
 #### Ruby (fragment)
@@ -1306,199 +1317,29 @@ while (true) {
 while true
   next
 end
+begin
+  next
+end until true
 ```
 
-Y2R translates YCP `continue` statement inside block as Ruby `next` statement.
+Y2R translates YCP `continue` statements inside blocks as Ruby `next`
+statements.
 
 ```ycp
-foreach(integer i, [42, 43, 44], { continue; });
+foreach(integer i, [42, 43, 44], {
+  continue;
+
+  y2milestone("M1");   // prevent optimizing the continue away
+});
 ```
 
 #### Ruby (fragment)
 
 ```ruby
-Builtins.foreach([42, 43, 44]) { |i| nil }
-```
-
-### Function Definitions
-
-Y2R translates toplevel function definitions as Ruby method definitions. It
-maintains pass-by-value semantics for all types except `boolean`, `integer` and
-`symbol`, (which are all immutable) and parameters passed by reference.
-
-#### YCP (complete code)
-
-```ycp
-{
-  integer f1() {
-    return 42;
-  }
-
-  integer f2(boolean a, boolean b, boolean c) {
-    return 42;
-  }
-
-  integer f3(integer a, integer b, integer c) {
-    return 42;
-  }
-
-  integer f4(symbol a, symbol b, symbol c) {
-    return 42;
-  }
-
-  integer f5(string a, string b, string c) {
-    return 42;
-  }
-
-  integer f6(path a, path b, path c) {
-    return 42;
-  }
-
-  integer f7(list& a, list& b, list& c) {
-    return 42;
-  }
-
-  integer f8(list a, list b, list c) {
-    return 42;
-  }
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def f1
-      42
-    end
-
-    def f2(a, b, c)
-      42
-    end
-
-    def f3(a, b, c)
-      42
-    end
-
-    def f4(a, b, c)
-      42
-    end
-
-    def f5(a, b, c)
-      42
-    end
-
-    def f6(a, b, c)
-      42
-    end
-
-    def f7(a, b, c)
-      42
-    end
-
-    def f8(a, b, c)
-      a = deep_copy(a)
-      b = deep_copy(b)
-      c = deep_copy(c)
-      42
-    end
-  end
+Builtins.foreach([42, 43, 44]) do |i|
+  next
+  Builtins.y2milestone("M1") # prevent optimizing the continue away
 end
-
-Yast::DefaultClient.new.main
-```
-
-Y2R translates nested YCP function definitions as Ruby lambdas. It maintains
-pass-by-value semantics for all types except `boolean`, `integer` and `symbol`,
-(which are all immutable) and parameters passed by reference.
-
-#### YCP (complete code)
-
-```ycp
-{
-  void outer() {
-    integer f1() {
-      return 42;
-    }
-
-    integer f2(boolean a, boolean b, boolean c) {
-      return 42;
-    }
-
-    integer f3(integer a, integer b, integer c) {
-      return 42;
-    }
-
-    integer f4(symbol a, symbol b, symbol c) {
-      return 42;
-    }
-
-    integer f5(string a, string b, string c) {
-      return 42;
-    }
-
-    integer f6(path a, path b, path c) {
-      return 42;
-    }
-
-    integer f7(list& a, list& b, list& c) {
-      return 42;
-    }
-
-    integer f8(list a, list b, list c) {
-      return 42;
-    }
-  }
-
-}
-```
-
-#### Ruby (complete code)
-
-```ruby
-# encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
-module Yast
-  class DefaultClient < Client
-    def outer
-      f1 = lambda { 42 }
-
-      f2 = lambda { |a, b, c| 42 }
-
-      f3 = lambda { |a, b, c| 42 }
-
-      f4 = lambda { |a, b, c| 42 }
-
-      f5 = lambda { |a, b, c| 42 }
-
-      f6 = lambda { |a, b, c| 42 }
-
-      f7 = lambda { |a, b, c| 42 }
-
-      f8 = lambda do |a, b, c|
-        a = deep_copy(a)
-        b = deep_copy(b)
-        c = deep_copy(c)
-        42
-      end
-
-      nil
-    end
-  end
-end
-
-Yast::DefaultClient.new.main
 ```
 
 ### Statement Blocks
@@ -1517,7 +1358,7 @@ Y2R translates YCP statement blocks as Ruby statements.
 }
 ```
 
-#### Error Message
+#### Ruby (complete code)
 
 ```ruby
 # encoding: utf-8
@@ -1543,7 +1384,7 @@ Yast::DefaultClient.new.main
 
 ### `if` Statement
 
-Y2R translates YCP `if` statement as Ruby `if` statement.
+Y2R translates YCP `if` statements as Ruby `if` statements.
 
 #### YCP (fragment)
 
@@ -1571,7 +1412,7 @@ end
 
 ### `switch` Statement
 
-Y2R translates YCP `switch` statement as Ruby `case` statement.
+Y2R translates YCP `switch` statements as Ruby `case` statements.
 
 #### YCP (fragment)
 
@@ -1606,53 +1447,8 @@ case 42
 end
 ```
 
-Y2R translates YCP `switch` statement as Ruby `case` statement also when the
-case/default statements are wrapped a block.
-
-#### YCP (fragment)
-
-```ycp
-switch (42) {
-  case 42: {
-    y2milestone("M1");
-    break;
-  }
-
-  case 43: {
-    y2milestone("M2");
-    break;
-  }
-
-  case 44: {
-    y2milestone("M3");
-    return;
-  }
-
-  default: {
-    y2milestone("M4");
-    break;
-  }
-}
-```
-
-#### Ruby (fragment)
-
-```ruby
-case 42
-  when 42
-    Builtins.y2milestone("M1")
-  when 43
-    Builtins.y2milestone("M2")
-  when 44
-    Builtins.y2milestone("M3")
-    return
-  else
-    Builtins.y2milestone("M4")
-end
-```
-
-Y2R does not support cases without a break or return at the end. This is mostly
-because Ruby doesn't have any suitable equivalent construct.
+Y2R does not support cases without a `break` or `return` at the end. This is
+mostly because Ruby doesn't have any suitable equivalent construct.
 
 #### YCP (fragment)
 
@@ -1669,28 +1465,9 @@ switch (42) {
 Case without a break or return encountered. These are not supported.
 ```
 
-Y2R does not support cases without a break or return at the end also when the
-case statements are wrapped in a block.
-
-#### YCP (fragment)
-
-```ycp
-switch (42) {
-  case 42: {
-    y2milestone("M1");
-  }
-}
-```
-
-#### Error Message
-
-```error
-Case without a break or return encountered. These are not supported.
-```
-
 ### `while` Statement
 
-Y2R translates YCP `while` statement as Ruby `while` statement.
+Y2R translates YCP `while` statements as Ruby `while` statements.
 
 #### YCP (fragment)
 
@@ -1709,7 +1486,7 @@ end
 
 ### `do` Statement
 
-Y2R translates YCP `do` statement as Ruby `while` statement.
+Y2R translates YCP `do` statements as Ruby `while` statements.
 
 #### YCP (fragment)
 
@@ -1729,7 +1506,7 @@ end while true
 
 ### `repeat` Statement
 
-Y2R translates YCP `repeat` statement as Ruby `until` statement.
+Y2R translates YCP `repeat` statements as Ruby `until` statements.
 
 #### YCP (fragment)
 
@@ -1747,9 +1524,189 @@ begin
 end until true
 ```
 
+### Function Definitions
+
+Y2R translates toplevel function definitions as Ruby method definitions.
+
+#### YCP (complete code)
+
+```ycp
+{
+  integer f(integer a, integer b, integer c) {
+    return a + b + c;
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def f(a, b, c)
+      Ops.add(Ops.add(a, b), c)
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Y2R translates nested YCP function definitions as Ruby lambdas.
+
+#### YCP (complete code)
+
+```ycp
+{
+  void wrapper() {
+    integer f(integer a, integer b, integer c) {
+      return a + b + c;
+    }
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    def wrapper
+      f = lambda { |a, b, c| Ops.add(Ops.add(a, b), c) }
+
+      nil
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Y2R maintains pass-by-value semantics of parameters by calling `deep_copy` on
+them. The only exceptions are immutable types (like `boolean`) and references.
+
+#### YCP (complete code)
+
+```ycp
+{
+  // parameter with a mutable type
+  void f1(list a) {
+    return nil;
+  }
+
+  // parameter with an immutable type
+  void f2(boolean a) {
+    return nil;
+  }
+
+  // parameter with a mutable type passed by reference
+  void f3(list& a) {
+    return nil;
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    # parameter with a mutable type
+    def f1(a)
+      a = deep_copy(a)
+      nil
+    end
+
+    # parameter with an immutable type
+    def f2(a)
+      nil
+    end
+
+    # parameter with a mutable type passed by reference
+    def f3(a)
+      nil
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Y2R maintains pass-by-value semantics of return values by calling `deep_copy` on
+returned variables. The only exception is immutable types (like `boolean`).
+
+#### YCP (complete code)
+
+```ycp
+{
+  // return value with a mutable type
+  list f1() {
+    list r = [];
+    return r;
+  }
+
+  // return value with an immutable type
+  integer f2() {
+    integer r = 42;
+    return r;
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    # return value with a mutable type
+    def f1
+      r = []
+      deep_copy(r)
+    end
+
+    # return value with an immutable type
+    def f2
+      r = 42
+      r
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
+```
+
+Files
+-----
+
 ### Clients
 
-Y2R translates YCP clients as Ruby classes that are instantiated.
+Y2R translates YCP clients as Ruby classes that are instantiated. Toplevel
+variables become instance variables, toplevel functions become methods and
+toplevel statements (such as imports) are moved into the `main` method.
 
 #### YCP (complete code)
 
@@ -1758,14 +1715,9 @@ Y2R translates YCP clients as Ruby classes that are instantiated.
   import "String";
 
   integer i = 42;
-  global integer j = 43;
 
   integer f() {
     return 42;
-  }
-
-  global integer g() {
-    return 43;
   }
 }
 ```
@@ -1785,17 +1737,12 @@ module Yast
       Yast.import "String"
 
       @i = 42
-      @j = 43
 
       nil
     end
 
     def f
       42
-    end
-
-    def g
-      43
     end
   end
 end
@@ -1805,7 +1752,11 @@ Yast::DefaultClient.new.main
 
 ### Modules
 
-Y2R translates YCP modules as Ruby classes that are instantiated.
+Y2R translates YCP modules as Ruby classes that are instantiated. Toplevel
+variables become instance variables, toplevel functions become methods and
+toplevel statements (such as imports) are moved into the `main` method.
+Constructor becomes a regular method, which is called from `main`. Global
+variables and functions are explicitly published.
 
 #### YCP (complete code)
 
@@ -1815,15 +1766,10 @@ Y2R translates YCP modules as Ruby classes that are instantiated.
 
   import "String";
 
-  integer i = 42;
-  global integer j = 43;
+  global integer i = 42;
 
-  integer f() {
+  global integer f() {
     return 42;
-  }
-
-  global integer g() {
-    return 43;
   }
 
   void M() {
@@ -1849,16 +1795,11 @@ module Yast
       Yast.import "String"
 
       @i = 42
-      @j = 43
       M()
     end
 
     def f
       42
-    end
-
-    def g
-      43
     end
 
     def M
@@ -1867,8 +1808,8 @@ module Yast
       nil
     end
 
-    publish :variable => :j, :type => "integer"
-    publish :function => :g, :type => "integer ()"
+    publish :variable => :i, :type => "integer"
+    publish :function => :f, :type => "integer ()"
   end
 
   M = MClass.new
@@ -1915,16 +1856,19 @@ Builtins.y2milestone("M1")
 Builtins.y2milestone("M2")
 ```
 
-Y2R handles all kinds of comments correctly.
+Y2R handles all kinds of YCP comments correctly.
 
 #### YCP (fragment)
 
 ```ycp
 {
   # hash
+
   // one line
+
   /* multiple
      lines */
+
   /*
    * multiple
    * lines
@@ -1937,10 +1881,59 @@ Y2R handles all kinds of comments correctly.
 
 ```ruby
 # hash
+
 # one line
+
 # multiple
 #    lines
+
 # multiple
 # lines
 Builtins.y2milestone("M1")
+```
+
+Y2R translates YCP documentation comments into [YARD](http://yardoc.org/).
+
+#### YCP (complete code)
+
+```ycp
+{
+  /**
+   * Function that adds three numbers.
+   *
+   * @param a first number to add
+   * @param b second number to add
+   * @param c third number to add
+   * @return sum of the numbers
+   */
+  integer f(integer a, integer b, integer c) {
+    return a + b + c;
+  }
+}
+```
+
+#### Ruby (complete code)
+
+```ruby
+# encoding: utf-8
+
+# Translated by Y2R (https://github.com/yast/y2r).
+#
+# Original file: default.ycp
+
+module Yast
+  class DefaultClient < Client
+    # Function that adds three numbers.
+    #
+    # @param [Fixnum] a first number to add
+    # @param [Fixnum] b second number to add
+    # @param [Fixnum] c third number to add
+    # @return sum of the numbers
+    def f(a, b, c)
+      Ops.add(Ops.add(a, b), c)
+    end
+  end
+end
+
+Yast::DefaultClient.new.main
 ```
