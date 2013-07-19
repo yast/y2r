@@ -3296,45 +3296,59 @@ module Y2R::AST
       end
 
       it "returns false for booleans" do
-        ycp_node = ycp_symbol("boolean")
+        ycp_node_const    = ycp_symbol("const boolean")
+        ycp_node_no_const = ycp_symbol("boolean")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns false for integers" do
-        ycp_node = ycp_symbol("integer")
+        ycp_node_const    = ycp_symbol("const integer")
+        ycp_node_no_const = ycp_symbol("integer")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns false for symbols" do
-        ycp_node = ycp_symbol("symbol")
+        ycp_node_const    = ycp_symbol("const symbol")
+        ycp_node_no_const = ycp_symbol("symbol")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns false for strings" do
-        ycp_node = ycp_symbol("string")
+        ycp_node_const    = ycp_symbol("const string")
+        ycp_node_no_const = ycp_symbol("string")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns false for paths" do
-        ycp_node = ycp_symbol("path")
+        ycp_node_const    = ycp_symbol("const path")
+        ycp_node_no_const = ycp_symbol("path")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns false for references" do
-        ycp_node = ycp_symbol("string &")
+        ycp_node_const    = ycp_symbol("const string &")
+        ycp_node_no_const = ycp_symbol("string &")
 
-        ycp_node.needs_copy?.should be_false
+        ycp_node_const.needs_copy?.should be_false
+        ycp_node_no_const.needs_copy?.should be_false
       end
 
       it "returns true for other types" do
-        ycp_node = ycp_symbol("list")
+        ycp_node_const    = ycp_symbol("const list")
+        ycp_node_no_const = ycp_symbol("list")
 
-        ycp_node.needs_copy?.should be_true
+        ycp_node_const.needs_copy?.should be_true
+        ycp_node_no_const.needs_copy?.should be_true
       end
     end
 
