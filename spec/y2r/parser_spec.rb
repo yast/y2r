@@ -70,7 +70,7 @@ module Y2R
 
       it "raises an exception on syntax error" do
         lambda {
-          Parser.new(compile_options).parse("invalid").should == ast
+          Parser.new(compile_options).parse("invalid")
         }.should raise_error Parser::SyntaxError
       end
     end
