@@ -639,9 +639,8 @@ module Y2R
 
       statements.each do |statement|
         if statement.is_a?(AST::YCP::Include)
-          next if statement.skipped
-
           extracted << statement if do_extract
+          next if statement.skipped
 
           nesting_level += 1
           if statement.name == file
