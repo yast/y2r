@@ -182,6 +182,8 @@ module Y2R
           ((?!\#|\/\/|\/\*).)+   # non-comment
         /xm
 
+        YAST_TYPES_REGEXP = /(void|any|boolean|string|symbol|integer|float|term|path|byteblock|block\s*<.*>|list(\s*<.*>|)|map(\s*<.*>|))/
+
         # Value of CompilerContext#whitespace.
         class Whitespace < OpenStruct
           def drop_before_above?
@@ -322,10 +324,141 @@ module Y2R
             segment.sub(/\A\/\//, "#")
           end
 
-          def process_doc_comment(node, segment)
-            # TODO: Process the original doc comment so that it works with YARD.
+          # Converts YCP type name to Ruby type name.
+          def ycp_to_ruby_type(type)
+            # unknown type, no change
+            return type unless type.match "^#{YAST_TYPES_REGEXP}$"
 
-            segment
+            # ruby class names start with upcase letter
+            upper_case_names = ["boolean", "string", "symbol", "float"]
+            upper_case_names.each do |upper_case_name|
+              type.gsub!(upper_case_name) { |s| s.capitalize }
+            end
+
+            # integer -> Fixnum
+            type.gsub! "integer", "Fixnum"
+
+            # any -> Object
+            # "Object" is actually not 100% correct as only some types make
+            # sense, but "any" would be even worse (does not exist in Ruby)
+            type.gsub! "any", "Object"
+
+            # list -> Array
+            type.gsub! /list\s*/, "Array"
+
+            # map -> Hash
+            # yard uses '=>' delimiter
+            type.gsub! /map(\s*<\s*(\S+)\s*,\s*(\S+)\s*>|)/ do
+              if $2 && $3
+                "Hash{#{$2} => #{$3}}"
+              else
+                "Hash"
+              end
+            end
+
+            # path -> Yast::Path
+            type.gsub! "path", "Yast::Path"
+
+            # term -> Yast::Term
+            type.gsub! "term", "Yast::Term"
+
+            # byteblock -> Yast::Byteblock
+            type.gsub! "byteblock", "Yast::Byteblock"
+
+            # block<type> -> Proc
+            type.gsub! /block\s*<.*>/, "Proc"
+
+            type
+          end
+
+          # Process the original doc comment so that it works with YARD.
+          def process_doc_comment(node, segment)
+
+            # remove colon after a tag (it is ignored by ycpdoc)
+            segment.gsub! /^(#\s+@\S+):/, "\\1"
+
+            # remove @short tags, just add an empty line to use it
+            # as the short description
+            segment.gsub! /^(#\s+)@short\s+(.*)$/, "\\1\\2\n#"
+
+            # remove @descr tags, not needed
+            segment.gsub! /^(#\s+)@descr\s+/, "\\1"
+
+            # add parameter type info
+            if node.args
+              node.args.each do |arg|
+                segment.gsub! /^(#\s+@param)(s|)\s+(#{YAST_TYPES_REGEXP}\s+|)#{arg.name}\b/,
+                  "\\1 [#{ycp_to_ruby_type(arg.type.to_s)}] #{arg.name}"
+              end
+            end
+
+            # @return(s) type -> @return [type], the type is optional
+            segment.gsub!(/^(#\s+@return)(s|)(\s+)(#{YAST_TYPES_REGEXP}|)/) do
+              if $4.empty?
+                "#{$1}#{$3}"
+              else
+                "#{$1}#{$3}[#{ycp_to_ruby_type($4)}]"
+              end
+            end
+
+            # @internal -> @api private
+            segment.gsub! /^(#\s+)@internal\b/, "\\1@api private"
+
+            # @stable -> @note stable
+            segment.gsub! /^(#\s+)@stable\b/,
+              "\\1@note This is a stable API function"
+
+            # @unstable -> @note unstable
+            segment.gsub! /^(#\s+)@unstable\b/,
+              "\\1@note This is an unstable API function and may change in the future"
+
+            # @screenshot -> ![ALT text](path)
+            # uses markdown syntax
+            segment.gsub! /^(#\s+)@screenshot\s+(\S+)/,
+              "\\1![\\2](../../\\2)"
+
+            # @example_file -> {include:file:<file>}
+            segment.gsub!(/^(#\s+)@example_file\s+(\S+)/) do
+              "#{$1}Example file (#{$2}): {include:file:#{$2.gsub /\.ycp$/, '.rb'}}"
+            end
+
+            # @see Foo -> @see #Foo
+            # @see Foo() -> @see #Foo
+            # do not change if there are multiple words
+            # (likely it refers to something else than a function name)
+            segment.gsub! /^(#\s+)@see\s+(\S+)(\(\)|)\s*$/, "\\1@see #\\2"
+
+            # @ref function -> {#function}, can be present anywhere in the text
+            segment.gsub! /@ref\s+(#|)(\S+)/, "{#\\2}"
+
+            # @struct and @tuple -> "  " (Extra indent to start a block)
+            # multiline tag, needs line processing
+            in_struct = false
+            ret = ""
+            segment.each_line do |line|
+              if line.match /^#\s+@(struct|tuple)/
+                in_struct = true
+
+                # add header
+                line.gsub! /^#\s+@struct(.*)$/, "#\n# **Structure:**\n#\n#    \\1"
+                line.gsub! /^#\s+@tuple(.*)$/, "#\n# **Tuple:**\n#\n#    \\1"
+                ret << line
+              else
+                if in_struct
+                  # empty line or a new tag closes the tag
+                  if line.match(/^#\s*$/) || line.match(/^#\s*@/)
+                    in_struct = false
+                  else
+                    # indent the struct/tuple block
+                    line.gsub! /^#(\s+.*)$/, "#     \\1"
+                  end
+                end
+
+                ret << line
+              end
+            end
+
+            ret
           end
 
           def fix_multi_line_segment(node, segment, prefix)
