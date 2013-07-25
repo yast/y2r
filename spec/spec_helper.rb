@@ -12,20 +12,8 @@ def cleanup(s)
 end
 
 def compile_options
-  module_paths = if ENV["Y2R_MODULE_PATH"]
-    ENV["Y2R_MODULE_PATH"].split(":")
-  else
-    [File.dirname(__FILE__) + "/modules"]
-  end
-
-  include_paths = if ENV["Y2R_INCLUDE_PATH"]
-    ENV["Y2R_INCLUDE_PATH"].split(":")
-  else
-    [File.dirname(__FILE__) + "/include"]
-  end
-
   {
-    :module_paths  => module_paths,
-    :include_paths => include_paths
+    :module_paths  => [File.dirname(__FILE__) + "/modules"],
+    :include_paths => [File.dirname(__FILE__) + "/include"]
   }
 end
