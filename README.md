@@ -143,3 +143,11 @@ Y2R supports the following options:
   * **--help**
 
     Print help and exit.
+
+Known Issues
+------------
+
+  * The code quality isn't optimal in many places. This was caused by very short
+    development time with little room for refactoring and cleanups. Given that
+    Y2R will be used just once and then mostly forgotten, this is not a big
+    deal.
