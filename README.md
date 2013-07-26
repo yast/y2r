@@ -1,12 +1,15 @@
 Y2R
 ===
 
-Y2R is a transpiler translating YCP code into Ruby.
+Y2R is a transpiler translating
+[YCP](http://doc.opensuse.org/projects/YaST/SLES10/tdg/Book-YCPLanguage.html) (a
+legacy language used to write parts of
+[YaST](http://en.opensuse.org/Portal:YaST)) into Ruby. It will be used to
+translate YCP-based parts of the YaST codebase into Ruby, which will allow us to
+get rid of YCP completely.
 
-[YCP](http://doc.opensuse.org/projects/YaST/SLES10/tdg/Book-YCPLanguage.html) is
-a legacy language that is used to write parts of
-[YaST](http://en.opensuse.org/Portal:YaST). Y2R will be used to translate the
-whole YaST codebase into Ruby, which will allow us to get rid of YCP completely.
+The translation itself is described by a
+[specification](https://github.com/yast/y2r/blob/master/spec/y2r_spec.md).
 
 Installation
 ------------
