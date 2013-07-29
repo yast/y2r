@@ -397,6 +397,18 @@ module Y2R::AST
       @context_repeat_in_unspec = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new, YCP::Repeat.new]
       )
+      @context_case             = YCP::CompilerContext.new(
+        :blocks => [YCP::Case.new]
+      )
+      @context_case_in_unspec   = YCP::CompilerContext.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::Case.new]
+      )
+      @context_default           = YCP::CompilerContext.new(
+        :blocks => [YCP::Default.new]
+      )
+      @context_default_in_unspec = YCP::CompilerContext.new(
+        :blocks => [YCP::UnspecBlock.new, YCP::Default.new]
+      )
 
       @context_unspec           = YCP::CompilerContext.new(
         :blocks => [YCP::UnspecBlock.new]
@@ -409,6 +421,12 @@ module Y2R::AST
       )
       @context_unspec_in_repeat = YCP::CompilerContext.new(
         :blocks => [YCP::Repeat.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_case = YCP::CompilerContext.new(
+        :blocks => [YCP::Case.new, YCP::UnspecBlock.new]
+      )
+      @context_unspec_in_default = YCP::CompilerContext.new(
+        :blocks => [YCP::Default.new, YCP::UnspecBlock.new]
       )
       @context_unspec_in_file = YCP::CompilerContext.new(
         :blocks => [YCP::FileBlock.new, YCP::UnspecBlock.new]
@@ -803,6 +821,22 @@ module Y2R::AST
         end
       end
 
+      describe "for break statements inside a case clause" do
+        it "raises an exception" do
+          lambda {
+            @ycp_node.compile(@context_case)
+          }.should raise_error NotImplementedError, "Case with a break in the middle encountered. These are not supported."
+        end
+      end
+
+      describe "for break statements inside a default clause" do
+        it "raises an exception" do
+          lambda {
+            @ycp_node.compile(@context_default)
+          }.should raise_error NotImplementedError, "Default with a break in the middle encountered. These are not supported."
+        end
+      end
+
       describe "for break statements inside a while statement which is inside a block expression" do
         it "returns correct AST node" do
           @ycp_node.compile(@context_while_in_unspec).should == @ruby_node_break
@@ -820,6 +854,22 @@ module Y2R::AST
         it "returns correct AST node" do
           @ycp_node.compile(@context_repeat_in_unspec).should ==
             @ruby_node_break
+        end
+      end
+
+      describe "for break statements inside a case clause which is inside a block expression" do
+        it "raises an exception" do
+          lambda {
+            @ycp_node.compile(@context_case_in_unspec)
+          }.should raise_error NotImplementedError, "Case with a break in the middle encountered. These are not supported."
+        end
+      end
+
+      describe "for break statements inside a default clause which is inside a block expression" do
+        it "raises an exception" do
+          lambda {
+            @ycp_node.compile(@context_default_in_unspec)
+          }.should raise_error NotImplementedError, "Default with a break in the middle encountered. These are not supported."
         end
       end
 
@@ -844,6 +894,18 @@ module Y2R::AST
       describe "for break statements inside a block expression which is inside a repeat statement" do
         it "returns correct AST node" do
           @ycp_node.compile(@context_unspec_in_repeat).should == @ruby_node_raise
+        end
+      end
+
+      describe "for break statements inside a block expression which is inside a case clause" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec_in_case).should == @ruby_node_raise
+        end
+      end
+
+      describe "for break statements inside a block expression which is inside a default clause" do
+        it "returns correct AST node" do
+          @ycp_node.compile(@context_unspec_in_default).should == @ruby_node_raise
         end
       end
     end

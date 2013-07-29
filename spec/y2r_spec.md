@@ -1465,6 +1465,45 @@ switch (42) {
 Case without a break or return encountered. These are not supported.
 ```
 
+Y2R does not support cases with `break` in the middle. This is
+mostly because Ruby doesn't have any suitable equivalent construct.
+
+#### YCP (fragment)
+
+```ycp
+switch (42) {
+  case 42:
+    break;
+    y2milestone("M1");
+    break;
+}
+```
+
+#### Error Message
+
+```error
+Case with a break in the middle encountered. These are not supported.
+```
+
+Y2R does not support defaults with `break` in the middle. This is
+mostly because Ruby doesn't have any suitable equivalent construct.
+
+#### YCP (fragment)
+
+```ycp
+switch (42) {
+  default:
+    break;
+    y2milestone("M1");
+}
+```
+
+#### Error Message
+
+```error
+Default with a break in the middle encountered. These are not supported.
+```
+
 ### `while` Statement
 
 Y2R translates YCP `while` statements as Ruby `while` statements.

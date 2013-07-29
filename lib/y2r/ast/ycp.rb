@@ -863,7 +863,7 @@ module Y2R
 
       class Break < Node
         def compile(context)
-          case context.innermost(While, Do, Repeat, UnspecBlock)
+          case context.innermost(While, Do, Repeat, UnspecBlock, Case, Default)
             when While, Do, Repeat
               Ruby::Break.new
             when UnspecBlock
@@ -874,6 +874,12 @@ module Y2R
                 :block    => nil,
                 :parens   => false
               )
+            when Case
+              raise NotImplementedError,
+                  "Case with a break in the middle encountered. These are not supported."
+            when Default
+              raise NotImplementedError,
+                  "Default with a break in the middle encountered. These are not supported."
             else
               raise "Misplaced \"break\" statement."
           end
@@ -1007,6 +1013,10 @@ module Y2R
       end
 
       class Case < Node
+        def symbols
+          []
+        end
+
         def compile(context)
           if body.statements.last.is_a?(Break)
             # The following dance is here because we want ot keep the AST nodes
@@ -1021,10 +1031,12 @@ module Y2R
                   "Case without a break or return encountered. These are not supported."
           end
 
-          Ruby::When.new(
-            :values => values.map { |v| v.compile(context) },
-            :body   => body_without_break.compile(context)
-          )
+          context.inside self do |inner_context|
+            Ruby::When.new(
+              :values => values.map { |v| v.compile(inner_context) },
+              :body   => body_without_break.compile(inner_context)
+            )
+          end
         end
 
         def always_returns?
@@ -1121,6 +1133,10 @@ module Y2R
       end
 
       class Default < Node
+        def symbols
+          []
+        end
+
         def compile(context)
           if body.statements.last.is_a?(Break)
             # The following dance is here because we want ot keep the AST nodes
@@ -1132,7 +1148,9 @@ module Y2R
             body_without_break = body
           end
 
-          Ruby::Else.new(:body => body_without_break.compile(context))
+          context.inside self do |inner_context|
+            Ruby::Else.new(:body => body_without_break.compile(inner_context))
+          end
         end
 
         def always_returns?
