@@ -307,10 +307,6 @@ reference.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def main
@@ -363,10 +359,6 @@ Y2R translates YCP variables as Ruby variables.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -628,10 +620,6 @@ needed.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def main
@@ -801,10 +789,6 @@ underlying C/C++ implementation.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def main
@@ -877,10 +861,6 @@ Y2R translates YCP function calls of toplevel functions as Ruby method calls.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def main
@@ -918,10 +898,6 @@ method on them.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def wrapper
@@ -958,10 +934,6 @@ them.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1009,10 +981,6 @@ sequences of statements that emulate YCP behavior in Ruby.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1154,10 +1122,6 @@ Y2R translates YCP `include` statements as `Yast.include` calls.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def main
@@ -1200,10 +1164,6 @@ statements.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1362,10 +1322,6 @@ Y2R translates YCP statement blocks as Ruby statements.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1582,10 +1538,6 @@ Y2R translates toplevel function definitions as Ruby method definitions.
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     def f(a, b, c)
@@ -1615,10 +1567,6 @@ Y2R translates nested YCP function definitions as Ruby lambdas.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1661,10 +1609,6 @@ them. The only exceptions are immutable types (like `boolean`) and references.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1715,10 +1659,6 @@ returned variables. The only exception is immutable types (like `boolean`).
 ```ruby
 # encoding: utf-8
 
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
-
 module Yast
   class DefaultClient < Client
     # return value with a mutable type
@@ -1765,10 +1705,6 @@ toplevel statements (such as imports) are moved into the `main` method.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client
@@ -1821,10 +1757,6 @@ variables and functions are explicitly published.
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 require "yast"
 
@@ -1955,10 +1887,6 @@ Y2R translates YCP documentation comments into [YARD](http://yardoc.org/).
 
 ```ruby
 # encoding: utf-8
-
-# Translated by Y2R (https://github.com/yast/y2r).
-#
-# Original file: default.ycp
 
 module Yast
   class DefaultClient < Client

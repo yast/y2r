@@ -1225,7 +1225,6 @@ module Y2R
           end
 
           Ruby::Program.new(
-            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -1464,7 +1463,6 @@ module Y2R
           end
 
           Ruby::Program.new(
-            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::Module.new(
@@ -1658,7 +1656,6 @@ module Y2R
           end
 
           Ruby::Program.new(
-            :filename   => filename,
             :statements => Ruby::Statements.new(
               :statements => [
                 Ruby::MethodCall.new(

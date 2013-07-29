@@ -254,10 +254,6 @@ module Y2R
 
             parts << "# encoding: utf-8"
             parts << ""
-            parts << "# Translated by Y2R (https://github.com/yast/y2r)."
-            parts << "#"
-            parts << "# Original file: #{filename}"
-            parts << ""
             parts << statements_code
           end
         end

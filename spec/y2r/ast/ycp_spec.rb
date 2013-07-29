@@ -2072,7 +2072,6 @@ module Y2R::AST
     describe "#compile" do
       def ruby_client_statements(filename, statements)
         Ruby::Program.new(
-          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
@@ -2624,7 +2623,6 @@ module Y2R::AST
     describe "#compile" do
       def ruby_include_statements(filename, statements)
         Ruby::Program.new(
-          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::Module.new(
@@ -2818,7 +2816,6 @@ module Y2R::AST
         end
 
         Ruby::Program.new(
-          :filename   => filename,
           :statements => Ruby::Statements.new(
             :statements => [
               Ruby::MethodCall.new(

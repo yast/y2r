@@ -124,11 +124,7 @@ Y2R supports the following options:
 
     Report specified file as the compiled one.
 
-    The reported file appears in a comment at the top of the compiled file:
-
-        # Translated by Y2R (https://github.com/yast/y2r).
-        #
-        # Original file: library/types/src/modules/Integer.ycp
+    The reported file is used to construct some class names in generated code.
 
   * **--xml**
 

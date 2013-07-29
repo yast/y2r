@@ -330,17 +330,14 @@ module Y2R::AST::Ruby
   describe Program, :type => :ruby do
     before :each do
       @node_comment_none = Program.new(
-        :statements => @statements,
-        :filename   => "file.ycp"
+        :statements => @statements
       )
       @node_comment_before = Program.new(
         :statements     => @statements,
-        :filename       => "file.ycp",
         :comment_before => "# before"
       )
       @node_comment_after = Program.new(
         :statements    => @statements,
-        :filename      => "file.ycp",
         :comment_after => "# after"
       )
     end
@@ -350,10 +347,6 @@ module Y2R::AST::Ruby
         @node_comment_none.to_ruby(@context_default).should == [
           "# encoding: utf-8",
           "",
-          "# Translated by Y2R (https://github.com/yast/y2r).",
-          "#",
-          "# Original file: file.ycp",
-          "",
           "a = 42",
           "b = 43",
           "c = 44"
@@ -361,10 +354,6 @@ module Y2R::AST::Ruby
 
         @node_comment_before.to_ruby(@context_default).should == [
           "# encoding: utf-8",
-          "",
-          "# Translated by Y2R (https://github.com/yast/y2r).",
-          "#",
-          "# Original file: file.ycp",
           "",
           "# before",
           "a = 42",
@@ -374,10 +363,6 @@ module Y2R::AST::Ruby
 
         @node_comment_after.to_ruby(@context_default).should == [
           "# encoding: utf-8",
-          "",
-          "# Translated by Y2R (https://github.com/yast/y2r).",
-          "#",
-          "# Original file: file.ycp",
           "",
           "a = 42",
           "b = 43",
