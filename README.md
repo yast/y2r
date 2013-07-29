@@ -39,21 +39,17 @@ The following steps will make YCP Killer run on a vanilla openSUSE 12.3 system.
 
   3. **Install basic Ruby environment**
 
-         $ sudo zypper in ruby ruby-devel rubygem-bundler
+         $ sudo zypper in ruby ruby-devel
 
-  4. **Install Y2R's dependencies and clone its repository**
-
-     Install Y2R's dependencies:
+  4. **Install Y2R's dependencies**
 
          $ sudo zypper in gcc-c++ make libxml2-devel libxslt-devel   # Needed by Nokogiri
 
-     Clone Y2R's repository and install Gem dependencies:
+  5. **Install Y2R**
 
-         $ git clone git://github.com/yast/y2r.git
-         $ cd y2r
-         $ bundle install
+         $ sudo gem install y2r
 
-  5. **Done!**
+  6. **Done!**
 
      You can now start using Y2R.
 
