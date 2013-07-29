@@ -5,11 +5,11 @@ require File.expand_path(File.dirname(__FILE__) + "/lib/y2r/version")
 Gem::Specification.new do |s|
   s.name        = "y2r"
   s.version     = Y2R::VERSION
-  s.summary     = "Transpiler translating YCP code into Ruby"
+  s.summary     = "Transpiler translating YCP into Ruby"
   s.description = <<-EOT.split("\n").map(&:strip).join(" ")
-    Y2R is a transpiler translating YCP code into Ruby. YCP is a legacy language
-    that is used internally in SUSE to write parts of YaST. This tool will help
-    to get rid of it.
+    Y2R is a transpiler translating YCP (a legacy language used to write parts
+    of YaST) into Ruby. It will be used to translate YCP-based parts of the YaST
+    codebase into Ruby, which will allow us to get rid of YCP completely.
   EOT
 
   s.authors     = ["David Majda", "Josef Reidinger"]
