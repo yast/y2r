@@ -2501,6 +2501,14 @@ module Y2R
       end
 
       class YETriple < Node
+        def compile_as_copy_if_needed(context)
+          Ruby::TernaryOperator.new(
+            :condition => cond.compile(context),
+            :then      => self.true.compile_as_copy_if_needed(context),
+            :else      => self.false.compile_as_copy_if_needed(context)
+          )
+        end
+
         def compile(context)
           Ruby::TernaryOperator.new(
             :condition => cond.compile(context),

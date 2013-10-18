@@ -1646,10 +1646,24 @@ returned variables. The only exception is immutable types (like `boolean`).
     return r;
   }
 
+  // return value with a mutable type inside a ternary operator
+  list f2() {
+    list r1 = [];
+    list r2 = [];
+    return true ? r1 : r2;
+  }
+
   // return value with an immutable type
-  integer f2() {
+  integer f3() {
     integer r = 42;
     return r;
+  }
+
+  // return value with an immutable type inside a ternary operator
+  integer f4() {
+    integer r1 = 42;
+    integer r2 = 43;
+    return true ? r1 : r2;
   }
 }
 ```
@@ -1667,10 +1681,24 @@ module Yast
       deep_copy(r)
     end
 
-    # return value with an immutable type
+    # return value with a mutable type inside a ternary operator
     def f2
+      r1 = []
+      r2 = []
+      true ? deep_copy(r1) : deep_copy(r2)
+    end
+
+    # return value with an immutable type
+    def f3
       r = 42
       r
+    end
+
+    # return value with an immutable type inside a ternary operator
+    def f4
+      r1 = 42
+      r2 = 43
+      true ? r1 : r2
     end
   end
 end
