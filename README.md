@@ -4,9 +4,9 @@ Y2R
 Y2R is a transpiler translating
 [YCP](http://doc.opensuse.org/projects/YaST/SLES10/tdg/Book-YCPLanguage.html) (a
 legacy language used to write parts of
-[YaST](http://en.opensuse.org/Portal:YaST)) into Ruby. It will be used to
-translate YCP-based parts of the YaST codebase into Ruby, which will allow us to
-get rid of YCP completely.
+[YaST](http://en.opensuse.org/Portal:YaST)) into Ruby. It was used to translate
+YCP-based parts of the YaST codebase into Ruby, which will allow us to get rid
+of YCP completely.
 
 The translation itself is described by a
 [specification](https://github.com/yast/y2r/blob/master/spec/y2r_spec.md).
@@ -30,12 +30,12 @@ The following steps will make YCP Killer run on a vanilla openSUSE 12.3 system.
      some features that are not present in `ycpc` bundled with openSUSE 12.3.
 
      To install updated `ycpc`, install the `yast2-core` package from
-     `YaST:Head:ruby`:
+     `YaST:Head`:
 
          $ sudo zypper ar -f \
-             http://download.opensuse.org/repositories/YaST:/Head:/ruby/openSUSE_12.3/ \
-             YaST:Head:ruby
-         $ sudo zypper in -f -r YaST:Head:ruby yast2-core
+             http://download.opensuse.org/repositories/YaST:/Head/openSUSE_12.3/ \
+             YaST:Head
+         $ sudo zypper in -f -r YaST:Head yast2-core
 
   3. **Install basic Ruby environment**
 
