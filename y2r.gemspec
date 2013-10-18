@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.license     = "MIT"
 
   s.files       = [
+    "CHANGELOG",
     "LICENSE",
     "README.md",
     "VERSION",
