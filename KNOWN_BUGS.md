@@ -1,7 +1,7 @@
 Known Bugs
 ==========
 
-The goal of text document is to document already known bugs and how to work around it.
+The goal of the text is to document already known bugs and how to work around it.
 
 Escaped Characters
 ------------------
